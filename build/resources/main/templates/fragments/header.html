@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
-<nav th:fragment="header" class="navbar navbar-expand-lg fixed-top px-4">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold fs-3" th:href="@{/}" style="letter-spacing: -3.5px;">BEEDAN</a>
-        <div class="collapse navbar-collapse justify-content-center">
-            <ul class="navbar-nav gap-3">
-                <li class="nav-item"><a class="nav-link" href="#">ABOUT</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">STOCK</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">NOTICE</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">MY PAGE</a></li>
-            </ul>
+<header th:fragment="headerFragment" class="header_final-1">
+    <div class="container-2 flex">
+        <div class="container-3 flex" onclick="location.href='/'">
+            <img th:src="@{/image/logo.png}" class="h-10 w-auto" alt="logo" />
+            <p class="text-xl font-bold tracking-tight">BEEDAN</p>
         </div>
-        <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-login px-4 py-2 small">LOGIN</button>
+        <nav class="container-6 flex items-center gap-8">
+            <div class="c-1"><a th:href="@{/about}" class="text-primary font-bold no-underline">ABOUT</a></div>
+            <div class="c-1"><a th:href="@{/stock}" class="text-primary font-bold no-underline">STOCK</a></div>
+            <div class="c-1"><a th:href="@{/notice}" class="text-primary font-bold no-underline">NOTICE</a></div>
+            <div class="c-1"><a th:href="@{/mypage}" class="text-primary font-bold no-underline">MY PAGE</a></div>
+        </nav>
+    </div>
+
+    <div class="container-19">
+        <div class="button">
+            <a th:href="@{/login}" class="text-sm font-bold no-underline text-inherit">LOGIN</a>
+        </div>
+        <div class="notification-23">
+            <img th:src="@{/images/icon-24.svg}" class="w-6 h-6 cursor-pointer" alt="icon" />
         </div>
     </div>
-</nav>
+</header>
 </html>

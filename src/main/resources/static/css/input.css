@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+/* [중요] 테일윈드 엔진에게 스캔할 HTML 파일 위치를 알려줍니다.
+  input.css의 위치가 src/main/resources/static/css/ 라면 아래 경로가 맞습니다.
+*/
+@source "../../../../../**/*.html";
+
+/* --- 1. 테일윈드 v4 디자인 시스템 설정 (Theme) --- */
+@theme {
+    /* 브랜드 핵심 컬러 (Primary) */
+    --color-primary: #705d00;
+    --color-primary-container: #ffd700;
+    --color-on-primary-container: #705e00;
+    --color-primary-fixed: #ffe16d;
+    --color-primary-fixed-dim: #e9c400;
+    --color-on-primary-fixed: #221b00;
+    --color-on-primary-fixed-variant: #544600;
+
+    /* 중립 및 배경 컬러 (Surface) */
+    --color-background: #f9f9f9;
+    --color-on-background: #1a1c1c;
+    --color-surface: #f9f9f9;
+    --color-surface-dim: #dadada;
+    --color-surface-bright: #f9f9f9;
+    --color-surface-variant: #e2e2e2;
+    --color-on-surface: #1a1c1c;
+    --color-on-surface-variant: #4d4732;
+
+    /* 컨테이너 계열 (계층 구조) */
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #f3f3f3;
+    --color-surface-container: #eeeeee;
+    --color-surface-container-high: #e8e8e8;
+    --color-surface-container-highest: #e2e2e2;
+
+    /* 보조 컬러 (Secondary & Tertiary) */
+    --color-secondary: #5f5e5e;
+    --color-secondary-container: #e2dfde;
+    --color-on-secondary-container: #636262;
+    --color-tertiary: #5f5e5e;
+    --color-tertiary-container: #dbd9d9;
+    --color-on-tertiary-container: #5f5f5f;
+
+    /* 상태 및 에러 (Status) */
+    --color-error: #ba1a1a;
+    --color-error-container: #ffdad6;
+    --color-on-error: #ffffff;
+    --color-on-error-container: #93000a;
+    --color-outline: #7e775f;
+    --color-outline-variant: #d0c6ab;
+
+    /* 폰트 설정 */
+    --font-headline: "Manrope", sans-serif;
+    --font-body: "Inter", sans-serif;
+    --font-label: "Inter", sans-serif;
+
+    /* 전역 직각화 강제 */
+    --radius-none: 0px;
+    --radius-default: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-3xl: 0px;
+    --radius-full: 9999px;
+}
+
+/* --- 2. 기본 초기화 (Base) --- */
+@layer base {
+    * {
+        border-radius: 0px !important; /* 프로젝트 전체 직각형 디자인 강제 */
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        @apply bg-background font-body text-on-background antialiased;
+        scrollbar-width: thin;
+        scrollbar-color: #d0c6ab #f3f3f3;
+    }
+
+    /* Webkit 스크롤바 전용 */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f3f3f3; }
+    ::-webkit-scrollbar-thumb { background: #d0c6ab; }
+}
+
+/* --- 3. 공통 UI 컴포넌트 스타일 (Components) --- */
+@layer components {
+    /* 헤더 스타일 */
+    .header_final-1 {
+        @apply flex flex-row justify-between items-center w-full mx-auto bg-white/80 backdrop-blur-md;
+        padding: 0 32px; height: 80px; max-width: 1280px;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 푸터 스타일 */
+    .footer_final-1 {
+        @apply flex flex-row justify-between items-start flex-wrap w-full mx-auto bg-surface-container-low;
+        gap: 40px; padding: 60px 48px; max-width: 1280px;
+    }
+
+    /* 푸터 텍스트 유틸리티 */
+    .footer-logo-text {
+        @apply font-headline font-bold text-[20px] text-on-surface;
+    }
+
+    .footer-label {
+        @apply font-body font-bold text-[12px] text-primary mb-2 uppercase;
+    }
+
+    .footer-link-text {
+        @apply font-body font-medium text-[11px] uppercase tracking-wider text-secondary transition-colors hover:text-primary;
+    }
+
+    .footer-section {
+        @apply flex flex-col gap-3;
+    }
+
+    /* 버튼 스타일 */
+    .btn-primary {
+        @apply bg-primary-container text-on-primary-container font-headline font-black uppercase tracking-widest px-8 py-4 transition-all;
+    }
+}
