@@ -16,8 +16,15 @@
 
 <div th:replace="~{fragments/header :: headerFragment}"></div>
 
-<main layout:fragment="content" class="flex-grow">
-</main>
+<div class="flex flex-grow w-full max-w-[1280px] mx-auto">
+
+    <aside layout:fragment="sidebar">
+    </aside>
+
+    <main layout:fragment="content" class="flex-grow w-full">
+    </main>
+
+</div>
 
 <div th:replace="~{fragments/footer :: footerFragment}"></div>
 

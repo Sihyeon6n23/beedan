@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="sidebarHeader(title, subTitle)" class="mb-12">
+    <h3 class="font-headline font-black text-xl mb-1 uppercase" th:text="${title}">MENU</h3>
+    <p class="text-primary text-[10px] font-bold uppercase tracking-widest" th:text="${subTitle}">Sub Title</p>
+</div>
 </html>
