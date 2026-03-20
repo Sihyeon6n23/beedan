@@ -1,0 +1,77 @@
+:root {
+    --beedan-gold: #FFD700;
+    --beedan-dark-gold: #705D00;
+    --beedan-bg: #F9F9F9;
+    --text-main: #1A1C1C;
+    --text-muted: #737373;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    background-color: var(--beedan-bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+}
+
+.font-headline { font-family: 'Manrope', sans-serif; }
+
+/* Header & Nav */
+.navbar {
+    box-shadow: 0 8px 12px rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 1050;
+}
+.nav-link {
+    color: var(--beedan-dark-gold) !important;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1.4px;
+    transition: var(--transition);
+    position: relative;
+}
+.nav-link:hover:after { width: 100%; }
+.nav-link:after {
+    content: ''; position: absolute; width: 0; height: 2px;
+    bottom: 0; left: 0; background-color: var(--beedan-dark-gold);
+    transition: var(--transition);
+}
+
+/* Summary Cards */
+.summary-card {
+    padding: 1.5rem; border: none; transition: var(--transition);
+}
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.bg-beedan-gray { background-color: #F3F3F3; }
+.bg-beedan-gold { background-color: var(--beedan-gold); }
+
+/* Table & UI Elements */
+.table tbody tr { transition: var(--transition); cursor: pointer; }
+.table tbody tr:hover {
+    background-color: #ffffff !important;
+    box-shadow: inset 4px 0 0 var(--beedan-gold), 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.search-input {
+    background-color: #E8E8E8; border: none; padding: 0.75rem 1.5rem;
+    font-size: 0.75rem; width: 300px; transition: var(--transition);
+}
+.search-input:focus {
+    background-color: #fff; box-shadow: 0 0 0 2px var(--beedan-gold);
+    outline: none; width: 350px;
+}
+
+.btn-login {
+    background-color: var(--beedan-gold); color: var(--beedan-dark-gold);
+    font-weight: 700; border-radius: 0; transition: var(--transition);
+}
+.btn-login:hover { transform: rotate(-2deg); background-color: var(--beedan-dark-gold); color: var(--beedan-gold); }
+
+/* Footer Custom */
+footer {
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    padding: 40px 0;
+}
