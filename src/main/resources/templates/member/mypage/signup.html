@@ -1,128 +1,108 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/layout}">
+      layout:decorate="~{layout/layout}"> <div layout:fragment="content">
+  <section class="bg-surface-container-low min-h-screen py-24 px-4 md:px-12">
 
-<div layout:fragment="content">
+    <div class="max-w-[1280px] mx-auto flex flex-col md:flex-row gap-12">
 
-  <section class="container-fluid bg-light min-vh-100" style="padding-top: 100px; padding-bottom: 100px;">
-    <div class="row px-md-5">
-
-      <aside class="col-md-3 col-lg-2 d-none d-md-block border-end py-4">
-        <div class="px-3 mb-5">
-          <h3 class="font-headline fw-black h5 mb-1">Registration</h3>
-          <p class="text-primary small fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">Step 2 of 4</p>
+      <aside class="hidden md:block w-64 border-r border-outline-variant py-4 pr-8">
+        <div class="mb-12">
+          <h3 class="font-headline font-black text-xl mb-1 uppercase">Registration</h3>
+          <p class="text-primary text-[10px] font-bold uppercase tracking-widest">Step 2 of 4</p>
         </div>
-        <div class="list-group list-group-flush">
-          <a href="#" class="list-group-item list-group-item-action sidebar-link opacity-50 py-3 border-0">
-            Company Profile
-          </a>
-          <a href="#" class="list-group-item list-group-item-action sidebar-link active py-3">
-            Documents
-          </a>
-          <a href="#" class="list-group-item list-group-item-action sidebar-link py-3 border-0">
-            Team
-          </a>
-          <a href="#" class="list-group-item list-group-item-action sidebar-link py-3 border-0">
-            Settings
-          </a>
-        </div>
+        <nav class="flex flex-col gap-1">
+          <a href="#" class="py-3 px-4 text-sm font-medium text-secondary opacity-50 hover:opacity-100 transition-all">Company Profile</a>
+          <a href="#" class="py-3 px-4 text-sm font-bold text-on-background bg-white border-l-4 border-primary">Documents</a>
+          <a href="#" class="py-3 px-4 text-sm font-medium text-secondary opacity-50 hover:opacity-100 transition-all">Team</a>
+          <a href="#" class="py-3 px-4 text-sm font-medium text-secondary opacity-50 hover:opacity-100 transition-all">Settings</a>
+        </nav>
       </aside>
 
-      <main class="col-md-9 col-lg-10 px-md-5">
-        <div class="row justify-content-center">
-          <div class="col-12 col-xl-8">
+      <main class="flex-grow flex justify-center">
+        <div class="w-full max-w-2xl">
 
-            <header class="mb-5 text-center text-md-start">
-              <p class="text-uppercase text-primary small fw-bold tracking-widest mb-2">Member Onboarding</p>
-              <h1 class="font-headline display-4 fw-black tracking-tighter lh-1 text-uppercase">
-                Business<br>Registration
-              </h1>
-            </header>
+          <header class="mb-12 text-center md:text-left">
+            <p class="text-primary text-xs font-bold tracking-[0.2em] uppercase mb-3">Member Onboarding</p>
+            <h1 class="font-headline text-5xl md:text-6xl font-black tracking-tighter leading-none uppercase">
+              Business<br/>Registration
+            </h1>
+          </header>
 
-            <div class="card border-0 sharp-shadow p-4 p-md-5 bg-white">
-              <form th:action="@{/business/register}" method="POST">
+          <div class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] border-none">
+            <form th:action="@{/business/register}" method="POST" class="space-y-12">
 
-                <section id="account-info" class="mb-5">
-                  <div class="d-flex align-items-center gap-3 mb-4">
-                    <span class="step-number">01</span>
-                    <h2 class="h6 text-uppercase fw-black tracking-widest mb-0">Account Info</h2>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label small fw-bold text-muted text-uppercase">User ID *</label>
-                    <div class="input-group">
-                      <input type="text" name="username" class="form-control" placeholder="Preferred Username" required>
-                      <button class="btn btn-dark fw-bold px-4" type="button" style="font-size: 0.75rem;">CHECK</button>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Corporate Email *</label>
-                    <input type="email" name="email" class="form-control" placeholder="name@company.jp" required>
-                  </div>
-
-                  <div class="row g-4">
-                    <div class="col-md-6">
-                      <label class="form-label small fw-bold text-muted text-uppercase">Password *</label>
-                      <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-bold text-muted text-uppercase">Confirm *</label>
-                      <input type="password" name="confirm" class="form-control" required>
-                    </div>
-                  </div>
-                </section>
-
-                <hr class="my-5 opacity-25">
-
-                <section id="business-verification" class="mb-5">
-                  <div class="d-flex align-items-center gap-3 mb-4">
-                    <span class="step-number">02</span>
-                    <h2 class="h6 text-uppercase fw-black tracking-widest mb-0">Business Verification</h2>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Registration Number *</label>
-                    <div class="input-group mb-2">
-                      <input type="text" name="bizRegNum" class="form-control" placeholder="13-digit Corporate Number" required>
-                      <button class="btn btn-beedan-primary px-4" type="button">VERIFY BUSINESS</button>
-                    </div>
-                    <div class="d-flex align-items-center gap-1 text-primary small fw-bold">
-                      <span class="material-symbols-outlined fs-6">verified</span>
-                      <span style="font-size: 0.7rem;">Verification Successful: Tokyo Tax Office Record Found</span>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label small fw-bold text-muted text-uppercase">Company Name</label>
-                    <input type="text" class="form-control fw-bold text-muted" value="GINZA ARCHITECTURAL ATELIER CO., LTD." readonly style="background-color: #f3f3f3;">
-                  </div>
-
-                  <div class="row g-4">
-                    <div class="col-md-6">
-                      <label class="form-label small fw-bold text-muted text-uppercase">CEO Name</label>
-                      <input type="text" name="ceoName" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label small fw-bold text-muted text-uppercase">Establishment Date</label>
-                      <input type="month" name="estDate" class="form-control" required>
-                    </div>
-                  </div>
-                </section>
-
-                <div class="pt-5 border-top">
-                  <button type="submit" class="btn btn-beedan-primary w-100 py-3 fs-6 fw-black mb-3">Join Now</button>
-                  <button type="button" class="btn btn-link w-100 text-muted small text-decoration-none fw-bold text-uppercase tracking-widest">Cancel Registration</button>
+              <section id="account-info">
+                <div class="flex items-center gap-4 mb-8">
+                  <span class="text-2xl font-black text-outline-variant italic">01</span>
+                  <h2 class="text-sm font-black uppercase tracking-widest">Account Info</h2>
                 </div>
-              </form>
-            </div>
 
-            <p class="mt-4 text-center text-muted small text-uppercase tracking-widest" style="font-size: 0.65rem;">
-              Having trouble? <a href="#" class="text-primary fw-bold text-decoration-none border-bottom border-primary">Contact Curator Support</a>
-            </p>
+                <div class="space-y-6">
+                  <div>
+                    <label class="block text-[10px] font-bold text-secondary uppercase mb-2">User ID *</label>
+                    <div class="flex">
+                      <input type="text" name="username" class="bd-input flex-grow" placeholder="Preferred Username" required>
+                      <button class="bg-on-background text-white px-6 text-xs font-bold uppercase" type="button">CHECK</button>
+                    </div>
+                  </div>
 
+                  <div>
+                    <label class="block text-[10px] font-bold text-secondary uppercase mb-2">Corporate Email *</label>
+                    <input type="email" name="email" class="bd-input" placeholder="name@company.jp" required>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-[10px] font-bold text-secondary uppercase mb-2">Password *</label>
+                      <input type="password" name="password" class="bd-input" required>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-secondary uppercase mb-2">Confirm *</label>
+                      <input type="password" name="confirm" class="bd-input" required>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <hr class="border-outline-variant opacity-30">
+
+              <section id="business-verification">
+                <div class="flex items-center gap-4 mb-8">
+                  <span class="text-2xl font-black text-outline-variant italic">02</span>
+                  <h2 class="text-sm font-black uppercase tracking-widest">Business Verification</h2>
+                </div>
+
+                <div class="space-y-6">
+                  <div>
+                    <label class="block text-[10px] font-bold text-secondary uppercase mb-2">Registration Number *</label>
+                    <div class="flex mb-2">
+                      <input type="text" name="bizRegNum" class="bd-input flex-grow" placeholder="13-digit Corporate Number" required>
+                      <button class="btn-primary px-6" type="button">VERIFY</button>
+                    </div>
+                    <p class="flex items-center gap-1 text-primary text-[10px] font-bold">
+                      <span class="material-symbols-outlined !text-sm">verified</span> Successful: Tokyo Tax Office Record Found
+                    </p>
+                  </div>
+
+                  <div>
+                    <label class="block text-[10px] font-bold text-secondary uppercase mb-2">Company Name</label>
+                    <input type="text" class="bd-input bg-surface-container-low text-secondary font-bold" value="GINZA ARCHITECTURAL ATELIER CO., LTD." readonly>
+                  </div>
+                </div>
+              </section>
+
+              <div class="pt-8 flex flex-col gap-4">
+                <button type="submit" class="btn-primary w-full py-5 text-base">Join Now</button>
+                <button type="button" class="text-[10px] font-bold text-secondary uppercase tracking-widest hover:text-on-background transition-colors">Cancel Registration</button>
+              </div>
+            </form>
           </div>
+
+          <p class="mt-8 text-center text-[10px] text-secondary uppercase tracking-[0.2em]">
+            Having trouble? <a href="#" class="text-primary font-bold border-b border-primary">Contact Curator Support</a>
+          </p>
+
         </div>
       </main>
     </div>
