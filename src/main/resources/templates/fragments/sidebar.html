@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<th:block th:fragment="frame(menuContent)">
-    <div th:replace="${menuContent}"></div>
+<th:block th:fragment="frame(title, subTitle, menuContent)">
+    <aside class="hidden md:block w-64 border-r border-stone-100 py-4 pr-4 bg-stone-50 h-full overflow-y-auto">
+        <div class="fixed">
+            <div class="px-10 pt-10 mb-8">
+                <h3 class="font-headline text-lg font-extrabold tracking-tighter text-stone-900">Member Curation</h3>
+                <p class="text-[10px] font-semibold text-primary uppercase tracking-widest">onboarding</p>
+            </div>
+
+            <nav class="flex flex-col gap-1 mt-6">
+                <div th:replace="${menuContent}"></div>
+            </nav>
+        </div>
+    </aside>
 </th:block>
 </html>
