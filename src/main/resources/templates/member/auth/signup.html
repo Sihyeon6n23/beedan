@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          null,
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | Registration</title>
+
+<th:block th:fragment="content">
+  <header class="mb-12">
+    <p class="text-primary uppercase font-black text-[10px] tracking-[0.2em] mb-2">Member Onboarding</p>
+    <h1 class="font-headline font-black text-5xl md:text-6xl tracking-tighter uppercase leading-none">Business Registration</h1>
+  </header>
+
+  <form th:action="@{/register}" method="POST" class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
+
+    <section class="space-y-6">
+      <div class="flex items-center gap-4 mb-8">
+        <span class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">01</span>
+        <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">Account Info</h2>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6">
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">User ID <span class="text-error">*</span></label>
+          <div class="flex gap-2">
+            <input type="text" name="userId" class="bd-input flex-grow" placeholder="Preferred Username" required>
+            <button type="button" class="btn-secondary px-4 whitespace-nowrap">Check</button>
+          </div>
+          <p class="text-[10px] text-stone-400">Available: beedan_curator_01</p>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Corporate Email <span class="text-error">*</span></label>
+          <input type="email" name="email" class="bd-input" placeholder="name@company.jp" required>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Password <span class="text-error">*</span></label>
+            <input type="password" name="password" class="bd-input" required>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Confirm Password <span class="text-error">*</span></label>
+            <input type="password" name="confirmPassword" class="bd-input" required>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Phone Number <span class="text-error">*</span></label>
+          <div class="flex gap-2">
+            <input type="tel" name="phone" class="bd-input flex-grow" placeholder="+81 00-0000-0000" required>
+            <button type="button" class="btn-secondary px-4 whitespace-nowrap">Send Code</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="space-y-6 pt-8 border-t border-outline-variant">
+      <div class="flex items-center gap-4 mb-8">
+        <span class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">02</span>
+        <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">Business Verification</h2>
+      </div>
+
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Business Registration Number <span class="text-error">*</span></label>
+          <div class="flex gap-2">
+            <input type="text" name="businessRegNum" class="bd-input flex-grow" placeholder="13-digit Corporate Number" required>
+            <button type="button" class="btn-primary py-3 px-6 !text-xs whitespace-nowrap">Verify</button>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] text-primary">
+            <span class="material-symbols-outlined !text-sm">verified</span>
+            <span>Verification Successful</span>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Company Name</label>
+          <input type="text" name="companyName" class="bd-input bg-surface-container-low text-stone-500 cursor-not-allowed" value="GINZA ARCHITECTURAL ATELIER CO., LTD." readonly>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">CEO Name <span class="text-error">*</span></label>
+            <input type="text" name="ceoName" class="bd-input" required>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Establishment Date <span class="text-error">*</span></label>
+            <input type="month" name="establishmentDate" class="bd-input" required>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Representative Contact <span class="text-error">*</span></label>
+          <input type="tel" name="repPhone" class="bd-input" placeholder="Direct Line or Extension" required>
+        </div>
+      </div>
+    </section>
+
+    <footer class="pt-8 border-t border-outline-variant flex flex-col gap-4">
+      <button type="submit" class="btn-primary w-full py-5 text-base">Join Now</button>
+      <button type="button" class="btn-ghost mx-auto">Cancel Registration</button>
+    </footer>
+  </form>
+
+  <p class="mt-8 text-center md:text-left text-[10px] text-stone-400 uppercase tracking-widest">
+    Having trouble? <a th:href="@{/support}" class="text-primary font-bold underline underline-offset-4">Contact Curator Support</a>
+  </p>
+</th:block>
+</html>
