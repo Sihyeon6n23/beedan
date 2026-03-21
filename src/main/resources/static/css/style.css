@@ -2183,6 +2183,14 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: opacity 0.2s ease;
+
+    /* 💡 세로로 꺾임 방지 3종 세트 */
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-width: max-content;
+
+    /* 💡 글자 사이 벌리기 */
+    letter-spacing: 0.15em;
   }
 
   .btn-secondary:hover {
