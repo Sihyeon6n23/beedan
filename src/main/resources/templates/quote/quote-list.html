@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>견적 목록 | B2B 플랫폼</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/resources/static/css/quote/quote-list.css}">
+</head>
+<body>
+<div class="quote-wrapper">
+    <header class="quote-header">
+        <h1 class="quote-title">XXX 님 견적 목록</h1>
+        <div class="summary-cards">
+            <div class="card card--default">
+                <span class="card__label">총 견적서</span>
+                <span class="card__value">24</span>
+            </div>
+            <div class="card card--highlight">
+                <span class="card__label">미확인 견적서</span>
+                <span class="card__value">08</span>
+            </div>
+        </div>
+    </header>
+
+    <nav class="quote-nav">
+        <div class="tab-group">
+            <button class="tab tab--active">모든 견적</button>
+            <button class="tab">미열람 견적</button>
+            <button class="tab">체결된 견적</button>
+            <button class="tab">취소된 견적</button>
+        </div>
+        <div class="filter-group">
+            <select class="select-box">
+                <option>협상 상태 선택</option>
+            </select>
+        </div>
+    </nav>
+
+    <div class="table-container">
+        <table class="quote-table">
+            <thead>
+            <tr>
+                <th>견적 ID / 품목</th>
+                <th>발행일자</th>
+                <th>상태</th>
+                <th class="text-right">총 합계 금액</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="td-info">
+                    <span class="quote-id">QT-88291-B</span>
+                    <span class="quote-category">Industrial Grade Steel</span>
+                </td>
+                <td class="td-date">2024/10/21 15:30:21</td>
+                <td><span class="status-badge status--pending">미확인</span></td>
+                <td class="td-amount">$12,450.00</td>
+            </tr>
+            <tr>
+                <td class="td-info">
+                    <span class="quote-id">QT-88240-A</span>
+                    <span class="quote-category">Concrete Reinforcements</span>
+                </td>
+                <td class="td-date">2024/10/21 15:30:21</td>
+                <td><span class="status-badge status--approved">체결</span></td>
+                <td class="td-amount">$45,200.00</td>
+            </tr>
+            <tr>
+                <td class="td-info is-expired">
+                    <span class="quote-id">QT-87112-X</span>
+                    <span class="quote-category">Electrical Fixtures</span>
+                </td>
+                <td class="td-date">2024/10/21 15:30:21</td>
+                <td><span class="status-badge status--expired">만료</span></td>
+                <td class="td-amount">$8,900.00</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="pagination-container">
+        <p class="pagination-info">Showing 4 of 24 estimations</p>
+        <div class="pagination">
+            <button class="pg-btn pg-btn--prev">&lt;</button>
+            <button class="pg-btn pg-btn--active">1</button>
+            <button class="pg-btn">2</button>
+            <button class="pg-btn">3</button>
+            <span class="pg-dots">...</span>
+            <button class="pg-btn">6</button>
+            <button class="pg-btn pg-btn--next">&gt;</button>
+        </div>
+    </footer>
+</div>
+</body>
+</html>
