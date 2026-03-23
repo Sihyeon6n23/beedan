@@ -25,7 +25,7 @@ public class AuthController {
         return "/member/auth/signin";
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/signin")
     public String postSignin() {
         return "redirect:/auth/signin";
     }
