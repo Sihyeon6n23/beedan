@@ -19,11 +19,59 @@
             <div class="button">
                 <a th:href="@{/login}" class="text-xs font-bold no-underline text-stone-900 hover:opacity-70">LOGIN</a>
             </div>
-            <div class="relative cursor-pointer">
+
+            <div id="notiIcon" class="relative cursor-pointer">
                 <img th:src="@{/images/icon-24.svg}" class="w-5 h-5" alt="notification" />
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+
+                <div id="notificationDropdown" class="notification-wrapper hidden">
+                    <div class="notification-container">
+                        <header class="noti-header">
+                            <h3>Notifications</h3>
+                            <button class="btn-mark-read">Mark all as read</button>
+                        </header>
+
+                        <div class="noti-list custom-scrollbar">
+
+                            <article class="noti-item unread">
+                                <div class="unread-indicator"></div>
+                                <div class="noti-icon-container">
+                                    <span class="material-symbols-outlined icon-yellow">request_quote</span>
+                                </div>
+                                <div class="noti-content">
+                                    <div class="noti-title-row">
+                                        <h4 class="noti-title">New Quote Request</h4>
+                                        <div class="unread-dot"></div>
+                                    </div>
+                                    <p class="noti-description">
+                                        A new quote request for <strong>'Industrial Steel Grade A'</strong> has been submitted.
+                                    </p>
+                                    <span class="noti-timestamp">2 Hours Ago</span>
+                                </div>
+                            </article>
+
+                            <article class="noti-item read">
+                                <div class="noti-icon-container">
+                                    <span class="material-symbols-outlined icon-gray">inventory_2</span>
+                                </div>
+                                <div class="noti-content">
+                                    <h4 class="noti-title">Inventory Restock</h4>
+                                    <p class="noti-description">
+                                        Requested inventory level for 'Titanium Bolts' has been replenished.
+                                    </p>
+                                    <span class="noti-timestamp">Yesterday</span>
+                                </div>
+                            </article>
+                        </div>
+
+                        <footer class="noti-footer">
+                            <button class="btn-view-all">View All Notifications</button>
+                        </footer>
+                    </div>
+                </div>
             </div>
         </div>
+
 
     </div>
 </header>
