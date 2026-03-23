@@ -23,6 +23,7 @@ public class Member {
     private MemberAuthority memAut;
     private String memNm;
     private String memMbPhn;
+    private String memCi;
     private String memEml;
     private String memBizNo;
     private String memBizTtl;

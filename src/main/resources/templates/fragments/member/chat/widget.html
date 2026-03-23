@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="memberChatWidget">
+    <link rel="stylesheet" th:href="@{/css/member-chat-widget.css}">
+
+    <section class="member-chat-widget" data-member-chat>
+        <button type="button" class="member-chat-launcher" data-widget-toggle aria-expanded="false" aria-controls="member-chat-panel">
+            <span class="material-symbols-outlined">chat</span>
+            <svg class="member-chat-launcher__badge" aria-hidden="true" viewBox="0 0 10 10" focusable="false">
+                <circle cx="5" cy="5" r="5"></circle>
+            </svg>
+        </button>
+
+        <div id="member-chat-panel" class="member-chat-panel is-hidden" aria-hidden="true">
+            <section class="member-chat-view is-active" data-chat-view="chatbot">
+                <header class="member-chat-topbar">
+                    <span class="member-chat-brand">BEEDAN</span>
+                    <button type="button" class="member-chat-icon-button" data-widget-close aria-label="채팅 닫기">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </header>
+
+                <div class="member-chat-content member-chat-content--chatbot">
+                    <section class="member-chat-hero">
+                        <div class="member-chat-hero__shape"></div>
+                        <h3>안녕하세요.<br>BEEDAN 입니다</h3>
+                        <p>상담 시간 : 9:00 - 18:00 (공휴일 제외)<br>점심 시간 : 12:00 - 13:00</p>
+                    </section>
+
+                    <article class="member-chat-bot-stack">
+                        <div class="member-chat-bubble__label">
+                            <span class="member-chat-bubble__icon material-symbols-outlined">smart_toy</span>
+                            <strong>BEEDAN</strong>
+                        </div>
+                        <div class="member-chat-bubble member-chat-bubble--bot">
+                            <p>반갑습니다! BEEDAN 챗봇입니다.<br>무슨 도움이 필요하신가요?</p>
+                        </div>
+                    </article>
+
+                    <div class="member-chat-topics">
+                        <button type="button" class="member-chat-topic-button">
+                            <span>배송 문의</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                        <button type="button" class="member-chat-topic-button">
+                            <span>견적 문의</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                        <button type="button" class="member-chat-topic-button">
+                            <span>결제 문의</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                        <button type="button" class="member-chat-topic-button">
+                            <span>회원 / 계정 문의</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <div class="member-chat-divider">
+                        <span></span>
+                        <em>또는</em>
+                        <span></span>
+                    </div>
+
+                    <button type="button" class="member-chat-primary-button" data-view-target="chat-list">
+                        <span class="material-symbols-outlined">support_agent</span>
+                        <span>상담원 연결</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="member-chat-view" data-chat-view="chat-list">
+                <header class="member-chat-topbar">
+                    <span class="member-chat-brand">BEEDAN</span>
+                    <button type="button" class="member-chat-icon-button" data-widget-close aria-label="채팅 닫기">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </header>
+
+                <div class="member-chat-content member-chat-content--list">
+                    <button type="button" class="member-chat-room-item member-chat-room-item--ongoing is-active" data-view-target="chat-room">
+                        <div class="member-chat-room-item__icon">
+                            <span class="material-symbols-outlined">description</span>
+                        </div>
+                        <div class="member-chat-room-item__body">
+                            <div class="member-chat-room-item__head">
+                                <div class="member-chat-room-item__title">
+                                    <strong>견적 문의</strong>
+                                    <span class="member-chat-state member-chat-state--ongoing">상담 중</span>
+                                </div>
+                                <span class="member-chat-room-item__time">14:02 PM</span>
+                            </div>
+                            <div class="member-chat-room-item__summary">
+                                <p>요청하신 커스텀 가구 견적을 보내드렸습니다. 확인 부탁드립니다.</p>
+                                <svg class="member-chat-room-item__unread" aria-hidden="true" viewBox="0 0 10 10" focusable="false">
+                                    <circle cx="5" cy="5" r="5"></circle>
+                                </svg>
+                            </div>
+                        </div>
+                        <span class="member-chat-room-item__blade" aria-hidden="true"></span>
+                    </button>
+
+                    <button type="button" class="member-chat-room-item" data-view-target="chat-room">
+                        <div class="member-chat-room-item__icon">
+                            <span class="material-symbols-outlined">local_shipping</span>
+                        </div>
+                        <div class="member-chat-room-item__body">
+                            <div class="member-chat-room-item__head">
+                                <div class="member-chat-room-item__title">
+                                    <strong>배송 문의</strong>
+                                    <span class="member-chat-state member-chat-state--closed">종료됨</span>
+                                </div>
+                                <span class="member-chat-room-item__time">Yesterday</span>
+                            </div>
+                            <div class="member-chat-room-item__summary">
+                                <p>배송 일정과 출고 안내까지 모두 마무리된 상담입니다.</p>
+                            </div>
+                        </div>
+                        <span class="member-chat-room-item__blade" aria-hidden="true"></span>
+                    </button>
+
+                    <button type="button" class="member-chat-room-item" data-view-target="chat-room">
+                        <div class="member-chat-room-item__icon">
+                            <span class="material-symbols-outlined">payments</span>
+                        </div>
+                        <div class="member-chat-room-item__body">
+                            <div class="member-chat-room-item__head">
+                                <div class="member-chat-room-item__title">
+                                    <strong>결제 문의</strong>
+                                    <span class="member-chat-state member-chat-state--closed">종료됨</span>
+                                </div>
+                                <span class="member-chat-room-item__time">Monday</span>
+                            </div>
+                            <div class="member-chat-room-item__summary">
+                                <p>결제 수단 변경과 영수증 발급 안내까지 전달드린 상담입니다.</p>
+                            </div>
+                        </div>
+                        <span class="member-chat-room-item__blade" aria-hidden="true"></span>
+                    </button>
+
+                    <div class="member-chat-list-end">
+                        <p>End of consultation history</p>
+                        <span></span>
+                    </div>
+                </div>
+
+                <button type="button" class="member-chat-fab" data-new-chat-trigger aria-label="새 문의 열기">
+                    <span class="material-symbols-outlined">add</span>
+                </button>
+            </section>
+
+            <section class="member-chat-view" data-chat-view="chat-room">
+                <header class="member-chat-room-topbar">
+                    <button type="button" class="member-chat-icon-button" data-view-target="chat-list" aria-label="목록으로">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <div class="member-chat-room-topbar__title">
+                        <strong>BEEDAN</strong>
+                    </div>
+                    <button type="button" class="member-chat-room-close-button">상담 종료</button>
+                </header>
+
+                <div class="member-chat-content member-chat-content--room">
+                    <div class="member-chat-date-divider">2026.03.23</div>
+
+                    <article class="member-chat-message member-chat-message--left">
+                        <div class="member-chat-message__avatar">B</div>
+                        <div class="member-chat-message__body">
+                            <div class="member-chat-message__bubble">
+                                안녕하세요. 주문 예정 수량과 납기 일정을 확인해 주시면 견적 구성과 진행 가능 범위를 안내드리겠습니다.
+                            </div>
+                            <span>오후 2:30</span>
+                        </div>
+                    </article>
+
+                    <article class="member-chat-message member-chat-message--right">
+                        <div class="member-chat-message__body">
+                            <div class="member-chat-message__bubble member-chat-message__bubble--accent">
+                                네, 지츠 주문건 기준으로 500개 수량 이상으로 검토 중이며 일정도 함께 확인하고 싶습니다.
+                            </div>
+                            <span>오후 2:32</span>
+                        </div>
+                    </article>
+
+                    <article class="member-chat-message member-chat-message--left">
+                        <div class="member-chat-message__avatar">B</div>
+                        <div class="member-chat-message__body">
+                            <div class="member-chat-message__bubble">
+                                확인 중입니다. 오늘 오후 안으로 예상 단가와 납기 기준을 정리해서 다시 안내드리겠습니다.
+                            </div>
+                            <span>오후 2:35</span>
+                        </div>
+                    </article>
+
+                    <article class="member-chat-message member-chat-message--left">
+                        <div class="member-chat-message__avatar member-chat-message__avatar--ghost"></div>
+                        <div class="member-chat-message__body">
+                            <div class="member-chat-message__bubble">
+                                필요하시면 관련 서류 준비 일정도 함께 정리해 드릴 수 있습니다.
+                            </div>
+                            <span>오후 2:35</span>
+                        </div>
+                    </article>
+
+                    <article class="member-chat-message member-chat-message--right">
+                        <div class="member-chat-message__body">
+                            <div class="member-chat-message__bubble member-chat-message__bubble--accent">
+                                네, 부탁드립니다. 준비해야 하는 자료가 있으면 같이 안내해 주세요.
+                            </div>
+                            <span>오후 2:38</span>
+                        </div>
+                    </article>
+                </div>
+
+                <footer class="member-chat-room-footer">
+                    <input type="text" placeholder="메시지를 입력해 주세요..">
+                    <button type="button" class="member-chat-send-button">전송</button>
+                </footer>
+            </section>
+
+            <nav class="member-chat-bottom-nav" aria-label="채팅 위젯 하단 네비게이션">
+                <button type="button" class="member-chat-bottom-nav__item is-active" data-view-target="chatbot">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <span>CHATBOT</span>
+                </button>
+                <button type="button" class="member-chat-bottom-nav__item" data-view-target="chat-list">
+                    <span class="material-symbols-outlined">chat</span>
+                    <span>CHAT</span>
+                </button>
+            </nav>
+
+            <div class="member-chat-modal is-hidden" data-chat-modal aria-hidden="true">
+                <div class="member-chat-modal__backdrop" data-chat-modal-close></div>
+                <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-chat-modal-title">
+                    <div class="member-chat-modal__accent"></div>
+                    <h3 id="member-chat-modal-title">진행 중인 채팅방이 있습니다</h3>
+                    <p>새 문의를 시작하기 전에 현재 진행 중인 상담방으로 이동하시겠습니까?</p>
+                    <div class="member-chat-modal__actions">
+                        <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-chat-modal-confirm>
+                            채팅방으로 이동
+                        </button>
+                        <button type="button" class="member-chat-modal__button" data-chat-modal-close>
+                            취소
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script defer th:src="@{/js/member-chat-widget.js}"></script>
+</th:block>
+</html>

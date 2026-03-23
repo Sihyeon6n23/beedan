@@ -3,6 +3,7 @@
 /.gradle/
 /out/
 *.class
+application.properties
 
 ### IntelliJ IDEA ###
 .idea/
