@@ -28,32 +28,18 @@
         </nav>
 
         <div class="noti-list-container">
-            <article class="noti-full-item unread">
+            <article class="noti-full-item unread" th:each="noti : ${notiDtoList}">
                 <div class="noti-icon-square">
                     <span class="material-symbols-outlined text-primary">request_quote</span>
                 </div>
                 <div class="noti-info-box">
                     <div class="noti-top-row">
-                        <h3 class="noti-item-title">New Quote Request: Residence 402 Marble</h3>
+                        <h3 class="noti-item-title" th:text="${noti.notiTtl}">New Quote Request: Residence 402 Marble</h3>
                         <span class="noti-item-time">2 hours ago</span>
                     </div>
-                    <p class="noti-item-desc">An inquiry for 450sqm of Italian Carrara marble has been logged.</p>
+                    <p class="noti-item-desc" th:text="${noti.notiCon}">An inquiry for 450sqm of Italian Carrara marble has been logged.</p>
                 </div>
                 <button class="text-primary font-bold text-xs underline uppercase">View</button>
-            </article>
-
-            <article class="noti-full-item">
-                <div class="noti-icon-square">
-                    <span class="material-symbols-outlined text-stone-400">local_shipping</span>
-                </div>
-                <div class="noti-info-box">
-                    <div class="noti-top-row">
-                        <h3 class="noti-item-title">Order #BD-9042 Shipped</h3>
-                        <span class="noti-item-time">5 hours ago</span>
-                    </div>
-                    <p class="noti-item-desc">Structural steel components for Project Zenith have departed the port.</p>
-                </div>
-                <button class="text-stone-900 font-bold text-xs underline uppercase">Track</button>
             </article>
         </div>
 

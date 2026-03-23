@@ -18,11 +18,11 @@ public class NotiController {
 
     @GetMapping("/notification/list")
     public String getNotiList(Model model){
-        List<NotiDto> list = notiService.getNotiList(1L);
+        List<NotiDto> notiDtoList = notiService.getNotiList(1L);
 
-        log.info(list.toString());
+        log.info(notiDtoList.toString());
 
-        model.addAttribute(list);
+        model.addAttribute(notiDtoList);
 
         return "notice/notice-list";
     }
