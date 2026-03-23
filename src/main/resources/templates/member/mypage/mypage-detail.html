@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('마이페이지', 'profile', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | Profile Summary</title>
+
+<th:block th:fragment="sidebar">
+  <div th:replace="~{member/mypage/mypage-sidebar :: sidebar}">
+  </div>
+</th:block>
+
+<th:block th:fragment="content">
+  <section class="pt-10 mb-12 flex flex-col md:flex-row justify-between items-end gap-8">
+    <div class="max-w-2xl">
+      <span class="text-primary font-black tracking-widest text-xs uppercase mb-2 block">ACCOUNT OVERVIEW</span>
+      <h1
+              class="font-headline text-3xl md:text-5xl font-extrabold tracking-tighter text-on-surface mb-4 uppercase leading-none">
+        Profile Summary
+      </h1>
+      <p class="font-body text-secondary max-w-sm text-lg opacity-80">
+        회원님의 비즈니스 프로필과 계정 요약 정보를 관리하십시오.
+      </p>
+    </div>
+    <div class="flex gap-4">
+      <div class="h-px w-24 bg-primary-container mb-2"></div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-0 mb-12 shadow-sm border border-stone-100">
+    <div class="md:col-span-2 bg-surface-container-lowest p-10 flex flex-col justify-between relative overflow-hidden">
+      <div class="relative z-10">
+        <div class="inline-flex items-center gap-2 bg-primary-container px-3 py-1 mb-6">
+          <span class="material-symbols-outlined text-xs text-on-primary-container"
+                style="font-variation-settings: 'FILL' 1;">verified</span>
+          <span class="text-[10px] font-black uppercase tracking-widest text-on-primary-container">Verified B2B
+            Member</span>
+        </div>
+        <h2 class="font-headline text-3xl font-bold text-on-surface mb-2 tracking-tight">Alexander Sterling</h2>
+        <p class="font-body text-zinc-500 font-medium text-base">Senior Procurement Officer • Global Logistics Division
+        </p>
+      </div>
+
+      <div class="mt-12 grid grid-cols-1 gap-8 z-10">
+        <div>
+          <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Email Address</p>
+          <p class="text-on-surface font-medium font-body">a.sterling@beedan-partners.com</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Phone Number</p>
+          <p class="text-on-surface font-medium font-body">+1 (555) 012-8849</p>
+        </div>
+      </div>
+      <div class="absolute right-0 top-0 bottom-0 w-24 bg-primary-container opacity-5 -skew-x-12 translate-x-12"></div>
+    </div>
+    <div class="bg-primary p-10 text-white flex flex-col justify-center gap-6">
+      <div class="border-l-2 border-primary-container pl-4">
+        <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Active Quotations</p>
+        <p class="font-headline text-3xl font-black tracking-tighter">14</p>
+      </div>
+      <div class="border-l-2 border-primary-container pl-4">
+        <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Order Success Rate</p>
+        <p class="font-headline text-3xl font-black tracking-tighter">99.2%</p>
+      </div>
+      <button
+              class="mt-4 bg-white text-primary px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-primary-container hover:text-on-primary-container transition-all duration-200">
+        View Activity Log
+      </button>
+    </div>
+  </div>
+
+  <div class="space-y-6 pb-20">
+    <section>
+      <div class="flex items-center gap-4 mb-8">
+        <h3 class="font-headline text-xl font-bold tracking-tight text-on-surface">Business Information</h3>
+        <div class="flex-grow h-px bg-surface-container-highest"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-px
+          shadow-sm border border-stone-100">
+        <div class="space-y-px bg-surface-container-highest">
+          <div class="bg-surface-container-lowest p-8">
+            <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Company Legal
+              Name</label>
+            <p class="text-on-surface font-bold text-lg font-headline">Sterling Global Logistics Group Ltd.</p>
+          </div>
+          <div class="bg-surface-container-lowest p-8">
+            <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Business License
+              No.</label>
+            <p class="text-on-surface font-medium font-body">US-991827364-B</p>
+          </div>
+          <div class="bg-surface-container-lowest p-8">
+            <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">CEO /
+              Representative</label>
+            <p class="text-on-surface font-medium font-body">Marcus V. Sterling</p>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-8 flex flex-col">
+          <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4 block">Registered Business
+            Address</label>
+          <div class="flex gap-4 items-start">
+            <div class="w-12 h-12 bg-surface-container flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-zinc-400">location_on</span>
+            </div>
+            <div>
+              <p class="text-on-surface font-medium font-body leading-relaxed">
+                Suite 405, Maritime Plaza<br />
+                Financial District, NY 10004<br />
+                United States
+              </p>
+              <a href="#"
+                 class="text-primary text-[10px] font-bold uppercase tracking-widest mt-4 inline-block hover:underline">View
+                on Map</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 border-t border-zinc-100 justify-between items-center">
+      <div></div>
+      <div class="flex justify-end">
+        <button class="px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all duration-200">
+          Update Details
+        </button>
+      </div>
+      <div></div>
+    </div>
+  </div>
+</th:block>
+
+</html>
