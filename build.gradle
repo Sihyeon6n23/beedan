@@ -42,8 +42,10 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// 1. 개발 시 CSS/HTML 수정 시 서버 재시작 없이 바로 반영 (강력 추천)
-	developmentOnly 'org.springframework.boot:spring-boot-starter-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+
+	runtimeOnly 'com.mysql:mysql-connector-j'
 }
 
 tasks.named('test') {
