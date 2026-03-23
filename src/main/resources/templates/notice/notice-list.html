@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          null,
+          ~{::content}
+      )}">
+<title th:fragment="title">BEEDAN | Notification</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/notice/notice-list.css}">
+    <div class="noti-list-page">
+        <header class="noti-page-header">
+            <div class="noti-page-title">
+                <span class="noti-sub-label">Communication Ledger</span>
+                <h1>NOTIFICATIONS</h1>
+                <p class="noti-item-desc">Centralized hub for all architectural inquiries and updates.</p>
+            </div>
+            <button class="btn-secondary py-3 px-6">Mark all as read</button>
+        </header>
+
+        <nav class="noti-filter-bar">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Unread (3)</button>
+            <button class="filter-btn">System</button>
+            <button class="filter-btn">Shipping</button>
+            <button class="filter-btn">Inquiry</button>
+        </nav>
+
+        <div class="noti-list-container">
+            <article class="noti-full-item unread">
+                <div class="noti-icon-square">
+                    <span class="material-symbols-outlined text-primary">request_quote</span>
+                </div>
+                <div class="noti-info-box">
+                    <div class="noti-top-row">
+                        <h3 class="noti-item-title">New Quote Request: Residence 402 Marble</h3>
+                        <span class="noti-item-time">2 hours ago</span>
+                    </div>
+                    <p class="noti-item-desc">An inquiry for 450sqm of Italian Carrara marble has been logged.</p>
+                </div>
+                <button class="text-primary font-bold text-xs underline uppercase">View</button>
+            </article>
+
+            <article class="noti-full-item">
+                <div class="noti-icon-square">
+                    <span class="material-symbols-outlined text-stone-400">local_shipping</span>
+                </div>
+                <div class="noti-info-box">
+                    <div class="noti-top-row">
+                        <h3 class="noti-item-title">Order #BD-9042 Shipped</h3>
+                        <span class="noti-item-time">5 hours ago</span>
+                    </div>
+                    <p class="noti-item-desc">Structural steel components for Project Zenith have departed the port.</p>
+                </div>
+                <button class="text-stone-900 font-bold text-xs underline uppercase">Track</button>
+            </article>
+        </div>
+
+        <div class="noti-pagination">
+            <span class="noti-item-time">Page 1-5 of 1,280</span>
+            <div class="flex gap-1">
+                <button class="w-10 h-10 bg-stone-200">◀</button>
+                <button class="w-10 h-10 bg-primary-container text-primary font-bold">1</button>
+                <button class="w-10 h-10 bg-white border border-stone-200">2</button>
+                <button class="w-10 h-10 bg-stone-200">▶</button>
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>
