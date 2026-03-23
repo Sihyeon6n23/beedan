@@ -20,6 +20,16 @@ public class AuthController {
         return "redirect:/auth/signup";
     }
 
+    @GetMapping("/signin")
+    public String getSignin() {
+        return "/member/auth/signin";
+    }
+
+    @PostMapping("/signin")
+    public String postSignin() {
+        return "redirect:/auth/signin";
+    }
+
     @GetMapping("/find")
     public String getFind() {
         return "/member/auth/find";

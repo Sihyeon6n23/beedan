@@ -14,45 +14,54 @@
     <h1 class="font-headline font-black text-5xl md:text-6xl tracking-tighter uppercase leading-none">Business Registration</h1>
   </header>
 
-  <form th:action="@{/register}" method="POST" class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
+  <form th:action="@{/auth/signup}" method="POST" class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
 
     <section class="space-y-6">
       <div class="flex items-center gap-4 mb-8">
         <span class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">01</span>
-        <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">Account Info</h2>
+        <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">계정 정보</h2>
       </div>
 
       <div class="grid grid-cols-1 gap-6">
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">User ID <span class="text-error">*</span></label>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">로그인 아이디 <span class="text-error">*</span></label>
           <div class="flex gap-2">
-            <input type="text" name="userId" class="bd-input flex-grow" placeholder="Preferred Username" required>
-            <button type="button" class="btn-secondary px-4 whitespace-nowrap">Check</button>
+            <input type="text" name="userLoginId" class="bd-input flex-grow" placeholder="Preferred Username" required>
+            <button type="button" class="btn-secondary px-2 whitespace-nowrap">중복 확인</button>
           </div>
-          <p class="text-[10px] text-stone-400">Available: beedan_curator_01</p>
+          <p th:text="${idCheck}" class="text-[10px] text-stone-400">이용 가능한 계정입니다.</p>
         </div>
 
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Corporate Email <span class="text-error">*</span></label>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이메일 <span class="text-error">*</span></label>
           <input type="email" name="email" class="bd-input" placeholder="name@company.jp" required>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Password <span class="text-error">*</span></label>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 <span class="text-error">*</span></label>
             <input type="password" name="password" class="bd-input" required>
           </div>
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Confirm Password <span class="text-error">*</span></label>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 확인 <span class="text-error">*</span></label>
             <input type="password" name="confirmPassword" class="bd-input" required>
           </div>
         </div>
 
-        <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Phone Number <span class="text-error">*</span></label>
-          <div class="flex gap-2">
-            <input type="tel" name="phone" class="bd-input flex-grow" placeholder="+81 00-0000-0000" required>
-            <button type="button" class="btn-secondary px-4 whitespace-nowrap">Send Code</button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이름 <span class="text-error">*</span></label>
+            <div class="flex gap-2">
+              <input type="text" name="name" class="bd-input flex-grow" required>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">휴대전화 번호 <span class="text-error">*</span></label>
+            <div class="flex gap-2">
+              <input type="tel" name="phone" class="bd-input flex-grow" placeholder="000-0000-0000" required>
+              <input type="hidden" name="ci" required> <!-- 인증 성공시 CI값을 해당 위치에 입력-->
+              <button type="button" class="btn-secondary px-4 whitespace-nowrap">본인 인증</button>
+            </div>
           </div>
         </div>
       </div>
