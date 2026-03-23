@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="adminChatSidebar">
+    <div class="admin-sidebar-frame">
+        <th:block th:replace="~{fragments/sidebar :: frame(
+            'COMMUNICATIONS',
+            'B2B Management',
+            ~{::adminChatSidebarMenu}
+        )}"></th:block>
+    </div>
+</th:block>
+
+<th:block th:fragment="adminChatSidebarMenu">
+    <link rel="stylesheet" th:href="@{/css/admin-chat.css}">
+    <div class="admin-sidebar-scope">
+        <a href="#"
+           class="admin-sidebar-menu__link">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+            <span> 회원 관리</span>
+        </a>
+
+        <a href="#"
+           class="admin-sidebar-menu__link">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">inventory_2</span>
+            <span> 상품 관리</span>
+        </a>
+
+        <a href="#"
+           class="admin-sidebar-menu__link">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">request_quote</span>
+            <span> 견적 관리</span>
+        </a>
+
+        <div class="admin-sidebar-menu__group">
+            <a href="#"
+               class="admin-sidebar-menu__link admin-sidebar-menu__link--current">
+                <span class="material-symbols-outlined admin-sidebar-menu__icon">support_agent</span>
+                <span> 문의 관리</span>
+            </a>
+
+            <div class="admin-sidebar-menu__child-wrap">
+                <a th:href="@{/admin/chat/list}"
+                   class="admin-sidebar-menu__child-link">
+                    채팅 상담
+                </a>
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>

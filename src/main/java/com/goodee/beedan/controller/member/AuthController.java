@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.member;
+package com.goodee.beedan.controller.member;
 
 import com.goodee.beedan.config.web.annotation.Sidebar;
 import org.springframework.stereotype.Controller;
@@ -18,6 +18,16 @@ public class AuthController {
     @PostMapping("/signup")
     public String postSignup() {
         return "redirect:/auth/signup";
+    }
+
+    @GetMapping("/signin")
+    public String getSignin() {
+        return "/member/auth/signin";
+    }
+
+    @PostMapping("/signin")
+    public String postSignin() {
+        return "redirect:/auth/signin";
     }
 
     @GetMapping("/find")

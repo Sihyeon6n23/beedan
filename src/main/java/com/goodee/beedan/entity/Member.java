@@ -1,8 +1,7 @@
 package com.goodee.beedan.entity;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,13 +16,14 @@ import java.time.LocalDateTime;
 @Builder
 public class Member {
     @Id
-    private Long id;
     private Long memId;
     private String memLgnId;
     private String memLgnPw;
+    @Enumerated(EnumType.STRING) // 0323 임욱: Enum 매핑을 위해 추가
     private MemberAuthority memAut;
     private String memNm;
     private String memMbPhn;
+    private String memCi;
     private String memEml;
     private String memBizNo;
     private String memBizTtl;

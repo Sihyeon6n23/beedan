@@ -3,6 +3,7 @@
 /.gradle/
 /out/
 *.class
+application.properties
 
 ### IntelliJ IDEA ###
 .idea/
@@ -35,5 +36,4 @@ data.sql
 schema.sql
 
 ### application.properties
-
 application.properties

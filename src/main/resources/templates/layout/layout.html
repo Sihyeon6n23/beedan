@@ -22,7 +22,27 @@
 </div>
 <footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
 <!--<th:block th:if="${session.loginMember != null and session.loginMember.memAut != null and session.loginMember.memAut.name() == 'USER'}">-->
-<!--<div th:replace="~{fragments/member/chat/widget :: memberChatWidget}"></div>-->
+<div th:replace="~{fragments/member/chat/widget :: memberChatWidget}"></div>
 <!--</th:block>-->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const notiIcon = document.getElementById('notiIcon'); // 헤더의 종 아이콘 ID
+    const notiDropdown = document.getElementById('notificationDropdown');
+
+    // 종 아이콘 클릭 시 토글
+    notiIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notiDropdown.classList.toggle('hidden');
+    });
+
+    // 화면 다른 곳 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        if (!notiDropdown.contains(e.target) && e.target !== notiIcon) {
+            notiDropdown.classList.add('hidden');
+        }
+    });
+});
+</script>
 </body>
 </html>
