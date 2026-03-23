@@ -13,23 +13,16 @@
 
 <div class="flex flex-grow w-full pt-16">
     <div th:if="${sidebar}" class="flex-shrink-0">
-        <div th:replace="${sidebar}"></div>
+        <aside th:replace="${sidebar}"></aside>
     </div>
 
-    <div th:classappend="${sidebar} ? 'md:pl-32' : 'mx-auto'"
-         class="flex flex-col flex-grow w-full transition-all duration-300 pt-10">
-
-        <main class="flex-grow w-full py-12 px-6 md:px-10 overflow-y-auto">
-
-            <div class="w-full max-w-2xl"
-                 th:classappend="${sidebar} ? 'ml-0' : 'mx-auto'">
-
-                <div th:replace="${content}"></div>
-
-            </div>
-        </main>
+    <div th:classappend="${sidebar} ? 'md:pl-32' : 'mx-auto'">
+        <main th:replace="${content}"></main>
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
+<!--<th:block th:if="${session.loginMember != null and session.loginMember.memAut != null and session.loginMember.memAut.name() == 'USER'}">-->
+    <div th:replace="~{fragments/member/chat/widget :: memberChatWidget}"></div>
+<!--</th:block>-->
 </body>
 </html>
