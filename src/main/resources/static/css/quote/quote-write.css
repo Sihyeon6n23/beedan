@@ -1,0 +1,77 @@
+:root {
+    --gold: #705D00;
+    --gold-bg: #FFD700;
+    --black: #1A1C1C;
+    --gray: #5F5E5E;
+    --border: #E5E5E5;
+    --bg-light: #F3F3F3;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; color: var(--black); background: #fff; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
+
+/* 타임라인 */
+.timeline { display: flex; margin: 40px 0; border-top: 1px solid #EEE; padding-top: 25px; }
+.step { flex: 1; border-left: 2px solid #EEE; padding-left: 20px; }
+.step.finished { border-left-color: var(--gold-bg); }
+.step.current { border-left-color: var(--gold); }
+.step span { display: block; font-size: 12px; color: var(--gray); margin-bottom: 5px; }
+.step strong { font-size: 14px; }
+
+/* 환율 정보 */
+.exchange-banner {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #FFFCEB; padding: 25px 35px; border-left: 5px solid var(--gold); margin-bottom: 50px;
+}
+.rate-val { font-family: 'Manrope'; font-size: 24px; font-weight: 700; }
+.rate-status { color: var(--gold); font-weight: 700; margin-left: 10px; }
+
+/* 테이블 */
+.item-table { width: 100%; border-collapse: collapse; margin-bottom: 60px; }
+.item-table th { background: var(--bg-light); padding: 15px; text-align: left; font-size: 12px; color: var(--gray); }
+.item-table td { padding: 25px 15px; border-bottom: 1px solid #EEE; font-size: 14px; }
+.prod-desc strong { display: block; margin-bottom: 4px; }
+.prod-desc small { color: #A3A3A3; font-size: 12px; }
+.price-txt { font-weight: 700; font-family: 'Manrope'; }
+
+/* 비용 그리드 */
+.fee-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 60px; }
+.fee-card { border: 1px solid var(--border); padding: 30px; }
+.fee-card h3 { font-size: 18px; margin-bottom: 25px; }
+.fee-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+.fee-total { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #EEE; font-weight: 700; }
+.gold { color: var(--gold); }
+
+/* [하단 배치] 총 주문 명세 카드 디자인 */
+.bottom-summary { margin-top: 40px; }
+.summary-card {
+    background: #fff; border: 1px solid var(--border); padding: 40px;
+}
+.summary-label { font-size: 14px; color: var(--gray); margin-bottom: 35px; }
+
+.summary-body {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1px solid #EEE; padding-bottom: 40px; margin-bottom: 40px;
+}
+
+.detail-columns { display: flex; gap: 80px; }
+.col { display: flex; flex-direction: column; gap: 10px; }
+.col span { font-size: 13px; color: var(--gray); }
+.col strong { font-size: 18px; font-family: 'Manrope'; }
+
+.total-column { text-align: right; }
+.total-label { display: block; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
+.total-price { font-family: 'Manrope'; font-size: 32px; font-weight: 800; color: var(--gold); }
+
+/* 하단 액션 버튼 */
+.action-area { display: flex; justify-content: space-between; align-items: center; }
+.btn-main {
+    background: var(--gold-bg); color: var(--gold); border: none;
+    padding: 20px 60px; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.btn-group { display: flex; gap: 10px; }
+.btn-sub { background: #fff; border: 1px solid var(--border); padding: 15px 30px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+.footer-notice { font-size: 11px; color: #A3A3A3; margin-top: 30px; text-align: center; }

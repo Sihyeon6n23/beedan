@@ -1,43 +1,38 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/layout :: layout(
-          ~{::title},
-          null,
-          ~{::content}
-      )}">
-<th:block th:fragment="content">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:fragment="title">견적 목록 | B2B 플랫폼</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>견적 리스트 페이지 (사용자)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/quote/quote-list.css}">
 </head>
 <body>
-
 <div class="quote-wrapper">
-    <header class="quote-header">
-        <h1 class="quote-title">XXX 님 견적 목록</h1>
-        <div class="summary-cards">
-            <div class="card card--default">
-                <span class="card__label">총 견적서</span>
-                <span class="card__value">24</span>
+    <header class="header-section">
+        <h1 class="main-title">XXX 님 견적 목록</h1>
+        <div class="summary-container">
+            <div class="summary-card bg-gray">
+                <span class="label">총 견적서</span>
+                <span class="value">24</span>
             </div>
-            <div class="card card--highlight">
-                <span class="card__label">미확인 견적서</span>
-                <span class="card__value">08</span>
+            <div class="summary-card bg-yellow">
+                <span class="label">미확인 견적서</span>
+                <span class="value">08</span>
             </div>
         </div>
     </header>
 
-    <nav class="quote-nav">
-        <div class="tab-group">
-            <button class="tab tab--active">모든 견적</button>
-            <button class="tab">미열람 견적</button>
-            <button class="tab">체결된 견적</button>
-            <button class="tab">취소된 견적</button>
+    <nav class="nav-section">
+        <div class="tab-menu">
+            <button class="tab-item active">모든 견적</button>
+            <button class="tab-item">미열람 견적</button>
+            <button class="tab-item">체결된 견적</button>
+            <button class="tab-item">취소된 견적</button>
         </div>
-        <div class="filter-group">
-            <select class="select-box">
-                <option>협상 상태 선택</option>
+        <div class="filter-box">
+            <select class="select-field">
+                <option>협상 셀렉트 박스</option>
             </select>
         </div>
     </nav>
@@ -46,57 +41,78 @@
         <table class="quote-table">
             <thead>
             <tr>
-                <th>견적 ID / 품목</th>
-                <th>발행일자</th>
-                <th>상태</th>
-                <th class="text-right">총 합계 금액</th>
+                <th style="width: 30%;">견적 ID</th>
+                <th style="width: 30%;">발행일자</th>
+                <th style="width: 20%;">상태</th>
+                <th style="width: 20%; text-align: right;">총 합계 금액</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td class="td-info">
-                    <span class="quote-id">QT-88291-B</span>
-                    <span class="quote-category">Industrial Grade Steel</span>
+                <td>
+                    <div class="id-cell">
+                        <span class="quote-id">QT-88291-B</span>
+                        <span class="quote-sub">INDUSTRIAL GRADE STEEL</span>
+                    </div>
                 </td>
-                <td class="td-date">2024/10/21 15:30:21</td>
-                <td><span class="status-badge status--pending">미확인</span></td>
-                <td class="td-amount">$12,450.00</td>
+                <td class="date-cell">2024/10/21 15:30:21</td>
+                <td>
+                    <div class="status-badge st-pending">
+                        <span class="status-dot dot-yellow"></span>
+                        <span class="status-text">미확인</span>
+                    </div>
+                </td>
+                <td class="amount-cell">$12,450.00</td>
             </tr>
             <tr>
-                <td class="td-info">
-                    <span class="quote-id">QT-88240-A</span>
-                    <span class="quote-category">Concrete Reinforcements</span>
+                <td>
+                    <div class="id-cell">
+                        <span class="quote-id">QT-88240-A</span>
+                        <span class="quote-sub">CONCRETE REINFORCEMENTS</span>
+                    </div>
                 </td>
-                <td class="td-date">2024/10/21 15:30:21</td>
-                <td><span class="status-badge status--approved">체결</span></td>
-                <td class="td-amount">$45,200.00</td>
+                <td class="date-cell">2024/10/21 15:30:21</td>
+                <td>
+                    <div class="status-badge st-approved">
+                        <span class="status-dot dot-green"></span>
+                        <span class="status-text color-green">체결</span>
+                    </div>
+                </td>
+                <td class="amount-cell">$45,200.00</td>
             </tr>
-            <tr>
-                <td class="td-info is-expired">
-                    <span class="quote-id">QT-87112-X</span>
-                    <span class="quote-category">Electrical Fixtures</span>
+            <tr class="expired-row">
+                <td>
+                    <div class="id-cell">
+                        <span class="quote-id">QT-87112-X</span>
+                        <span class="quote-sub">ELECTRICAL FIXTURES</span>
+                    </div>
                 </td>
-                <td class="td-date">2024/10/21 15:30:21</td>
-                <td><span class="status-badge status--expired">만료</span></td>
-                <td class="td-amount">$8,900.00</td>
+                <td class="date-cell">2024/10/21 15:30:21</td>
+                <td>
+                    <div class="status-badge st-expired">
+                        <span class="status-dot dot-gray"></span>
+                        <span class="status-text">만료</span>
+                    </div>
+                </td>
+                <td class="amount-cell">$8,900.00</td>
             </tr>
             </tbody>
         </table>
     </div>
 
-    <footer class="pagination-container">
-        <p class="pagination-info">Showing 4 of 24 estimations</p>
-        <div class="pagination">
-            <button class="pg-btn pg-btn--prev">&lt;</button>
-            <button class="pg-btn pg-btn--active">1</button>
-            <button class="pg-btn">2</button>
-            <button class="pg-btn">3</button>
+    <footer class="pagination-section">
+        <div class="yellow-divider"></div>
+        <p class="pagination-info">SHOWING 4 OF 24 ESTIMATIONS</p>
+        <div class="pagination-controls">
+            <button class="pg-arrow">&larr;</button>
+            <button class="pg-num active">1</button>
+            <button class="pg-num">2</button>
+            <button class="pg-num">3</button>
             <span class="pg-dots">...</span>
-            <button class="pg-btn">6</button>
-            <button class="pg-btn pg-btn--next">&gt;</button>
+            <button class="pg-num">6</button>
+            <button class="pg-arrow">&rarr;</button>
         </div>
     </footer>
 </div>
 </body>
-</th:block>
 </html>

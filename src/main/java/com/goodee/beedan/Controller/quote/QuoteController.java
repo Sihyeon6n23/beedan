@@ -11,4 +11,9 @@ public class QuoteController {
     public String getList() {
         return "/quote/quote-list";
     }
+    @GetMapping("/write")
+    public String getWrite() {
+        return "/quote/quote-write";
+    }
+
 }

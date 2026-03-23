@@ -1,10 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>견적 작성 - BEEDAN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/quote/quote-write.css}">
 </head>
 <body>
+<div class="container">
+    <header class="main-header">
+        <h1 class="page-title">견적 작성</h1>
+        <div class="timeline">
+            <div class="step finished"><span>01. 견적 요청</span><strong>2026년 5월 12일 접수 완료</strong></div>
+            <div class="step finished"><span>02. 견적 확인</span><strong>큐레이터 검증 완료</strong></div>
+            <div class="step current"><span>03. 견적 승인</span><strong>견적 승인 대기</strong></div>
+            <div class="step pending"><span>04. 대금 결제</span><strong>결제 대기</strong></div>
+            <div class="step pending"><span>05. 발주 확정</span><strong>발주 등록</strong></div>
+        </div>
+    </header>
 
+    <div class="exchange-banner">
+        <div class="rate-info">
+            <span class="rate-val">1 JPY = 9.14 KRW</span>
+            <span class="rate-status">+0.04%</span>
+        </div>
+        <div class="time-info">
+            <span>Last updated</span>
+            <strong>2024.05.24 — 14:32:01 GMT+9</strong>
+        </div>
+    </div>
+
+    <section class="content-section">
+        <div class="section-header">
+            <h2>A01-PEWGF-A</h2>
+            <span class="item-tag">4개의 아이템</span>
+        </div>
+        <table class="item-table">
+            <thead>
+            <tr>
+                <th>No.</th>
+                <th>상품</th>
+                <th>상품 아이디</th>
+                <th>수량</th>
+                <th>규격</th>
+                <th>공급가액(엔)</th>
+                <th>총액(엔)</th>
+                <th>세액(한)</th>
+                <th>Subtotal(한)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item, stat : ${items}">
+                <td th:text="${stat.count}">1</td>
+                <td class="prod-desc">
+                    <strong th:text="${item.name}">ESSENTIAL OVERSIZED TEE</strong>
+                    <small th:text="${item.desc}">Japanese Heavyweight Cotton</small>
+                </td>
+                <td th:text="${item.id}">BDN-ES-001</td>
+                <td th:text="${item.qty}">50</td>
+                <td th:text="${item.size}">50</td>
+                <td th:text="${item.price}">¥2,400</td>
+                <td th:text="${item.total}">¥2,400,000</td>
+                <td th:text="${item.tax}">₩2,400</td>
+                <td class="price-txt" th:text="${item.subtotal}">₩1,096,800</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <div class="fee-grid">
+        <div class="fee-card">
+            <h3>예상 운임 비용</h3>
+            <div class="fee-row"><span>표준 해상 운임비</span><strong>₩145,000</strong></div>
+            <div class="fee-row"><span>항만 비용 및 통관 수수료</span><strong>₩88,000</strong></div>
+            <div class="fee-row"><span>국내 배송비</span><strong>₩45,000</strong></div>
+            <div class="fee-total"><span>운송 비용 소계</span><span class="gold">₩278,000</span></div>
+        </div>
+        <div class="fee-card">
+            <h3>구매 대행 수수료</h3>
+            <div class="fee-row"><span>서비스 수수료 (3.5%)</span><strong>₩90,851</strong></div>
+            <div class="fee-row"><span>서류 발급 및 인허가비</span><strong>₩25,000</strong></div>
+            <div class="fee-row"><span>1차 품질 검사</span><span class="gold">INCLUDED</span></div>
+            <div class="fee-total"><span>대행 서비스 소계</span><span class="gold">₩115,851</span></div>
+        </div>
+    </div>
+
+    <footer class="bottom-summary">
+        <div class="summary-card">
+            <h3 class="summary-label">총 주문 명세</h3>
+            <div class="summary-body">
+                <div class="detail-columns">
+                    <div class="col"><span>물품 대금 합계</span><strong>₩2,595,760</strong></div>
+                    <div class="col"><span>운임 및 대행 수수료</span><strong>₩393,851</strong></div>
+                    <div class="col"><span>Estimated VAT (10%)</span><strong>₩298,961</strong></div>
+                </div>
+                <div class="total-column">
+                    <span class="total-label">최종 합계</span>
+                    <span class="total-price">₩3,288,572</span>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <button class="btn-main">견적 요청서 제출 <span class="arrow">→</span></button>
+                <div class="btn-group">
+                    <button class="btn-sub">임시저장</button>
+                    <button class="btn-sub">PDF 다운로드</button>
+                </div>
+            </div>
+            <p class="footer-notice">본 견적 금액은 예상치이며 최종 청구 금액과는 차이가 발생할 수 있습니다.</p>
+        </div>
+    </footer>
+</div>
 </body>
 </html>
