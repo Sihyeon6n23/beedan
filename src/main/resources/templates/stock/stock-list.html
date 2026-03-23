@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout/layout :: layout(
+                ~{::title},
+                null,
+                ~{::content}
+        )}">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title th:fragment="title">BEEDAN | STOCKS</title>
+
+</head>
+<body class="bg-surface-container-lowest text-on-surface" th:fragment="content" >
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-variant": "#e2e2e2",
+                    "outline": "#7e775f",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#4d4732",
+                    "inverse-on-surface": "#f1f1f1",
+                    "tertiary-container": "#dbd9d9",
+                    "background": "#f9f9f9",
+                    "on-primary-container": "#705e00",
+                    "on-secondary-container": "#636262",
+                    "surface": "#f9f9f9",
+                    "tertiary-fixed-dim": "#c8c6c6",
+                    "surface-tint": "#705d00",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-container-low": "#f3f3f3",
+                    "inverse-primary": "#e9c400",
+                    "secondary-fixed": "#e5e2e1",
+                    "primary": "#705d00",
+                    "secondary-container": "#e2dfde",
+                    "primary-container": "#ffd700",
+                    "tertiary": "#5f5e5e",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#5f5f5f",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "inverse-surface": "#2f3131",
+                    "on-primary-fixed-variant": "#544600",
+                    "surface-bright": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "surface-container": "#eeeeee",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-secondary-fixed-variant": "#474746",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "primary-fixed": "#ffe16d",
+                    "secondary": "#5f5e5e",
+                    "surface-dim": "#dadada",
+                    "on-tertiary-fixed-variant": "#474747",
+                    "tertiary-fixed": "#e4e2e1",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#d0c6ab",
+                    "on-primary-fixed": "#221b00"
+                },
+                fontFamily: {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+                },
+                borderRadius: { "none": "0px", "DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px" },
+            },
+        },
+    }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link th:href="@{/css/stock/stock-list.css}" rel="stylesheet"/>
+<!-- TopNavBar -->
+
+<div class="flex gap-12 px-12 pb-20 max-w-[1600px] mx-auto w-full">
+    <!-- Left Sidebar: Filter categories -->
+    <aside class="w-64 flex-shrink-0 hidden lg:block">
+        <div class="sticky top-32 space-y-12">
+            <div>
+                <h3 class="font-headline font-extrabold text-xs tracking-[0.2em] uppercase mb-8 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-primary-container"></span>
+                    BRANDS
+                </h3>
+                <ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+                    <li th:each="brand : ${brands}" class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors" th:text="${brand.brNm}"></span>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-headline font-extrabold text-xs tracking-[0.2em] uppercase mb-8 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-primary-container"></span>
+                    CATEGORIES
+                </h3>
+                <ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+                    <li th:each="category : ${categories}" class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors" th:text="${category.catNm}"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-grow">
+        <!-- Breadcrumbs & Title -->
+        <nav class="mb-4">
+            <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
+                <li>Home</li>
+                <li class="text-neutral-300">/</li>
+                <li class="text-on-primary-container">Stock</li>
+            </ol>
+        </nav>
+        <div class="flex justify-between items-end mb-12">
+            <h1 class="text-6xl font-headline font-black tracking-tighter">STOCK</h1>
+            <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
+                <select class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
+                    <option>Popularity</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Most Purchased</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 상품 없을 때 -->
+        <div th:if="${page.isEmpty()}" class="flex flex-col items-center justify-center py-40 text-secondary">
+            <span class="material-symbols-outlined text-6xl mb-4">inventory_2</span>
+            <p class="text-sm tracking-widest uppercase">No products available</p>
+        </div>
+
+        <!-- Product Grid -->
+        <div th:unless="${page.isEmpty()}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
+
+            <div th:each="item : ${page.content}" class="group cursor-pointer">
+                <div class="relative mb-6 overflow-hidden bg-surface-container-low w-full" style="height: 380px;">
+                    <img th:if="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
+                         th:src="${item.stImgUrl}"
+                         th:alt="${item.stNm}"
+                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+                    <div th:unless="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
+                         class="w-full h-full flex items-center justify-center bg-surface-container">
+                        <span class="material-symbols-outlined text-5xl text-on-surface-variant">image_not_supported</span>
+                    </div>
+                    <div class="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/5 transition-colors duration-300"></div>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Go to Details
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase" th:text="${item.stBrNm}"></p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight" th:text="${item.stNm}"></h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2"
+                       th:text="${item.stCur + ' ' + (item.stCur == '₩' ? #numbers.formatInteger(item.stPr, 1, 'COMMA') : #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT'))}"></p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${page.totalPages > 1}" class="mt-24 flex justify-center items-center gap-4">
+            <!-- 이전 버튼 -->
+            <a th:href="@{/stock/list(page=${page.number - 1})}"
+               th:classappend="${page.first} ? 'pointer-events-none opacity-30' : ''"
+               class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </a>
+
+            <!-- 페이지 번호 -->
+            <a th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+               th:href="@{/stock/list(page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == page.number} ? 'text-on-surface border-b-4 border-primary-container' : 'text-neutral-400 hover:text-on-surface'"
+               class="w-12 h-12 flex items-center justify-center font-headline font-extrabold text-xs transition-colors">
+            </a>
+
+            <!-- 다음 버튼 -->
+            <a th:href="@{/stock/list(page=${page.number + 1})}"
+               th:classappend="${page.last} ? 'pointer-events-none opacity-30' : ''"
+               class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4">
+                Next
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

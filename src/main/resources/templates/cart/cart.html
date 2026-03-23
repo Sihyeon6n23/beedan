@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="light" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>BEEDAN - Shopping Cart</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-variant": "#e2e2e2",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#d0c6ab",
+                        "tertiary": "#5f5e5e",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f3f3",
+                        "primary": "#705d00",
+                        "inverse-primary": "#e9c400",
+                        "secondary-container": "#e2dfde",
+                        "primary-container": "#ffd700",
+                        "on-surface-variant": "#4d4732",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "on-secondary-container": "#636262",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-background": "#1a1c1c",
+                        "surface": "#f9f9f9",
+                        "tertiary-container": "#dbd9d9",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "on-primary-container": "#705e00",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeee",
+                        "secondary-fixed": "#e5e2e1",
+                        "outline": "#7e775f",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "background": "#f9f9f9",
+                        "primary-fixed": "#ffe16d",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-fixed": "#e4e2e1",
+                        "surface-dim": "#dadada",
+                        "surface-tint": "#705d00",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-fixed-variant": "#544600",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#c8c6c6",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-primary-fixed": "#221b00",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary-container": "#5f5f5f"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "0px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .headline { font-family: 'Manrope', sans-serif; }
+        * { border-radius: 0px !important; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+
+<!-- TopNavBar -->
+<header th:replace="~{fragments/header :: headerFragment}"></header>
+
+<main class="flex-grow w-full max-w-none px-12 py-12 md:py-20">
+    <div class="flex flex-col lg:flex-row gap-20">
+
+        <!-- Cart Section -->
+        <div class="flex-grow">
+            <div class="mb-12">
+                <span class="label-sm text-primary font-bold tracking-widest uppercase mb-2 block">Procurement Portal</span>
+                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter uppercase leading-none">Your Cart</h1>
+            </div>
+
+            <!-- Product Table -->
+            <div class="w-full overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                    <tr class="bg-surface-container-low border-none">
+                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant">Product</th>
+                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant">SKU</th>
+                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Price</th>
+                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-center">Quantity</th>
+                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Total</th>
+                        <th class="py-6 px-4"></th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y-0">
+
+                    <!-- 장바구니 목록 없을 때 -->
+                    <tr th:if="${page.isEmpty()}">
+                        <td colspan="6" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td>
+                    </tr>
+
+                    <!-- 장바구니 아이템 반복 -->
+                    <tr th:each="item, stat : ${page.content}"
+                        th:class="${stat.even} ? 'bg-surface-container-lowest hover:bg-surface-container transition-colors' : 'bg-surface-container-low hover:bg-surface-container transition-colors'">
+                        <td class="py-8 px-4">
+                            <div class="flex items-center gap-6">
+                                <div class="w-24 h-24 bg-surface-container flex-shrink-0">
+                                    <img th:if="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
+                                         th:src="${item.stImgUrl}"
+                                         th:alt="${item.stNm}"
+                                         class="w-full h-full object-cover grayscale"/>
+                                    <div th:unless="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
+                                         class="w-full h-full bg-surface-container-high flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-secondary">image_not_supported</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-headline font-bold text-lg leading-tight uppercase" th:text="${item.stNm}"></p>
+                                    <p class="text-xs text-secondary tracking-wide mt-1" th:text="${item.brNm}"></p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-8 px-4 font-mono text-sm text-secondary" th:text="${item.stCd}"></td>
+                        <td class="py-8 px-4 font-bold text-right"
+                            th:text="${item.stCur + ' ' + #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="py-8 px-4">
+                            <div class="flex items-center justify-center">
+                                <div class="flex items-center bg-surface-container-high px-2">
+                                    <button class="p-2 hover:text-primary transition-colors">
+                                        <span class="material-symbols-outlined text-sm">remove</span>
+                                    </button>
+                                    <input class="w-12 bg-transparent border-none text-center font-bold focus:ring-0"
+                                           type="text"
+                                           th:value="${item.caStQn}"/>
+                                    <button class="p-2 hover:text-primary transition-colors">
+                                        <span class="material-symbols-outlined text-sm">add</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-8 px-4 font-extrabold text-right"
+                            th:text="${item.stCur + ' ' + #numbers.formatDecimal(item.stPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="py-8 px-4 text-right">
+                            <button class="text-error hover:opacity-70 transition-opacity">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-12 flex items-start">
+                <div class="border-l-4 border-primary-container pl-6 py-2">
+                    <p class="text-xs font-bold uppercase tracking-widest text-secondary mb-2">Purchase Note</p>
+                    <textarea class="w-full md:w-[400px] bg-surface-container-low border-none focus:bg-surface-container-lowest focus:ring-0 p-4 text-sm placeholder:italic"
+                              placeholder="Add specific procurement instructions..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="lg:w-[400px] flex-shrink-0">
+            <div class="bg-surface-container-lowest p-10 relative">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
+                <h2 class="font-headline font-extrabold text-2xl tracking-tighter uppercase mb-10">Order Summary</h2>
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold tracking-widest uppercase text-secondary">Items</span>
+                        <span class="font-bold" th:text="${page.totalElements} + ' items'"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold tracking-widest uppercase text-secondary">Logistics</span>
+                        <span class="text-xs font-medium italic">Calculated at Quote</span>
+                    </div>
+                </div>
+                <div class="mt-12 space-y-4">
+                    <button class="w-full bg-primary-container text-on-primary-container py-5 px-8 font-headline font-extrabold tracking-widest uppercase hover:brightness-105 transition-all flex items-center justify-center gap-3 active:scale-95">
+                        REQUEST QUOTE
+                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+                    </button>
+                    <button class="w-full bg-surface-container-highest text-on-surface py-5 px-8 font-headline font-extrabold tracking-widest uppercase hover:bg-surface-container transition-all active:scale-95">
+                        CONTINUE PROCUREMENT
+                    </button>
+                </div>
+                <p class="mt-8 text-[10px] leading-relaxed text-secondary tracking-widest uppercase opacity-60">
+                    Final pricing and availability are confirmed upon formal quote issuance. BEEDAN Logistics policies apply to all heavy hardware shipments.
+                </p>
+            </div>
+
+            <!-- Assistance Card -->
+            <div class="mt-8 bg-neutral-900 text-white p-8">
+                <p class="text-xs font-bold tracking-widest uppercase text-primary-container mb-2">Need Assistance?</p>
+                <p class="text-sm font-medium leading-relaxed mb-6">Contact our logistics team for bulk order discounts and international shipping protocols.</p>
+                <a class="inline-block text-xs font-black tracking-widest uppercase border-b-2 border-primary-container pb-1 hover:text-primary-container transition-colors" href="#">Speak with an Expert</a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
+
+</body>
+</html>
