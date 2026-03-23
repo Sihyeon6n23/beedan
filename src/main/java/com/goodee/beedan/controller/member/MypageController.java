@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.member;
+package com.goodee.beedan.controller.member;
 
 import com.goodee.beedan.config.web.annotation.Sidebar;
 import org.springframework.stereotype.Controller;

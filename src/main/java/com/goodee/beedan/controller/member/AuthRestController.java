@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.member;
+package com.goodee.beedan.controller.member;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>BEEDAN | New Stocks Load</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+<div class="max-w-5xl mx-auto py-12 px-6">
+    <h1 class="text-2xl font-bold mb-8">크롤링 관리</h1>
+
+    <!-- 알림 메시지 -->
+    <div th:if="${message}" class="mb-6 px-4 py-3 bg-green-100 text-green-800 rounded border border-green-300" th:text="${message}"></div>
+    <div th:if="${error}" class="mb-6 px-4 py-3 bg-red-100 text-red-800 rounded border border-red-300" th:text="${error}"></div>
+
+    <!-- 등록된 URL 목록 -->
+    <section class="mb-12">
+        <h2 class="text-lg font-semibold mb-4">등록된 크롤링 URL</h2>
+        <div th:if="${urls.isEmpty()}" class="text-gray-400 text-sm py-6 text-center border rounded">등록된 URL이 없습니다.</div>
+        <div th:unless="${urls.isEmpty()}" class="max-h-72 overflow-y-auto border rounded">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-100 text-left sticky top-0">
+            <tr>
+                <th class="px-4 py-3 font-semibold">URL</th>
+                <th class="px-4 py-3 font-semibold w-32">브랜드</th>
+                <th class="px-4 py-3 font-semibold w-32">카테고리</th>
+                <th class="px-4 py-3 font-semibold w-40">크롤링</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="url : ${urls}" class="border-t">
+                <td class="px-4 py-3 break-all text-blue-600" th:text="${url.urlUrl}"></td>
+                <td class="px-4 py-3" th:text="${brandMap[url.brId]}"></td>
+                <td class="px-4 py-3" th:text="${url.catId == 0} ? 'AI 자동 분류' : ${catMap[url.catId]}"></td>
+                <td class="px-4 py-3">
+                    <button onclick="openCrawlModal(this)"
+                            th:data-id="${url.urlId}"
+                            class="px-3 py-1 bg-black text-white text-xs rounded hover:bg-gray-700">
+                        크롤링 시작
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </section>
+
+    <!-- URL 등록 폼 -->
+    <section class="bg-white border rounded p-6">
+        <h2 class="text-lg font-semibold mb-6">URL 등록</h2>
+        <form th:action="@{/admin/crawling/url}" method="post" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">크롤링 URL</label>
+                <input type="url" name="urlUrl" required placeholder="https://example.com/category/outerwear"
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+            </div>
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium mb-1">브랜드 <span class="text-gray-400 font-normal">(선택 또는 새 이름 입력)</span></label>
+                    <input type="text" name="brNm" list="brand-list" required placeholder="Kapital"
+                           class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+                    <datalist id="brand-list">
+                        <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
+                    </datalist>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium mb-1">카테고리 <span class="text-gray-400 font-normal">(선택, 직접 입력, 또는 AI 자동 분류)</span></label>
+                    <input type="text" name="catNm" list="cat-list" required placeholder="Outwear 또는 AI 자동 분류"
+                           class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+                    <datalist id="cat-list">
+                        <option value="AI 자동 분류"></option>
+                        <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
+                    </datalist>
+                </div>
+            </div>
+            <button type="submit" class="px-6 py-2 bg-black text-white text-sm rounded hover:bg-gray-700">등록</button>
+        </form>
+    </section>
+</div>
+
+<!-- HTML 사이트용 모달 (CSS 셀렉터 입력) -->
+<div id="crawlModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 w-full max-w-md shadow-xl relative">
+        <h3 class="text-base font-bold mb-6">CSS 셀렉터 입력</h3>
+        <form id="crawlForm" method="post" class="space-y-3">
+            <input type="hidden" name="urlId" id="crawlUrlId"/>
+            <div>
+                <label class="block text-xs font-medium mb-1">상품 컨테이너 selector</label>
+                <input type="text" name="selItem" placeholder=".product-item"
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">상품명 selector</label>
+                <input type="text" name="selNm" placeholder=".product-name"
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">가격 selector</label>
+                <input type="text" name="selPr" placeholder=".product-price"
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">이미지 selector</label>
+                <input type="text" name="selImg" placeholder="img.product-img"
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+            </div>
+            <div>
+                <label class="block text-xs font-medium mb-1">통화 기호</label>
+                <input type="text" name="currency" list="currency-list" placeholder="¥" maxlength="5" required
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+                <datalist id="currency-list">
+                    <option value="¥">JPY</option>
+                    <option value="€">EUR</option>
+                    <option value="$">USD</option>
+                    <option value="£">GBP</option>
+                    <option value="₩">KRW</option>
+                </datalist>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 py-2 bg-black text-white text-sm rounded hover:bg-gray-700">크롤링 시작</button>
+                <button type="button" onclick="closeCrawlModal()" class="flex-1 py-2 border text-sm rounded hover:bg-gray-50">취소</button>
+            </div>
+        </form>
+        <!-- 로딩 오버레이 -->
+        <div id="crawlLoading" class="hidden absolute inset-0 bg-white/90 rounded-lg flex flex-col items-center justify-center gap-4">
+            <div class="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+            <p class="text-sm font-medium text-gray-700">크롤링 중...</p>
+            <p class="text-xs text-gray-400">AI 분류 포함 시 시간이 걸릴 수 있습니다</p>
+        </div>
+    </div>
+</div>
+
+<!-- Shopify 사이트용 미니 모달 (통화만 입력) -->
+<div id="shopifyModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 w-full max-w-sm shadow-xl relative">
+        <h3 class="text-base font-bold mb-2">Shopify 사이트 감지됨</h3>
+        <p class="text-xs text-gray-400 mb-6">상품 데이터를 자동으로 가져옵니다. 통화 기호만 입력하세요.</p>
+        <form id="shopifyForm" method="post" class="space-y-4">
+            <input type="hidden" name="selItem" value=""/>
+            <input type="hidden" name="selNm" value=""/>
+            <input type="hidden" name="selPr" value=""/>
+            <input type="hidden" name="selImg" value=""/>
+            <div>
+                <label class="block text-xs font-medium mb-1">통화 기호</label>
+                <input type="text" name="currency" list="currency-list-shopify" placeholder="₩" maxlength="5" required
+                       class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"/>
+                <datalist id="currency-list-shopify">
+                    <option value="¥">JPY</option>
+                    <option value="€">EUR</option>
+                    <option value="$">USD</option>
+                    <option value="£">GBP</option>
+                    <option value="₩">KRW</option>
+                </datalist>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="flex-1 py-2 bg-black text-white text-sm rounded hover:bg-gray-700">크롤링 시작</button>
+                <button type="button" onclick="closeShopifyModal()" class="flex-1 py-2 border text-sm rounded hover:bg-gray-50">취소</button>
+            </div>
+        </form>
+        <!-- 로딩 오버레이 -->
+        <div id="shopifyLoading" class="hidden absolute inset-0 bg-white/90 rounded-lg flex flex-col items-center justify-center gap-4">
+            <div class="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+            <p class="text-sm font-medium text-gray-700">크롤링 중...</p>
+            <p class="text-xs text-gray-400">AI 분류 포함 시 시간이 걸릴 수 있습니다</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCrawlModal(btn) {
+        const id = btn.dataset.id;
+        const origText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '확인 중...';
+
+        fetch('/admin/crawling/check-type/' + id)
+            .then(r => r.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.textContent = origText;
+                if (data.type === 'shopify') {
+                    document.getElementById('shopifyForm').action = '/admin/crawling/run/' + id;
+                    document.getElementById('shopifyModal').classList.remove('hidden');
+                    document.getElementById('shopifyModal').classList.add('flex');
+                } else {
+                    document.getElementById('crawlUrlId').value = id;
+                    document.getElementById('crawlForm').action = '/admin/crawling/run/' + id;
+                    document.getElementById('crawlModal').classList.remove('hidden');
+                    document.getElementById('crawlModal').classList.add('flex');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.textContent = origText;
+                // 판별 실패 시 HTML 모달로 폴백
+                document.getElementById('crawlUrlId').value = id;
+                document.getElementById('crawlForm').action = '/admin/crawling/run/' + id;
+                document.getElementById('crawlModal').classList.remove('hidden');
+                document.getElementById('crawlModal').classList.add('flex');
+            });
+    }
+
+    function closeCrawlModal() {
+        document.getElementById('crawlModal').classList.add('hidden');
+        document.getElementById('crawlModal').classList.remove('flex');
+    }
+
+    function closeShopifyModal() {
+        document.getElementById('shopifyModal').classList.add('hidden');
+        document.getElementById('shopifyModal').classList.remove('flex');
+    }
+
+    document.getElementById('crawlForm').addEventListener('submit', function() {
+        document.getElementById('crawlLoading').classList.remove('hidden');
+        document.getElementById('crawlLoading').classList.add('flex');
+    });
+
+    document.getElementById('shopifyForm').addEventListener('submit', function() {
+        document.getElementById('shopifyLoading').classList.remove('hidden');
+        document.getElementById('shopifyLoading').classList.add('flex');
+    });
+</script>
+
+</body>
+</html>

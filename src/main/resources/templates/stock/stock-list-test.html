@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>STOCK | BEEDAN ARCHITECTURAL CURATOR</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-variant": "#e2e2e2",
+                        "outline": "#7e775f",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#4d4732",
+                        "inverse-on-surface": "#f1f1f1",
+                        "tertiary-container": "#dbd9d9",
+                        "background": "#f9f9f9",
+                        "on-primary-container": "#705e00",
+                        "on-secondary-container": "#636262",
+                        "surface": "#f9f9f9",
+                        "tertiary-fixed-dim": "#c8c6c6",
+                        "surface-tint": "#705d00",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-container-low": "#f3f3f3",
+                        "inverse-primary": "#e9c400",
+                        "secondary-fixed": "#e5e2e1",
+                        "primary": "#705d00",
+                        "secondary-container": "#e2dfde",
+                        "primary-container": "#ffd700",
+                        "tertiary": "#5f5e5e",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#5f5f5f",
+                        "on-tertiary-fixed": "#1b1c1c",
+                        "inverse-surface": "#2f3131",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-bright": "#f9f9f9",
+                        "on-surface": "#1a1c1c",
+                        "surface-container": "#eeeeee",
+                        "on-background": "#1a1c1c",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "primary-fixed": "#ffe16d",
+                        "secondary": "#5f5e5e",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "tertiary-fixed": "#e4e2e1",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#d0c6ab",
+                        "on-primary-fixed": "#221b00"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "none": "0px", "DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e2e2; }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .brand-font { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 border-none bg-white/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(26,28,28,0.05)]">
+    <div class="flex justify-between items-center px-12 py-6 max-w-full mx-auto">
+        <div class="text-3xl font-black tracking-tighter text-neutral-900">BEEDAN</div>
+        <div class="hidden md:flex items-center gap-10">
+            <a class="text-neutral-500 font-['Manrope'] tracking-tight font-bold uppercase text-sm hover:text-[#705d00] transition-colors duration-300" href="#">ABOUT</a>
+            <a class="text-neutral-900 border-l-4 border-[#ffd700] pl-2 font-['Manrope'] tracking-tight font-bold uppercase text-sm hover:text-[#705d00] transition-colors duration-300" href="#">STOCK</a>
+            <a class="text-neutral-500 font-['Manrope'] tracking-tight font-bold uppercase text-sm hover:text-[#705d00] transition-colors duration-300" href="#">NOTICE</a>
+            <a class="text-neutral-500 font-['Manrope'] tracking-tight font-bold uppercase text-sm hover:text-[#705d00] transition-colors duration-300" href="#">INQUIRY</a>
+        </div>
+        <div class="flex items-center gap-6">
+            <span class="material-symbols-outlined text-neutral-900 cursor-pointer" data-icon="login">login</span>
+            <span class="material-symbols-outlined text-neutral-900 cursor-pointer" data-icon="notifications">notifications</span>
+            <span class="material-symbols-outlined md:hidden text-neutral-900" data-icon="menu">menu</span>
+        </div>
+    </div>
+    <div class="bg-neutral-100 h-[1px] w-full absolute bottom-0"></div>
+</nav>
+<main class="pt-32 pb-20 px-12 max-w-[1600px] mx-auto flex gap-12">
+    <!-- Left Sidebar: Filter categories -->
+    <aside class="w-64 flex-shrink-0 hidden lg:block">
+        <div class="sticky top-32 space-y-12">
+            <div>
+                <h3 class="font-headline font-extrabold text-xs tracking-[0.2em] uppercase mb-8 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-primary-container"></span>
+                    BRANDS
+                </h3>
+                <ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Issey Miyake</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Yohji Yamamoto</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 bg-primary-container border border-primary-container rounded-none flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[12px] text-on-primary-container font-bold" data-icon="check">check</span>
+                        </div>
+                        <span class="text-on-surface">Comme des Garçons</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Sacai</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Junya Watanabe</span>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-headline font-extrabold text-xs tracking-[0.2em] uppercase mb-8 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-primary-container"></span>
+                    CATEGORIES
+                </h3>
+                <ul class="space-y-4 text-sm font-medium text-on-surface-variant">
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Outerwear</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Knitwear</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Dresses</span>
+                    </li>
+                    <li class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-4 h-4 border border-outline-variant rounded-none group-hover:border-primary"></div>
+                        <span class="group-hover:text-on-surface transition-colors">Accessories</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+    <!-- Main Content -->
+    <div class="flex-grow">
+        <!-- Breadcrumbs & Title -->
+        <nav class="mb-4">
+            <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
+                <li>Home</li>
+                <li class="text-neutral-300">/</li>
+                <li class="text-on-primary-container">Stock</li>
+            </ol>
+        </nav>
+        <div class="flex justify-between items-end mb-12">
+            <h1 class="text-6xl font-headline font-black tracking-tighter">STOCK</h1>
+            <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
+                <select class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
+                    <option>Popularity</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to High</option>
+                    <option>Most Purchased</option>
+                </select>
+            </div>
+        </div>
+        <!-- Product Grid: 4 columns -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
+            <!-- Product Card 1 -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Vibrant yellow high fashion dress" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Vibrant yellow high fashion couture dress" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmn27dsiCjYqnDdat9xqKLpx3IlAjtW9q9A8PsjLgH5oNa692BwwKZPoM8q9yvEjQ0RTAElGIUJOfNWv38zr2BEjGZM9J-OcCKBMVI2Q6Dl3-kKv9Mg8aUGUnV-MBOdMUezpAa0zRqHE0gsJyLnXhz2_xx3uPYqak6xOgheRgwtY-3JSP9-QrTPB61niu0M2uTIhTX19vscvx6ZT1Wy5IPyk905CMf2n2if6l5plYimIAdmpzGqwtlhG9z9lBEVvJD517Pxd52laOd"/>
+                    <div class="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/5 transition-colors duration-300"></div>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Comme des Garçons</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Sculptural Pleated Midi Dress</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥184,000 / ₩1,650,000</p>
+                </div>
+            </div>
+            <!-- Product Card 2 -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Bright red avant-garde coat" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Avant-garde bright red structured wool coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXHPMot1UjMjx8-_seKCLiU76OA6r4EVtVVP24WFv3uzGql-drq0vdQh7EqIP-1RdA12LJmrPLgquqaNzRKaWCeJRRQnA2SU29xOeORILAa6qVjluRkCauiPzx60uYQtdekNVwCV7nU4Q_MEOKP7xXB8dyWbKJp1fthHb-9v9QGg-DycKsbNQIYcL51B44EWThRMu1IND-5Ba8pKmfbmTLj0yXvdgBs_wt7BKr5ATR-fjRVzejKA_KvO73KSVsW1Y4_YDXyx_ixJ85"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Issey Miyake</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Architectural Origami Coat</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥242,000 / ₩2,180,000</p>
+                </div>
+            </div>
+            <!-- Product Card 3 -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Electric blue silk shirt" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Electric blue premium silk oversized shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgrNL7kbc-xhcPriiy2aFqqZv8lBckBJe7_yZQYy6ma42xWcsN5Cv_9GxkMJAn6MLexX9SOaUaIWAUBxiC9OC6oljClreTfg8oYrjGlXtJn_hzZwmfm5vaVDzlZsQoe4guEm9aXpXxI6vaRiSlKYG9kjK9IenUT1g--mdzKbmBimwbljVVwHGrsQSqzZU96eb8ofePQB01PKhcbdHeDGbbW6h8m6pc8OmyhQ5FxaeLkdgqI5sitMIiNUjCKvxJCL0ggVtEr8OOR15H"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Sacai</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Hybrid Deconstructed Silk Top</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥98,000 / ₩880,000</p>
+                </div>
+            </div>
+            <!-- Product Card 4 -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Colorful patterned dress" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Colorful patterned editorial fashion summer dress" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCug-K8O2Wr8Oxo1HmTwRCEMkrUO8UAkYriRTOE-QpYDQuAzr3tzEFk0iJVGvJM2hBnlLT3wWOURsZVC3K64SaKwPLpNjGSgQ7xn8-EQNE4U6xu3lxX6hlwKX-1xCyKoyFJG5S8dVaAwPMKchJDyypb-mwuGhQO4Rsemt2-1ZUFrCIDzYi_dUcRdbLIou5VnUNsJ-ILIIG0LEPK26Vh8PYUbHxHuEtDJIQpufq5qZUbTCHLAofc44X3JZXZ-wVfto_7lb-SzScLw3JS"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Yohji Yamamoto</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Abstract Print Drape Dress</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥156,000 / ₩1,400,000</p>
+                </div>
+            </div>
+            <!-- Repeat Pattern for 20 items (Simplified for this response) -->
+            <!-- Product Card 5 (Vibrant Teal) -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Vibrant teal knitwear" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Vibrant teal premium mohair knit sweater" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGmw20Hk8YRypFctXIclvTY9HpAR3pbXhi5ulF9eOPzxn6Sqv1LQzeNDY5p8vDB-6cmi2SdNn8ScugGZ6bgAmfaM_OlTwmHPah5wJB2rwtwh0TGUp9JDauvyIvFEQvA8H8sKEoXj3L1ZNSycvtkXG4sDYdTHbYTqtf4E1EzYr3ALkb5qJd5tgEMPbV8iWna1PdjU2aNSpB33r8qTBJoVXUvdxgGtJdq4eh-xGSbhoW9R220bceqzIFbDI-AucTW5-6T34aPpOUyd8_"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Comme des Garçons</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Asymmetric Mohair Knit</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥72,000 / ₩650,000</p>
+                </div>
+            </div>
+            <!-- Product Card 6 (Fuchsia) -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Fuchsia wide leg trousers" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="High-fashion fuchsia wide leg silk trousers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHveVBBPqBAWQ_ZzeFRe2XXOusJF-DIaU7iohtQN7TUq-HjvynWIVm0zAk4BzX2U2bkVZ_UjWLnxMXQx6L5rJlXeRHVoZ6N4g4vp1tYKGHNqdgw0j8bZ8ydpfmAwvK4ncsdKwWR9hzkGDZr-FnCfXEw2Ciy7I1xgNokyw3KiBZykrV9Rbf7YMLNByhaMUf4CuoThaYdHuYCGAP3zfGouq8ysZLxxPvejYL-zP3_cvWfCQpdP6MITNZIdUSiicoHNHMBFLcIbcFu0a7"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Issey Miyake</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Plissé Wide Leg Trousers</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥89,000 / ₩800,000</p>
+                </div>
+            </div>
+            <!-- Product Card 7 (Emerald) -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Emerald green sneakers" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Luxury emerald green avant-garde fashion sneakers" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARomIhgHiwObrSF7Qvq82tDBYZxZcFCm9MNnvBzblJGEs2QLwD3xJFKjY5U5hcbV6rZfz1Qd-ic3jxVQTMRgDl8sOc47FKZNksb2GDlUeRxSMsRBytS4rAvjMe9K6CnAasweiWFyYzNQWna3n3D2gpO8fjq1BJCtLyAmOjO9HVZoz2FQf4-qRVK3tpSVdPfsnut49s1oKZLeOJz2W7j7QPWAGw0ap238i8PfM3CnkHsGSoHQRfA7CrGslGiLvaTvT5ZxeYDMYdXf3m"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Sacai</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Multilayered Fashion Sneaker</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥68,000 / ₩610,000</p>
+                </div>
+            </div>
+            <!-- Product Card 8 (Orange) -->
+            <div class="group cursor-pointer">
+                <div class="relative aspect-[3/4] mb-6 overflow-hidden bg-surface-container-low">
+                    <img alt="Bright orange bucket bag" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Luxury bright orange leather architectural bucket bag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzKZTHlaqNF7tq8Y6-ZW7SeslJpxiXAcKc-UOaF-_m4xMOBzP7R6qHS71SdgRZvh1oVcNbGgoZO6_oBrdmQ7_aN3DEyGj0oxBbRX0UI7F3vh6euzcP-s6glW9-hwO6yzeF-ELYv7MJrlXWE9FwMLDRyqR9Srj9iPer1zeEFIPvdZTIE7fSEkvDvaAkL-fRRz2Ca-aunU2HyMjC2ICJQl2iwr16aQVjBYC1njrt4Q4yljTHc98Izk9CekwdGr7cKLcy0C72H8pWhkdv"/>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
+                        Add to Inquiry
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">Comme des Garçons</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">Architectural Leather Bag</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">¥112,000 / ₩1,000,000</p>
+                </div>
+            </div>
+        </div>
+        <!-- Pagination -->
+        <div class="mt-24 flex justify-center items-center gap-4">
+            <button class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+            </button>
+            <button class="w-12 h-12 flex items-center justify-center text-on-surface font-headline font-extrabold text-xs border-b-4 border-primary-container">1</button>
+            <button class="w-12 h-12 flex items-center justify-center text-neutral-400 font-headline font-extrabold text-xs hover:text-on-surface transition-colors">2</button>
+            <button class="w-12 h-12 flex items-center justify-center text-neutral-400 font-headline font-extrabold text-xs hover:text-on-surface transition-colors">3</button>
+            <button class="w-12 h-12 flex items-center justify-center text-neutral-400 font-headline font-extrabold text-xs hover:text-on-surface transition-colors">4</button>
+            <span class="text-neutral-300 font-headline font-extrabold text-xs">...</span>
+            <button class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4">
+                Next
+                <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+            </button>
+        </div>
+    </div>
+</main>
+<!-- Footer -->
+<footer class="bg-neutral-50 w-full border-t-0">
+    <div class="flex flex-col md:flex-row justify-between items-center px-12 py-20 gap-8 max-w-[1600px] mx-auto">
+        <div class="flex flex-col gap-4">
+            <div class="font-['Manrope'] font-bold text-neutral-900 text-2xl tracking-tighter">BEEDAN</div>
+            <p class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-neutral-400">© 2024 BEEDAN ARCHITECTURAL CURATOR. ALL RIGHTS RESERVED.</p>
+        </div>
+        <div class="flex gap-8">
+            <a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-neutral-400 hover:text-neutral-900 underline decoration-[#ffd700] decoration-2 underline-offset-4 transition-all" href="#">TERMS OF SERVICE</a>
+            <a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-neutral-400 hover:text-neutral-900 underline decoration-[#ffd700] decoration-2 underline-offset-4 transition-all" href="#">PRIVACY POLICY</a>
+            <a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-neutral-400 hover:text-neutral-900 underline decoration-[#ffd700] decoration-2 underline-offset-4 transition-all" href="#">COOKIE SETTINGS</a>
+            <a class="font-['Inter'] text-[10px] tracking-[0.1em] uppercase text-neutral-400 hover:text-neutral-900 underline decoration-[#ffd700] decoration-2 underline-offset-4 transition-all" href="#">LEGAL NOTICE</a>
+        </div>
+    </div>
+</footer>
+</body></html>
