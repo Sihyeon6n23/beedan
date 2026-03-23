@@ -1,37 +1,44 @@
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="sidebar">
-    <div class="flex flex-col">
-        <button class="py-3 px-4 text-sm font-bold text-on-background flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined !text-lg">domain</span>
-                <span>개인정보 관리</span>
-            </div>
-            <span class="material-symbols-outlined text-xs transition-transform group-focus:rotate-180">expand_more</span>
-        </button>
-        <div class="flex flex-col bg-stone-100/50">
-            <a href="/member/profile" class="py-2 pl-11 pr-4 text-[13px] text-secondary hover:text-primary transition-colors">기본 정보 수정</a>
-            <a href="/member/password" class="py-2 pl-11 pr-4 text-[13px] text-secondary hover:text-primary transition-colors">비밀번호 변경</a>
-            <a href="/member/sns" class="py-2 pl-11 pr-4 text-[13px] text-secondary hover:text-primary transition-colors border-l-2 border-primary bg-white font-semibold">SNS 연동 관리</a>
-        </div>
-    </div>
+    <aside class="admin-chat-sidebar hidden md:flex w-64 min-h-full">
+        <div class="w-64 pb-6 px-4 flex flex-col">
 
-    <a href="/inquiry/list" class="py-3 px-4 text-sm font-medium text-secondary opacity-70 hover:opacity-100 transition-all flex items-center gap-3">
-        <span class="material-symbols-outlined !text-lg">description</span>
-        나의 문의
-    </a>
+            <nav class="flex-1 flex flex-col gap-1">
+                <a href="#"
+                   class="admin-chat-sidebar__link flex items-center py-3 text-sm font-medium text-secondary opacity-80 hover:opacity-100 hover:bg-white transition-all">
+                    <span class="material-symbols-outlined !text-lg mr-3">group</span>
+                    <span> 회원 관리</span>
+                </a>
 
-    <div class="flex flex-col">
-        <button class="py-3 px-4 text-sm font-medium text-secondary opacity-70 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined !text-lg">inventory_2</span>
-                <span>상품 관리</span>
-            </div>
-            <span class="material-symbols-outlined text-xs">expand_more</span>
-        </button>
-        <div class="flex flex-col">
-            <a href="/product/request" class="py-2 pl-11 pr-4 text-[13px] text-secondary hover:text-primary">상품 요청 내역</a>
-            <a href="/product/wishlist" class="py-2 pl-11 pr-4 text-[13px] text-secondary hover:text-primary">My 위시리스트</a>
+                <a href="#"
+                   class="admin-chat-sidebar__link flex items-center py-3 text-sm font-medium text-secondary opacity-80 hover:opacity-100 hover:bg-white transition-all">
+                    <span class="material-symbols-outlined !text-lg mr-3">inventory_2</span>
+                    <span> 상품 관리</span>
+                </a>
+
+                <a href="#"
+                   class="admin-chat-sidebar__link flex items-center py-3 text-sm font-medium text-secondary opacity-80 hover:opacity-100 hover:bg-white transition-all">
+                    <span class="material-symbols-outlined !text-lg mr-3">request_quote</span>
+                    <span> 견적 관리</span>
+                </a>
+
+                <div class="flex flex-col gap-1">
+                    <a href="#"
+                       class="admin-chat-sidebar__link admin-chat-sidebar__link--current flex items-center py-3 text-sm font-bold text-on-background">
+                        <span class="material-symbols-outlined !text-lg mr-3">support_agent</span>
+                        <span> 문의 관리</span>
+                    </a>
+
+                    <div class="pl-11 pr-4 py-1">
+                        <a th:href="@{/admin/chat/list}"
+                           class="admin-chat-sidebar__active flex items-center px-4 py-2 text-sm bg-white text-on-background border-l-4 border-primary-container font-bold shadow-[0_10px_20px_rgba(0,0,0,0.04)]">
+                            채팅 상담
+                        </a>
+                    </div>
+                </div>
+            </nav>
         </div>
-    </div>
+    </aside>
 </th:block>
 </html>
