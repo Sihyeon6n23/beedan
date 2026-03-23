@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="assignConfirmModal">
+    <section class="admin-chat-modal is-hidden" data-modal="assign" aria-hidden="true">
+        <div class="admin-chat-modal__backdrop" data-modal-close></div>
+        <div class="admin-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="assign-chat-modal-title">
+            <div class="admin-chat-modal__header">
+                <div class="admin-chat-modal__accent"></div>
+                <div class="admin-chat-modal__icon">
+                    <span class="material-symbols-outlined">assignment_ind</span>
+                </div>
+            </div>
+
+            <div class="admin-chat-modal__body">
+                <h2 id="assign-chat-modal-title" class="admin-chat-modal__title">상담 배정 확인</h2>
+                <div class="admin-chat-modal__content-stack">
+                    <p class="admin-chat-modal__lead">이 상담을 배정하시겠습니까?</p>
+                    <p class="admin-chat-modal__description">확인 시 현재 상담방이 본인에게 배정되며, 바로 상담 상세 화면으로 이동합니다.</p>
+                </div>
+            </div>
+
+            <div class="admin-chat-modal__actions">
+                <button type="button" class="btn-primary" data-assign-confirm>상담 시작</button>
+                <button type="button" class="admin-chat-surface-button" data-modal-close>취소</button>
+            </div>
+
+            <div class="admin-chat-modal__meta">
+                <span>System Auth Required</span>
+                <span>REF: CMD_ASSIGN_01</span>
+            </div>
+        </div>
+    </section>
+</th:block>
+</html>
