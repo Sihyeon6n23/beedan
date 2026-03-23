@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.quote;
+package com.goodee.beedan.controller.quote;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

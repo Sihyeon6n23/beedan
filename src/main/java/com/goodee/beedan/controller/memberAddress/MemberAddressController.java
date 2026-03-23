@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.memberAddress;
+package com.goodee.beedan.controller.memberAddress;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

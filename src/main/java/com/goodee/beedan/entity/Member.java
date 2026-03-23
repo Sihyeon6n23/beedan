@@ -19,7 +19,7 @@ public class Member {
     private Long memId;
     private String memLgnId;
     private String memLgnPw;
-    @Enumerated(EnumType.STRING) // 0323 임욱: Enum 매핑을 위해 추가
+    @Enumerated(EnumType.STRING)
     private MemberAuthority memAut;
     private String memNm;
     private String memMbPhn;

@@ -1,6 +1,6 @@
-package com.goodee.beedan.Controller.notice;
+package com.goodee.beedan.controller.notice;
 
-import com.goodee.beedan.dto.NotiDto;
+import com.goodee.beedan.dto.notice.NotiDto;
 import com.goodee.beedan.service.notice.NotiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -18,11 +19,9 @@ public class NotiController {
 
     @GetMapping("/notification/list")
     public String getNotiList(Model model){
-        List<NotiDto> notiDtoList = notiService.getNotiList(1L);
+        List<NotiDto> notiDtoList = null;
 
-        log.info(notiDtoList.toString());
-
-        model.addAttribute(notiDtoList);
+        model.addAttribute("notiDtoList", notiDtoList);
 
         return "notice/notice-list";
     }

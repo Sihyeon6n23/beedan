@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{::sidebar},
+          ~{::content}
+      )}">
+<head>
+    <title>회원 정보 수정 | BEEDAN</title>
+</head>
+<body>
+
+<aside th:fragment="sidebar">
+    <div th:replace="~{fragments/sidebar :: frame('Member Curation', 'onboarding', ~{::side-menu})}">
+        <div th:fragment="side-menu">
+            <a href="#" class="block px-10 py-2 text-sm font-medium text-stone-600 hover:text-stone-900">회원 목록</a>
+            <a href="#" class="block px-10 py-2 text-sm font-medium text-stone-600 hover:text-stone-900">통계 보기</a>
+        </div>
+    </div>
+</aside>
+
+<div th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/admin/admin-member-edit.css}">
+    <section class="admin-edit-container">
+
+        <header class="edit-header">
+            <div class="header-info">
+                <h1>회원 정보 수정</h1>
+                <div class="meta-info">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>ID: 123456790</span>
+                    <span class="divider">|</span>
+                    <span>가입일 : 2026/01/01</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-cancel" onclick="history.back()">취소</button>
+                <button class="btn-save">변경사항 저장 <span class="material-symbols-outlined">save</span></button>
+            </div>
+        </header>
+
+        <form action="#" method="post" class="edit-form-grid">
+
+            <div class="grid-left">
+                <article class="form-section">
+                    <h2>01. 법인 정보</h2>
+                    <div class="form-group">
+                        <label>법인명</label>
+                        <input type="text" class="form-control" value="(주) 구디아카데미" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>사업자 등록번호</label>
+                        <input type="text" class="form-control" value="123-45-67890" readonly>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label>대표명</label>
+                            <input type="text" class="form-control" value="Jone Doe" readonly>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>대표유형</label>
+                            <div class="form-control select-mock">단독 대표</div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="form-section">
+                    <h2>02. 연락처</h2>
+                    <div class="form-group input-with-icon">
+                        <label>이메일</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined">mail</span>
+                            <input type="email" class="form-control" value="GoodeeAcademy@goodee.co.kr">
+                        </div>
+                    </div>
+                    <div class="form-group input-with-icon">
+                        <label>대표 연락처</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined">call</span>
+                            <input type="text" class="form-control" value="010-0000-0000">
+                        </div>
+                    </div>
+                    <div class="form-group input-with-icon">
+                        <label>담당자 연락처</label>
+                        <div class="input-wrapper">
+                            <span class="material-symbols-outlined">smartphone</span>
+                            <input type="text" class="form-control" value="010-0000-0000">
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="grid-right">
+                <article class="form-section">
+                    <h2>03. 배송지 주소</h2>
+                    <div class="form-group">
+                        <label>기본주소 / 상세주소</label>
+                        <textarea id="addressInput" class="form-control address-textarea" rows="3">서울 금천구 가산디지털2로 95&#10;3층 305호 구디아카데미</textarea>
+                    </div>
+                    <div id="map" class="map-placeholder">
+                        <div class="map-overlay">
+                            <span class="material-symbols-outlined">location_on</span> 위치 정보
+                        </div>
+                    </div>
+                </article>
+
+                <article class="form-section history-section">
+                    <h2>회원정보 이용 이력</h2>
+                    <div class="history-item border-bottom">
+                        <span class="history-label">계정 상태</span>
+                        <span class="status-badge">ACTIVE</span>
+                    </div>
+                    <div class="history-item border-bottom">
+                        <span class="history-label">최근 결제 수단</span>
+                        <span class="history-value">카카오pay</span>
+                    </div>
+                    <div class="history-item mt-4">
+                        <span class="history-label">최종 수정일자</span>
+                        <span class="history-value">2024-05-12 14:02</span>
+                    </div>
+                    <div class="history-item">
+                        <span class="history-label">최종 수정자</span>
+                        <span class="history-value">김구디</span>
+                    </div>
+                </article>
+            </div>
+
+        </form>
+    </section>
+
+
+    <script type="text/javascript"
+            th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}">
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        kakao.maps.load(function() {
+            console.log("카카오 SDK 로드");
+
+            var mapContainer = document.getElementById('map');
+            var mapOption = {
+                center: new kakao.maps.LatLng(37.566826, 126.978656), // 중심 좌표 (필수)
+                level: 3
+            };
+
+            var map = new kakao.maps.Map(mapContainer, mapOption);
+            var geocoder = new kakao.maps.services.Geocoder();
+            var fullAddress = document.getElementById('addressInput').value;
+            var baseAddress = fullAddress.split('\n')[0].trim();
+
+            geocoder.addressSearch(baseAddress, function(result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                    new kakao.maps.Marker({ // 주어진 객체로 마커를 생성한다.
+                        map: map,
+                        position: coords
+                    });
+                    map.setCenter(coords);
+                }
+            });
+        });
+    });
+    </script>
+
+</div>
+
+</body>
+</html>
