@@ -1,115 +1,271 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>견적 작성 - BEEDAN</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goodee — 견적 작성</title>
     <link rel="stylesheet" th:href="@{/css/quote/quote-write.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <header class="main-header">
-        <h1 class="page-title">견적 작성</h1>
-        <div class="timeline">
-            <div class="step finished"><span>01. 견적 요청</span><strong>2026년 5월 12일 접수 완료</strong></div>
-            <div class="step finished"><span>02. 견적 확인</span><strong>큐레이터 검증 완료</strong></div>
-            <div class="step current"><span>03. 견적 승인</span><strong>견적 승인 대기</strong></div>
-            <div class="step pending"><span>04. 대금 결제</span><strong>결제 대기</strong></div>
-            <div class="step pending"><span>05. 발주 확정</span><strong>발주 등록</strong></div>
-        </div>
-    </header>
+<div class="page-wrapper">
 
-    <div class="exchange-banner">
-        <div class="rate-info">
-            <span class="rate-val">1 JPY = 9.14 KRW</span>
-            <span class="rate-status">+0.04%</span>
-        </div>
-        <div class="time-info">
-            <span>Last updated</span>
-            <strong>2024.05.24 — 14:32:01 GMT+9</strong>
-        </div>
-    </div>
+    <!-- Main Content -->
+    <main class="main">
+        <div class="main-content-area">
 
-    <section class="content-section">
-        <div class="section-header">
-            <h2>A01-PEWGF-A</h2>
-            <span class="item-tag">4개의 아이템</span>
-        </div>
-        <table class="item-table">
-            <thead>
-            <tr>
-                <th>No.</th>
-                <th>상품</th>
-                <th>상품 아이디</th>
-                <th>수량</th>
-                <th>규격</th>
-                <th>공급가액(엔)</th>
-                <th>총액(엔)</th>
-                <th>세액(한)</th>
-                <th>Subtotal(한)</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item, stat : ${items}">
-                <td th:text="${stat.count}">1</td>
-                <td class="prod-desc">
-                    <strong th:text="${item.name}">ESSENTIAL OVERSIZED TEE</strong>
-                    <small th:text="${item.desc}">Japanese Heavyweight Cotton</small>
-                </td>
-                <td th:text="${item.id}">BDN-ES-001</td>
-                <td th:text="${item.qty}">50</td>
-                <td th:text="${item.size}">50</td>
-                <td th:text="${item.price}">¥2,400</td>
-                <td th:text="${item.total}">¥2,400,000</td>
-                <td th:text="${item.tax}">₩2,400</td>
-                <td class="price-txt" th:text="${item.subtotal}">₩1,096,800</td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
+            <!-- Header Section -->
+            <section class="header-section">
+                <h1 class="page-title">견적 작성</h1>
+            </section>
 
-    <div class="fee-grid">
-        <div class="fee-card">
-            <h3>예상 운임 비용</h3>
-            <div class="fee-row"><span>표준 해상 운임비</span><strong>₩145,000</strong></div>
-            <div class="fee-row"><span>항만 비용 및 통관 수수료</span><strong>₩88,000</strong></div>
-            <div class="fee-row"><span>국내 배송비</span><strong>₩45,000</strong></div>
-            <div class="fee-total"><span>운송 비용 소계</span><span class="gold">₩278,000</span></div>
-        </div>
-        <div class="fee-card">
-            <h3>구매 대행 수수료</h3>
-            <div class="fee-row"><span>서비스 수수료 (3.5%)</span><strong>₩90,851</strong></div>
-            <div class="fee-row"><span>서류 발급 및 인허가비</span><strong>₩25,000</strong></div>
-            <div class="fee-row"><span>1차 품질 검사</span><span class="gold">INCLUDED</span></div>
-            <div class="fee-total"><span>대행 서비스 소계</span><span class="gold">₩115,851</span></div>
-        </div>
-    </div>
-
-    <footer class="bottom-summary">
-        <div class="summary-card">
-            <h3 class="summary-label">총 주문 명세</h3>
-            <div class="summary-body">
-                <div class="detail-columns">
-                    <div class="col"><span>물품 대금 합계</span><strong>₩2,595,760</strong></div>
-                    <div class="col"><span>운임 및 대행 수수료</span><strong>₩393,851</strong></div>
-                    <div class="col"><span>Estimated VAT (10%)</span><strong>₩298,961</strong></div>
+            <!-- Status Timeline -->
+            <div class="status-timeline">
+                <div class="timeline-step step-done">
+                    <span class="step-label">01. 견적 요청</span>
+                    <span class="step-desc">2026년 5월 12일 접수 완료</span>
                 </div>
-                <div class="total-column">
-                    <span class="total-label">최종 합계</span>
-                    <span class="total-price">₩3,288,572</span>
+                <div class="timeline-step step-done">
+                    <span class="step-label">02. 견적 확인</span>
+                    <span class="step-desc">큐레이터 검증 완료</span>
+                </div>
+                <div class="timeline-step step-active">
+                    <span class="step-label">03. 견적 승인</span>
+                    <span class="step-desc step-desc--bold">견적 승인 대기</span>
+                </div>
+                <div class="timeline-step step-pending">
+                    <span class="step-label">04. 대금 결제</span>
+                    <span class="step-desc step-desc--muted">결제 대기</span>
+                </div>
+                <div class="timeline-step step-pending">
+                    <span class="step-label">05. 발주 확정</span>
+                    <span class="step-desc step-desc--muted">발주 등록</span>
                 </div>
             </div>
 
-            <div class="action-area">
-                <button class="btn-main">견적 요청서 제출 <span class="arrow">→</span></button>
-                <div class="btn-group">
-                    <button class="btn-sub">임시저장</button>
-                    <button class="btn-sub">PDF 다운로드</button>
+            <!-- Exchange Rate Section -->
+            <div class="exchange-rate-section">
+                <div class="exchange-rate-left">
+                    <span class="exchange-rate-value">1 JPY = 9.14 KRW</span>
+                    <span class="exchange-rate-change positive">▲ +0.04%</span>
+                </div>
+                <div class="exchange-rate-right">
+                    <span class="last-updated-label">Last updated</span>
+                    <span class="last-updated-value">2024.05.24 — 14:32:01 GMT+9</span>
                 </div>
             </div>
-            <p class="footer-notice">본 견적 금액은 예상치이며 최종 청구 금액과는 차이가 발생할 수 있습니다.</p>
+
+            <!-- Quote Manifest Section -->
+            <section class="quote-manifest">
+                <div class="manifest-header">
+                    <h2 class="manifest-id">A01-PEWGF-A</h2>
+                    <span class="manifest-count">4개의 아이템</span>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
+                    <table class="quote-table">
+                        <thead>
+                        <tr>
+                            <th class="col-no">No.</th>
+                            <th class="col-product">상품</th>
+                            <th class="col-id">상품 아이디</th>
+                            <th class="col-qty">수량</th>
+                            <th class="col-spec">규격</th>
+                            <th class="col-price-unit">공급가액 (엔화)</th>
+                            <th class="col-price-total">공급가 총액 (엔화)</th>
+                            <th class="col-tax">세액 (한화)</th>
+                            <th class="col-subtotal">Subtotal (한화)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="col-no">1</td>
+                            <td class="col-product">
+                                <span class="product-name">ESSENTIAL OVERSIZED TEE</span>
+                                <span class="product-material">Japanese Heavyweight Cotton</span>
+                            </td>
+                            <td class="col-id product-code">BDN-ES-001</td>
+                            <td class="col-qty value-bold">50</td>
+                            <td class="col-spec value-bold">50</td>
+                            <td class="col-price-unit text-right">¥2,400</td>
+                            <td class="col-price-total text-right">¥2,400,000</td>
+                            <td class="col-tax text-right">₩2,400</td>
+                            <td class="col-subtotal text-right value-bold">₩1,096,800</td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">2</td>
+                            <td class="col-product">
+                                <span class="product-name">STRUCTURED DENIM JACKET</span>
+                                <span class="product-material">14oz Selvedge Denim</span>
+                            </td>
+                            <td class="col-id product-code">BDN-DN-124</td>
+                            <td class="col-qty value-bold">20</td>
+                            <td class="col-spec value-bold">20</td>
+                            <td class="col-price-unit text-right">¥8,200</td>
+                            <td class="col-price-total text-right">¥8,200,000</td>
+                            <td class="col-tax text-right">¥8,200</td>
+                            <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">3</td>
+                            <td class="col-product">
+                                <span class="product-name">STRUCTURED DENIM JACKET</span>
+                                <span class="product-material">14oz Selvedge Denim</span>
+                            </td>
+                            <td class="col-id product-code">BDN-DN-124</td>
+                            <td class="col-qty value-bold">20</td>
+                            <td class="col-spec value-bold">20</td>
+                            <td class="col-price-unit text-right">¥8,200</td>
+                            <td class="col-price-total text-right">¥8,200,000</td>
+                            <td class="col-tax text-right">¥8,200</td>
+                            <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                        </tr>
+                        <tr>
+                            <td class="col-no">4</td>
+                            <td class="col-product">
+                                <span class="product-name">STRUCTURED DENIM JACKET</span>
+                                <span class="product-material">14oz Selvedge Denim</span>
+                            </td>
+                            <td class="col-id product-code">BDN-DN-124</td>
+                            <td class="col-qty value-bold">20</td>
+                            <td class="col-spec value-bold">20</td>
+                            <td class="col-price-unit text-right">¥8,200</td>
+                            <td class="col-price-total text-right">¥8,200,000</td>
+                            <td class="col-tax text-right">¥8,200</td>
+                            <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Logistics & Procurement Fees -->
+            <div class="fees-grid">
+                <!-- Logistics -->
+                <div class="fee-card">
+                    <div class="fee-card-header">
+                        <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1h14v10H1V1zm14 3h4l2 3v4h-6V4z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                            <circle cx="4.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                            <circle cx="16.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                        </svg>
+                        <h3 class="fee-card-title">예상 운임 비용</h3>
+                    </div>
+                    <div class="fee-items">
+                        <div class="fee-item">
+                            <span class="fee-label">표준 해상 운임비</span>
+                            <span class="fee-value">₩145,000</span>
+                        </div>
+                        <div class="fee-item">
+                            <span class="fee-label">항만 비용 및 통관 수수료</span>
+                            <span class="fee-value">₩88,000</span>
+                        </div>
+                        <div class="fee-item">
+                            <span class="fee-label">국내 배송비 (서울/수도권)</span>
+                            <span class="fee-value">₩45,000</span>
+                        </div>
+                        <div class="fee-subtotal">
+                            <span class="fee-subtotal-label">운송 비용 소계</span>
+                            <span class="fee-subtotal-value">₩278,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Procurement -->
+                <div class="fee-card">
+                    <div class="fee-card-header">
+                        <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 1H2C1.4 1 1 1.4 1 2v16c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V6l-5-5z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M10 1v5h5" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M4 10h8M4 13h6" stroke="#1a1c1c" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <h3 class="fee-card-title">구매 대행 수수료</h3>
+                    </div>
+                    <div class="fee-items">
+                        <div class="fee-item">
+                            <span class="fee-label">서비스 수수료 (상품가의 3.5%)</span>
+                            <span class="fee-value">₩90,851</span>
+                        </div>
+                        <div class="fee-item">
+                            <span class="fee-label">서류 발급 및 인허가비</span>
+                            <span class="fee-value">₩25,000</span>
+                        </div>
+                        <div class="fee-item">
+                            <span class="fee-label">1차 품질 검사</span>
+                            <span class="fee-value">₩0 <em class="included-badge">INCLUDED</em></span>
+                        </div>
+                        <div class="fee-subtotal">
+                            <span class="fee-subtotal-label">대행 서비스 소계</span>
+                            <span class="fee-subtotal-value">₩115,851</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Draft Button -->
+            <div class="action-center">
+                <button class="btn-save-draft">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1h6l2 2v6H1V1zm2 0v3h4V1M3 6h4" stroke="#1a1c1c" stroke-width="1.2" stroke-linejoin="round"/>
+                    </svg>
+                    임시저장
+                </button>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-summary-card">
+                <div class="summary-background">
+                    <div class="summary-heading">총 주문 명세</div>
+
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <span class="summary-label">물품 대금 합계</span>
+                            <span class="summary-value">₩2,595,760</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">운임 및 대행 수수료</span>
+                            <span class="summary-value">₩393,851</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Estimated VAT (10%)</span>
+                            <span class="summary-value">₩298,961</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-total-block">
+                        <span class="summary-total-label">최종 합계</span>
+                        <span class="summary-total-value">₩3,288,572</span>
+                    </div>
+
+                    <button class="btn-submit">
+                        견적 요청서 제출
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 8h10M9 4l4 4-4 4" stroke="#705e00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <p class="summary-disclaimer">
+                        본 견적 금액은 현재 환율 및 물류 상황을 반영한 예상치이며<br />
+                        최종 청구 금액과는 약 ±2% 내외의 차이가 발생할 수 있습니다
+                    </p>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="btn-pdf">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="#1a1c1c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        PDF 다운로드
+                    </button>
+                </div>
+            </div>
+
         </div>
-    </footer>
+    </main>
 </div>
 </body>
 </html>

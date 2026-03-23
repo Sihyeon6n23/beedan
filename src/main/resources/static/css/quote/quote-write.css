@@ -1,77 +1,708 @@
+/* ============================================================
+   Goodee — 견적 작성 (Quote Creation Page)
+   Design tokens extracted from Figma
+   ============================================================ */
+
+/* --- CSS Variables (Design Tokens) --- */
 :root {
-    --gold: #705D00;
-    --gold-bg: #FFD700;
-    --black: #1A1C1C;
-    --gray: #5F5E5E;
-    --border: #E5E5E5;
-    --bg-light: #F3F3F3;
+    /* Colors */
+    --color-bg:           #f9f9f9;
+    --color-white:        #ffffff;
+    --color-surface:      #f3f3f3;
+    --color-surface-2:    #f4f4f4;
+    --color-border:       #9f9f9f;
+    --color-border-light: #e2e2e2;
+    --color-border-subtle:#eeeeee;
+    --color-border-gold:  #d0c6ab;
+
+    --color-text-primary: #1a1c1c;
+    --color-text-muted:   #5f5e5e;
+    --color-text-light:   #a3a3a3;
+
+    --color-gold:         #ffd700;
+    --color-gold-dark:    #705d00;
+    --color-gold-border:  #705e00;
+
+    /* Typography */
+    --font-display: 'Manrope', 'Noto Sans KR', sans-serif;
+    --font-serif:   'Noto Serif KR', serif;
+    --font-body:    'Inter', 'Noto Sans KR', sans-serif;
+
+    /* Spacing */
+    --page-padding: 40px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; color: var(--black); background: #fff; }
-
-.container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
-
-/* 타임라인 */
-.timeline { display: flex; margin: 40px 0; border-top: 1px solid #EEE; padding-top: 25px; }
-.step { flex: 1; border-left: 2px solid #EEE; padding-left: 20px; }
-.step.finished { border-left-color: var(--gold-bg); }
-.step.current { border-left-color: var(--gold); }
-.step span { display: block; font-size: 12px; color: var(--gray); margin-bottom: 5px; }
-.step strong { font-size: 14px; }
-
-/* 환율 정보 */
-.exchange-banner {
-    display: flex; justify-content: space-between; align-items: center;
-    background: #FFFCEB; padding: 25px 35px; border-left: 5px solid var(--gold); margin-bottom: 50px;
-}
-.rate-val { font-family: 'Manrope'; font-size: 24px; font-weight: 700; }
-.rate-status { color: var(--gold); font-weight: 700; margin-left: 10px; }
-
-/* 테이블 */
-.item-table { width: 100%; border-collapse: collapse; margin-bottom: 60px; }
-.item-table th { background: var(--bg-light); padding: 15px; text-align: left; font-size: 12px; color: var(--gray); }
-.item-table td { padding: 25px 15px; border-bottom: 1px solid #EEE; font-size: 14px; }
-.prod-desc strong { display: block; margin-bottom: 4px; }
-.prod-desc small { color: #A3A3A3; font-size: 12px; }
-.price-txt { font-weight: 700; font-family: 'Manrope'; }
-
-/* 비용 그리드 */
-.fee-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 60px; }
-.fee-card { border: 1px solid var(--border); padding: 30px; }
-.fee-card h3 { font-size: 18px; margin-bottom: 25px; }
-.fee-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
-.fee-total { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 1px solid #EEE; font-weight: 700; }
-.gold { color: var(--gold); }
-
-/* [하단 배치] 총 주문 명세 카드 디자인 */
-.bottom-summary { margin-top: 40px; }
-.summary-card {
-    background: #fff; border: 1px solid var(--border); padding: 40px;
-}
-.summary-label { font-size: 14px; color: var(--gray); margin-bottom: 35px; }
-
-.summary-body {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    border-bottom: 1px solid #EEE; padding-bottom: 40px; margin-bottom: 40px;
+/* --- Reset & Base --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.detail-columns { display: flex; gap: 80px; }
-.col { display: flex; flex-direction: column; gap: 10px; }
-.col span { font-size: 13px; color: var(--gray); }
-.col strong { font-size: 18px; font-family: 'Manrope'; }
-
-.total-column { text-align: right; }
-.total-label { display: block; font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-.total-price { font-family: 'Manrope'; font-size: 32px; font-weight: 800; color: var(--gold); }
-
-/* 하단 액션 버튼 */
-.action-area { display: flex; justify-content: space-between; align-items: center; }
-.btn-main {
-    background: var(--gold-bg); color: var(--gold); border: none;
-    padding: 20px 60px; font-size: 16px; font-weight: 700; cursor: pointer;
+html, body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
-.btn-group { display: flex; gap: 10px; }
-.btn-sub { background: #fff; border: 1px solid var(--border); padding: 15px 30px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
-.footer-notice { font-size: 11px; color: #A3A3A3; margin-top: 30px; text-align: center; }
+/* --- Page Wrapper --- */
+.page-wrapper {
+    background-color: var(--color-bg);
+    min-height: 100vh;
+}
+
+/* --- Main --- */
+.main {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 84px var(--page-padding) 48px;
+}
+
+.main-content-area {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+}
+
+/* ============================================================
+   Header Section
+   ============================================================ */
+.header-section {
+    padding: 0 100px;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 72px;
+    line-height: 1;
+    letter-spacing: -3px;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   Status Timeline
+   ============================================================ */
+.status-timeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    background-color: var(--color-surface);
+    padding: 4px;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px 24px 24px 28px;
+    border-left: 4px solid transparent;
+    background-color: var(--color-white);
+}
+
+/* Done steps */
+.step-done {
+    background-color: var(--color-white);
+    border-left-color: var(--color-gold-dark);
+}
+
+.step-done .step-label {
+    color: var(--color-gold-dark);
+}
+
+.step-done .step-desc {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+/* Active step */
+.step-active {
+    background-color: var(--color-gold);
+    border-left-color: var(--color-gold-border);
+}
+
+.step-active .step-label {
+    color: var(--color-gold-border);
+}
+
+.step-active .step-desc--bold {
+    color: var(--color-text-primary);
+    font-weight: 700;
+}
+
+/* Pending steps */
+.step-pending {
+    background-color: var(--color-surface);
+    border-left-color: #d4d4d4;
+}
+
+.step-pending .step-label {
+    color: var(--color-text-light);
+}
+
+.step-pending .step-desc--muted {
+    color: var(--color-text-light);
+    font-weight: 600;
+}
+
+.step-label {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.5;
+}
+
+.step-desc {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 20px;
+}
+
+/* ============================================================
+   Exchange Rate Section
+   ============================================================ */
+.exchange-rate-section {
+    background-color: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px;
+}
+
+.exchange-rate-left {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+}
+
+.exchange-rate-value {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 36px;
+    letter-spacing: -0.9px;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+}
+
+.exchange-rate-change {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-gold-dark);
+}
+
+.exchange-rate-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.last-updated-label {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.last-updated-value {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.35px;
+    color: var(--color-text-primary);
+    text-align: right;
+}
+
+/* ============================================================
+   Quote Manifest Section
+   ============================================================ */
+.quote-manifest {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.manifest-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.manifest-id {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.6px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 32px;
+}
+
+.manifest-count {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 16px;
+}
+
+/* ============================================================
+   Quote Table
+   ============================================================ */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+}
+
+.quote-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Column widths */
+.col-no        { width: 65px; }
+.col-product   { width: 292px; }
+.col-id        { width: 99px; }
+.col-qty       { width: 72px; }
+.col-spec      { width: 72px; }
+.col-price-unit{ width: 126px; }
+.col-price-total{width: 126px; }
+.col-tax       { width: 126px; }
+.col-subtotal  { width: 145px; }
+
+/* Header row */
+.quote-table thead tr {
+    background-color: var(--color-border-light);
+}
+
+.quote-table thead th {
+    border: 1px solid var(--color-border);
+    padding: 22px 24px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+    height: 56px;
+}
+
+/* Body rows */
+.quote-table tbody tr {
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border);
+}
+
+.quote-table tbody td {
+    border: 1px solid var(--color-border);
+    padding: 22px 24px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-text-primary);
+    height: 56px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.quote-table tbody td.col-product {
+    text-align: left;
+}
+
+.product-name {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.35px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 20px;
+}
+
+.product-material {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 20px;
+}
+
+.product-code {
+    font-family: var(--font-serif);
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 16px;
+}
+
+.value-bold {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-text-primary);
+}
+
+.text-right {
+    text-align: right;
+}
+
+.quote-table tbody td.text-right {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 16px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+}
+
+.quote-table tbody td.col-subtotal.text-right {
+    font-weight: 700;
+}
+
+/* ============================================================
+   Fees Grid (Logistics & Procurement)
+   ============================================================ */
+.fees-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background-color: #e8e8e8;
+}
+
+.fee-card {
+    background-color: var(--color-white);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.fee-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.fee-card-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: -0.45px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 28px;
+}
+
+.fee-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.fee-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fee-label {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 20px;
+}
+
+.fee-value {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 20px;
+    white-space: nowrap;
+}
+
+.included-badge {
+    font-style: normal;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+    margin-left: 8px;
+}
+
+.fee-subtotal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px dashed var(--color-border-subtle);
+    margin-top: 4px;
+}
+
+.fee-subtotal-label {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 16px;
+}
+
+.fee-subtotal-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-gold-dark);
+    line-height: 24px;
+}
+
+/* ============================================================
+   Action Center (Save Draft)
+   ============================================================ */
+.action-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-save-draft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 17px 52px;
+    border: 1px solid var(--color-border-gold);
+    background-color: transparent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    transition: background-color 0.15s ease;
+}
+
+.btn-save-draft:hover {
+    background-color: #fafaf7;
+}
+
+/* ============================================================
+   Order Summary Card
+   ============================================================ */
+.order-summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+    width: 100%;
+    max-width: 1032px;
+    margin: 0 auto;
+}
+
+.summary-background {
+    background-color: var(--color-surface-2);
+    width: 100%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.summary-heading {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    line-height: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border-subtle);
+    margin-bottom: 32px;
+}
+
+.summary-items {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 0;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.summary-label {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 20px;
+}
+
+.summary-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 20px;
+}
+
+.summary-total-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 2px solid var(--color-text-primary);
+    padding-top: 40px;
+    margin-top: 40px;
+    margin-bottom: 32px;
+}
+
+.summary-total-label {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    line-height: 15px;
+}
+
+.summary-total-value {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 36px;
+    letter-spacing: -1.8px;
+    color: var(--color-gold-dark);
+    line-height: 40px;
+}
+
+.btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 24px;
+    background-color: var(--color-gold);
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--color-gold-border);
+    transition: filter 0.15s ease;
+    margin-bottom: 16px;
+}
+
+.btn-submit:hover {
+    filter: brightness(1.05);
+}
+
+.summary-disclaimer {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 16.25px;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.btn-pdf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 17px 52px;
+    border: 1px solid var(--color-border-gold);
+    background-color: transparent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    transition: background-color 0.15s ease;
+}
+
+.btn-pdf:hover {
+    background-color: #fafaf7;
+}
+
+/* ============================================================
+   Responsive Adjustments
+   ============================================================ */
+@media (max-width: 1200px) {
+    .page-title {
+        font-size: 52px;
+    }
+    .header-section {
+        padding: 0 40px;
+    }
+    .quote-table {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 900px) {
+    .status-timeline {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .fees-grid {
+        grid-template-columns: 1fr;
+    }
+    .page-title {
+        font-size: 40px;
+    }
+    .header-section {
+        padding: 0;
+    }
+    .exchange-rate-value {
+        font-size: 24px;
+    }
+    .manifest-id {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .main {
+        padding: 48px 20px;
+    }
+    .status-timeline {
+        grid-template-columns: 1fr 1fr;
+    }
+    .page-title {
+        font-size: 32px;
+        letter-spacing: -1px;
+    }
+}
