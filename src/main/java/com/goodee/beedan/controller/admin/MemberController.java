@@ -17,7 +17,7 @@ public class MemberController {
 
     @GetMapping("/list")
     public String getMemberList(){
-    return "/admin/member/admin-member-list";
+    return "admin/member/admin-member-list";
     }
 
     @GetMapping("/detail")

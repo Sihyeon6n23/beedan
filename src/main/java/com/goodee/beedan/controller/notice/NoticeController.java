@@ -8,13 +8,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.Collections;
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-public class NotiController {
+public class NoticeController {
     private final NotiService notiService;
 
     @GetMapping("/notification/list")

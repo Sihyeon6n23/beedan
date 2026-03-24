@@ -1,0 +1,91 @@
+<div class="modal-overlay">
+    <div class="modal-container">
+        <header class="modal-header">
+            <div class="header-main">
+                <h2 class="modal-title">Shipment Tracking</h2>
+                <div class="order-meta-row">
+                    <div class="meta-item">
+                        <span class="meta-label">Reference</span>
+                        <span class="meta-value">Order #ORD-98821</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Carrier ID</span>
+                        <span class="meta-value">1234-1234-1234</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-close" onclick="closeModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </header>
+
+        <div class="modal-body">
+            <div class="tracking-timeline">
+                <div class="timeline-node future">
+                    <div class="node-icon">
+                        <span class="material-symbols-outlined">package_2</span>
+                    </div>
+                    <div class="node-content">
+                        <h3 class="node-title">Delivered</h3>
+                        <p class="node-desc">Pending arrival at final destination</p>
+                    </div>
+                </div>
+
+                <div class="timeline-node future">
+                    <div class="node-icon">
+                        <span class="material-symbols-outlined">local_shipping</span>
+                    </div>
+                    <div class="node-content">
+                        <h3 class="node-title">Out for Delivery</h3>
+                        <p class="node-desc">Dispatching from regional hub</p>
+                    </div>
+                </div>
+
+                <div class="timeline-node current">
+                    <div class="node-icon active">
+                        <span class="material-symbols-outlined">sailing</span>
+                    </div>
+                    <div class="node-content">
+                        <div class="status-header">
+                            <h3 class="node-title accent">Shipped</h3>
+                            <span class="current-badge">Current Status</span>
+                        </div>
+                        <div class="status-detail-card">
+                            <span class="status-time">May 14, 02:00 PM</span>
+                            <p class="status-location">Departure from Port — Incheon Logistics Center</p>
+                            <button class="btn-manifest">
+                                VIEW MANIFEST <span class="material-symbols-outlined">open_in_new</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-node completed">
+                    <div class="node-icon done">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="node-content">
+                        <h3 class="node-title">Processing</h3>
+                        <span class="status-time">May 13, 08:00 AM</span>
+                        <p class="node-desc">Quality control and export documentation complete</p>
+                    </div>
+                </div>
+
+                <div class="timeline-node completed">
+                    <div class="node-icon done">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div class="node-content">
+                        <h3 class="node-title">Order Placed</h3>
+                        <span class="status-time">May 12, 10:00 AM</span>
+                        <p class="node-desc">System confirmation and credit approval</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="modal-footer">
+            <button class="btn-solid" onclick="closeModal()">CLOSE</button>
+        </footer>
+    </div>
+</div>
