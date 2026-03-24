@@ -2,14 +2,18 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{admin/chat/admin-sidebar :: adminChatSidebar},
+          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Chat Detail', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | Admin Chat Detail</title>
 
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
+</th:block>
+
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/admin-chat.css}">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
     <section class="admin-chat-page admin-chat-detail-page" data-chat-status="ONGOING">
         <section class="admin-chat-shell admin-chat-shell--detail-board">
@@ -110,9 +114,9 @@
             </footer>
         </section>
 
-        <div th:replace="~{fragments/admin/chat/close-confirm-modal :: closeConfirmModal}"></div>
+        <div th:replace="~{fragments/chat/admin-close-modal :: closeConfirmModal}"></div>
     </section>
 
-    <script defer th:src="@{/js/admin-chat.js}"></script>
+    <script defer th:src="@{/js/chat/admin-chat.js}"></script>
 </th:block>
 </html>
