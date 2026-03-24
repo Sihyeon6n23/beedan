@@ -6,3 +6,7 @@ spring.datasource.username={userName}
 spring.datasource.password={password}
 
 spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+
+exchange.api.key=d8a7d3b8ee66b379ffd8b961
+exchange.api.url=https://v6.exchangerate-api.com/v6
+

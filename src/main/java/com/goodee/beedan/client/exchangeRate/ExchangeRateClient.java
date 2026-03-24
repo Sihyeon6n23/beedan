@@ -37,7 +37,10 @@ public class ExchangeRateClient {
         List<String> targets = List.of("JPY", "USD", "EUR", "CNY");
         return response.getRates().entrySet().stream()
                 .filter(e->targets.contains(e.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> 1.0 / e.getValue()
+                ));
 
     }
 
