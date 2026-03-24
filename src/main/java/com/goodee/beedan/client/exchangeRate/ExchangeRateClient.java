@@ -38,7 +38,6 @@ public class ExchangeRateClient {
         return response.getRates().entrySet().stream()
                 .filter(e->targets.contains(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
     }
 
 

@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.memberAddress;
+package com.goodee.beedan.controller.memberAddress;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class MemberAddressController {
     @GetMapping("/member/address")
     public String getMemberAddress(){
-        return "member/address/address-test";
+        return "member/address/add-address";
     }
 }

@@ -1,4 +1,4 @@
-package com.goodee.beedan.Controller.notice;
+package com.goodee.beedan.controller.notice;
 
 import com.goodee.beedan.dto.NotiDto;
 import com.goodee.beedan.service.notice.NotiService;
