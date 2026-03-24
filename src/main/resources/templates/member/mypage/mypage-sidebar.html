@@ -1,44 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <th:block th:fragment="sidebar">
-    <aside class="admin-chat-sidebar hidden md:flex w-64 min-h-full">
-        <div class="w-64 pb-6 px-4 flex flex-col">
+    <div class="admin-sidebar-scope">
+        <a href="#" class="admin-sidebar-menu__link">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+            <span> 회원 관리</span>
+        </a>
 
-            <nav class="flex-1 flex flex-col gap-1">
-                <a href="#"
-                   class="admin-chat-sidebar__link flex items-center py-3 text-sm font-medium text-secondary opacity-80 hover:opacity-100 hover:bg-white transition-all">
-                    <span class="material-symbols-outlined !text-lg mr-3">group</span>
-                    <span> 회원 관리</span>
+        <a href="#" class="admin-sidebar-menu__link">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">inventory_2</span>
+            <span> 상품 관리</span>
+        </a>
+
+        <a href="#" class="admin-sidebar-menu__link">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">request_quote</span>
+            <span> 견적 관리</span>
+        </a>
+
+        <div class="admin-sidebar-menu__group">
+            <a href="#" class="admin-sidebar-menu__link admin-sidebar-menu__link--current">
+                <span class="material-symbols-outlined admin-sidebar-menu__icon">support_agent</span>
+                <span> 문의 관리</span>
+            </a>
+
+            <div class="admin-sidebar-menu__child-wrap">
+                <a th:href="@{/admin/chat/list}" class="admin-sidebar-menu__child-link">
+                    채팅 상담
                 </a>
-
-                <a href="#"
-                   class="admin-chat-sidebar__link flex items-center py-3 text-sm font-medium text-secondary opacity-80 hover:opacity-100 hover:bg-white transition-all">
-                    <span class="material-symbols-outlined !text-lg mr-3">inventory_2</span>
-                    <span> 상품 관리</span>
-                </a>
-
-                <a href="#"
-                   class="admin-chat-sidebar__link flex items-center py-3 text-sm font-medium text-secondary opacity-80 hover:opacity-100 hover:bg-white transition-all">
-                    <span class="material-symbols-outlined !text-lg mr-3">request_quote</span>
-                    <span> 견적 관리</span>
-                </a>
-
-                <div class="flex flex-col gap-1">
-                    <a href="#"
-                       class="admin-chat-sidebar__link admin-chat-sidebar__link--current flex items-center py-3 text-sm font-bold text-on-background">
-                        <span class="material-symbols-outlined !text-lg mr-3">support_agent</span>
-                        <span> 문의 관리</span>
-                    </a>
-
-                    <div class="pl-11 pr-4 py-1">
-                        <a th:href="@{/admin/chat/list}"
-                           class="admin-chat-sidebar__active flex items-center px-4 py-2 text-sm bg-white text-on-background border-l-4 border-primary-container font-bold shadow-[0_10px_20px_rgba(0,0,0,0.04)]">
-                            채팅 상담
-                        </a>
-                    </div>
-                </div>
-            </nav>
+            </div>
         </div>
-    </aside>
+    </div>
 </th:block>
+
 </html>

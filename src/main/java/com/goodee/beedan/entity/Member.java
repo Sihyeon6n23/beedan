@@ -28,6 +28,7 @@ public class Member {
     private String memBizNo;
     private String memBizTtl;
     private String memBizAdr;
+    private String memBizDtAdr;
     private String memCeoNm;
     private String memCeoPhn;
     private String memCmpTel;
