@@ -171,4 +171,5 @@ public class NewStockController {
         }
         return "redirect:/admin/newstock";
     }
+
 }
