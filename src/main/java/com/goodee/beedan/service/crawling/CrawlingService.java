@@ -11,6 +11,10 @@ import com.goodee.beedan.repository.category.CategoryRepository;
 import com.goodee.beedan.repository.crawling.CrawlingUrlRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
 import lombok.RequiredArgsConstructor;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -61,10 +65,13 @@ public class CrawlingService {
         Brand brand = brandRepository.findById(crawlingUrl.getBrId()).orElse(null);
         Category fixedCategory = aiMode ? null : categoryRepository.findById(crawlingUrl.getCatId()).orElse(null);
 
-        // 1단계: Shopify JSON 시도 → 실패 시 HTML 폴백
+        // 1단계: Shopify JSON 시도 → 실패 시 Jsoup → 0개면 Playwright 폴백
         List<RawProduct> rawList = tryShopifyJson(crawlingUrl.getUrlUrl());
         if (rawList == null) {
             rawList = crawlHtml(crawlingUrl.getUrlUrl(), selItem, selNm, selPr, selImg);
+            if (rawList.isEmpty()) {
+                rawList = crawlWithPlaywright(crawlingUrl.getUrlUrl(), selItem, selNm, selPr, selImg);
+            }
         }
 
         // 2단계: AI 자동 분류
@@ -76,13 +83,13 @@ public class CrawlingService {
             aiCategoryMap = aiCategoryService.categorize(productNames, categoryNames);
         }
 
-        // 3단계: Stock 엔티티 빌드
+        // 3단계: Stock upsert (브랜드+상품명 기준 중복 체크)
         String brNm = brand != null ? brand.getBrNm() : "UNK";
         String prefix = brNm.replaceAll("[^a-zA-Z]", "").toUpperCase();
         prefix = prefix.length() >= 3 ? prefix.substring(0, 3) : String.format("%-3s", prefix).replace(' ', 'X');
         long existingCount = stockRepository.countByBrId(crawlingUrl.getBrId());
 
-        List<Stock> stocks = new ArrayList<>();
+        int newCount = 0;
         int i = 0;
         for (RawProduct raw : rawList) {
             String catNm;
@@ -96,32 +103,39 @@ public class CrawlingService {
                 catId = fixedCategory != null ? String.valueOf(fixedCategory.getCatId()) : "";
             }
 
-            String stCd = prefix + String.format("%05d", existingCount + (++i));
+            java.util.Optional<Stock> existing =
+                    stockRepository.findByBrIdAndStNm(crawlingUrl.getBrId(), raw.name());
 
-            stocks.add(Stock.builder()
-                    .stCd(stCd)
-                    .brId(crawlingUrl.getBrId())
-                    .stBrNm(brand != null ? brand.getBrNm() : "")
-                    .stCat(catId)
-                    .stCatNm(catNm)
-                    .stNm(raw.name())
-                    .stPr(raw.price())
-                    .stCur(currency)
-                    .stImgUrl(raw.imgUrl())
-                    .stExpYn(true)
-                    .stUseYn(true)
-                    .stDelYn(false)
-                    .stReqYn(false)
-                    .stWisCnt(0L)
-                    .stPurCnt(0L)
-                    .stCraDt(LocalDateTime.now())
-                    .stCreDt(LocalDateTime.now())
-                    .stUpdDt(LocalDateTime.now())
-                    .build());
+            if (existing.isPresent()) {
+                // 기존 상품 → 스킵
+                continue;
+            } else {
+                // 신규 상품 → insert
+                String stCd = prefix + String.format("%05d", existingCount + (++i));
+                stockRepository.save(Stock.builder()
+                        .stCd(stCd)
+                        .brId(crawlingUrl.getBrId())
+                        .stBrNm(brand != null ? brand.getBrNm() : "")
+                        .stCat(catId)
+                        .stCatNm(catNm)
+                        .stNm(raw.name())
+                        .stPr(raw.price())
+                        .stCur(currency)
+                        .stImgUrl(raw.imgUrl())
+                        .stExpYn(true)
+                        .stUseYn(true)
+                        .stDelYn(false)
+                        .stReqYn(false)
+                        .stWisCnt(0L)
+                        .stPurCnt(0L)
+                        .stCraDt(LocalDateTime.now())
+                        .stCreDt(LocalDateTime.now())
+                        .build());
+                newCount++;
+            }
         }
 
-        stockRepository.saveAll(stocks);
-        return stocks.size();
+        return newCount;
     }
 
     // Shopify JSON API 시도 (성공 시 상품 목록 반환, 실패 시 null)
@@ -163,7 +177,53 @@ public class CrawlingService {
 
     // Shopify 여부 판별 (외부에서 호출용)
     public boolean isShopify(String url) {
+
         return tryShopifyJson(url) != null;
+    }
+
+    // Playwright HTML 파싱 (JS 렌더링 사이트용)
+    private List<RawProduct> crawlWithPlaywright(String url, String selItem, String selNm, String selPr, String selImg) {
+        if (selItem == null || selItem.isBlank()) return List.of();
+        try (Playwright playwright = Playwright.create()) {
+            Browser browser = playwright.chromium().launch(
+                    new BrowserType.LaunchOptions()
+                            .setHeadless(true)
+                            .setChannel("chrome")
+            );
+            Page page = browser.newPage();
+            page.navigate(url, new Page.NavigateOptions()
+                    .setTimeout(30_000));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
+                    new Page.WaitForLoadStateOptions().setTimeout(15_000));
+
+            String html = page.content();
+            browser.close();
+
+            Document doc = Jsoup.parse(html, url);  // base URL 전달 → abs:src 정상 동작
+            Elements items = doc.select(selItem);
+
+            System.out.println("[Playwright] 찾은 아이템 수: " + items.size());
+
+            List<RawProduct> list = new ArrayList<>();
+            for (Element item : items) {
+                String name = item.select(selNm).text();
+                if (name.isBlank()) continue;
+
+                String priceText = item.select(selPr).text().replaceAll("[^0-9.]", "");
+                String imgUrl = item.select(selImg).attr("abs:src");
+
+                BigDecimal price = BigDecimal.ZERO;
+                try {
+                    if (!priceText.isBlank()) price = new BigDecimal(priceText);
+                } catch (NumberFormatException ignored) {}
+
+                list.add(new RawProduct(name, price, imgUrl));
+            }
+            return list;
+        } catch (Exception e) {
+            System.out.println("[Playwright] 오류: " + e.getMessage());
+            return List.of();
+        }
     }
 
     // Jsoup HTML 파싱

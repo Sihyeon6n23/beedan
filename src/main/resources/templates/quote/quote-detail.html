@@ -1,10 +1,522 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goodee — 견적 상세</title>
+    <link rel="stylesheet" th:href="@{/css/quote/quote-detail.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+<div class="page-wrapper">
+    <main class="main">
+        <div class="main-canvas">
+
+            <!-- ① Header Section -->
+            <section class="header-section">
+                <h1 class="page-title">견적 상세</h1>
+                <p class="quote-id">#A01-PEWGF-A</p>
+            </section>
+
+            <!-- ② Status Timeline -->
+            <div class="status-timeline">
+                <div class="timeline-step step-done">
+                    <span class="step-label">01. 견적 요청</span>
+                    <span class="step-desc">2026년 5월 12일 접수 완료</span>
+                </div>
+                <div class="timeline-step step-done">
+                    <span class="step-label">02. 견적 확인</span>
+                    <span class="step-desc">큐레이터 검증 완료</span>
+                </div>
+                <div class="timeline-step step-active">
+                    <span class="step-label">03. 견적 승인</span>
+                    <span class="step-desc step-desc--bold">견적 승인 대기</span>
+                </div>
+                <div class="timeline-step step-pending">
+                    <span class="step-label">04. 대금 결제</span>
+                    <span class="step-desc step-desc--muted">결제 대기</span>
+                </div>
+                <div class="timeline-step step-pending">
+                    <span class="step-label">05. 발주 확정</span>
+                    <span class="step-desc step-desc--muted">발주 등록</span>
+                </div>
+            </div>
+
+            <!-- ③ Main Body: Left Column -->
+            <div class="body-layout">
+
+                <!-- Quote Manifest Table -->
+                <section class="section-manifest">
+                    <div class="manifest-header">
+                        <h2 class="manifest-id">A01-PEWGF-A</h2>
+                        <span class="manifest-count">4개의 아이템</span>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="quote-table">
+                            <thead>
+                            <tr>
+                                <th class="col-no">No.</th>
+                                <th class="col-product">상품</th>
+                                <th class="col-id">상품 아이디</th>
+                                <th class="col-qty">수량</th>
+                                <th class="col-spec">규격</th>
+                                <th class="col-price-unit">공급가액 (엔화)</th>
+                                <th class="col-price-total">공급가 총액 (엔화)</th>
+                                <th class="col-tax">세액 (한화)</th>
+                                <th class="col-subtotal">Subtotal (한화)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td class="col-no">1</td>
+                                <td class="col-product">
+                                    <span class="product-name">ESSENTIAL OVERSIZED TEE</span>
+                                    <span class="product-material">Japanese Heavyweight Cotton</span>
+                                </td>
+                                <td class="col-id product-code">BDN-ES-001</td>
+                                <td class="col-qty value-num">50</td>
+                                <td class="col-spec value-num">50</td>
+                                <td class="col-price-unit text-right">¥2,400</td>
+                                <td class="col-price-total text-right">¥2,400,000</td>
+                                <td class="col-tax text-right">₩2,400</td>
+                                <td class="col-subtotal text-right value-bold">₩1,096,800</td>
+                            </tr>
+                            <tr>
+                                <td class="col-no">2</td>
+                                <td class="col-product">
+                                    <span class="product-name">STRUCTURED DENIM JACKET</span>
+                                    <span class="product-material">14oz Selvedge Denim</span>
+                                </td>
+                                <td class="col-id product-code">BDN-DN-124</td>
+                                <td class="col-qty value-num">20</td>
+                                <td class="col-spec value-num">20</td>
+                                <td class="col-price-unit text-right">¥8,200</td>
+                                <td class="col-price-total text-right">¥8,200,000</td>
+                                <td class="col-tax text-right">¥8,200</td>
+                                <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                            </tr>
+                            <tr>
+                                <td class="col-no">3</td>
+                                <td class="col-product">
+                                    <span class="product-name">STRUCTURED DENIM JACKET</span>
+                                    <span class="product-material">14oz Selvedge Denim</span>
+                                </td>
+                                <td class="col-id product-code">BDN-DN-124</td>
+                                <td class="col-qty value-num">20</td>
+                                <td class="col-spec value-num">20</td>
+                                <td class="col-price-unit text-right">¥8,200</td>
+                                <td class="col-price-total text-right">¥8,200,000</td>
+                                <td class="col-tax text-right">¥8,200</td>
+                                <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                            </tr>
+                            <tr>
+                                <td class="col-no">4</td>
+                                <td class="col-product">
+                                    <span class="product-name">STRUCTURED DENIM JACKET</span>
+                                    <span class="product-material">14oz Selvedge Denim</span>
+                                </td>
+                                <td class="col-id product-code">BDN-DN-124</td>
+                                <td class="col-qty value-num">20</td>
+                                <td class="col-spec value-num">20</td>
+                                <td class="col-price-unit text-right">¥8,200</td>
+                                <td class="col-price-total text-right">¥8,200,000</td>
+                                <td class="col-tax text-right">¥8,200</td>
+                                <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Logistics & Procurement Fees -->
+                <div class="fees-grid">
+                    <div class="fee-card" onclick="openModal('logistics')">
+                        <div class="fee-card-header">
+                            <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1h14v10H1V1zm14 3h4l2 3v4h-6V4z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                                <circle cx="4.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                                <circle cx="16.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                            </svg>
+                            <h3 class="fee-card-title">예상 운임 비용</h3>
+                        </div>
+                        <div class="fee-items">
+                            <div class="fee-item">
+                                <span class="fee-label">표준 해상 운임비</span>
+                                <span class="fee-value">₩145,000</span>
+                            </div>
+                            <div class="fee-item">
+                                <span class="fee-label">항만 비용 및 통관 수수료</span>
+                                <span class="fee-value">₩88,000</span>
+                            </div>
+                            <div class="fee-item">
+                                <span class="fee-label">국내 배송비 (서울/수도권)</span>
+                                <span class="fee-value">₩45,000</span>
+                            </div>
+                            <div class="fee-subtotal">
+                                <span class="fee-subtotal-label">운송 비용 소계</span>
+                                <span class="fee-subtotal-value">₩278,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fee-card" onclick="openModal('procurement')">
+                        <div class="fee-card-header">
+                            <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 1H2C1.4 1 1 1.4 1 2v16c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V6l-5-5z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                                <path d="M10 1v5h5" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                                <path d="M4 10h8M4 13h6" stroke="#1a1c1c" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <h3 class="fee-card-title">구매 대행 수수료</h3>
+                        </div>
+                        <div class="fee-items">
+                            <div class="fee-item">
+                                <span class="fee-label">서비스 수수료 (상품가의 3.5%)</span>
+                                <span class="fee-value">₩90,851</span>
+                            </div>
+                            <div class="fee-item">
+                                <span class="fee-label">서류 발급 및 인허가비</span>
+                                <span class="fee-value">₩25,000</span>
+                            </div>
+                            <div class="fee-item">
+                                <span class="fee-label">1차 품질 검사</span>
+                                <span class="fee-value">₩0 <em class="included-badge">INCLUDED</em></span>
+                            </div>
+                            <div class="fee-subtotal">
+                                <span class="fee-subtotal-label">대행 서비스 소계</span>
+                                <span class="fee-subtotal-value">₩115,851</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Summary Section -->
+                <div class="cost-summary-section">
+                    <div class="cost-summary-heading">
+                        <span class="cost-summary-title">비용 명세 요약</span>
+                        <div class="heading-divider"></div>
+                    </div>
+                    <div class="cost-cards-grid">
+                        <div class="cost-card">
+                            <div class="cost-card-top">
+                                <span class="cost-card-label">해상 운임</span>
+                                <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 1v10M1 7l5 5 5-5" stroke="#a3a3a3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="cost-card-amount">₩1,240,000</div>
+                            <div class="cost-card-desc">
+                                Osaka Port (JP) to Busan<br>New Port (KR). Estimated<br>transit: 14 Days.
+                            </div>
+                        </div>
+                        <div class="cost-card">
+                            <div class="cost-card-top">
+                                <span class="cost-card-label">큐레이션 수수료</span>
+                                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="6.5" cy="6.5" r="5.5" stroke="#a3a3a3" stroke-width="1.2"/>
+                                    <path d="M6.5 4v3l2 1" stroke="#a3a3a3" stroke-width="1.2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="cost-card-amount">₩ 920,000</div>
+                            <div class="cost-card-desc">현지 품질 검수, 물류 조정 및 보험료</div>
+                        </div>
+                        <div class="cost-card">
+                            <div class="cost-card-top">
+                                <span class="cost-card-label">관세 및 통관 수수료</span>
+                                <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 1l4 3v6H1V4l4-3z" stroke="#a3a3a3" stroke-width="1.2" stroke-linejoin="round"/>
+                                    <path d="M3 8h4M3 6h4" stroke="#a3a3a3" stroke-width="1.2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="cost-card-amount">₩ 1,854,200</div>
+                            <div class="cost-card-desc">부가세(10%) 핸들링 비용 및 품목 분류 (HS Code) 신고료</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.body-layout -->
+
+            <!-- ④ Notice Banner -->
+            <div class="notice-banner">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="9" stroke="#737373" stroke-width="1.5"/>
+                    <path d="M10 9v5M10 6.5v.5" stroke="#737373" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <div class="notice-text">
+                    <p>본 견적의 유효 기간은 발행일로부터 영업일 기준 7일입니다.</p>
+                    <p>견적 금액은 현재 JPY/KRW 환율을 기준으로 산출되었으며 최종 인보이스 발행 시점의 환율에 따라 조정될 수 있습니다.</p>
+                </div>
+            </div>
+
+            <!-- ⑤ Final Payment Card -->
+            <div class="final-payment-card">
+                <div class="payment-info">
+                    <span class="payment-label">최종 결제 금액</span>
+                    <span class="payment-amount">₩ 22,617,200</span>
+                    <span class="payment-note">INC. VAT &amp; DELIVERY</span>
+                </div>
+                <div class="payment-actions">
+                    <button class="btn-approve">견적 승인</button>
+                    <button class="btn-renew">견적 갱신 요청</button>
+                </div>
+                <div class="quick-actions">
+                    <button class="btn-pdf">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="#1a1c1c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        PDF 다운로드
+                    </button>
+                </div>
+            </div>
+
+        </div><!-- /.main-canvas -->
+    </main>
+</div><!-- /.page-wrapper -->
+
+<!-- ===== MODAL: 예상 운임 비용 ===== -->
+<div class="modal-overlay" id="modal-logistics" role="dialog" aria-modal="true" aria-labelledby="modal-logistics-title">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <span class="modal-tag">운송 비용 상세</span>
+                <h2 class="modal-title" id="modal-logistics-title">예상 운임 비용</h2>
+            </div>
+            <button class="modal-close" onclick="closeModal('logistics')" aria-label="닫기">✕</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- 총계 -->
+            <div class="modal-total-row">
+                <span class="modal-total-label">운송 비용 소계</span>
+                <span class="modal-total-value">₩278,000</span>
+            </div>
+
+            <!-- 해상 운임 -->
+            <div>
+                <p class="modal-section-label">01 · 해상 운임</p>
+                <div class="modal-detail-rows">
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">운송 구간</span>
+                        <span class="modal-row-val">Osaka → Busan</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">운송 수단</span>
+                        <span class="modal-row-val">FCL 20ft 컨테이너</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">예상 소요일</span>
+                        <span class="modal-row-val">14일</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">운임 기준</span>
+                        <span class="modal-row-val">CIF 부산항</span>
+                    </div>
+                    <div class="modal-detail-row row-subtotal">
+                        <span class="modal-row-key">표준 해상 운임비</span>
+                        <span class="modal-row-val">₩145,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <!-- 항만·통관 -->
+            <div>
+                <p class="modal-section-label">02 · 항만 비용 및 통관</p>
+                <div class="modal-detail-rows">
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">항만 처리 수수료 (THC)</span>
+                        <span class="modal-row-val">₩42,000</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">선박 대기료 (Demurrage)</span>
+                        <span class="modal-row-val">₩18,000</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">수입 통관 신고 수수료</span>
+                        <span class="modal-row-val">₩18,000</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">통관 서류 대행비</span>
+                        <span class="modal-row-val">₩10,000</span>
+                    </div>
+                    <div class="modal-detail-row row-subtotal">
+                        <span class="modal-row-key">항만 비용 및 통관 수수료 소계</span>
+                        <span class="modal-row-val">₩88,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <!-- 국내 배송 -->
+            <div>
+                <p class="modal-section-label">03 · 국내 배송</p>
+                <div class="modal-detail-rows">
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">배송 구간</span>
+                        <span class="modal-row-val">부산항 → 서울 (수도권)</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">차량 종류</span>
+                        <span class="modal-row-val">1톤 탑차</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">예상 배송일</span>
+                        <span class="modal-row-val">1 ~ 2 영업일</span>
+                    </div>
+                    <div class="modal-detail-row row-subtotal">
+                        <span class="modal-row-key">국내 배송비 소계</span>
+                        <span class="modal-row-val">₩45,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 안내 메모 -->
+            <div class="modal-note">
+                <span class="modal-note-icon">⚠</span>
+                <p>운임 금액은 현재 선사 고시 요율 기준이며 출항 시점의 시황에 따라 ±5% 내외로 변동될 수 있습니다. 최종 금액은 선하증권(B/L) 발행 시 확정됩니다.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: 구매 대행 수수료 ===== -->
+<div class="modal-overlay" id="modal-procurement" role="dialog" aria-modal="true" aria-labelledby="modal-procurement-title">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <span class="modal-tag">대행 서비스 상세</span>
+                <h2 class="modal-title" id="modal-procurement-title">구매 대행 수수료</h2>
+            </div>
+            <button class="modal-close" onclick="closeModal('procurement')" aria-label="닫기">✕</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- 총계 -->
+            <div class="modal-total-row">
+                <span class="modal-total-label">대행 서비스 소계</span>
+                <span class="modal-total-value">₩115,851</span>
+            </div>
+
+            <!-- 서비스 수수료 -->
+            <div>
+                <p class="modal-section-label">01 · 서비스 수수료</p>
+                <div class="modal-detail-rows">
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">과금 기준</span>
+                        <span class="modal-row-val">상품 공급가의 3.5%</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">적용 공급가 합산</span>
+                        <span class="modal-row-val">¥25,960,000</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">환산 금액 (기준 환율 적용)</span>
+                        <span class="modal-row-val">₩2,595,760</span>
+                    </div>
+                    <div class="modal-detail-row row-subtotal">
+                        <span class="modal-row-key">서비스 수수료 소계</span>
+                        <span class="modal-row-val">₩90,851</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <!-- 서류·인허가 -->
+            <div>
+                <p class="modal-section-label">02 · 서류 발급 및 인허가</p>
+                <div class="modal-detail-rows">
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">원산지 증명서 (C/O) 발급</span>
+                        <span class="modal-row-val">₩8,000</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">수출입 신고 대행비</span>
+                        <span class="modal-row-val">₩10,000</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">인허가 행정 수수료</span>
+                        <span class="modal-row-val">₩7,000</span>
+                    </div>
+                    <div class="modal-detail-row row-subtotal">
+                        <span class="modal-row-key">서류·인허가 소계</span>
+                        <span class="modal-row-val">₩25,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-divider"></div>
+
+            <!-- 품질 검사 -->
+            <div>
+                <p class="modal-section-label">03 · 1차 품질 검사</p>
+                <div class="modal-detail-rows">
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">검사 항목</span>
+                        <span class="modal-row-val">외관·치수·소재</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">검사 수량</span>
+                        <span class="modal-row-val">총 110 pcs</span>
+                    </div>
+                    <div class="modal-detail-row">
+                        <span class="modal-row-key">검사 기관</span>
+                        <span class="modal-row-val">Goodee 현지 파트너</span>
+                    </div>
+                    <div class="modal-detail-row row-subtotal">
+                        <span class="modal-row-key">품질 검사 비용</span>
+                        <span class="modal-row-val" style="color: var(--color-gold-dark);">₩0 (포함)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 안내 메모 -->
+            <div class="modal-note">
+                <span class="modal-note-icon">ℹ</span>
+                <p>서비스 수수료는 최종 인보이스 기준 공급가에 재산출되어 청구됩니다. 품질 검사 결과 불량률이 5%를 초과할 경우 추가 검수 비용이 발생할 수 있습니다.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal(type) {
+        const overlay = document.getElementById('modal-' + type);
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(type) {
+        const overlay = document.getElementById('modal-' + type);
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.is-open').forEach(function(el) {
+                el.classList.remove('is-open');
+            });
+            document.body.style.overflow = '';
+        }
+    });
+
+    // 오버레이 배경 클릭으로 닫기
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
