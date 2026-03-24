@@ -31,7 +31,7 @@ public class ExchangeRateClientTests {
 
         log.info("=== 환율 ===");
         rates.forEach((currency, rate) ->
-                log.info(currency + " : " + rate));
+                log.info("1 "+ currency + " = " + rate + " KRW"));
     }
 
 
