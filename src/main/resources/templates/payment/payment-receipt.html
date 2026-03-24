@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>결제 완료 — BEEDAN</title>
+    <link rel="stylesheet" th:href="@{/css/payment/payment-receipt.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=KoPub+Batang:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<div class="page">
+
+    <!-- ── HERO ── -->
+    <header class="hero">
+        <div class="hero__left">
+            <span class="hero__badge">조달 승인 완료</span>
+            <h1 class="hero__title">결제가 완료되었습니다</h1>
+            <div class="hero__order">
+                <span class="hero__order-icon">✔</span>
+                <span class="hero__order-no">ORDER #BD-2024-00195 CONFIRMED</span>
+            </div>
+        </div>
+        <div class="hero__right">
+            <button class="btn-receipt" onclick="window.print()">
+                ↓ &nbsp;결제 영수증 저장
+            </button>
+        </div>
+    </header>
+
+    <main class="main">
+
+        <!-- ── 01. STATUS TIMELINE ── -->
+        <section class="section">
+            <div class="section-label">
+                <span class="section-label__text">Status Timeline</span>
+                <div class="section-label__line"></div>
+            </div>
+            <div class="timeline">
+                <div class="timeline__connector"></div>
+                <div class="timeline__step timeline__step--done">
+                    <div class="timeline__num timeline__num--done">01</div>
+                    <div class="timeline__info">
+                        <p class="timeline__name">주문 접수</p>
+                        <p class="timeline__date">2026년 3월 24일 · 09:14 AM</p>
+                    </div>
+                </div>
+                <div class="timeline__step timeline__step--done">
+                    <div class="timeline__num timeline__num--done">02</div>
+                    <div class="timeline__info">
+                        <p class="timeline__name">결제 완료</p>
+                        <p class="timeline__date">2026년 3월 24일 · 09:16 AM</p>
+                    </div>
+                </div>
+                <div class="timeline__step timeline__step--pending">
+                    <div class="timeline__num timeline__num--pending">03</div>
+                    <div class="timeline__info">
+                        <p class="timeline__name timeline__name--pending">물류 처리 중</p>
+                        <p class="timeline__date timeline__date--pending">예상 소요: 영업일 1~2일</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── 02. PURCHASED INVENTORY ── -->
+        <section class="section">
+            <div class="section-label">
+                <span class="section-label__text">구매 품목</span>
+                <div class="section-label__line"></div>
+            </div>
+            <div class="item-list">
+                <div class="item">
+                    <div class="item__thumb">
+                        <span class="item__thumb-placeholder">TEE</span>
+                    </div>
+                    <div class="item__info">
+                        <p class="item__name">Essential Heavyweight Tee</p>
+                        <p class="item__sku">SKU: BD-WHT-01 · White · Case of 50</p>
+                    </div>
+                    <div class="item__price-wrap">
+                        <p class="item__price">₩1,250,000</p>
+                        <p class="item__qty">수량: 2박스</p>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="item__thumb">
+                        <span class="item__thumb-placeholder">HDY</span>
+                    </div>
+                    <div class="item__info">
+                        <p class="item__name">Structured French Terry Hoodie</p>
+                        <p class="item__sku">SKU: BD-BLK-04 · Onyx · Case of 25</p>
+                    </div>
+                    <div class="item__price-wrap">
+                        <p class="item__price">₩2,100,000</p>
+                        <p class="item__qty">수량: 1박스</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── 03. ORDER SUMMARY ── -->
+        <section class="section">
+            <div class="section-label">
+                <span class="section-label__text">주문 요약</span>
+                <div class="section-label__line"></div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card__heading">
+                    <span class="summary-card__heading-text">Order Summary</span>
+                </div>
+                <div class="summary-rows">
+                    <div class="summary-row">
+                        <span class="summary-row__label">소계</span>
+                        <span class="summary-row__value">₩3,350,000</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-row__label">배송비 (B2B 우선)</span>
+                        <span class="summary-row__value">₩85,000</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-row__label">대행 서비스 비용</span>
+                        <span class="summary-row__value">₩200,000</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-row__label">부가세 (VAT 10%)</span>
+                        <span class="summary-row__value">₩363,500</span>
+                    </div>
+                    <div class="summary-row summary-row--total">
+                        <span class="summary-row__label">최종 결제 금액</span>
+                        <span class="summary-row__value summary-row__value--total">₩3,998,500</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── 04. SHIPPING ADDRESS ── -->
+        <section class="section">
+            <div class="section-label">
+                <span class="section-label__text">배송지 정보</span>
+                <div class="section-label__line"></div>
+            </div>
+            <div class="info-card">
+                <p class="info-card__company">비단 주식회사</p>
+                <p class="info-card__line">담당: 구매팀</p>
+                <p class="info-card__line">서울특별시 강남구 테헤란로 123, 4층</p>
+                <p class="info-card__line">대한민국</p>
+            </div>
+        </section>
+
+        <!-- ── 05. PAYMENT METHOD ── -->
+        <section class="section">
+            <div class="section-label">
+                <span class="section-label__text">결제 수단</span>
+                <div class="section-label__line"></div>
+            </div>
+            <div class="info-card info-card--row">
+                <div class="payment-method__icon">💳</div>
+                <div class="payment-method__detail">
+                    <p class="payment-method__name">가상계좌 · 국민은행</p>
+                    <p class="payment-method__txn">거래 ID: TXN_88192301</p>
+                </div>
+                <!-- 세금계산서 발행 상태 — 결제 완료 후 자동 발행 -->
+                <div class="tax-badge">
+                    <span class="tax-badge__dot"></span>
+                    세금계산서 발행 완료
+                </div>
+            </div>
+        </section>
+
+        <!-- ── 06. TAX INVOICE ── -->
+        <section class="section">
+            <div class="section-label">
+                <span class="section-label__text">세금계산서</span>
+                <div class="section-label__line"></div>
+            </div>
+            <div class="info-card tax-invoice">
+                <div class="tax-invoice__header">
+                    <div class="tax-invoice__meta">
+                        <!-- TODO: 서버에서 주입 -->
+                        <p class="tax-invoice__no">TAX-2026-00195</p>
+                        <!-- TODO: 서버에서 주입 -->
+                        <p class="tax-invoice__date">2026년 3월 24일 · 09:16 AM</p>
+                    </div>
+                    <div class="tax-badge">
+                        <span class="tax-badge__dot"></span>
+                        발행 완료
+                    </div>
+                </div>
+                <div class="tax-invoice__rows">
+                    <div class="tax-invoice__row">
+                        <span class="tax-invoice__label">공급가액</span>
+                        <!-- TODO: 서버에서 주입 -->
+                        <span class="tax-invoice__value">₩3,635,000</span>
+                    </div>
+                    <div class="tax-invoice__row">
+                        <span class="tax-invoice__label">세액</span>
+                        <!-- TODO: 서버에서 주입 -->
+                        <span class="tax-invoice__value">₩363,500</span>
+                    </div>
+                    <div class="tax-invoice__row tax-invoice__row--total">
+                        <span class="tax-invoice__label">합계</span>
+                        <!-- TODO: 서버에서 주입 -->
+                        <span class="tax-invoice__value tax-invoice__value--total">₩3,998,500</span>
+                    </div>
+                </div>
+                <div class="tax-invoice__actions">
+                    <button class="btn-receipt">↓ &nbsp;PDF 다운로드</button>
+                    <button class="btn-outline">✉ &nbsp;이메일 재발송</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── 07. NOTICE ── -->
+        <section class="notice">
+            <p class="notice__text">
+                본 거래의 세금계산서는 결제 확인 후 자동 발행되어 등록된 이메일로 전송됩니다.
+                발행 관련 문의는 <strong>support@beedan.co.kr</strong> 로 연락해주세요.
+            </p>
+        </section>
+
+        <!-- ── BACK LINK ── -->
+        <div class="back-link">
+            <a href="#" class="back-link__anchor">← 대시보드로 돌아가기</a>
+        </div>
+
+    </main>
+
+    <!-- ── BRAND BLOCK ── -->
+    <div class="brand-block">
+        <span class="brand-letter">B</span>
+        <div class="brand-info">
+            <p class="brand-title">BEEDAN 정밀 검수 시스템</p>
+            <p class="brand-sub">Verified Supply Chain Asset No. 4920-X</p>
+        </div>
+    </div>
+
+</div><!-- /page -->
+
+</body>
+</html>
