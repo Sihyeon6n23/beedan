@@ -50,9 +50,10 @@ dependencies {
 	implementation 'com.microsoft.playwright:playwright:1.49.0'
   	implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient 사용
 
-
-
 	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// WebSocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {

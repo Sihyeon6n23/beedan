@@ -2,14 +2,18 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{admin/chat/admin-sidebar :: adminChatSidebar},
+          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Chat List', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | Admin Chat List</title>
 
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
+</th:block>
+
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/admin-chat.css}">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
     <section class="admin-chat-page admin-chat-list-page">
         <header class="admin-chat-shell admin-chat-shell--header">
@@ -73,7 +77,7 @@
                 <button type="button"
                         class="admin-chat-row admin-chat-row--button admin-chat-row--featured"
                         data-modal-open="assign"
-                        data-detail-url="/admin/chat/detail">
+                        th:attr="data-detail-url=@{/admin/chat/detail}">
                     <div class="admin-chat-row__primary">
                         <span class="admin-chat-row__unread"></span>
                         <div class="admin-chat-row__text">
@@ -95,7 +99,7 @@
                 <button type="button"
                         class="admin-chat-row admin-chat-row--button admin-chat-row--featured"
                         data-modal-open="assign"
-                        data-detail-url="/admin/chat/detail">
+                        th:attr="data-detail-url=@{/admin/chat/detail}">
                     <div class="admin-chat-row__primary">
                         <span class="admin-chat-row__unread"></span>
                         <div class="admin-chat-row__text">
@@ -176,9 +180,9 @@
             </label>
         </footer>
 
-        <div th:replace="~{fragments/admin/chat/assign-confirm-modal :: assignConfirmModal}"></div>
+        <div th:replace="~{fragments/chat/admin-assign-modal :: assignConfirmModal}"></div>
     </section>
 
-    <script defer th:src="@{/js/admin-chat.js}"></script>
+    <script defer th:src="@{/js/chat/admin-chat.js}"></script>
 </th:block>
 </html>

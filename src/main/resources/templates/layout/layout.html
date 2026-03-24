@@ -11,7 +11,7 @@
 <body class="bg-background flex flex-col min-h-screen">
 <header th:replace="~{fragments/header :: headerFragment}"></header>
 
-<div class="flex flex-grow w-full py-24">
+<div class="flex flex-grow w-full pt-16">
     <div th:if="${sidebar}" class="flex-shrink-0">
         <aside th:replace="${sidebar}"></aside>
     </div>
@@ -22,7 +22,7 @@
 </div>
 <footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
 <!--<th:block th:if="${session.loginMember != null and session.loginMember.memAut != null and session.loginMember.memAut.name() == 'USER'}">-->
-<div th:replace="~{fragments/member/chat/widget :: memberChatWidget}"></div>
+    <div th:replace="~{fragments/chat/member-widget :: memberChatWidget}"></div>
 <!--</th:block>-->
 
 <script>
