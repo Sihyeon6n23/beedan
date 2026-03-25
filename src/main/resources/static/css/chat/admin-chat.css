@@ -1,4 +1,4 @@
-.admin-chat-page {
+.sidebar-frame {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -11,21 +11,25 @@
   margin-bottom: 0;
 }
 
-.admin-chat-page > * {
+.sidebar-frame > * {
   width: 100%;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:last-child {
+  justify-content: flex-start;
+}
+
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 {
   align-items: stretch;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child {
   display: flex;
   flex: 0 0 16rem;
   min-width: 16rem;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:last-child {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:last-child {
   display: flex;
   flex: 1 1 auto;
   min-width: 0;
@@ -33,18 +37,11 @@ body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:last-child {
   padding-left: 0 !important;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:last-child > main {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:last-child > main {
   width: 100%;
 }
 
-body:has(.admin-chat-page) .sidebar-frame {
-  width: 100%;
-  padding: 0;
-  background: linear-gradient(180deg, #f3eee3 0%, #ece4d6 100%);
-  box-shadow: 10px 0 26px rgba(80, 62, 16, 0.08);
-}
-
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame__inner {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__inner {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -53,33 +50,40 @@ body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sid
   padding-bottom: 1.25rem;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame__header {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__header {
   margin-top: 0;
   margin-bottom: 1.35rem;
   padding: 1.9rem 1.5rem 0;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame__nav {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__nav {
   width: 100%;
   padding: 0 0.9rem;
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame__rule {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__rule {
   margin-top: 2.9rem;
   width: 100%;
   height: 2px;
   background: rgba(196, 183, 153, 0.75);
 }
 
-body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame__rule span {
+body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__rule span {
   display: block;
   width: 6.1rem;
   height: 100%;
   background: #e7c84b;
 }
 
+body:has(.sidebar-frame) .sidebar-frame-frame {
+  width: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #f3eee3 0%, #ece4d6 100%);
+  box-shadow: 10px 0 26px rgba(80, 62, 16, 0.08);
+}
+
 @media (max-width: 1280px) {
-  .admin-chat-page {
+  .sidebar-frame {
     width: 100%;
   }
 }
@@ -581,7 +585,7 @@ body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sid
   align-items: center;
 }
 
-.admin-chat-page-button {
+.sidebar-frame-button {
   min-width: 3rem;
   height: 3rem;
   padding: 0 0.9rem;
@@ -594,18 +598,18 @@ body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:first-child .sid
   transition: all 0.2s ease;
 }
 
-.admin-chat-page-button:hover {
+.sidebar-frame-button:hover {
   background: #fffdfa;
   color: var(--color-on-background);
   border-color: rgba(112, 93, 0, 0.18);
 }
 
-.admin-chat-page-button--wide {
+.sidebar-frame-button--wide {
   min-width: 4.5rem;
   background: var(--color-surface-container-low);
 }
 
-.admin-chat-page-button.is-current {
+.sidebar-frame-button.is-current {
   border-color: var(--color-primary-container);
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
@@ -1169,17 +1173,13 @@ body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
 }
 
 @media (max-width: 900px) {
-  .admin-chat-page {
+  .sidebar-frame {
     width: 100%;
     max-width: none;
     padding-top: 1.25rem;
     padding-inline: 1rem;
     margin-inline: 0;
     margin-bottom: 0;
-  }
-
-  body:has(.admin-chat-page) > .flex.flex-grow.w-full.pt-16 > div:last-child {
-    justify-content: flex-start;
   }
 
   .admin-chat-list-page {
@@ -1191,7 +1191,7 @@ body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
     padding-bottom: 2.5rem;
   }
 
-  .admin-chat-page {
+  .sidebar-frame {
     margin-top: 0;
   }
 
