@@ -18,15 +18,12 @@ public class PaymentController {
         return "/payment/payment-receipt";
     }
 
-
-
-
-
-
-    @GetMapping("/success")
-    public String getSuccess() {
-        return "/payment/payment-success";
+    @GetMapping("/quote-detail")
+    public String getQuoteDetail() {
+        return "/payment/payment-quote-detail";
     }
+
+
     @GetMapping("/fail")
     public String getFail() {
         return "/payment/payment-fail";
