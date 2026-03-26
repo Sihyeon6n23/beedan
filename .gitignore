@@ -31,9 +31,6 @@ Thumbs.db
 .claude/
 CLAUDE.md
 
-### DB
-data.sql
-schema.sql
 
 ### application.properties
 application.properties

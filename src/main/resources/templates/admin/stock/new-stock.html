@@ -2,11 +2,15 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{admin/revenue/admin-sidebar :: adminCrawlingSidebar},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'NEW STOCK', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Crawling</title>
+<title th:fragment="title">BEEDAN | New Stock</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-new')}"></div>
+</th:block>
 
 <th:block th:fragment="content">
 <link rel="stylesheet" th:href="@{/css/crawling/admin-crawling.css}"/>
@@ -73,16 +77,16 @@
         <!-- URL 등록 폼 -->
         <div class="admin-crawling-shell">
             <h2 class="admin-crawling-section-title">URL 등록</h2>
-            <form th:action="@{/admin/newstock/url}" method="post" class="admin-crawling-form">
+            <form th:object="${url}" th:action="@{/admin/newstock/url}" method="post" class="admin-crawling-form">
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">크롤링 URL</label>
-                    <input type="url" name="urlUrl" required placeholder="https://example.com/collections/outerwear"
+                    <input type="url" th:field="*{urlUrl}" required placeholder="https://example.com/collections/outerwear"
                            class="admin-crawling-input"/>
                 </div>
                 <div class="admin-crawling-row">
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">브랜드 <span>(선택 또는 새 이름 입력)</span></label>
-                        <input type="text" name="brNm" list="brand-list" required placeholder="Kapital"
+                        <input type="text" th:field="*{brNm}" list="brand-list" required placeholder="Kapital"
                                class="admin-crawling-input"/>
                         <datalist id="brand-list">
                             <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
@@ -90,7 +94,7 @@
                     </div>
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">카테고리 <span>(선택, 직접 입력, AI 자동 분류)</span></label>
-                        <input type="text" name="catNm" list="cat-list" required placeholder="Outwear 또는 AI 자동 분류"
+                        <input type="text" th:field="*{catNm}" list="cat-list" required placeholder="Outwear 또는 AI 자동 분류"
                                class="admin-crawling-input"/>
                         <datalist id="cat-list">
                             <option value="AI 자동 분류"></option>

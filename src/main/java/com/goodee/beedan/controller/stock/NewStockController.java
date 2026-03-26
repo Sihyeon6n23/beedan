@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.stock;
 
+import com.goodee.beedan.dto.crawling.UrlForm;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
 import com.goodee.beedan.entity.CrawlingUrl;
@@ -8,6 +9,7 @@ import com.goodee.beedan.repository.category.CategoryRepository;
 import com.goodee.beedan.repository.crawling.CrawlingUrlRepository;
 import com.goodee.beedan.service.crawling.CrawlingService;
 import com.goodee.beedan.service.stock.StockService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -44,7 +46,8 @@ public class NewStockController {
     private String uploadDir;
 
     @GetMapping
-    public String crawlingPage(Model model) {
+    public String crawlingPage(Model model,
+                               @ModelAttribute("url") UrlForm urlForm) {
         List<CrawlingUrl> urls = crawlingService.findAllUrls();
         List<Brand> brands = brandRepository.findAll();
         List<Category> categories = categoryRepository.findAll();
@@ -60,7 +63,7 @@ public class NewStockController {
         model.addAttribute("categories", categories);
         model.addAttribute("brandMap", brandMap);
         model.addAttribute("catMap", catMap);
-        return "admin/revenue/new-stock";
+        return "admin/stock/new-stock";
     }
 
     @GetMapping("/check-type/{id}")
@@ -76,24 +79,22 @@ public class NewStockController {
     }
 
     @PostMapping("/url")
-    public String saveUrl(@RequestParam String urlUrl,
-                          @RequestParam String brNm,
-                          @RequestParam String catNm,
+    public String saveUrl(@Valid @ModelAttribute("url") UrlForm urlForm,
                           RedirectAttributes redirectAttributes) {
-        Brand brand = brandRepository.findByBrNm(brNm)
-                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(brNm).build()));
+        Brand brand = brandRepository.findByBrNm(urlForm.getBrNm())
+                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(urlForm.getBrNm()).build()));
 
         Long catId;
-        if ("AI 자동 분류".equals(catNm)) {
+        if ("AI 자동 분류".equals(urlForm.getCatNm())) {
             catId = 0L;
         } else {
-            Category category = categoryRepository.findByCatNm(catNm)
-                    .orElseGet(() -> categoryRepository.save(Category.builder().catNm(catNm).build()));
+            Category category = categoryRepository.findByCatNm(urlForm.getCatNm())
+                    .orElseGet(() -> categoryRepository.save(Category.builder().catNm(urlForm.getCatNm()).build()));
             catId = category.getCatId();
         }
 
         crawlingService.saveUrl(CrawlingUrl.builder()
-                .urlUrl(urlUrl)
+                .urlUrl(urlForm.getUrlUrl())
                 .brId(brand.getBrId())
                 .catId(catId)
                 .build());

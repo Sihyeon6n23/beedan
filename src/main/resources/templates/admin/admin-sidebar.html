@@ -18,15 +18,15 @@
             </div>
 
             <div class="admin-sidebar-menu__child-wrap">
-                <a th:href="@{/admin/stock/list}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'stock-list'} ? ' admin-sidebar-menu__child-link--current' : ''">
-                    상품 목록
-                </a>
                 <a th:href="@{/admin/newstock}"
                    class="admin-sidebar-menu__child-link"
                    th:classappend="${activeSub == 'stock-new'} ? ' admin-sidebar-menu__child-link--current' : ''">
-                    새 상품 등록
+                    상품 등록
+                </a>
+                <a th:href="@{/admin/newstock}"
+                   class="admin-sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-required'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                    상품 요청 조회
                 </a>
             </div>
         </div>

@@ -1,0 +1,26 @@
+package com.goodee.beedan.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Wishlist {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long wiId;
+    private Long stId;
+    private Long memId;
+    private LocalDateTime wiCreDt;
+}

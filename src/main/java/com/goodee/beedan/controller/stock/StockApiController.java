@@ -21,6 +21,7 @@ public class StockApiController {
             @RequestParam(required = false) List<String> categories,
             @RequestParam(defaultValue = "popularity") String sort,
             @RequestParam(defaultValue = "0") int page) {
-        return stockService.findFiltered(brands, categories, sort, page);
+        Long memId = 1L;
+        return stockService.findFiltered(brands, categories, sort, page, memId);
     }
 }
