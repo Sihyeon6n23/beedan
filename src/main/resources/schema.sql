@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS stock (
                                      st_cd        VARCHAR(50),
     br_id        BIGINT,
     st_br_nm     VARCHAR(20),
-    st_cat       VARCHAR(20),
+    cat_id       VARCHAR(20),
     st_cat_nm    VARCHAR(20),
     st_nm        VARCHAR(50),
     st_pr        DECIMAL(10,2),
@@ -51,8 +51,13 @@ CREATE TABLE IF NOT EXISTS crawling_url (
     url_sel_nm   VARCHAR(100),
     url_sel_pr   VARCHAR(100),
     url_sel_img  VARCHAR(300),
-    url_cur      VARCHAR(5)
-    );
+    url_cur      VARCHAR(5),
+    url_ty       VARCHAR(20),
+    url_upd_dt   DATETIME,
+    url_use_yn   BOOLEAN,
+    url_del_yn   BOOLEAN,
+    url_at_yn    BOOLEAN
+);
 
 CREATE TABLE IF NOT EXISTS wishlist (
                                         wi_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -260,6 +265,7 @@ CREATE TABLE `RECIEVER` (
     `rc_del_yn`	BOOLEAN NULL,
     `mem_id`	BIGINT	NOT NULL
 );
+
 -- =====================
 -- 임 욱 END
 -- =====================

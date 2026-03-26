@@ -24,7 +24,7 @@ public class Stock {
     private String stCd; // 상품 코드
     private Long brId; // 브랜드 id
     private String stBrNm; // 브랜드명
-    private String stCat; // 카테고리 id
+    private Long catId; // 카테고리 id
     private String stCatNm; // 카테고리명
     private String stNm; // 상품명
     private BigDecimal stPr; // 상품 가격

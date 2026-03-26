@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @Builder
@@ -25,4 +27,12 @@ public class CrawlingUrl {
     private String urlSelPr;
     private String urlSelImg;
     private String urlCur;
+
+    // 크롤링 방식
+    private String urlTy;
+
+    private LocalDateTime urlUpdDt;
+    private boolean urlUseYn;
+    private boolean urlDelYn;
+    private boolean urlAtYn;
 }

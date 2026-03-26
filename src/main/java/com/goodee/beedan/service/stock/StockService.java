@@ -1,5 +1,6 @@
 package com.goodee.beedan.service.stock;
 
+import com.goodee.beedan.dto.stock.NewStockForm;
 import com.goodee.beedan.dto.stock.StockListDto;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
@@ -48,7 +49,8 @@ public class StockService {
 
     // 전체 브랜드 목록 불러오기
     public List<Brand> findAllBrands() {
-        return brandRepository.findAll();
+
+        return brandRepository.findAllByOrderByBrNmAsc();
     }
 
     // 전체 카테고리 목록 불러오기
@@ -57,7 +59,12 @@ public class StockService {
     }
 
     // 필터 + 정렬 조회
-    public Page<StockListDto> findFiltered(List<Long> brandIds, List<String> catNms, String sort, int page, Long memId) {
+    public Page<StockListDto> findFiltered(List<Long> brandIds
+                                         , List<String> catNms
+                                         , String keyword
+                                         , String sort
+                                         , int page
+                                         , Long memId) {
         Sort sorting = switch (sort != null ? sort : "recent") {
             case "popularity" -> Sort.by(Sort.Direction.DESC, "stWisCnt");
             case "price-asc" -> Sort.by(Sort.Direction.ASC, "stPr");
@@ -77,6 +84,13 @@ public class StockService {
             if (catNms != null && !catNms.isEmpty()) {
                 predicates.add(root.get("stCatNm").in(catNms));
             }
+            if (keyword != null && !keyword.isBlank()) {
+                String pattern = "%" + keyword.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("stNm")), pattern),
+                        cb.like(cb.lower(root.get("stBrNm")),pattern)
+                        ));
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
@@ -92,31 +106,24 @@ public class StockService {
 
     // 요청 상품 등록 (수동)
     @Transactional
-    public void saveManual(String stCd, String stNm, String brNm, String catNm,
-                           BigDecimal stPr, String stCur, String stImgUrl, Long stReqMemId) {
-        Brand brand = brandRepository.findByBrNm(brNm)
-                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(brNm).build()));
+    public void saveManual(NewStockForm newStockForm, String imgUrl) {
+        Brand brand = brandRepository.findByBrNm(newStockForm.getBrNm())
+                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(newStockForm.getBrNm()).build()));
 
-        String catId = null;
-        String catNmFinal = null;
-        if (catNm != null && !catNm.isBlank()) {
-            Category category = categoryRepository.findByCatNm(catNm)
-                    .orElseGet(() -> categoryRepository.save(Category.builder().catNm(catNm).build()));
-            catId = String.valueOf(category.getCatId());
-            catNmFinal = category.getCatNm();
-        }
+        Category category = categoryRepository.findByCatNm(newStockForm.getCatNm())
+                .orElseGet(() -> categoryRepository.save(Category.builder().catNm(newStockForm.getCatNm()).build()));
 
         stockRepository.save(Stock.builder()
-                .stCd(stCd)
-                .stNm(stNm)
+                .stCd(newStockForm.getStCd())
+                .stNm(newStockForm.getStNm())
                 .brId(brand.getBrId())
                 .stBrNm(brand.getBrNm())
-                .stCat(catId)
-                .stCatNm(catNmFinal)
-                .stPr(stPr)
-                .stCur(stCur)
-                .stImgUrl(stImgUrl)
-                .stReqMemId(stReqMemId)
+                .catId(category.getCatId())
+                .stCatNm(category.getCatNm())
+                .stPr(newStockForm.getStPr())
+                .stCur(newStockForm.getStCur())
+                .stImgUrl(imgUrl)
+                .stReqMemId(newStockForm.getStReqMemId())
                 .stExpYn(true)
                 .stUseYn(true)
                 .stDelYn(false)

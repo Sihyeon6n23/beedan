@@ -81,9 +81,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link th:href="@{/css/stock/stock-list.css}" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
 <script th:inline="javascript">
-    // 테스트용 임시 로그인 아이디 부여
-    const loginMemId = /*[[1]]*/ null;
+    const memberId = /*[[${memberId}]]*/ null;
+</script>
+<script>
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    axios.defaults.headers.common[csrfHeader] = csrfToken;
 </script>
 <!-- TopNavBar -->
 
@@ -134,17 +140,26 @@
                 <li class="text-on-primary-container">Stock</li>
             </ol>
         </nav>
+
         <div class="flex justify-between items-end mb-12">
             <h1 class="text-6xl font-headline font-black tracking-tighter">STOCK</h1>
-            <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
-                <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
-                <select id="sort-select" class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
-                    <option value="recent">Recent</option>
-                    <option value="popularity">Popularity</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="most-purchased">Most Purchased</option>
-                </select>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                    <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Search</span>
+                    <input id="search-input" type="text" placeholder="Search..."
+                           class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-36" />
+                    <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+                </div>
+                <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                    <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
+                    <select id="sort-select" class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
+                        <option value="recent">Recent</option>
+                        <option value="popularity">Popularity</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="most-purchased">Most Purchased</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -237,7 +252,7 @@
         event.preventDefault();
 
         // 비로그인 사용자가 하트 클릭시
-        if (!loginMemId) {
+        if (!memberId)  {
             // 모달 띄우기
             document.getElementById('login-modal').classList.remove('hidden');
             return;
@@ -287,6 +302,10 @@
 
     function getSort() {
         return document.getElementById('sort-select').value;
+    }
+
+    function getKeyword() {
+        return document.getElementById('search-input').value.trim();
     }
 
     function formatPrice(cur, price) {
@@ -376,6 +395,9 @@
         currentPage = page || 0;
         const params = { sort: getSort(), page: currentPage };
 
+        const keyword = getKeyword();
+        if (keyword) params.keyword = keyword;
+
         const brands = getSelectedBrands();
         if (brands.length > 0) params.brands = brands;
 
@@ -410,6 +432,12 @@
         cb.addEventListener('change', () => loadProducts(0));
     });
     document.getElementById('sort-select').addEventListener('change', () => loadProducts(0));
+
+    let searchTimer;
+    document.getElementById('search-input').addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadProducts(0), 300);
+    });
 })();
 </script>
 

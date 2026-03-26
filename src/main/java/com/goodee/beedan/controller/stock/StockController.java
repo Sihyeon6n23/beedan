@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.stock;
 
+import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.stock.StockListDto;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
@@ -26,13 +27,18 @@ public class StockController {
     // 상품 목록
     @GetMapping("/list")
     public String getStocks(
-            @PageableDefault(page = 0, size = 8, sort = "stCreDt", direction = Sort.Direction.DESC)
+            @PageableDefault(page = 0, size = 8, sort = "stId", direction = Sort.Direction.DESC)
             Pageable pageable,
-            Model model)
-//            @AuthenticationPrincipal MemberUserDetails userDetails)
+            Model model,
+            @AuthenticationPrincipal MemberUserDetails userDetails)
             {
-//        Long memId = userDetails.getMemId();
-        Long memId = 1L;
+                Long memId;
+                if(userDetails == null) {
+                    memId = null;
+                } else {
+                    memId = userDetails.getMemberId();
+                }
+                model.addAttribute("memberId", memId);
         Page<StockListDto> page = stockService.findAllStocks(pageable, memId);
         List<Brand> brands = stockService.findAllBrands();
         List<Category> categories = stockService.findAllCategories();

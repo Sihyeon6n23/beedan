@@ -1,6 +1,8 @@
 package com.goodee.beedan.controller.stock;
 
+import com.goodee.beedan.dto.crawling.SelectorForm;
 import com.goodee.beedan.dto.crawling.UrlForm;
+import com.goodee.beedan.dto.stock.NewStockForm;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
 import com.goodee.beedan.entity.CrawlingUrl;
@@ -9,7 +11,6 @@ import com.goodee.beedan.repository.category.CategoryRepository;
 import com.goodee.beedan.repository.crawling.CrawlingUrlRepository;
 import com.goodee.beedan.service.crawling.CrawlingService;
 import com.goodee.beedan.service.stock.StockService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 @Controller
 @RequiredArgsConstructor
@@ -70,16 +74,27 @@ public class NewStockController {
     @ResponseBody
     public Map<String, String> checkType(@PathVariable Long id) {
         CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow();
-        boolean shopify = crawlingService.isShopify(url.getUrlUrl());
-        boolean hasSel = url.getUrlCur() != null && !url.getUrlCur().isBlank();
+        String urlTy = url.getUrlTy();
+
+        String type;
+
+        if (urlTy != null) {
+            type = "SHOPIFY".equals(urlTy) ? "shopify" : "html";
+        } else {
+            // 첫 크롤링 — 타입 감지 + DB 저장
+            boolean shopify = crawlingService.isShopify(url.getUrlUrl());
+            type = shopify ? "shopify" : "html";
+            url.setUrlTy(shopify ? "SHOPIFY" : null);
+            if (shopify) crawlingUrlRepository.save(url);
+        }
+
         Map<String, String> result = new HashMap<>();
-        result.put("type", shopify ? "shopify" : "html");
-        result.put("hasSel", String.valueOf(hasSel));
+        result.put("type", type);
         return result;
     }
 
     @PostMapping("/url")
-    public String saveUrl(@Valid @ModelAttribute("url") UrlForm urlForm,
+    public String saveUrl(UrlForm urlForm,
                           RedirectAttributes redirectAttributes) {
         Brand brand = brandRepository.findByBrNm(urlForm.getBrNm())
                 .orElseGet(() -> brandRepository.save(Brand.builder().brNm(urlForm.getBrNm()).build()));
@@ -93,10 +108,14 @@ public class NewStockController {
             catId = category.getCatId();
         }
 
-        crawlingService.saveUrl(CrawlingUrl.builder()
+        crawlingService.saveUrl(
+                CrawlingUrl.builder()
                 .urlUrl(urlForm.getUrlUrl())
                 .brId(brand.getBrId())
                 .catId(catId)
+                .urlUseYn(TRUE)
+                .urlDelYn(FALSE)
+                .urlAtYn(TRUE)
                 .build());
         redirectAttributes.addFlashAttribute("message", "URL이 등록되었습니다.");
         return "redirect:/admin/newstock";
@@ -104,17 +123,11 @@ public class NewStockController {
 
     // 자체 상품 등록 (수동)
     @PostMapping("/manual")
-    public String saveManual(@RequestParam String stCd,
-                             @RequestParam String stNm,
-                             @RequestParam String brNm,
-                             @RequestParam(required = false) String catNm,
-                             @RequestParam BigDecimal stPr,
-                             @RequestParam String stCur,
-                             @RequestParam Long stReqMemId,
-                             @RequestParam(required = false) MultipartFile imgFile,
+    public String saveManual(NewStockForm newStockForm,
                              RedirectAttributes redirectAttributes) {
         try {
             String imgUrl = null;
+            MultipartFile imgFile = newStockForm.getImgFile();
             if (imgFile != null && !imgFile.isEmpty()) {
                 String ext = imgFile.getOriginalFilename() != null
                         ? imgFile.getOriginalFilename().substring(imgFile.getOriginalFilename().lastIndexOf('.'))
@@ -126,7 +139,7 @@ public class NewStockController {
                 imgUrl = "/stock/" + fileName;
             }
 
-            stockService.saveManual(stCd, stNm, brNm, catNm, stPr, stCur, imgUrl, stReqMemId);
+            stockService.saveManual(newStockForm, imgUrl);
             redirectAttributes.addFlashAttribute("message", "상품이 등록되었습니다.");
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "이미지 업로드 실패: " + e.getMessage());
@@ -137,35 +150,12 @@ public class NewStockController {
         return "redirect:/admin/newstock";
     }
 
+    // 크롤링
     @PostMapping("/run/{id}")
     public String runCrawl(@PathVariable Long id,
-                           @RequestParam(required = false) String selItem,
-                           @RequestParam(required = false) String selNm,
-                           @RequestParam(required = false) String selPr,
-                           @RequestParam(required = false) String selImg,
-                           @RequestParam(required = false) String currency,
                            RedirectAttributes redirectAttributes) {
         try {
-            CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow();
-
-            // 셀렉터가 새로 입력된 경우 저장
-            if (currency != null && !currency.isBlank()) {
-                url.setUrlSelItem(selItem);
-                url.setUrlSelNm(selNm);
-                url.setUrlSelPr(selPr);
-                url.setUrlSelImg(selImg);
-                url.setUrlCur(currency);
-                crawlingUrlRepository.save(url);
-            }
-
-            // 저장된 셀렉터 사용
-            String effectiveSel  = url.getUrlSelItem();
-            String effectiveNm   = url.getUrlSelNm();
-            String effectivePr   = url.getUrlSelPr();
-            String effectiveImg  = url.getUrlSelImg();
-            String effectiveCur  = url.getUrlCur();
-
-            int count = crawlingService.crawl(id, effectiveSel, effectiveNm, effectivePr, effectiveImg, effectiveCur);
+            int count = crawlingService.crawl(id);
             redirectAttributes.addFlashAttribute("message", count + "개 상품이 저장되었습니다.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "크롤링 실패: " + e.getMessage());
@@ -173,4 +163,30 @@ public class NewStockController {
         return "redirect:/admin/newstock";
     }
 
+    // 셀렉터 수정
+    @PostMapping("/selector/{id}")
+    public String updateSelector(@PathVariable Long id,
+                                 SelectorForm dto,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            crawlingService.updateSelector(id, dto);
+            redirectAttributes.addFlashAttribute("message", "셀렉터가 수정되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "셀렉터 수정 실패: " + e.getMessage());
+        }
+        return "redirect:/admin/newstock";
+    }
+
+    // 자동 포함 토글 (urlUseYn)
+    @PostMapping("/toggle-use/{id}")
+    @ResponseBody
+    public Map<String, String> toggleUseYn(@PathVariable Long id,
+                                           @RequestBody Map<String, Boolean> body) {
+        CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow();
+        url.setUrlUseYn(body.get("useYn"));
+        crawlingUrlRepository.save(url);
+        Map<String, String> result = new HashMap<>();
+        result.put("status", "ok");
+        return result;
+    }
 }
