@@ -129,37 +129,48 @@
     </section>
 
 
-    <script type="text/javascript"
-            th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}">
-    </script>
+    <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}" type="text/javascript"
+            th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}"></script>
+    <script th:if="${kakaoAppKey == null or kakaoAppKey.isEmpty()}">console.warn("카카오 맵 API 키가 설정되지 않았습니다. 지도를 표시할 수 없습니다.");</script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-        kakao.maps.load(function() {
-            console.log("카카오 SDK 로드");
+            if (typeof kakao === 'undefined') {
+                return; // 객체가 없으면 실행하지 않고 종료
+            }
 
-            var mapContainer = document.getElementById('map');
-            var mapOption = {
-                center: new kakao.maps.LatLng(37.566826, 126.978656), // 중심 좌표 (필수)
-                level: 3
-            };
+            kakao.maps.load(function() {
+                console.log("카카오 SDK 로드 완료");
 
-            var map = new kakao.maps.Map(mapContainer, mapOption);
-            var geocoder = new kakao.maps.services.Geocoder();
-            var fullAddress = document.getElementById('addressInput').value;
-            var baseAddress = fullAddress.split('\n')[0].trim();
+                var mapContainer = document.getElementById('map');
+                if (!mapContainer) return; // 지도를 담을 div가 없는 경우 방어 코드
 
-            geocoder.addressSearch(baseAddress, function(result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                    new kakao.maps.Marker({ // 주어진 객체로 마커를 생성한다.
-                        map: map,
-                        position: coords
+                var mapOption = {
+                    center: new kakao.maps.LatLng(37.566826, 126.978656),
+                    level: 3
+                };
+
+                var map = new kakao.maps.Map(mapContainer, mapOption);
+                var geocoder = new kakao.maps.services.Geocoder();
+
+                var addressElement = document.getElementById('addressInput');
+                if (addressElement && addressElement.value) {
+                    var fullAddress = addressElement.value;
+                    var baseAddress = fullAddress.split('\n')[0].trim();
+
+                    geocoder.addressSearch(baseAddress, function(result, status) {
+                        if (status === kakao.maps.services.Status.OK) {
+                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                            new kakao.maps.Marker({
+                                map: map,
+                                position: coords
+                            });
+                            map.setCenter(coords);
+                        }
                     });
-                    map.setCenter(coords);
                 }
             });
         });
-    });
     </script>
 
 </div>

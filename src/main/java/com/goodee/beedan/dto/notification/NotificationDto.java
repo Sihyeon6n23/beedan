@@ -1,4 +1,4 @@
-package com.goodee.beedan.dto.notice;
+package com.goodee.beedan.dto.notification;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,14 +7,12 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class NotiDto {
+public class NotificationDto {
     private Long notiId;
     private String notiCon;
     private String notiTtl;
     private LocalDateTime notiCreAt;
     private LocalDateTime notiUptDt;
     private Boolean notiReaYn;
-    private Boolean notiDelYn;
-
     private Long memberId;
 }

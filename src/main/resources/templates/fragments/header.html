@@ -10,7 +10,7 @@
 
         <nav class="hidden md:flex items-center justify-center gap-12 flex-1">
             <a th:href="@{/stock}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">STOCK</a>
-            <a th:href="@{/notice}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">NOTICE</a>
+            <a th:href="@{/notification}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">NOTICE</a>
             <a th:href="@{/about}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">ABOUT</a>
             <a th:href="@{/mypage}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">MY PAGE</a>
         </nav>
@@ -24,7 +24,7 @@
                 <span class="material-symbols-outlined">notifications</span>
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
 
-                <div th:replace="~{fragments/notice :: notificationDropdown}"></div>
+                <div th:replace="~{fragments/notification :: notificationDropdown}"></div>
 
             </div>
         </div>
