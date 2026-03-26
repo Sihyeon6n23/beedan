@@ -1,73 +1,72 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="sidebar(activeMain, activeSub)">
-    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
-    <div class="admin-sidebar-scope">
+    <div class="sidebar-scope">
         <a th:href="@{/admin/member/list}"
-           class="admin-sidebar-menu__link"
-           th:classappend="${activeMain == 'member'} ? ' admin-sidebar-menu__link--current' : ''">
-            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'member'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
             <span>회원 관리</span>
         </a>
 
-        <div class="admin-sidebar-menu__group">
-            <div class="admin-sidebar-menu__link"
-                 th:classappend="${activeMain == 'stock'} ? ' admin-sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined admin-sidebar-menu__icon">inventory_2</span>
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">inventory_2</span>
                 <span>상품 관리</span>
             </div>
 
-            <div class="admin-sidebar-menu__child-wrap">
+            <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/admin/stock/list}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'stock-list'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-list'} ? ' sidebar-menu__child-link--current' : ''">
                     상품 목록
                 </a>
                 <a th:href="@{/admin/newstock}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'stock-new'} ? ' admin-sidebar-menu__child-link--current' : ''">
-                    새 상품 등록
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-new'} ? ' sidebar-menu__child-link--current' : ''">
+                    신규 상품 등록
                 </a>
             </div>
         </div>
 
-        <div class="admin-sidebar-menu__group">
-            <div class="admin-sidebar-menu__link"
-                 th:classappend="${activeMain == 'quote'} ? ' admin-sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined admin-sidebar-menu__icon">request_quote</span>
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
                 <span>견적 관리</span>
             </div>
 
-            <div class="admin-sidebar-menu__child-wrap">
+            <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/admin/quote/list}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'quote-list'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'quote-list'} ? ' sidebar-menu__child-link--current' : ''">
                     견적 목록
                 </a>
                 <a th:href="@{/admin/quote/write}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'quote-write'} ? ' admin-sidebar-menu__child-link--current' : ''">
-                    새 견적서 작성
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'quote-write'} ? ' sidebar-menu__child-link--current' : ''">
+                    새 견적 작성
                 </a>
             </div>
         </div>
 
-        <div class="admin-sidebar-menu__group">
-            <div class="admin-sidebar-menu__link"
-                 th:classappend="${activeMain == 'inquiry'} ? ' admin-sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined admin-sidebar-menu__icon">support_agent</span>
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
                 <span>문의 관리</span>
             </div>
 
-            <div class="admin-sidebar-menu__child-wrap">
+            <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/admin/inquiry/list}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'inquiry-list'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'inquiry-list'} ? ' sidebar-menu__child-link--current' : ''">
                     문의 목록
                 </a>
                 <a th:href="@{/admin/chat/list}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'chat-list'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'chat-list'} ? ' sidebar-menu__child-link--current' : ''">
                     채팅 관리
                 </a>
             </div>

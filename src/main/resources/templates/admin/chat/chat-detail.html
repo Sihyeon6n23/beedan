@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Admin Chat Detail</title>
+<title th:fragment="title">BEEDAN | 관리자 채팅방</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
@@ -39,6 +39,7 @@
             </header>
 
             <div class="admin-chat-detail-body">
+                <div class="admin-chat-detail-body__stack">
                 <div class="admin-chat-room__system admin-chat-room__system--detail">상담 시작 · 2023.10.12</div>
 
                 <article class="admin-chat-detail-message admin-chat-detail-message--client">
@@ -91,6 +92,7 @@
                     <strong>상담 종료</strong>
                     <p>종료 상태에서는 상담 이력만 확인할 수 있습니다.</p>
                     <span class="admin-chat-room__closed-date">2023.10.15 오전 09:00 종료</span>
+            </div>
                 </div>
             </div>
 
