@@ -64,7 +64,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
 
-        setDefaultTargetUrl("/");
+        setDefaultTargetUrl("/mypage");
 
         super.onAuthenticationSuccess(request, response, authentication);
     }
