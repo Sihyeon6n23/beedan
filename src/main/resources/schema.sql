@@ -164,8 +164,33 @@ CREATE TABLE UNIT_DISCOUNT (
 
                                PRIMARY KEY (un_d_id)
 );
+DROP TABLE IF EXISTS FACTORY;
 
+CREATE TABLE FACTORY (
+                         fa_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                         br_id       BIGINT          NULL,
+                         fa_nm       VARCHAR(100)    NULL,
+                         fa_ad       VARCHAR(255)    NULL,
+                         fa_cty      VARCHAR(50)     NULL,
+                         fa_c_cd     VARCHAR(10)     NULL,
+                         fa_yn       BOOLEAN         NULL,
+                         fa_cr_dt    DATETIME        NULL,
+                         fa_up_dt    DATETIME        NULL,
 
+                         PRIMARY KEY (fa_id)
+);
+DROP TABLE IF EXISTS EXCHANGE_RATE;
+
+CREATE TABLE EXCHANGE_RATE (
+                               er_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                               er_cr       VARCHAR(10)     NULL,
+                               er_ra       DECIMAL(18, 6)  NULL,
+                               er_ba       VARCHAR(10)     NULL,
+                               er_f_dt     DATETIME        NULL,
+                               er_cr_dt    DATETIME        NULL,
+
+                               PRIMARY KEY (er_id)
+);
 
 
 -- =====================

@@ -151,8 +151,18 @@ VALUES
     (1, 10, NULL,    0.0500, 0.0000, 'HIGHER', '10다스 이상 수량 5% 할인',  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
     (1, NULL, 500000, 0.0000, 0.0300, 'HIGHER', '50만원 이상 금액 3% 할인', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
+INSERT INTO FACTORY (br_id, fa_nm, fa_ad, fa_cty, fa_c_cd, fa_yn, fa_cr_dt, fa_up_dt) VALUES
+                                                                                          (1, '도쿄 1공장', '도쿄 시부야구 1-1', '도쿄',   'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                          (1, '오사카 1공장', '오사카 난바 2-2', '오사카', 'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                          (2, '상하이 1공장', '상하이 푸동 3-3', '상하이', 'CN', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
-
+INSERT INTO EXCHANGE_RATE (er_cr, er_ra, er_ba, er_f_dt, er_cr_dt) VALUES
+                                                                       ('JPY', 9.012345, 'KRW', '2026-03-24 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('JPY', 9.123456, 'KRW', '2026-03-25 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('JPY', 9.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('USD', 1380.123456, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('EUR', 1500.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('CNY', 190.345678, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP());
 
 
 
