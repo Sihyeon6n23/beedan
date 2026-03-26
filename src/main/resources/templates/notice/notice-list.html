@@ -9,17 +9,17 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/notice/notice-list.css}">
-    <div class="noti-list-page">
-        <header class="noti-page-header">
-            <div class="noti-page-title">
-                <span class="noti-sub-label">Communication Ledger</span>
+    <div class="notice-list-page">
+        <header class="notice-page-header">
+            <div class="notice-page-title">
+                <span class="notice-sub-label">Communication Ledger</span>
                 <h1>NOTIFICATIONS</h1>
-                <p class="noti-item-desc">Centralized hub for all architectural and logistics updates.</p>
+                <p class="notice-item-desc">Centralized hub for all architectural and logistics updates.</p>
             </div>
             <button class="btn-secondary py-3 px-6">Mark all as read</button>
         </header>
 
-        <nav class="noti-filter-bar">
+        <nav class="notice-filter-bar">
             <button class="filter-btn active">All</button>
             <button class="filter-btn">Unread</button>
             <button class="filter-btn">System</button>
@@ -27,24 +27,24 @@
             <button class="filter-btn">Inquiry</button>
         </nav>
 
-        <div class="noti-list-container">
-            <th:block th:if="${not #lists.isEmpty(notiDtoList)}">
-                <article class="noti-full-item unread" th:each="noti : ${notiDtoList}">
-                    <div class="noti-icon-square">
+        <div class="notice-list-container">
+            <th:block th:if="${not #lists.isEmpty(noticeDtoList)}">
+                <article class="notice-full-item unread" th:each="notice : ${noticeDtoList}">
+                    <div class="notice-icon-square">
                         <span class="material-symbols-outlined text-primary">request_quote</span>
                     </div>
-                    <div class="noti-info-box">
-                        <div class="noti-top-row">
-                            <h3 class="noti-item-title" th:text="${noti.notiTtl}">알림 제목</h3>
-                            <span class="noti-item-time">2 hours ago</span>
+                    <div class="notice-info-box">
+                        <div class="notice-top-row">
+                            <h3 class="notice-item-title" th:text="${notice.notiTtl}">알림 제목</h3>
+                            <span class="notice-item-time">2 hours ago</span>
                         </div>
-                        <p class="noti-item-desc" th:text="${noti.notiCon}">알림 내용</p>
+                        <p class="notice-item-desc" th:text="${notice.notiCon}">알림 내용</p>
                     </div>
                     <button class="text-primary font-bold text-xs underline uppercase">View</button>
                 </article>
             </th:block>
 
-            <th:block th:unless="${not #lists.isEmpty(notiDtoList)}">
+            <th:block th:unless="${not #lists.isEmpty(noticeDtoList)}">
                 <div class="flex flex-col items-center justify-center py-20 text-stone-400">
                     <span class="material-symbols-outlined text-6xl mb-4 opacity-50">notifications_off</span>
                     <h3 class="text-lg font-bold text-stone-700 mb-2">수신된 알림이 없습니다</h3>
@@ -53,8 +53,8 @@
             </th:block>
         </div>
 
-        <div class="noti-pagination" th:if="${not #lists.isEmpty(notiDtoList)}">
-            <span class="noti-item-time">Page 1-5 of 1,280</span>
+        <div class="notice-pagination" th:if="${not #lists.isEmpty(noticeDtoList)}">
+            <span class="notice-item-time">Page 1-5 of 1,280</span>
             <div class="flex gap-1">
                 <button class="w-10 h-10 bg-stone-200">◀</button>
                 <button class="w-10 h-10 bg-primary-container text-primary font-bold">1</button>

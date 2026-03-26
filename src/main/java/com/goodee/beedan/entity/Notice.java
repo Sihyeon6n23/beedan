@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data @Builder @RequiredArgsConstructor @AllArgsConstructor
-public class Noti {
+public class Notice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notiId;
@@ -21,6 +21,8 @@ public class Noti {
     private LocalDateTime notiUpdDt;
     private Boolean notiReaYn;
     private Boolean notiDelYn;
+    private Long notiUpdMemId;
+    private String notiRef;
 
     @ManyToOne
     @JoinColumn(name = "mem_id")

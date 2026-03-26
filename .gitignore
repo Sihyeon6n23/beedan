@@ -34,6 +34,3 @@ CLAUDE.md
 ### DB
 data.sql
 schema.sql
-
-### application.properties
-application.properties

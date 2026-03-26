@@ -2,19 +2,42 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="notificationDropdown" id="notificationDropdown" class="notification-wrapper hidden">
     <div class="notification-container">
-        <header class="noti-header">
+        <header class="notice-header">
             <h3>Notifications</h3>
             <button class="btn-mark-read">Mark all as read</button>
         </header>
 
-        <div class="noti-list custom-scrollbar">
-            <article class="noti-item unread">
+        <div class="notice-list custom-scrollbar">
+            <article class="notice-item unread">
+                <th:block th:if="${not #lists.isEmpty(noticeDtoList)}">
+                    <article class="notice-full-item unread" th:each="notice : ${noticeDtoList}">
+                        <div class="notice-icon-square">
+                            <span class="material-symbols-outlined text-primary">request_quote</span>
+                        </div>
+                        <div class="notice-info-box">
+                            <div class="notice-top-row">
+                                <h3 class="notice-item-title" th:text="${notice.notiTtl}">알림 제목</h3>
+                                <span class="notice-item-time">2 hours ago</span>
+                            </div>
+                            <p class="notice-item-desc" th:text="${notice.notiCon}">알림 내용</p>
+                        </div>
+                        <button class="text-primary font-bold text-xs underline uppercase">View</button>
+                    </article>
+                </th:block>
+
+                <th:block th:unless="${not #lists.isEmpty(noticeDtoList)}">
+                    <div class="flex flex-col items-center justify-center py-20 text-stone-400">
+                        <span class="material-symbols-outlined text-6xl mb-4 opacity-50">notifications_off</span>
+                        <h3 class="text-lg font-bold text-stone-700 mb-2">수신된 알림이 없습니다</h3>
+                        <p class="text-sm">현재 확인할 수 있는 새로운 알림 내역이 없거나, 데이터를 불러오지 못했습니다.</p>
+                    </div>
+                </th:block>
             </article>
         </div>
 
-        <footer class="noti-footer">
+        <footer class="notice-footer">
             <button class="btn-view-all">
-                <a th:href="@{/notification/list}">View All Notifications</a>
+                <a th:href="@{/notice/list}">View All Notifications</a>
             </button>
         </footer>
     </div>

@@ -7,14 +7,12 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class NotiDto {
+public class NoticeDto {
     private Long notiId;
     private String notiCon;
     private String notiTtl;
     private LocalDateTime notiCreAt;
     private LocalDateTime notiUptDt;
     private Boolean notiReaYn;
-    private Boolean notiDelYn;
-
     private Long memberId;
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/admin/member")
 @RequiredArgsConstructor
 public class MemberController {
-    @Value("${kakao.map.appkey}")
+    @Value("${kakao.map.appkey:}")
     private String kakaoAppKey;
 
     @GetMapping("/list")
