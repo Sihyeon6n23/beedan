@@ -1,0 +1,501 @@
+/* ==========================================
+   BEEDAN — Payment Page CSS
+   피그마 디자인 기반, 등록 정보 확인 하단 배치
+   ========================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --color-black:      #1a1c1c;
+    --color-white:      #ffffff;
+    --color-yellow:     #FFD700;
+    --color-yellow-dark:#705D00;
+    --color-yellow-btn: #705E00;
+    --color-gray-bg:    #f3f3f3;
+    --color-gray-input: #e8e8e8;
+    --color-gray-border:#eeeeee;
+    --color-gray-mid:   #b9b9b9;
+    --color-text-muted: #5f5e5e;
+    --color-text-hint:  #6b7280;
+    --color-text-light: #a3a3a3;
+    --color-dark-brand: #1c1917;
+
+    --font-main:  'Manrope', 'Noto Sans KR', sans-serif;
+    --font-body:  'Noto Sans KR', 'Manrope', sans-serif;
+
+    --max-width: 1280px;
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
+    --spacing-2xl: 64px;
+    --spacing-3xl: 80px;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--color-white);
+    color: var(--color-black);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================
+   PAGE LAYOUT
+   ========================================== */
+
+.page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3xl);
+}
+
+/* ==========================================
+   PAGE TITLE
+   ========================================== */
+
+.page-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: 0 60px;
+}
+
+.title-heading {
+    font-family: var(--font-main);
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 96px;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    color: var(--color-black);
+}
+
+.title-sub {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.title-bar {
+    display: block;
+    width: 48px;
+    height: 4px;
+    background-color: var(--color-yellow);
+    flex-shrink: 0;
+}
+
+.title-label {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--color-black);
+}
+
+/* ==========================================
+   MAIN CONTENT
+   ========================================== */
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3xl);
+}
+
+/* ==========================================
+   SECTION
+   ========================================== */
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 17px;
+    border-bottom: 1px solid var(--color-gray-border);
+}
+
+.section-title {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 32px;
+    letter-spacing: -0.6px;
+    text-transform: uppercase;
+    color: var(--color-black);
+}
+
+.section-sub {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+/* ==========================================
+   PAYMENT METHODS
+   ========================================== */
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.method-card {
+    position: relative;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-border);
+    padding: 32px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.method-card--active {
+    background: var(--color-gray-bg);
+    border-left: 4px solid var(--color-yellow);
+}
+
+.method-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.method-icon {
+    font-size: 24px;
+}
+
+.method-check {
+    font-size: 16px;
+    color: var(--color-yellow-dark);
+    font-weight: 700;
+}
+
+.method-check.hidden {
+    visibility: hidden;
+}
+
+.method-card__bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.method-name {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--color-black);
+    text-transform: uppercase;
+}
+
+.method-desc {
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+/* ==========================================
+   FORM
+   ========================================== */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.form-group--full {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.form-input {
+    background: var(--color-gray-input);
+    border: none;
+    outline: none;
+    padding: 17px 16px 18px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-black);
+    width: 100%;
+    transition: background 0.15s ease;
+}
+
+.form-input::placeholder {
+    color: var(--color-text-hint);
+}
+
+.form-input:focus {
+    background: #dcdcdc;
+}
+
+/* ==========================================
+   SUMMARY BOX (등록 정보 확인 — 하단 배치)
+   ========================================== */
+
+.summary-box {
+    background: var(--color-gray-bg);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* 주문 항목 목록 */
+.summary-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.summary-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.summary-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summary-item__name {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--color-black);
+    letter-spacing: -0.35px;
+}
+
+.summary-item__desc {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.summary-item__price {
+    font-family: var(--font-main);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-black);
+    white-space: nowrap;
+}
+
+/* 금액 합계 */
+.summary-totals {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid rgba(208, 198, 171, 0.3);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-row__label {
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.summary-row__value {
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.summary-row--total {
+    padding-top: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+    border-top: 1px solid rgba(208, 198, 171, 0.3);
+}
+
+.summary-row--total .summary-row__label {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.45px;
+    color: var(--color-black);
+}
+
+.summary-row__value--total {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.45px;
+    color: var(--color-yellow-dark);
+}
+
+/* 버튼 및 약관 */
+.summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-sm);
+}
+
+.btn-primary {
+    width: 100%;
+    background: var(--color-yellow);
+    border: none;
+    padding: 24px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--color-yellow-btn);
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-primary:active {
+    transform: scale(0.995);
+}
+
+.summary-terms {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--color-text-muted);
+    line-height: 1.625;
+}
+
+/* ==========================================
+   BRAND BLOCK (하단)
+   ========================================== */
+
+.brand-block {
+    background: var(--color-dark-brand);
+    height: 256px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.brand-letter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 200px;
+    line-height: 1;
+    color: #292524;
+    user-select: none;
+    pointer-events: none;
+}
+
+.brand-info {
+    position: relative;
+    z-index: 1;
+}
+
+.brand-title {
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-yellow);
+    margin-bottom: 4px;
+}
+
+.brand-sub {
+    font-size: 9px;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: #78716c;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+    .page {
+        padding: 40px var(--spacing-sm);
+    }
+
+    .page-title {
+        padding: 0;
+    }
+
+    .title-heading {
+        font-size: 40px;
+        line-height: 56px;
+    }
+
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group--full {
+        grid-column: 1;
+    }
+
+    .summary-box {
+        padding: 24px;
+    }
+}

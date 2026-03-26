@@ -4,8 +4,12 @@ import com.goodee.beedan.entity.Stock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 
-public interface StockRepository extends JpaRepository<Stock, Long> {
+@Repository
+public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecificationExecutor<Stock> {
     Page<Stock> findByStExpYnTrue(Pageable pageable);
     long countByBrId(Long brId);
+    java.util.Optional<Stock> findByBrIdAndStNm(Long brId, String stNm);
 }

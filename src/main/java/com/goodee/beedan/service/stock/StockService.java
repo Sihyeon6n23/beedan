@@ -4,16 +4,28 @@ import com.goodee.beedan.dto.stock.StockListDto;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
 import com.goodee.beedan.entity.Stock;
+import com.goodee.beedan.entity.Wishlist;
 import com.goodee.beedan.repository.brand.BrandRepository;
 import com.goodee.beedan.repository.category.CategoryRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
+import com.goodee.beedan.repository.wishlist.WishlistRepository;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,11 +34,16 @@ public class StockService {
     private final StockRepository stockRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
+    private final WishlistRepository wishlistRepository;
 
     // 전체 상품 불러오기
-    public Page<StockListDto> findAllStocks(Pageable pageable) {
+    public Page<StockListDto> findAllStocks(Pageable pageable, Long memId) {
+        Set<Long> wishedIds = memId != null
+                ? wishlistRepository.findAllByMemId(memId).stream()
+                .map(Wishlist::getStId).collect(Collectors.toSet())
+                : Collections.emptySet();
         return stockRepository.findByStExpYnTrue(pageable)
-                .map(this::mapToStockListDto);
+                .map(stock -> mapToStockListDto(stock, wishedIds));
     }
 
     // 전체 브랜드 목록 불러오기
@@ -39,9 +56,81 @@ public class StockService {
         return categoryRepository.findAll();
     }
 
+    // 필터 + 정렬 조회
+    public Page<StockListDto> findFiltered(List<Long> brandIds, List<String> catNms, String sort, int page, Long memId) {
+        Sort sorting = switch (sort != null ? sort : "recent") {
+            case "popularity" -> Sort.by(Sort.Direction.DESC, "stWisCnt");
+            case "price-asc" -> Sort.by(Sort.Direction.ASC, "stPr");
+            case "price-desc" -> Sort.by(Sort.Direction.DESC, "stPr");
+            case "most-purchased" -> Sort.by(Sort.Direction.DESC, "stPurCnt");
+            default -> Sort.by(Sort.Direction.DESC, "stId");
+        };
+
+        Pageable pageable = PageRequest.of(page, 8, sorting);
+
+        Specification<Stock> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("stExpYn")));
+            if (brandIds != null && !brandIds.isEmpty()) {
+                predicates.add(root.get("brId").in(brandIds));
+            }
+            if (catNms != null && !catNms.isEmpty()) {
+                predicates.add(root.get("stCatNm").in(catNms));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Set<Long> wishedIds = memId != null
+                ? wishlistRepository.findAllByMemId(memId).stream()
+                .map(Wishlist::getStId).collect(Collectors.toSet())
+                : Collections.emptySet();
+
+        return stockRepository.findAll(spec, pageable)
+                .map(stock -> mapToStockListDto(stock, wishedIds));
+    }
+
+
+    // 요청 상품 등록 (수동)
+    @Transactional
+    public void saveManual(String stCd, String stNm, String brNm, String catNm,
+                           BigDecimal stPr, String stCur, String stImgUrl, Long stReqMemId) {
+        Brand brand = brandRepository.findByBrNm(brNm)
+                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(brNm).build()));
+
+        String catId = null;
+        String catNmFinal = null;
+        if (catNm != null && !catNm.isBlank()) {
+            Category category = categoryRepository.findByCatNm(catNm)
+                    .orElseGet(() -> categoryRepository.save(Category.builder().catNm(catNm).build()));
+            catId = String.valueOf(category.getCatId());
+            catNmFinal = category.getCatNm();
+        }
+
+        stockRepository.save(Stock.builder()
+                .stCd(stCd)
+                .stNm(stNm)
+                .brId(brand.getBrId())
+                .stBrNm(brand.getBrNm())
+                .stCat(catId)
+                .stCatNm(catNmFinal)
+                .stPr(stPr)
+                .stCur(stCur)
+                .stImgUrl(stImgUrl)
+                .stReqMemId(stReqMemId)
+                .stExpYn(true)
+                .stUseYn(true)
+                .stDelYn(false)
+                .stReqYn(true)
+                .stCraDt(null)
+                .stCreDt(LocalDateTime.now())
+                .stUpdDt(null)
+                .stWisCnt(null)
+                .stPurCnt(null)
+                .build());
+    }
 
     // STOCK 엔티티 객체를 DTO 객체로 변환
-    public StockListDto mapToStockListDto(Stock stock) {
+    public StockListDto mapToStockListDto(Stock stock, Set<Long> wishedIds) {
         return StockListDto.builder()
                 .stId(stock.getStId())
                 .stBrNm(stock.getStBrNm())
@@ -50,6 +139,7 @@ public class StockService {
                 .stPr(stock.getStPr())
                 .stCur(stock.getStCur())
                 .stImgUrl(stock.getStImgUrl())
+                .wished(wishedIds.contains(stock.getStId()))
                 .build();
     }
 }

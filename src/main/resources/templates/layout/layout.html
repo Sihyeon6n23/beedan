@@ -6,24 +6,27 @@
     <title th:replace="${title}">BEEDAN | Architectural Curation</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=notifications" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=notifications" /> 
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 </head>
 <body class="bg-background flex flex-col min-h-screen">
 <header th:replace="~{fragments/header :: headerFragment}"></header>
 
-<div class="flex flex-grow w-full py-24">
-    <div th:if="${sidebar}" class="flex-shrink-0">
+<div class="app-layout flex flex-grow w-full pt-16"
+     th:classappend="${sidebar} ? ' app-layout--with-sidebar' : ''">
+    <div th:if="${sidebar}" class="app-layout__sidebar flex-shrink-0">
         <aside th:replace="${sidebar}"></aside>
     </div>
 
-    <div th:classappend="${sidebar} ? 'md:pl-32' : 'mx-auto'">
+    <div class="app-layout__content"
+         th:classappend="${sidebar} ? '' : 'mx-auto'">
         <main th:replace="${content}"></main>
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
 <!--<th:block th:if="${session.loginMember != null and session.loginMember.memAut != null and session.loginMember.memAut.name() == 'USER'}">-->
-<div th:replace="~{fragments/member/chat/widget :: memberChatWidget}"></div>
+    <div th:replace="~{fragments/chat/member-widget :: memberChatWidget}"></div>
 <!--</th:block>-->
 
 <script>

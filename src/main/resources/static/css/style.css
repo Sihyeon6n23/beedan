@@ -1530,120 +1530,213 @@
 
 /* --- 알림창 --- */
 .notification-wrapper {
-    position: absolute !important;
-    top: 80px !important;    /* 아이콘(20px) 바로 아래 적당한 위치 */
-    right: 0 !important;     /* 아이콘 우측 라인에 맞춤 */
-    z-index: 1000 !important;
-    width: 400px !important;
-    cursor: default !important; /* 아이콘은 포인터지만 창 안은 기본 화살표 */
+  position: absolute !important;
+  top: 80px !important;    /* 아이콘(20px) 바로 아래 적당한 위치 */
+  right: 0 !important;     /* 아이콘 우측 라인에 맞춤 */
+  z-index: 1000 !important;
+  width: 400px !important;
+  cursor: default !important; /* 아이콘은 포인터지만 창 안은 기본 화살표 */
 
-    /* 배경색 및 보더 강제 */
-    background-color: #ffffff !important;
-    border: 1px solid #e2e2e2 !important;
-    box-shadow: 20px 20px 0px 0px rgba(0,0,0,0.1) !important;
-    overflow: hidden !important; /* 내부 요소가 테두리를 넘지 않게 */
+  /* 배경색 및 보더 강제 */
+  background-color: #ffffff !important;
+  border: 1px solid #e2e2e2 !important;
+  box-shadow: 20px 20px 0px 0px rgba(0,0,0,0.1) !important;
+  overflow: hidden !important; /* 내부 요소가 테두리를 넘지 않게 */
 }
 .noti-list {
-    max-height: 400px !important; /* 너무 길어지지 않게 */
-    overflow-y: auto !important;   /* 내용 많으면 스크롤 */
-    background-color: #ffffff !important;
+  max-height: 400px !important; /* 너무 길어지지 않게 */
+  overflow-y: auto !important;   /* 내용 많으면 스크롤 */
+  background-color: #ffffff !important;
 }
 
 .noti-header h3 {
-    font-family: 'Manrope', sans-serif !important;
-    font-size: 14px !important;
-    font-weight: 800 !important;
-    margin: 0 !important;
-    color: #1a1c1c !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  color: #1a1c1c !important;
 }
 
 /* 알림창 안의 컨테이너 배경색 누락 방지 */
 .notification-container {
-    background-color: #ffffff !important;
-    display: flex !important;
-    flex-direction: column !important;
+  background-color: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 /* 푸터 영역 검은색 배경 확실히 적용 */
 .noti-footer {
-    background-color: #1a1c1c !important;
-    padding: 0 !important; /* 버튼이 꽉 차게 */
+  background-color: #1a1c1c !important;
+  padding: 0 !important; /* 버튼이 꽉 차게 */
 }
 
 .btn-view-all {
-    width: 100% !important;
-    padding: 20px !important;
-    background-color: #1a1c1c !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.3em !important;
-    border: none !important;
-    cursor: pointer !important;
+  width: 100% !important;
+  padding: 20px !important;
+  background-color: #1a1c1c !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3em !important;
+  border: none !important;
+  cursor: pointer !important;
 }
 
 /* --- 알림창 내부 아이템 디테일 추가 --- */
 
 .noti-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 24px !important;
-    border-bottom: 1px solid #f5f5f5 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 24px !important;
+  border-bottom: 1px solid #f5f5f5 !important;
 }
 
 .btn-mark-read {
-    background: none !important;
-    border: none !important;
-    color: #a3a3a3 !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    cursor: pointer !important;
+  background: none !important;
+  border: none !important;
+  color: #a3a3a3 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
 }
 
 .noti-item {
-    display: flex !important;
-    gap: 16px !important;
-    padding: 20px 24px !important;
-    border-bottom: 1px solid #f5f5f5 !important;
-    position: relative !important;
+  display: flex !important;
+  gap: 16px !important;
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #f5f5f5 !important;
+  position: relative !important;
 }
 
 .noti-item.unread { background-color: #fffbeb !important; }
 
 .unread-indicator {
-    position: absolute !important;
-    left: 0 !important; top: 0 !important; bottom: 0 !important;
-    width: 4px !important; background-color: #705d00 !important;
+  position: absolute !important;
+  left: 0 !important; top: 0 !important; bottom: 0 !important;
+  width: 4px !important; background-color: #705d00 !important;
 }
 
 .noti-title {
-    font-size: 12px !important;
-    font-weight: 800 !important;
-    color: #1a1c1c !important;
-    text-transform: uppercase !important;
-    margin: 0 0 4px 0 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #1a1c1c !important;
+  text-transform: uppercase !important;
+  margin: 0 0 4px 0 !important;
 }
 
 .noti-description {
-    font-size: 12px !important;
-    color: #525252 !important;
-    line-height: 1.5 !important;
-    margin: 0 0 8px 0 !important;
+  font-size: 12px !important;
+  color: #525252 !important;
+  line-height: 1.5 !important;
+  margin: 0 0 8px 0 !important;
 }
 
 .noti-timestamp {
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    color: #a3a3a3 !important;
-    text-transform: uppercase !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #a3a3a3 !important;
+  text-transform: uppercase !important;
 }
 
 /* 아이콘 박스 */
 .noti-icon-container {
-    width: 40px !important; height: 40px !important;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    border: 1px solid #e8e8e8 !important; background: white !important;
+  width: 40px !important; height: 40px !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  border: 1px solid #e8e8e8 !important; background: white !important;
+}
+
+.mypage-changepw-page {
+  padding: 2rem clamp(1rem, 2vw, 2rem) 4rem;
+}
+
+.mypage-changepw-page__intro {
+  padding: 1.5rem 0;
+}
+
+.mypage-changepw-page__sidebar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  height: 100%;
+}
+
+.mypage-changepw-page__kicker {
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.mypage-changepw-page__title {
+  margin-top: 0.5rem;
+  font-family: var(--font-headline);
+  font-size: clamp(2.3rem, 5vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: var(--tracking-tighter);
+  line-height: 0.95;
+}
+
+.mypage-changepw-page__description {
+  margin-top: 1rem;
+  max-width: 32rem;
+  color: var(--color-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.mypage-changepw-page__rule {
+  margin-top: 1.25rem;
+  width: 100%;
+  height: 2px;
+  background: var(--color-surface-container-highest);
+}
+
+.mypage-changepw-page__rule span {
+  display: block;
+  width: 11rem;
+  height: 100%;
+  background: var(--color-primary-container);
+}
+
+.mypage-changepw-page__notice {
+  margin-bottom: 2rem;
+  padding: 1rem 1.1rem;
+  border-left: 4px solid var(--color-primary-container);
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 255, 255, 0.96) 100%);
+}
+
+.mypage-changepw-page__notice p {
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.mypage-changepw-page__side-card--fill {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.mypage-changepw-page__side-card--fill > .relative {
+  flex: 1 1 auto;
+}
+
+@media (min-width: 1024px) {
+  .mypage-changepw-page__layout {
+    align-items: stretch;
+  }
+
+  .mypage-changepw-page__layout > .lg\:col-span-4 {
+    display: flex;
+  }
+
+  .mypage-changepw-page__sidebar-stack {
+    position: sticky;
+    top: 6rem;
+    width: 100%;
+  }
 }

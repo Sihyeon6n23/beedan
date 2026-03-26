@@ -18,4 +18,11 @@ public class CrawlingUrl {
     private String urlUrl;
     private Long brId;
     private Long catId;
+
+    // 저장된 셀렉터 (최초 1회 입력 후 재사용)
+    private String urlSelItem;
+    private String urlSelNm;
+    private String urlSelPr;
+    private String urlSelImg;
+    private String urlCur;
 }

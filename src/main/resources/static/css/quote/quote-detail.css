@@ -1,0 +1,820 @@
+/* ============================================================
+   Goodee — 견적 상세 (Quote Detail Page)
+   Design tokens from Figma node 162-360
+   ============================================================ */
+
+/* --- CSS Variables (공유 디자인 토큰) --- */
+:root {
+    --color-bg:            #f9f9f9;
+    --color-white:         #ffffff;
+    --color-surface:       #f3f3f3;
+    --color-surface-2:     #f4f4f4;
+    --color-border:        #9f9f9f;
+    --color-border-mid:    #b9b9b9;
+    --color-border-light:  #e2e2e2;
+    --color-border-subtle: #eeeeee;
+    --color-border-gold:   #d0c6ab;
+    --color-divider:       #e5e5e5;
+
+    --color-text-primary:  #1a1c1c;
+    --color-text-muted:    #5f5e5e;
+    --color-text-light:    #a3a3a3;
+    --color-text-gray:     #737373;
+    --color-text-id:       #707070;
+
+    --color-gold:          #ffd700;
+    --color-gold-dark:     #705d00;
+    --color-gold-border:   #705e00;
+
+    --font-display: 'Manrope', 'Noto Sans KR', sans-serif;
+    --font-serif:   'Noto Serif KR', serif;
+    --font-body:    'Inter', 'Noto Sans KR', sans-serif;
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.page-wrapper { min-height: 100vh; background: var(--color-bg); }
+
+.main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 87px 48px 80px;
+}
+
+.main-canvas {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+}
+
+/* ============================================================
+   ① Header Section
+   ============================================================ */
+.header-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 72px;
+    line-height: 72px;
+    letter-spacing: -3.6px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+}
+
+.quote-id {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 32px;
+    letter-spacing: -0.6px;
+    text-transform: uppercase;
+    color: var(--color-text-id);
+}
+
+/* ============================================================
+   ② Status Timeline
+   ============================================================ */
+.status-timeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    background: var(--color-surface);
+    padding: 4px;
+    width: 1159px;
+    max-width: 100%;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px 24px 24px 28px;
+    border-left: 4px solid transparent;
+    background: var(--color-white);
+}
+
+.step-done  { background: var(--color-white); border-left-color: var(--color-gold-dark); }
+.step-active{ background: var(--color-gold);  border-left-color: var(--color-gold-border); }
+.step-pending{ background: var(--color-surface); border-left-color: #d4d4d4; }
+
+.step-label {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 15px;
+}
+.step-done   .step-label  { color: var(--color-gold-dark); }
+.step-active .step-label  { color: var(--color-gold-border); }
+.step-pending .step-label { color: var(--color-text-light); }
+
+.step-desc { font-size: 14px; line-height: 20px; font-weight: 600; }
+.step-done   .step-desc   { color: var(--color-text-primary); }
+.step-active .step-desc--bold { color: var(--color-text-primary); font-weight: 700; }
+.step-pending .step-desc--muted { color: var(--color-text-light); }
+
+/* ============================================================
+   ③ Body Layout
+   ============================================================ */
+.body-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+}
+
+/* ---- Quote Manifest ---- */
+.section-manifest { display: flex; flex-direction: column; gap: 32px; }
+
+.manifest-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.manifest-id {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.6px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 32px;
+}
+
+.manifest-count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 16px;
+}
+
+/* ---- Table ---- */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+}
+
+.quote-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.col-no         { width: 65px; }
+.col-product    { width: 292px; }
+.col-id         { width: 99px; }
+.col-qty        { width: 72px; }
+.col-spec       { width: 72px; }
+.col-price-unit { width: 126px; }
+.col-price-total{ width: 126px; }
+.col-tax        { width: 126px; }
+.col-subtotal   { width: 145px; }
+
+.quote-table thead tr { background: var(--color-border-light); }
+
+.quote-table thead th {
+    border: 1px solid var(--color-border);
+    padding: 22px 24px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    text-align: center;
+    height: 56px;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.quote-table tbody tr { background: var(--color-white); }
+
+.quote-table tbody td {
+    border: 1px solid var(--color-border);
+    padding: 22px 24px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    height: 56px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.quote-table tbody td.col-product { text-align: left; }
+
+.product-name {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.35px;
+    text-transform: uppercase;
+    line-height: 20px;
+}
+
+.product-material {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.product-code {
+    font-family: var(--font-serif);
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.value-num {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.value-bold { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+
+.text-right { text-align: right !important; }
+
+.quote-table tbody td.col-price-unit,
+.quote-table tbody td.col-price-total,
+.quote-table tbody td.col-tax {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 16px;
+    text-align: right;
+    text-transform: uppercase;
+}
+
+/* ---- Fees Grid ---- */
+.fees-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: #e8e8e8;
+}
+
+.fee-card {
+    background: var(--color-white);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.fee-card:hover {
+    border-color: var(--color-gold);
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.18), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.fee-card-header { display: flex; align-items: center; gap: 16px; }
+
+.fee-card-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: -0.45px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 28px;
+}
+
+.fee-items { display: flex; flex-direction: column; gap: 16px; }
+
+.fee-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fee-label { font-size: 14px; color: var(--color-text-muted); line-height: 20px; }
+.fee-value { font-weight: 700; font-size: 14px; color: var(--color-text-primary); white-space: nowrap; }
+
+.included-badge {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+    margin-left: 6px;
+}
+
+.fee-subtotal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px dashed var(--color-border-subtle);
+    margin-top: 4px;
+}
+
+.fee-subtotal-label {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 16px;
+}
+
+.fee-subtotal-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-gold-dark);
+    line-height: 24px;
+}
+
+/* ---- Cost Summary Section ---- */
+.cost-summary-section {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.cost-summary-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 40px;
+}
+
+.cost-summary-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 28px;
+    white-space: nowrap;
+}
+
+.heading-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--color-divider);
+}
+
+.cost-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    padding: 0 40px;
+}
+
+.cost-card {
+    border: 1px solid var(--color-border-mid);
+    padding: 28px 35px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 170px;
+    justify-content: space-between;
+}
+
+.cost-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cost-card-label {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    line-height: 15px;
+}
+
+.cost-card-amount {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--color-text-primary);
+    line-height: 32px;
+}
+
+.cost-card-desc {
+    font-size: 12px;
+    color: var(--color-text-gray);
+    line-height: 19.5px;
+}
+
+/* ============================================================
+   ④ Notice Banner
+   ============================================================ */
+.notice-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--color-surface);
+    padding: 16px;
+}
+
+.notice-banner svg { flex-shrink: 0; margin-top: 2px; }
+
+.notice-text {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-gray);
+    line-height: 16.25px;
+}
+
+.notice-text p { margin-bottom: 2px; }
+.notice-text p:last-child { margin-bottom: 0; }
+
+/* ============================================================
+   ⑤ Final Payment Card
+   ============================================================ */
+.final-payment-card {
+    background: var(--color-white);
+    border-left: 4px solid var(--color-gold);
+    padding: 32px 32px 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.payment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+}
+
+.payment-label {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+    line-height: 15px;
+}
+
+.payment-amount {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 48px;
+    letter-spacing: -2.4px;
+    color: var(--color-text-primary);
+    line-height: 48px;
+}
+
+.payment-note {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    line-height: 16px;
+}
+
+.payment-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 16px;
+}
+
+.btn-approve {
+    width: 100%;
+    padding: 20px;
+    background: var(--color-gold);
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    color: var(--color-gold-border);
+    text-align: center;
+    transition: filter 0.15s ease;
+}
+
+.btn-approve:hover { filter: brightness(1.05); }
+
+.btn-renew {
+    width: 100%;
+    padding: 22px;
+    background: transparent;
+    border: 2px solid var(--color-divider);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    color: #171717;
+    text-align: center;
+    transition: border-color 0.15s ease;
+}
+
+.btn-renew:hover { border-color: #aaa; }
+
+.quick-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-pdf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 17px 52px;
+    border: 1px solid var(--color-border-gold);
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    transition: background 0.15s ease;
+}
+
+.btn-pdf:hover { background: #fafaf7; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1200px) {
+    .page-title { font-size: 52px; }
+    .status-timeline { width: 100%; }
+    .cost-summary-heading { padding: 0; }
+    .cost-cards-grid { padding: 0; gap: 16px; }
+}
+
+@media (max-width: 900px) {
+    .page-title { font-size: 40px; letter-spacing: -2px; }
+    .status-timeline { grid-template-columns: repeat(3, 1fr); }
+    .fees-grid { grid-template-columns: 1fr; }
+    .cost-cards-grid { grid-template-columns: 1fr; }
+    .final-payment-card { width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .main { padding: 48px 20px; }
+    .page-title { font-size: 32px; letter-spacing: -1px; }
+    .status-timeline { grid-template-columns: repeat(2, 1fr); }
+    .payment-amount { font-size: 36px; }
+}
+
+/* ============================================================
+   Modal Overlay
+   ============================================================ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 28, 28, 0.48);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.modal-overlay.is-open {
+    display: flex;
+    animation: overlayIn 0.2s ease;
+}
+
+@keyframes overlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    background: var(--color-white);
+    width: 100%;
+    max-width: 600px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-left: 4px solid var(--color-gold);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.16), 0 4px 16px rgba(0,0,0,0.08);
+    animation: modalIn 0.22s ease;
+    position: relative;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 32px 32px 24px 36px;
+    border-bottom: 1px solid var(--color-divider);
+    position: sticky;
+    top: 0;
+    background: var(--color-white);
+    z-index: 1;
+}
+
+.modal-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-tag {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+    line-height: 15px;
+}
+
+.modal-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 28px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--color-text-muted);
+    line-height: 1;
+    font-size: 20px;
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.modal-close:hover { color: var(--color-text-primary); }
+
+/* Modal Body */
+.modal-body {
+    padding: 28px 36px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* Total Amount in Modal */
+.modal-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: var(--color-surface);
+}
+
+.modal-total-label {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.modal-total-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--color-gold-dark);
+    letter-spacing: -0.5px;
+}
+
+/* Section label inside modal */
+.modal-section-label {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    line-height: 15px;
+    margin-bottom: 14px;
+}
+
+/* Detail rows */
+.modal-detail-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--color-border-light);
+}
+
+.modal-detail-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.modal-detail-row:last-child {
+    border-bottom: none;
+}
+
+.modal-detail-row.row-subtotal {
+    background: #fafaf5;
+}
+
+.modal-row-key {
+    flex: 1;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--color-text-muted);
+    line-height: 20px;
+    border-right: 1px solid var(--color-border-light);
+}
+
+.modal-row-val {
+    width: 160px;
+    flex-shrink: 0;
+    padding: 14px 20px;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    text-align: right;
+    line-height: 20px;
+}
+
+.modal-detail-row.row-subtotal .modal-row-key {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+}
+
+.modal-detail-row.row-subtotal .modal-row-val {
+    color: var(--color-gold-dark);
+    font-size: 15px;
+}
+
+/* Note box */
+.modal-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #fffdf0;
+    border: 1px solid #ede9c8;
+    padding: 14px 18px;
+}
+
+.modal-note-icon {
+    flex-shrink: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--color-gold-dark);
+}
+
+.modal-note p {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    line-height: 18px;
+}
+
+/* Divider inside modal */
+.modal-divider {
+    height: 1px;
+    background: var(--color-divider);
+}
+
+@media (max-width: 640px) {
+    .modal { max-height: 95vh; }
+    .modal-header, .modal-body { padding-left: 24px; padding-right: 24px; }
+    .modal-row-val { width: 130px; }
+}

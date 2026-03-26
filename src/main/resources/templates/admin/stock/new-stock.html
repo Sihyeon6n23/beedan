@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'NEW STOCK', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | New Stock</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-new')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/crawling/admin-crawling.css}"/>
+
+<section class="admin-crawling-page" th:data-active-tab="${activeTab != null ? activeTab : 'external'}">
+
+    <!-- 헤더 -->
+    <header class="admin-crawling-shell">
+        <div>
+            <span class="admin-crawling-kicker">Stock Registration</span>
+            <h1 class="admin-crawling-title">상품 등록</h1>
+        </div>
+        <div class="admin-crawling-shell__rule"></div>
+        <div class="admin-crawling-tabs">
+            <button class="admin-crawling-tab" data-tab="external">외부 상품 등록</button>
+            <button class="admin-crawling-tab" data-tab="manual">자체 상품 등록</button>
+        </div>
+    </header>
+
+    <!-- 알림 메시지 -->
+    <div th:if="${message}" class="admin-crawling-alert admin-crawling-alert--success" th:text="${message}"></div>
+    <div th:if="${error}" class="admin-crawling-alert admin-crawling-alert--error" th:text="${error}"></div>
+
+    <!-- ===== 외부 상품 등록 탭 ===== -->
+    <div id="tab-external" class="admin-crawling-tab-panel">
+
+        <!-- 등록된 URL 목록 -->
+        <div class="admin-crawling-shell">
+            <h2 class="admin-crawling-section-title">등록된 크롤링 URL</h2>
+
+            <div th:if="${urls.isEmpty()}" style="padding: 2rem 0; text-align: center; font-size: 0.875rem;">
+                등록된 URL이 없습니다.
+            </div>
+
+            <div th:unless="${urls.isEmpty()}" class="admin-crawling-table-wrap">
+                <table class="admin-crawling-table">
+                    <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th style="width: 9rem;">브랜드</th>
+                        <th style="width: 9rem;">카테고리</th>
+                        <th style="width: 10rem;">크롤링</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="url : ${urls}">
+                        <td class="url-cell" th:text="${url.urlUrl}"></td>
+                        <td th:text="${brandMap[url.brId]}"></td>
+                        <td th:text="${url.catId == 0} ? 'AI 자동 분류' : ${catMap[url.catId]}"></td>
+                        <td>
+                            <button onclick="openCrawlModal(this)"
+                                    th:data-id="${url.urlId}"
+                                    class="admin-crawling-btn admin-crawling-btn--primary">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+                                크롤링 시작
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- URL 등록 폼 -->
+        <div class="admin-crawling-shell">
+            <h2 class="admin-crawling-section-title">URL 등록</h2>
+            <form th:object="${url}" th:action="@{/admin/newstock/url}" method="post" class="admin-crawling-form">
+                <div class="admin-crawling-field">
+                    <label class="admin-crawling-label">크롤링 URL</label>
+                    <input type="url" th:field="*{urlUrl}" required placeholder="https://example.com/collections/outerwear"
+                           class="admin-crawling-input"/>
+                </div>
+                <div class="admin-crawling-row">
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">브랜드 <span>(선택 또는 새 이름 입력)</span></label>
+                        <input type="text" th:field="*{brNm}" list="brand-list" required placeholder="Kapital"
+                               class="admin-crawling-input"/>
+                        <datalist id="brand-list">
+                            <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
+                        </datalist>
+                    </div>
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">카테고리 <span>(선택, 직접 입력, AI 자동 분류)</span></label>
+                        <input type="text" th:field="*{catNm}" list="cat-list" required placeholder="Outwear 또는 AI 자동 분류"
+                               class="admin-crawling-input"/>
+                        <datalist id="cat-list">
+                            <option value="AI 자동 분류"></option>
+                            <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
+                        </datalist>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="admin-crawling-btn admin-crawling-btn--primary">등록</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- ===== 자체 상품 등록 탭 ===== -->
+    <div id="tab-manual" class="admin-crawling-tab-panel">
+
+        <div class="admin-crawling-shell">
+            <h2 class="admin-crawling-section-title">상품 직접 등록</h2>
+            <form th:action="@{/admin/newstock/manual}" method="post" enctype="multipart/form-data" class="admin-crawling-form">
+
+                <div class="admin-crawling-row">
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">상품 코드</label>
+                        <input type="text" name="stCd" required placeholder="ST-001"
+                               class="admin-crawling-input"/>
+                    </div>
+                    <div class="admin-crawling-field" style="flex: 2;">
+                        <label class="admin-crawling-label">상품명</label>
+                        <input type="text" name="stNm" required placeholder="상품명을 입력하세요"
+                               class="admin-crawling-input"/>
+                    </div>
+                </div>
+
+                <div class="admin-crawling-row">
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">브랜드명 <span>(없으면 새로 추가)</span></label>
+                        <input type="text" name="brNm" list="brand-list-manual" required placeholder="Kapital"
+                               class="admin-crawling-input"/>
+                        <datalist id="brand-list-manual">
+                            <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
+                        </datalist>
+                    </div>
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">카테고리 <span>(선택)</span></label>
+                        <input type="text" name="catNm" list="cat-list-manual" placeholder="Outerwear"
+                               class="admin-crawling-input"/>
+                        <datalist id="cat-list-manual">
+                            <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
+                        </datalist>
+                    </div>
+                </div>
+
+                <div class="admin-crawling-row">
+                    <div class="admin-crawling-field" style="flex: 2;">
+                        <label class="admin-crawling-label">가격</label>
+                        <input type="number" name="stPr" required placeholder="0" min="0" step="0.01"
+                               class="admin-crawling-input"/>
+                    </div>
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">통화</label>
+                        <input type="text" name="stCur" list="currency-list-manual" required placeholder="₩" maxlength="5"
+                               class="admin-crawling-input"/>
+                        <datalist id="currency-list-manual">
+                            <option value="₩">KRW</option>
+                            <option value="¥">JPY</option>
+                            <option value="$">USD</option>
+                            <option value="€">EUR</option>
+                            <option value="£">GBP</option>
+                        </datalist>
+                    </div>
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">요청자 ID</label>
+                        <input type="number" name="stReqMemId" required placeholder="회원 ID"
+                               class="admin-crawling-input"/>
+                    </div>
+                </div>
+
+                <div class="admin-crawling-field">
+                    <label class="admin-crawling-label">상품 이미지</label>
+                    <input type="file" name="imgFile" accept="image/*" class="admin-crawling-input admin-crawling-input--file"/>
+                </div>
+
+                <div>
+                    <button type="submit" class="admin-crawling-btn admin-crawling-btn--primary">상품 등록</button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- HTML 사이트용 모달 -->
+<div id="crawlModal" class="admin-crawling-modal-overlay">
+    <div class="admin-crawling-modal">
+        <h3 class="admin-crawling-modal__title">CSS 셀렉터 입력</h3>
+        <p class="admin-crawling-modal__subtitle">Shopify 기반 사이트는 자동 감지되므로 입력 불필요</p>
+        <form id="crawlForm" method="post" class="admin-crawling-modal-form">
+            <input type="hidden" name="urlId" id="crawlUrlId"/>
+            <div class="admin-crawling-field">
+                <label class="admin-crawling-label">상품 컨테이너 selector</label>
+                <input type="text" name="selItem" placeholder=".product-item" class="admin-crawling-input"/>
+            </div>
+            <div class="admin-crawling-field">
+                <label class="admin-crawling-label">상품명 selector</label>
+                <input type="text" name="selNm" placeholder=".product-name" class="admin-crawling-input"/>
+            </div>
+            <div class="admin-crawling-field">
+                <label class="admin-crawling-label">가격 selector</label>
+                <input type="text" name="selPr" placeholder=".product-price" class="admin-crawling-input"/>
+            </div>
+            <div class="admin-crawling-field">
+                <label class="admin-crawling-label">이미지 selector</label>
+                <input type="text" name="selImg" placeholder="img.product-img" class="admin-crawling-input"/>
+            </div>
+            <div class="admin-crawling-field">
+                <label class="admin-crawling-label">통화 기호</label>
+                <input type="text" name="currency" list="currency-list" placeholder="¥" maxlength="5" required
+                       class="admin-crawling-input"/>
+                <datalist id="currency-list">
+                    <option value="¥">JPY</option>
+                    <option value="€">EUR</option>
+                    <option value="$">USD</option>
+                    <option value="£">GBP</option>
+                    <option value="₩">KRW</option>
+                </datalist>
+            </div>
+            <div class="admin-crawling-modal-actions">
+                <button type="submit" class="admin-crawling-btn admin-crawling-btn--primary">크롤링 시작</button>
+                <button type="button" onclick="closeCrawlModal()" class="admin-crawling-btn admin-crawling-btn--outline">취소</button>
+            </div>
+        </form>
+        <div id="crawlLoading" class="admin-crawling-loading">
+            <div class="admin-crawling-spinner"></div>
+            <p class="admin-crawling-loading__text">크롤링 중...</p>
+            <p class="admin-crawling-loading__sub">AI 분류 포함 시 시간이 걸릴 수 있습니다</p>
+        </div>
+    </div>
+</div>
+
+<!-- Shopify 사이트용 미니 모달 -->
+<div id="shopifyModal" class="admin-crawling-modal-overlay">
+    <div class="admin-crawling-modal">
+        <h3 class="admin-crawling-modal__title">Shopify 사이트 감지됨</h3>
+        <p class="admin-crawling-modal__subtitle">상품 데이터를 자동으로 가져옵니다. 통화 기호만 입력하세요.</p>
+        <form id="shopifyForm" method="post" class="admin-crawling-modal-form">
+            <input type="hidden" name="selItem" value=""/>
+            <input type="hidden" name="selNm" value=""/>
+            <input type="hidden" name="selPr" value=""/>
+            <input type="hidden" name="selImg" value=""/>
+            <div class="admin-crawling-field">
+                <label class="admin-crawling-label">통화 기호</label>
+                <input type="text" name="currency" list="currency-list-shopify" placeholder="₩" maxlength="5" required
+                       class="admin-crawling-input"/>
+                <datalist id="currency-list-shopify">
+                    <option value="¥">JPY</option>
+                    <option value="€">EUR</option>
+                    <option value="$">USD</option>
+                    <option value="£">GBP</option>
+                    <option value="₩">KRW</option>
+                </datalist>
+            </div>
+            <div class="admin-crawling-modal-actions">
+                <button type="submit" class="admin-crawling-btn admin-crawling-btn--primary">크롤링 시작</button>
+                <button type="button" onclick="closeShopifyModal()" class="admin-crawling-btn admin-crawling-btn--outline">취소</button>
+            </div>
+        </form>
+        <div id="shopifyLoading" class="admin-crawling-loading">
+            <div class="admin-crawling-spinner"></div>
+            <p class="admin-crawling-loading__text">크롤링 중...</p>
+            <p class="admin-crawling-loading__sub">AI 분류 포함 시 시간이 걸릴 수 있습니다</p>
+        </div>
+    </div>
+</div>
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<script>
+    // 탭 전환
+    const page = document.querySelector('.admin-crawling-page');
+    const initialTab = page ? page.dataset.activeTab : 'external';
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.admin-crawling-tab').forEach(t => {
+            t.classList.toggle('is-active', t.dataset.tab === tabName);
+        });
+        document.querySelectorAll('.admin-crawling-tab-panel').forEach(p => {
+            p.classList.toggle('is-active', p.id === 'tab-' + tabName);
+        });
+    }
+
+    document.querySelectorAll('.admin-crawling-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    switchTab(initialTab);
+
+    // 크롤링 모달
+    function openCrawlModal(btn) {
+        const id = btn.dataset.id;
+        const origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">hourglass_empty</span> 확인 중...';
+
+        fetch('/admin/newstock/check-type/' + id)
+            .then(r => r.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+
+                // 셀렉터가 이미 저장된 경우 → 모달 없이 바로 실행
+                if (data.hasSel === 'true') {
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = '/admin/newstock/run/' + id;
+                    document.body.appendChild(form);
+                    form.submit();
+                    return;
+                }
+
+                if (data.type === 'shopify') {
+                    document.getElementById('shopifyForm').action = '/admin/newstock/run/' + id;
+                    document.getElementById('shopifyModal').classList.add('is-open');
+                } else {
+                    document.getElementById('crawlUrlId').value = id;
+                    document.getElementById('crawlForm').action = '/admin/newstock/run/' + id;
+                    document.getElementById('crawlModal').classList.add('is-open');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+                document.getElementById('crawlUrlId').value = id;
+                document.getElementById('crawlForm').action = '/admin/newstock/run/' + id;
+                document.getElementById('crawlModal').classList.add('is-open');
+            });
+    }
+
+    function closeCrawlModal() {
+        document.getElementById('crawlModal').classList.remove('is-open');
+    }
+
+    function closeShopifyModal() {
+        document.getElementById('shopifyModal').classList.remove('is-open');
+    }
+
+    document.getElementById('crawlForm').addEventListener('submit', function () {
+        document.getElementById('crawlLoading').classList.add('is-active');
+    });
+
+    document.getElementById('shopifyForm').addEventListener('submit', function () {
+        document.getElementById('shopifyLoading').classList.add('is-active');
+    });
+</script>
+</th:block>
+</html>

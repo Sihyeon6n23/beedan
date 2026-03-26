@@ -12,6 +12,7 @@ public class MypageController {
     public String getMainRedirect() {
         return "redirect:/mypage/main";
     }
+
     @GetMapping("/main")
     public String getMain() {
         return "/member/mypage/mypage-main";

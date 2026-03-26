@@ -47,14 +47,15 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 	implementation 'org.jsoup:jsoup:1.17.2'
+	implementation 'com.microsoft.playwright:playwright:1.49.0'
   	implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient 사용
-
-
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 	implementation "org.springframework.boot:spring-boot-starter-mail"
+	// WebSocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
