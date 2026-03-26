@@ -16,12 +16,12 @@
                 <h1>NOTIFICATIONS</h1>
                 <p class="notification-item-desc">Centralized hub for all architectural and logistics updates.</p>
             </div>
-            <button class="btn-secondary py-3 px-6">Mark all as read</button>
+            <a class="btn-secondary py-3 px-6" th:href="@{/notification/readAll}">Mark all as read</a>
         </header>
 
         <nav class="notification-filter-bar">
             <button class="filter-btn active">All</button>
-            <button class="filter-btn">Unread</button>
+            <a class="filter-btn" th:href="@{/notification/unreadList}">Unread</a>
             <button class="filter-btn">System</button>
             <button class="filter-btn">Shipping</button>
             <button class="filter-btn">Inquiry</button>
