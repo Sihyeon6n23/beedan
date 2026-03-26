@@ -23,17 +23,18 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepositroy;
 
-    public List<NotificationDto> getNotiList(Long memId){
+    public List<NotificationDto> getUnReadNotificationList(Long memId){
         memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
-        List<NotificationDto> notiList = notificationRepository.findByMember_MemIdAndNotiDelYnFalseOrderByNotiCreDtDesc(memId)
+        List<NotificationDto> notificationDtoList = notificationRepository
+                .findUnReadAndNotDeleteListByMemId(memId)
                 .stream()
                 .map(notification -> mapToNotificationDto(notification))
                 .toList();
 
-        return notiList;
+        return notificationDtoList;
     }
 
-    public void createNoti(Long memId, NotificationType notiTp, String detail, Long targetId){
+    public void createNotification(Long memId, NotificationType notiTp, String detail, Long targetId){
         Member member = memberRepositroy.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
         String content = notiTp.generateContent(detail);
@@ -49,9 +50,36 @@ public class NotificationService {
                 .notiCreDt(LocalDateTime.now())
                 .build();
 
-        log.info("알림 생성 테스트: {}", notification.toString());
-
         notificationRepository.save(notification);
+    }
+
+    public void deleteNotification(Long notiId) { //
+        Notification notification = notificationRepository.findById(notiId).orElseThrow(() -> new IllegalArgumentException("Can't find notice"));
+        notification.setNotiDelYn(true);
+    }
+
+    public void deleteAll(Long memId){ notificationRepository.updateAllDelYnByMemId(memId); }
+
+    public void readNotification(Long notiId){
+        Notification notification = notificationRepository.findById(notiId).orElseThrow(()->new IllegalArgumentException("Can't find notice"));
+        notification.setNotiReaYn(true);
+    }
+
+    public void readAll(Long memId){ notificationRepository.updateAllReaYnByMemId(memId); }
+
+    @Transactional(readOnly = true)
+    public int getUnreadCount(Long memId) {
+        return notificationRepository.countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(memId);
+    }
+
+    public void changeNoti(Long notiId, Long upd_mem_id, NotificationDto notificationDto){
+        Notification notification = notificationRepository.findById(notiId).orElseThrow(()-> new IllegalArgumentException("Can't find notice"));
+
+        if(notificationDto.getNotiTtl() != null) notification.setNotiTtl(notificationDto.getNotiTtl());
+        if(notificationDto.getNotiCon() != null) notification.setNotiCon(notificationDto.getNotiCon());
+
+        notification.setNotiUpdMemId(upd_mem_id);
+        notification.setNotiUpdDt(LocalDateTime.now());
     }
 
     public NotificationDto mapToNotificationDto(Notification notification){
@@ -63,37 +91,6 @@ public class NotificationService {
                 .notiCreAt(notification.getNotiCreDt())
                 .notiUptDt(notification.getNotiUpdDt())
                 .build();
-    }
-
-    public void deleteNoti(Long notiId) {
-        Notification notification = notificationRepository.findById(notiId).orElseThrow(() -> new IllegalArgumentException("Can't find notice"));
-        notification.setNotiDelYn(true);
-    }
-
-    public String updateNotiReaYn(Long notiId){
-        Notification notification = notificationRepository.findById(notiId).orElseThrow(()->new IllegalArgumentException("Can't find notice"));
-
-        notification.setNotiReaYn(true);
-
-        return notification.getNotiRef();
-    }
-
-    public int updateAllNotiReaYn(Long memId){
-        return notificationRepository.updateAllRedYnByMemId(memId);
-    }
-
-    @Transactional(readOnly = true)
-    public int getUnreadCount(Long memId) {
-        return notificationRepository.countByMember_MemIdAndNotiReaYnFalse(memId);
-    }
-
-    public void updateNoti(Long notiId, Long upd_mem_id, NotificationDto updateDto){
-        Notification notification = notificationRepository.findById(notiId).orElseThrow(()-> new IllegalArgumentException("Can't find notice"));
-
-        notification.setNotiTtl(updateDto.getNotiTtl());
-        notification.setNotiCon(updateDto.getNotiCon());
-        notification.setNotiUpdMemId(upd_mem_id);
-        notification.setNotiUpdDt(LocalDateTime.now());
     }
 
 }

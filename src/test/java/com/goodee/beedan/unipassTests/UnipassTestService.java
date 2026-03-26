@@ -1,4 +1,4 @@
-package com.goodee.beedan.UnipassTests;
+package com.goodee.beedan.unipassTests;
 
 import com.goodee.beedan.service.order.UnipassService;
 import org.junit.jupiter.api.Test;

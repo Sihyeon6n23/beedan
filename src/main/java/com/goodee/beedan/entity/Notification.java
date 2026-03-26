@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "noti_id")
     private Long notiId;
     private String notiCon;
     private String notiTtl;

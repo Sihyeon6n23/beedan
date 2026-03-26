@@ -1,6 +1,5 @@
 package com.goodee.beedan.entity;
 
-import com.goodee.beedan.common.constant.ShipmentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,20 +15,22 @@ import java.time.LocalDateTime;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class Shipment {
+public class Receiver {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shi_id")
-    private Long shi_id;
-    private Long shi_tra_no;
-	private String shi_ca_cd;
-    @Enumerated
-    private ShipmentStatus shi_stt;
+    private Long rcId;
+    private String rcNm;
+    private String rcPhn;
+    private String rcMsg;
+    private String rcAdr;
+    private String rcAdrDt;
     @CreatedDate
-    private LocalDateTime shi_base_cre_dt;
+    private LocalDateTime rcCreDt;
     @LastModifiedDate
-    private LocalDateTime shi_div_dt;
+    private LocalDateTime rcUpdDt;
+    private Boolean rcDelYn;
+
     @ManyToOne
-    @JoinColumn(name="ord_base_id")
-    private Order order;
+    @JoinColumn(name = "mem_id")
+    private Member member;
 }
