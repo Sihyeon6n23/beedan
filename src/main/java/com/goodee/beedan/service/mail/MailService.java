@@ -1,4 +1,4 @@
-package com.goodee.beedan.service.mailService;
+package com.goodee.beedan.service.mail;
 
 import com.goodee.beedan.common.constant.NotificationType;
 import jakarta.mail.MessagingException;
