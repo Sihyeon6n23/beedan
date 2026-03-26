@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <header th:fragment="headerFragment"
         class="header_final-1 fixed top-0 left-0 w-full z-50 h-16 bg-white border-b border-stone-100">
 
@@ -9,7 +12,7 @@
         </div>
 
         <nav class="hidden md:flex items-center justify-center gap-12 flex-1">
-            <a th:href="@{/stock}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">STOCK</a>
+            <a th:href="@{/stock/list}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">STOCK</a>
             <a th:href="@{/notification}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">NOTICE</a>
             <a th:href="@{/about}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">ABOUT</a>
             <a th:href="@{/mypage}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">MY PAGE</a>
@@ -17,7 +20,15 @@
 
         <div class="flex items-center justify-end gap-6 flex-1">
             <div class="button">
-                <a th:href="@{/login}" class="text-xs font-bold no-underline text-stone-900 hover:opacity-70">LOGIN</a>
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:href="@{/auth/signin}" class="text-xs font-bold no-underline text-stone-900 hover:opacity-70">LOGIN</a>
+                </th:block>
+                <th:block>
+                    <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="text-xs font-bold no-underline text-stone-900 hover:opacity-70">LOGOUT</button>
+                    </form>
+                </th:block>
             </div>
 
             <div id="notiIcon" class="relative cursor-pointer">
@@ -25,10 +36,9 @@
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
 
                 <div th:replace="~{fragments/notification :: notificationDropdown}"></div>
-
             </div>
         </div>
 
-
     </div>
 </header>
+</html>

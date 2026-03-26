@@ -11,11 +11,20 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    List<Notification> findByMember_MemIdAndNotiDelYnFalseOrderByNotiCreDtDesc(Long memId);
+    @Query("SELECT n FROM Notification n " +
+            "WHERE n.member.memId = :memId " +
+            "AND n.notiDelYn = false " +
+            "AND n.notiReaYn = false " +
+            "ORDER BY n.notiCreDt DESC")
+    List<Notification> findUnReadAndNotDeleteListByMemId(Long memId);
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Notification n SET n.notiReaYn = true WHERE n.member.memId = :memId AND n.notiReaYn = false AND n.notiDelYn = false")
-    int updateAllRedYnByMemId(@Param("memId") Long memId);
+    void updateAllReaYnByMemId(@Param("memId") Long memId);
 
-    int countByMember_MemIdAndNotiReaYnFalse(Long memId);
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Notification n SET n.notiDelYn = true WHERE n.member.memId = :memId AND n.notiReaYn = false AND n.notiDelYn = false")
+    void updateAllDelYnByMemId(@Param("memId") Long memId);
+
+    int countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(Long memId);
 }

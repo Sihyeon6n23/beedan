@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html th:fragment="layout(title, sidebar, content)" xmlns:th="http://www.thymeleaf.org" class="h-full">
+<html th:fragment="layout(title, sidebar, content)"
+      class="h-full"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,24 +32,6 @@
     <div th:replace="~{fragments/chat/member-widget :: memberChatWidget}"></div>
 <!--</th:block>-->
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const notiIcon = document.getElementById('notiIcon'); // 헤더의 종 아이콘 ID
-    const notiDropdown = document.getElementById('notificationDropdown');
-
-    // 종 아이콘 클릭 시 토글
-    notiIcon.addEventListener('click', function(e) {
-        e.stopPropagation();
-        notiDropdown.classList.toggle('hidden');
-    });
-
-    // 화면 다른 곳 클릭 시 닫기
-    document.addEventListener('click', function(e) {
-        if (!notiDropdown.contains(e.target) && e.target !== notiIcon) {
-            notiDropdown.classList.add('hidden');
-        }
-    });
-});
-</script>
+<script defer th:src="@{/js/notification/notification.js}"></script>
 </body>
 </html>

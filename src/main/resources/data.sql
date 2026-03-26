@@ -103,6 +103,67 @@ ALTER TABLE cart     ALTER COLUMN ca_id  RESTART WITH 100;
 -- 백시현 START
 -- =====================
 
+INSERT INTO BUYER_GRADE_POLICY
+(bgp_gr, bgp_min_ord_cnt, bgp_min_tt_am, bgp_ef_fr_dt, bgp_ac_yn, bgp_des)
+VALUES
+    ('VIP',      10, 30000000, CURRENT_TIMESTAMP(), TRUE, 'VIP: 10회 이상 OR 3,000만원 이상'),
+    ('PREMIUM',   3,  5000000, CURRENT_TIMESTAMP(), TRUE, 'PREMIUM: 3회 이상 OR 500만원 이상'),
+    ('STANDARD', NULL,   NULL, CURRENT_TIMESTAMP(), TRUE, 'STANDARD: 기본 등급');
+
+
+INSERT INTO BUYER
+(mem_biz_no, bgp_gr, mem_biz_ttl, by_ord_cnt, by_ttl_am, by_fr_dt, by_lt_dt)
+VALUES
+    ('123-45-67890', 'STANDARD', '주식회사 가나다', 0, 0, NULL, NULL),
+
+    ('234-56-78901', 'PREMIUM', '주식회사 라마바', 5, 8000000, '2025-01-10 00:00:00', '2025-12-01 00:00:00'),
+
+    ('345-67-89012', 'VIP', '주식회사 사아자', 12, 35000000, '2024-06-01 00:00:00', '2025-11-15 00:00:00');
+
+
+
+INSERT INTO FEE_POLICY
+(bgp_gr, fp_fee_ty, fp_calc_ty, fp_val, fp_ac_yn, fp_ef_fr_dt, fp_des)
+VALUES
+    ('STANDARD', 'SERVICE_COMMISSION', 'RATE',  0.0500, TRUE, CURRENT_TIMESTAMP(), '서비스 수수료 5%'),
+    ('PREMIUM',  'SERVICE_COMMISSION', 'RATE',  0.0400, TRUE, CURRENT_TIMESTAMP(), '서비스 수수료 4%'),
+    ('VIP',      'SERVICE_COMMISSION', 'RATE',  0.0300, TRUE, CURRENT_TIMESTAMP(), '서비스 수수료 3%'),
+    ('STANDARD', 'SHIPPING',           'RATE',  0.0000, TRUE, CURRENT_TIMESTAMP(), '배송비 할인 없음'),
+    ('PREMIUM',  'SHIPPING',           'RATE',  0.0500, TRUE, CURRENT_TIMESTAMP(), '배송비 5% 할인'),
+    ('VIP',      'SHIPPING',           'RATE',  0.1000, TRUE, CURRENT_TIMESTAMP(), '배송비 10% 할인'),
+    ('STANDARD', 'CUSTOMS',            'RATE',  0.0000, TRUE, CURRENT_TIMESTAMP(), '통관 할인 없음'),
+    ('PREMIUM',  'CUSTOMS',            'RATE',  0.0500, TRUE, CURRENT_TIMESTAMP(), '통관 5% 할인'),
+    ('VIP',      'CUSTOMS',            'RATE',  0.1000, TRUE, CURRENT_TIMESTAMP(), '통관 10% 할인');
+
+INSERT INTO NEGOTIATION (ng_nm, ng_cre_dt, mem_id) VALUES
+                                                       ('협상 1호', CURRENT_TIMESTAMP(), 1),
+                                                       ('협상 2호', CURRENT_TIMESTAMP(), 1),
+                                                       ('협상 3호', CURRENT_TIMESTAMP(), 2);
+
+INSERT INTO UNIT_GROUP (un_g_nm, un_g_qn, un_g_yn, un_g_cr_dt, un_g_up_dt) VALUES
+                                                                               ('다스', 12, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+-- 다스(un_g_id=2 가정) 기준 할인 정책
+INSERT INTO UNIT_DISCOUNT
+(un_g_id, un_d_min_qn, un_d_min_am, un_d_qn_dr, un_d_am_dr, un_d_ov_ty, un_d_des, un_d_cr_dt, un_d_up_dt)
+VALUES
+    (1, 5,  NULL,    0.0300, 0.0000, 'HIGHER', '5다스 이상 수량 3% 할인',   CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    (1, 10, NULL,    0.0500, 0.0000, 'HIGHER', '10다스 이상 수량 5% 할인',  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    (1, NULL, 500000, 0.0000, 0.0300, 'HIGHER', '50만원 이상 금액 3% 할인', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- =====================
 -- 백시현 END
@@ -154,6 +215,30 @@ INSERT INTO member (
              'ACTIVE',
              NOW()
          );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin1',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'INACTIVE',
+             NOW()
+         );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin2',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'PENDING',
+             NOW()
+         );
 -- =====================
 -- 고희권 END
 -- =====================
@@ -173,6 +258,17 @@ INSERT INTO member (
 -- =====================
 -- 임 욱 START
 -- =====================
+INSERT INTO ORDER_BASE (ord_base_nm, ord_base_rcv_nm, ord_base_adr_da, ord_base_adr_dt, qu_dt_id, qu_info_id, qu_id, ng_id)
+VALUES ('홍길동', '주문자와 동일', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 1, 1, 1, 1);
+
+
+INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_cre_dt, noti_upd_mem_id, mem_id)
+VALUES
+    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NOW(), NULL, 1),
+    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NOW(), NULL, 1);
 -- =====================
 -- 임 욱 END
 -- =====================

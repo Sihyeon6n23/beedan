@@ -2,8 +2,8 @@
 -- 최준희 START
 -- =====================
 CREATE TABLE IF NOT EXISTS stock (
-    st_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
-    st_cd        VARCHAR(50),
+                                     st_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                     st_cd        VARCHAR(50),
     br_id        BIGINT,
     st_br_nm     VARCHAR(20),
     cat_id       VARCHAR(20),
@@ -22,29 +22,29 @@ CREATE TABLE IF NOT EXISTS stock (
     st_upd_dt    DATETIME,
     st_wis_cnt   BIGINT,
     st_pur_cnt   BIGINT
-);
+    );
 
 CREATE TABLE IF NOT EXISTS cart (
-    ca_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
-    mem_id   BIGINT,
-    ca_st_qn BIGINT,
-    st_id    BIGINT,
-    FOREIGN KEY (st_id) REFERENCES stock(st_id)
-);
+                                    ca_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                    mem_id   BIGINT,
+                                    ca_st_qn BIGINT,
+                                    st_id    BIGINT,
+                                    FOREIGN KEY (st_id) REFERENCES stock(st_id)
+    );
 
 CREATE TABLE IF NOT EXISTS brand (
-    br_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    br_nm VARCHAR(25)
-);
+                                     br_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                     br_nm VARCHAR(25)
+    );
 
 CREATE TABLE IF NOT EXISTS category (
-    cat_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    cat_nm VARCHAR(25)
-);
+                                        cat_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                        cat_nm VARCHAR(25)
+    );
 
 CREATE TABLE IF NOT EXISTS crawling_url (
-    url_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
-    url_url      VARCHAR(500),
+                                            url_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                            url_url      VARCHAR(500),
     br_id        BIGINT,
     cat_id       BIGINT,
     url_sel_item VARCHAR(100),
@@ -60,10 +60,10 @@ CREATE TABLE IF NOT EXISTS crawling_url (
 );
 
 CREATE TABLE IF NOT EXISTS wishlist (
-    wi_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
-    st_id        BIGINT,
-    mem_id       BIGINT,
-    wi_cre_dt    DATETIME
+                                        wi_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                        st_id        BIGINT,
+                                        mem_id       BIGINT,
+                                        wi_cre_dt    DATETIME
 );
 -- =====================
 -- 최준희 END
@@ -72,6 +72,98 @@ CREATE TABLE IF NOT EXISTS wishlist (
 -- =====================
 -- 백시현 START
 -- =====================
+DROP TABLE IF EXISTS BUYER_GRADE_POLICY;
+
+CREATE TABLE BUYER_GRADE_POLICY (
+                                    bgp_id          BIGINT          NOT NULL AUTO_INCREMENT,
+                                    bgp_gr          VARCHAR(20)     NOT NULL,
+                                    bgp_min_ord_cnt INT             NULL,
+                                    bgp_min_tt_am   DECIMAL(18, 0)  NULL,
+                                    bgp_ef_fr_dt    DATETIME        NULL,
+                                    bgp_ef_to_dt    DATETIME        NULL,
+                                    bgp_des         TEXT            NULL,
+                                    bgp_ac_yn       BOOLEAN         NULL,
+                                    bgp_cr_dt       DATETIME        NULL,
+                                    bgp_up_dt       DATETIME        NULL,
+
+                                    PRIMARY KEY (bgp_id)
+);
+DROP TABLE IF EXISTS BUYER;
+
+CREATE TABLE BUYER (
+                       by_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                       mem_biz_no  VARCHAR(50)     NOT NULL,
+                       bgp_gr      VARCHAR(20)     NOT NULL,
+                       mem_biz_ttl VARCHAR(50)     NULL,
+                       by_ord_cnt  INT             NOT NULL DEFAULT 0,
+                       by_ttl_am   DECIMAL(18, 0)  NOT NULL DEFAULT 0,
+                       by_fr_dt    DATETIME        NULL,
+                       by_lt_dt    DATETIME        NULL,
+
+                       PRIMARY KEY (by_id)
+);
+
+DROP TABLE IF EXISTS FEE_POLICY;
+
+CREATE TABLE FEE_POLICY (
+                            fp_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                            bgp_gr      VARCHAR(20)     NULL,
+                            fp_fee_ty   VARCHAR(50)     NULL,
+                            fp_calc_ty  VARCHAR(10)     NULL,
+                            fp_val      DECIMAL(10, 4)  NULL,
+                            fp_ac_yn    BOOLEAN         NULL,
+                            fp_ef_fr_dt DATETIME        NULL,
+                            fp_ef_to_dt DATETIME        NULL,
+                            fp_des      TEXT            NULL,
+                            fp_cr_dt    DATETIME        NULL,
+                            fp_up_dt    DATETIME        NULL,
+
+                            PRIMARY KEY (fp_id)
+);
+
+DROP TABLE IF EXISTS NEGOTIATION;
+
+CREATE TABLE NEGOTIATION (
+                             ng_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                             ng_nm       VARCHAR(50)     NULL,
+                             ng_cre_dt   DATETIME        NULL,
+                             ng_end_dt   DATETIME        NULL,
+                             mem_id      BIGINT          NULL,
+
+                             PRIMARY KEY (ng_id)
+);
+
+DROP TABLE IF EXISTS UNIT_GROUP;
+
+CREATE TABLE UNIT_GROUP (
+                            un_g_id     BIGINT          NOT NULL AUTO_INCREMENT,
+                            un_g_nm     VARCHAR(50)     NULL UNIQUE,
+                            un_g_qn     INT             NULL,
+                            un_g_yn     BOOLEAN         NULL,
+                            un_g_cr_dt  DATETIME        NULL,
+                            un_g_up_dt  DATETIME        NULL,
+
+                            PRIMARY KEY (un_g_id)
+);
+
+DROP TABLE IF EXISTS UNIT_DISCOUNT;
+
+CREATE TABLE UNIT_DISCOUNT (
+                               un_d_id     BIGINT          NOT NULL AUTO_INCREMENT,
+                               un_g_id     BIGINT          NULL,
+                               un_d_min_qn INT             NULL,
+                               un_d_min_am DECIMAL(18, 0)  NULL,
+                               un_d_qn_dr  DECIMAL(10, 4)  NULL,
+                               un_d_am_dr  DECIMAL(10, 4)  NULL,
+                               un_d_ov_ty  VARCHAR(20)     NULL,
+                               un_d_des    TEXT            NULL,
+                               un_d_cr_dt  DATETIME        NULL,
+                               un_d_up_dt  DATETIME        NULL,
+
+                               PRIMARY KEY (un_d_id)
+);
+
+
 
 
 -- =====================
@@ -105,10 +197,11 @@ CREATE TABLE member (
                         mem_cmp_tel    VARCHAR(50)    NULL,
                         mem_lgn_tr     BIGINT         NOT NULL DEFAULT 0,
                         mem_loc_dt     DATETIME       NULL,
-                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK') NOT NULL DEFAULT 'ACTIVE',
+                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK', 'PENDING') NOT NULL DEFAULT 'PENDING',
                         mem_upd_id     BIGINT         NULL,
                         mem_upd_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
                         mem_cre_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
+                        mem_upd_pw_dt  DATETIME       NULL,
 
                         PRIMARY KEY (mem_id),
                         CONSTRAINT uk_mem_lgn_id UNIQUE (mem_lgn_id) -- H2와 MySQL 모두 호환되는 문법
@@ -132,6 +225,47 @@ CREATE TABLE member (
 -- =====================
 -- 임 욱 START
 -- =====================
+CREATE TABLE `NOTIFICATION`
+(
+    `noti_id` BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    `noti_ttl`        VARCHAR(30) NULL,
+    `noti_con`        TEXT NULL,
+    `noti_ref`        VARCHAR(30) NULL,
+    `noti_rea_yn`     BOOLEAN NULL,
+    `noti_del_yn`     BOOLEAN NULL,
+    `noti_cre_dt`     DATETIME NULL,
+    `noti_upd_dt`     DATETIME NULL,
+    `noti_upd_mem_id` VARCHAR(4) NULL,
+    `mem_id`          BIGINT NULL
+);
+
+CREATE TABLE `ORDER_BASE`
+(
+    `ord_base_id`     BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    `ord_base_nm`     VARCHAR(10) NULL,
+    `ord_base_rcv_nm` VARCHAR(10) NULL,
+    `ord_base_adr_da` VARCHAR(20) NULL,
+    `ord_base_adr_dt` VARCHAR(20) NULL,
+    `ord_base_msg`    TEXT NULL,
+    `qu_dt_id`        BIGINT NOT NULL,
+    `qu_info_id`      BIGINT NOT NULL,
+    `qu_id`           BIGINT NOT NULL,
+    `ng_id`           BIGINT NOT NULL
+);
+
+CREATE TABLE `RECIEVER` (
+    `rc_id`	BIGINT	GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    `rc_nm`	VARCHAR(50)	NULL,
+    `rc_phn`	VARCHAR(20)	NULL,
+    `rc_msg`	TEXT	NULL,
+    `rc_adr`	VARCHAR(20)	NULL,
+    `rc_adr_dt`	VARCHAR(20)	NULL,
+    `rc_cre_dt`	DATETIME	NULL,
+    `rc_upd_dt`	DATETIME	NULL,
+    `rc_del_yn`	BOOLEAN NULL,
+    `mem_id`	BIGINT	NOT NULL
+);
+
 -- =====================
 -- 임 욱 END
 -- =====================

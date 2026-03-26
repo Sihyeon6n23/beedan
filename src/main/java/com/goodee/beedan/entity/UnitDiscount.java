@@ -1,5 +1,6 @@
 package com.goodee.beedan.entity;
 
+import com.goodee.beedan.common.constant.OverlapType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,23 +21,27 @@ import java.time.LocalDateTime;
 public class UnitDiscount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "un_d_id")
     private Long unDId;
+    @Column(name = "un_g_id")
     private Long unGId; // 묶음 단위 아이디
+    @Column(name = "un_d_min_qn")
     private Integer unDMinQn;   // 최소 묶음 수량
-    @Column(precision = 18, scale = 0)
+    @Column(name = "un_d_min_am", precision = 18, scale = 0)
     private BigDecimal unDMinAm;    // 최소 금액
-    @Column(precision = 18, scale = 0)
+    @Column(name = "un_d_qn_dr", precision = 18, scale = 0)
     private BigDecimal unDQnDr; // 수량 할인율 (0.03=3%)
-    @Column(precision = 18, scale = 0)
+    @Column(name = "un_d_am_dr", precision = 18, scale = 0)
     private BigDecimal unDAmDr; // 금액 할인율
-
-    //TODO 이거 제발 기억하고 ENUM으로 바꿔라 시현아
-    private String unDOvTy; // 중복 충족 처리방식 HIGHER LOWER
-
+    @Column(name = "un_d_ov_ty", length = 20)
+    private OverlapType unDOvTy; // 중복 충족 처리방식 HIGHER LOWER
+    @Column(name = "un_d_des", columnDefinition = "TEXT")
     private String unDDes;  // 관리자 메모
     @CreatedDate
+    @Column(name = "un_d_cr_dt", updatable = false, nullable = false)
     private LocalDateTime unDCrDt;
     @LastModifiedDate
+    @Column(name = "un_d_up_dt", nullable = false)
     private LocalDateTime unDUpDt;
 
     @Builder
@@ -46,7 +51,7 @@ public class UnitDiscount {
             BigDecimal minAmount,
             BigDecimal quantityDiscountRate,
             BigDecimal amountDiscountRate,
-            String overlapType,
+            OverlapType overlapType,
             String description
     ){
         this.unGId = unitGroupId;
@@ -91,12 +96,11 @@ public class UnitDiscount {
 
         //TODO 이것도 이넘으로 바꿔라 시현아
         return switch (this.unDOvTy) {
-            case "HIGHER" -> qtyRate.max(amtRate);
-            case "LOWER" -> qtyRate.min(amtRate);
-            case "MULTIPLY" -> qtyRate.add(amtRate);
-            case "FIXED" -> this.unDQnDr != null
+            case HIGHER -> qtyRate.max(amtRate);
+            case LOWER -> qtyRate.min(amtRate);
+            case MULTIPLY -> qtyRate.add(amtRate);
+            case FIXED -> this.unDQnDr != null
                     ? this.unDQnDr : BigDecimal.ZERO;
-            default -> BigDecimal.ZERO;
         };
 
 

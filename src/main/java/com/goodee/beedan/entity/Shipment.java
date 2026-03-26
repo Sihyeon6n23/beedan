@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class Shipment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "shi_id")
     private Long shi_id;
     private Long shi_tra_no;
 	private String shi_ca_cd;
