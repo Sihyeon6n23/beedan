@@ -44,13 +44,13 @@ public class BuyerGradePolicy {
 
     public void update(
             Integer minOrderCount,
-            BigDecimal minTotalAmout,
+            BigDecimal minTotalAmount,
             LocalDateTime effectFromDate,
             LocalDateTime effectToDate,
             String description
     ){
         this.bgpMinOrdCnt = minOrderCount;
-        this.bgpMinTtAm = minTotalAmout;
+        this.bgpMinTtAm = minTotalAmount;
         this.bgpEfFrDt = effectFromDate;
         this.bgpDes = description;
     }
