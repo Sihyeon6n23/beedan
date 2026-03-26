@@ -14,36 +14,46 @@
             <div class="noti-page-title">
                 <span class="noti-sub-label">Communication Ledger</span>
                 <h1>NOTIFICATIONS</h1>
-                <p class="noti-item-desc">Centralized hub for all architectural inquiries and updates.</p>
+                <p class="noti-item-desc">Centralized hub for all architectural and logistics updates.</p>
             </div>
             <button class="btn-secondary py-3 px-6">Mark all as read</button>
         </header>
 
         <nav class="noti-filter-bar">
             <button class="filter-btn active">All</button>
-            <button class="filter-btn">Unread (3)</button>
+            <button class="filter-btn">Unread</button>
             <button class="filter-btn">System</button>
             <button class="filter-btn">Shipping</button>
             <button class="filter-btn">Inquiry</button>
         </nav>
 
         <div class="noti-list-container">
-            <article class="noti-full-item unread" th:each="noti : ${notiDtoList}">
-                <div class="noti-icon-square">
-                    <span class="material-symbols-outlined text-primary">request_quote</span>
-                </div>
-                <div class="noti-info-box">
-                    <div class="noti-top-row">
-                        <h3 class="noti-item-title" th:text="${noti.notiTtl}">New Quote Request: Residence 402 Marble</h3>
-                        <span class="noti-item-time">2 hours ago</span>
+            <th:block th:if="${not #lists.isEmpty(notiDtoList)}">
+                <article class="noti-full-item unread" th:each="noti : ${notiDtoList}">
+                    <div class="noti-icon-square">
+                        <span class="material-symbols-outlined text-primary">request_quote</span>
                     </div>
-                    <p class="noti-item-desc" th:text="${noti.notiCon}">An inquiry for 450sqm of Italian Carrara marble has been logged.</p>
+                    <div class="noti-info-box">
+                        <div class="noti-top-row">
+                            <h3 class="noti-item-title" th:text="${noti.notiTtl}">알림 제목</h3>
+                            <span class="noti-item-time">2 hours ago</span>
+                        </div>
+                        <p class="noti-item-desc" th:text="${noti.notiCon}">알림 내용</p>
+                    </div>
+                    <button class="text-primary font-bold text-xs underline uppercase">View</button>
+                </article>
+            </th:block>
+
+            <th:block th:unless="${not #lists.isEmpty(notiDtoList)}">
+                <div class="flex flex-col items-center justify-center py-20 text-stone-400">
+                    <span class="material-symbols-outlined text-6xl mb-4 opacity-50">notifications_off</span>
+                    <h3 class="text-lg font-bold text-stone-700 mb-2">수신된 알림이 없습니다</h3>
+                    <p class="text-sm">현재 확인할 수 있는 새로운 알림 내역이 없거나, 데이터를 불러오지 못했습니다.</p>
                 </div>
-                <button class="text-primary font-bold text-xs underline uppercase">View</button>
-            </article>
+            </th:block>
         </div>
 
-        <div class="noti-pagination">
+        <div class="noti-pagination" th:if="${not #lists.isEmpty(notiDtoList)}">
             <span class="noti-item-time">Page 1-5 of 1,280</span>
             <div class="flex gap-1">
                 <button class="w-10 h-10 bg-stone-200">◀</button>

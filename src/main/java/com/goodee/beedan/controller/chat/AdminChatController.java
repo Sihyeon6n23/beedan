@@ -10,11 +10,11 @@ public class AdminChatController {
 
     @GetMapping("/list")
     public String getChatListPage() {
-        return "/admin/chat/list";
+        return "/admin/chat/chat-list";
     }
 
     @GetMapping("/detail")
     public String getChatDetailPage() {
-        return "/admin/chat/detail";
+        return "/admin/chat/chat-detail";
     }
 }

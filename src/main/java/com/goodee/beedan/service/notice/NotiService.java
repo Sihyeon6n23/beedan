@@ -1,6 +1,6 @@
 package com.goodee.beedan.service.notice;
 
-import com.goodee.beedan.dto.NotiDto;
+import com.goodee.beedan.dto.notice.NotiDto;
 import com.goodee.beedan.entity.Noti;
 import com.goodee.beedan.repository.notice.NotiRepository;
 import lombok.RequiredArgsConstructor;
