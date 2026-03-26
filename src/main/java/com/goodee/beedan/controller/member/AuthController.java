@@ -40,7 +40,7 @@ public class AuthController {
 
     @PostMapping("/signout")
     public String postSignOut() {
-        return "redirect:/auth/signout";
+        return "redirect:/login";
     }
 
     @GetMapping("/find")

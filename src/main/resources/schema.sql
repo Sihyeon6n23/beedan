@@ -192,10 +192,11 @@ CREATE TABLE member (
                         mem_cmp_tel    VARCHAR(50)    NULL,
                         mem_lgn_tr     BIGINT         NOT NULL DEFAULT 0,
                         mem_loc_dt     DATETIME       NULL,
-                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK') NOT NULL DEFAULT 'ACTIVE',
+                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK', 'PENDING') NOT NULL DEFAULT 'PENDING',
                         mem_upd_id     BIGINT         NULL,
                         mem_upd_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
                         mem_cre_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
+                        mem_upd_pw_dt  DATETIME       NULL,
 
                         PRIMARY KEY (mem_id),
                         CONSTRAINT uk_mem_lgn_id UNIQUE (mem_lgn_id) -- H2와 MySQL 모두 호환되는 문법

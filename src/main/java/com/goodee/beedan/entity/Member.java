@@ -47,19 +47,17 @@ public class Member {
     private String memCeoPhn;
     private String memCmpTel;
 
-    // 🎯 SQL은 BIGINT이므로 Long으로 변경 권장
     private Long memLgnTr;
-
     private LocalDateTime memLocDt;
-
-    // 🎯 SQL이 ENUM이므로 엔티티도 타입을 맞추거나 String 유지
     private String memStt;
 
     @LastModifiedBy
-    private Long memUpdId; // 🎯 SQL은 BIGINT이므로 Long으로 변경
+    private Long memUpdId;
 
     @LastModifiedDate
     private LocalDateTime memUpdDt;
     @CreatedDate
     private LocalDateTime memCreDt;
+
+    private LocalDateTime memUpdPwDt;
 }

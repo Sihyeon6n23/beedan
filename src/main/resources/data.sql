@@ -215,6 +215,30 @@ INSERT INTO member (
              'ACTIVE',
              NOW()
          );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin1',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'INACTIVE',
+             NOW()
+         );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin2',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'PENDING',
+             NOW()
+         );
 -- =====================
 -- 고희권 END
 -- =====================

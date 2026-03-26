@@ -18,7 +18,7 @@ public class SecurityController {
 
     @GetMapping("/root/security")
     public String getSecurity(Model model) throws IOException {
-        model.addAttribute("policy", securityService.readSecPolDto());
+        model.addAttribute("policy", securityService.getSecPolDto());
 
         return "/root/security/security-policy";
     }
