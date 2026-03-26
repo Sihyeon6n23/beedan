@@ -1,10 +1,304 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goodee — 결제 완료</title>
+    <link rel="stylesheet" th:href="@{/css/payment/payment-quote-detail.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+<div class="page-wrapper">
+    <main class="main">
+        <div class="main-canvas">
 
+            <!-- ① 성공 헤더 -->
+            <header class="success-hero">
+                <div class="hero-left">
+                    <div class="hero-badge">조달 승인 완료</div>
+                    <h1 class="hero-title">결제가 완료되었습니다</h1>
+                    <div class="hero-order-id">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="10" r="9" stroke="#4d4732" stroke-width="1.5"/>
+                            <path d="M6.5 10l2.5 2.5 4.5-4.5" stroke="#4d4732" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>주문번호 #BD-2024-00195 확정</span>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <button class="btn-receipt-save">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1v9M4 7l4 4 4-4M2 14h12" stroke="#705e00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        결제 영수증 저장
+                    </button>
+                </div>
+            </header>
+
+            <!-- ② 진행 타임라인 -->
+            <section class="section">
+                <div class="section-heading">
+                    <span class="section-label">진행 상태</span>
+                    <div class="section-divider"></div>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-track"></div>
+                    <div class="timeline-step step-done">
+                        <div class="step-badge step-badge--active">01</div>
+                        <div class="step-info">
+                            <span class="step-title">주문 접수</span>
+                            <span class="step-date done">2024년 10월 24일 · 09:14</span>
+                        </div>
+                    </div>
+                    <div class="timeline-step step-done">
+                        <div class="step-badge step-badge--active">02</div>
+                        <div class="step-info">
+                            <span class="step-title">결제 승인</span>
+                            <span class="step-date done">2024년 10월 24일 · 09:16</span>
+                        </div>
+                    </div>
+                    <div class="timeline-step step-pending">
+                        <div class="step-badge step-badge--pending">03</div>
+                        <div class="step-info">
+                            <span class="step-title pending">물류 처리 중</span>
+                            <span class="step-date pending">예상: 영업일 기준 1~2일</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ③ 본문 -->
+            <div class="body-grid">
+
+                <div class="col-main">
+
+                    <!-- 구매 재고 목록 -->
+                    <section class="section">
+                        <div class="section-heading">
+                            <span class="section-label">구매 재고 목록</span>
+                            <div class="section-divider"></div>
+                        </div>
+                        <div class="inventory-list">
+
+                            <div class="inventory-item">
+                                <div class="inventory-thumb">
+                                    <img src="https://www.figma.com/api/mcp/asset/e1870e23-6004-4ae2-83b0-1c7c8b325abe" alt="에센셜 헤비웨이트 티셔츠" />
+                                </div>
+                                <div class="inventory-info">
+                                    <p class="inventory-name">에센셜 헤비웨이트 티셔츠</p>
+                                    <p class="inventory-sku">SKU: BD-WHT-01 · 화이트 · 50개 단위</p>
+                                </div>
+                                <div class="inventory-price">
+                                    <p class="inventory-amount">₩1,822,500</p>
+                                    <p class="inventory-qty">수량: 2박스</p>
+                                </div>
+                            </div>
+
+                            <div class="inventory-item">
+                                <div class="inventory-thumb">
+                                    <img src="https://www.figma.com/api/mcp/asset/9273bbc3-056e-48b6-b7ee-621b2f53ceff" alt="스트럭처드 프렌치테리 후드티" />
+                                </div>
+                                <div class="inventory-info">
+                                    <p class="inventory-name">스트럭처드 프렌치테리 후드티</p>
+                                    <p class="inventory-sku">SKU: BD-BLK-04 · 오닉스 · 25개 단위</p>
+                                </div>
+                                <div class="inventory-price">
+                                    <p class="inventory-amount">₩3,060,750</p>
+                                    <p class="inventory-qty">수량: 1박스</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <!-- 배송지 -->
+                    <section class="section">
+                        <div class="section-heading">
+                            <span class="section-label">배송지</span>
+                            <div class="section-divider"></div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-row">
+                  <span class="info-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5z" stroke="#a8a29e" stroke-width="1.3" stroke-linejoin="round"/>
+                      <circle cx="8" cy="6" r="1.5" stroke="#a8a29e" stroke-width="1.3"/>
+                    </svg>
+                  </span>
+                                <div class="info-block">
+                                    <p class="info-company">모던 로지스틱스 허브 주식회사</p>
+                                    <p class="info-line">담당: 구매조달팀</p>
+                                    <p class="info-line">서울특별시 강남구 테헤란로 88, 402호</p>
+                                    <p class="info-line">강남구, 서울 06142</p>
+                                    <p class="info-line">대한민국</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 결제 수단 -->
+                    <section class="section">
+                        <div class="section-heading">
+                            <span class="section-label">결제 수단</span>
+                            <div class="section-divider"></div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-row">
+                                <div class="card-icon-box">
+                                    <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="1" y="1" width="18" height="12" rx="2" stroke="#a8a29e" stroke-width="1.3"/>
+                                        <path d="M1 4h18" stroke="#a8a29e" stroke-width="1.3"/>
+                                        <rect x="3" y="7" width="4" height="2" rx="0.5" fill="#a8a29e"/>
+                                    </svg>
+                                </div>
+                                <div class="info-block">
+                                    <p class="info-company">법인 비자카드 •••• 9921</p>
+                                    <p class="info-line">거래 ID: TXN_88192301</p>
+                                    <p class="info-line">승인일시: 2024년 10월 24일 09:16</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 주문 요약 -->
+                    <section class="section">
+                        <div class="section-heading">
+                            <span class="section-label">주문 요약</span>
+                            <div class="section-divider"></div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-row">
+                                <span class="summary-label">상품 소계</span>
+                                <span class="summary-val">₩4,883,250</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">배송비 (B2B 우선배송)</span>
+                                <span class="summary-val">₩123,750</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">부가세 (VAT 0% · B2B 거래)</span>
+                                <span class="summary-val">₩0</span>
+                            </div>
+                            <div class="summary-total-row">
+                                <span class="summary-total-label">최종 합계</span>
+                                <span class="summary-total-val">₩5,007,000</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 뒤로 가기 -->
+                    <div class="back-link-wrap">
+                        <a href="#" class="back-link">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 5H3M3 5l2.5-2.5M3 5l2.5 2.5" stroke="#705d00" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            재고 대시보드로 돌아가기
+                        </a>
+                    </div>
+
+                </div><!-- /.col-main -->
+
+            </div><!-- /.body-grid -->
+
+            <!-- 문서 다운로드 + 추가 작업 나란히 -->
+            <div class="cards-row">
+
+                <!-- 문서 다운로드 -->
+                <div class="aside-card">
+                    <div class="aside-card-heading">
+                        <span class="aside-label">문서 다운로드</span>
+                    </div>
+                    <div class="download-list">
+                        <button class="download-btn">
+                            <div class="download-btn-icon">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 2v10M5 9l4 4 4-4" stroke="#705d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 15h14" stroke="#705d00" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="download-btn-text">
+                                <span class="download-btn-title">세금계산서 다운로드</span>
+                                <span class="download-btn-sub">PDF · 공식 세금계산서</span>
+                            </div>
+                            <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="download-btn">
+                            <div class="download-btn-icon">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 2v10M5 9l4 4 4-4" stroke="#705d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 15h14" stroke="#705d00" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="download-btn-text">
+                                <span class="download-btn-title">결제 영수증 다운로드</span>
+                                <span class="download-btn-sub">PDF · 거래 영수증</span>
+                            </div>
+                            <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="download-btn">
+                            <div class="download-btn-icon">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 2v10M5 9l4 4 4-4" stroke="#705d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 15h14" stroke="#705d00" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="download-btn-text">
+                                <span class="download-btn-title">발주서 (P.O.) 다운로드</span>
+                                <span class="download-btn-sub">PDF · 공식 발주 확인서</span>
+                            </div>
+                            <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 추가 액션 -->
+                <div class="aside-card">
+                    <div class="aside-card-heading">
+                        <span class="aside-label">추가 작업</span>
+                    </div>
+                    <div class="action-list">
+                        <button class="action-btn action-btn--primary">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 4h12M2 8h8M2 12h5" stroke="#705e00" stroke-width="1.4" stroke-linecap="round"/>
+                            </svg>
+                            발주 내역 확인하기
+                        </button>
+                        <button class="action-btn action-btn--secondary">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 3H3a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1z" stroke="#4d4732" stroke-width="1.3"/>
+                                <path d="M2 6h12" stroke="#4d4732" stroke-width="1.3"/>
+                                <path d="M5 3V1M11 3V1" stroke="#4d4732" stroke-width="1.3" stroke-linecap="round"/>
+                            </svg>
+                            확인 이메일 재발송
+                        </button>
+                        <button class="action-btn action-btn--secondary">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 1C4.13 1 1 4.13 1 8s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z" stroke="#4d4732" stroke-width="1.3"/>
+                                <path d="M8 5v3l2 2" stroke="#4d4732" stroke-width="1.3" stroke-linecap="round"/>
+                            </svg>
+                            배송 현황 추적
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- /.cards-row -->
+
+            <!-- 안내 메모 -->
+            <div class="aside-notice">
+                <span class="notice-dot">ℹ</span>
+                <p>결제 완료 후 영업일 기준 1~2일 내에 담당 큐레이터가 물류 일정을 확정하여 이메일로 안내 드립니다.</p>
+            </div>
+
+        </div><!-- /.main-canvas -->
+    </main>
+</div>
 </body>
 </html>

@@ -2,14 +2,18 @@ package com.goodee.beedan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "exchange_rate")
-@Data
-@RequiredArgsConstructor
+@Table(name = "EXCHANGE_RATE")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class ExchangeRate {
 
     @Id
@@ -23,16 +27,26 @@ public class ExchangeRate {
     private BigDecimal erRa;
 
     @Column(nullable = false)
-    private LocalDateTime crFDt;
+    private LocalDateTime erFDt;    // 환율 기준 시간
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
-    private LocalDateTime erCrDt;
+    private LocalDateTime erCrDt;   // 생성 기간
 
     @Builder
     public ExchangeRate(String currency, BigDecimal rate, LocalDateTime fetchedAt){
         this.erCr = currency;
         this.erRa = rate;
-        this.crFDt = fetchedAt;
-        this.erCrDt = LocalDateTime.now();
+        this.erFDt = fetchedAt;
     }
+
+    public BigDecimal toKrw(BigDecimal foreignAmount) {
+        if (foreignAmount == null) return BigDecimal.ZERO;
+        return foreignAmount
+                .multiply(this.erRa)
+                .setScale(0, RoundingMode.HALF_UP);
+    }
+
+
 }
+

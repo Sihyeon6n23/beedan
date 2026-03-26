@@ -1,4 +1,5 @@
-.sidebar-frame {
+/* 관리자 채팅: 공통 페이지 레이아웃 */
+.admin-chat-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -11,83 +12,13 @@
   margin-bottom: 0;
 }
 
-.sidebar-frame > * {
-  width: 100%;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:last-child {
-  justify-content: flex-start;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 {
-  align-items: stretch;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child {
-  display: flex;
-  flex: 0 0 16rem;
-  min-width: 16rem;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:last-child {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  justify-content: center;
-  padding-left: 0 !important;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:last-child > main {
-  width: 100%;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__inner {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100%;
-  padding-top: 2rem;
-  padding-bottom: 1.25rem;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__header {
-  margin-top: 0;
-  margin-bottom: 1.35rem;
-  padding: 1.9rem 1.5rem 0;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__nav {
-  width: 100%;
-  padding: 0 0.9rem;
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__rule {
-  margin-top: 2.9rem;
-  width: 100%;
-  height: 2px;
-  background: rgba(196, 183, 153, 0.75);
-}
-
-body:has(.sidebar-frame) > .flex.flex-grow.w-full.pt-16 > div:first-child .sidebar-frame-frame__rule span {
-  display: block;
-  width: 6.1rem;
-  height: 100%;
-  background: #e7c84b;
-}
-
-body:has(.sidebar-frame) .sidebar-frame-frame {
-  width: 100%;
-  padding: 0;
-  background: linear-gradient(180deg, #f3eee3 0%, #ece4d6 100%);
-  box-shadow: 10px 0 26px rgba(80, 62, 16, 0.08);
-}
-
 @media (max-width: 1280px) {
   .sidebar-frame {
     width: 100%;
   }
 }
 
+/* 관리자 채팅: 공통 셸과 제어 영역 */
 .admin-chat-shell {
   background: var(--color-surface-container-lowest);
   box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
@@ -211,131 +142,9 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
   color: var(--color-on-background);
 }
 
-.admin-sidebar-frame {
-  display: flex;
-  align-self: stretch;
-  min-height: 100%;
-}
-
-.admin-sidebar-frame aside {
-  width: 16rem !important;
-  display: flex !important;
-  flex-direction: column;
-  align-self: stretch;
-  min-height: 100% !important;
-  height: auto !important;
-  background: #f4f1e8 !important;
-  border-right: 1px solid #e4ddd0 !important;
-  box-shadow: none !important;
-}
-
-.admin-sidebar-frame aside > div {
-  position: static !important;
-  top: auto;
-  width: 100%;
-}
-
-.admin-sidebar-frame aside .px-10 {
-  padding-top: 2.1rem !important;
-  padding-left: 2rem !important;
-  padding-right: 2rem !important;
-  margin-bottom: 2.1rem !important;
-}
-
-.admin-sidebar-frame aside nav {
-  margin-top: 0 !important;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-
-.admin-sidebar-scope {
-  display: flex;
-  flex-direction: column;
-  min-height: auto;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  gap: 0.15rem;
-}
-
-.admin-sidebar-menu__link,
-.admin-sidebar-menu__child-link {
-  display: flex;
-  align-items: center;
-  min-height: 2.75rem;
-  width: 100%;
-  padding: 0.8rem 1rem;
-  color: #57534e;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  border-radius: 0.9rem;
-  border-left: 4px solid transparent;
-  background: rgba(255, 250, 241, 0.46);
-  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-}
-
-.admin-sidebar-menu__link:hover,
-.admin-sidebar-menu__child-link:hover {
-  background: rgba(255, 248, 220, 0.72);
-  color: #292524;
-  border-left-color: rgba(180, 146, 34, 0.45);
-  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
-  transform: translateX(2px);
-}
-
-.admin-sidebar-menu__icon {
-  margin-right: 0.9rem;
-  font-size: 1.125rem !important;
-}
-
-.admin-sidebar-menu__group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.35rem;
-}
-
-.admin-sidebar-menu__link--current {
-  color: #18181b;
-  font-weight: 700;
-  border-left-color: rgba(234, 179, 8, 0.72);
-  background: linear-gradient(90deg, rgba(255, 241, 196, 0.78) 0%, rgba(250, 245, 232, 0.88) 100%);
-  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
-}
-
-.admin-sidebar-menu__child-wrap {
-  padding: 0.15rem 0.1rem 0.2rem 2.55rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.admin-sidebar-menu__child-link {
-  display: flex;
-  width: 100%;
-  min-height: 2.25rem;
-  padding: 0.62rem 0.95rem;
-  border-left: 4px solid transparent;
-  background: rgba(255, 250, 241, 0.35);
-  color: #6b6354;
-  font-weight: 600;
-  box-shadow: none;
-}
-
-.admin-sidebar-menu__child-link:hover {
-  border-left-color: rgba(212, 169, 3, 0.45);
-  background: rgba(255, 251, 240, 0.7);
-  color: #18181b;
-  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
-}
-
-.admin-sidebar-menu__child-link--current {
-  border-left-color: #eab308;
-  background: rgba(255, 251, 240, 0.96);
-  color: #18181b;
-  font-weight: 700;
-  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
+/* 관리자 채팅 목록: 페이지 전용 레이아웃 */
+.admin-chat-list-page {
+  max-width: 1220px;
 }
 
 .admin-chat-shell--list {
@@ -352,6 +161,10 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
   padding-inline: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.admin-chat-list-page .admin-chat-shell--header {
+  padding-bottom: 0.15rem;
 }
 
 .admin-chat-list-page .admin-chat-shell--toolbar {
@@ -472,61 +285,6 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
   text-align: center;
 }
 
-.admin-chat-sidebar {
-  position: relative;
-  background: linear-gradient(180deg, #f7f6f2 0%, #f1efe8 100%);
-  border-right: 1px solid #ddd8cb;
-  border-bottom: 1px solid #ddd8cb;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.72), 8px 0 18px rgba(26, 28, 28, 0.04);
-}
-
-.admin-chat-sidebar::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 18px;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(244, 244, 241, 0) 0%, rgba(221, 217, 206, 0.32) 100%);
-  pointer-events: none;
-}
-
-.admin-chat-sidebar::before {
-  content: "";
-  position: absolute;
-  left: 1rem;
-  right: 1rem;
-  bottom: 0;
-  height: 1px;
-  background: rgba(126, 119, 95, 0.16);
-}
-
-.admin-chat-sidebar__intro {
-  padding-bottom: 1.35rem;
-  margin-bottom: 1.15rem;
-  border-bottom: 1px solid rgba(126, 119, 95, 0.16);
-}
-
-.admin-chat-sidebar__link {
-  position: relative;
-}
-
-.admin-chat-sidebar__link:hover {
-  background: rgba(255, 255, 255, 0.7) !important;
-  box-shadow: inset 3px 0 0 rgba(112, 93, 0, 0.18);
-}
-
-.admin-chat-sidebar__link--current {
-  background: rgba(255, 255, 255, 0.38);
-}
-
-.admin-chat-sidebar__active {
-  position: relative;
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.18) 0%, rgba(255, 255, 255, 0.98) 100%) !important;
-  border-left-color: var(--color-primary) !important;
-  box-shadow: 0 14px 24px rgba(26, 28, 28, 0.06), inset 0 0 0 1px rgba(255, 215, 0, 0.16);
-}
-
 .admin-chat-row__owner .is-warning {
   color: var(--color-error);
   font-style: italic;
@@ -557,6 +315,12 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
 .admin-chat-badge--closed {
   background: var(--color-surface-container-highest);
   color: var(--color-secondary);
+}
+
+/* 관리자 채팅 상세: 페이지 전용 레이아웃 */
+.admin-chat-detail-page {
+  max-width: 1040px;
+  padding-bottom: 1rem;
 }
 
 .admin-chat-shell--pagination {
@@ -627,6 +391,7 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
   background: var(--color-surface-container-lowest);
 }
 
+/* 관리자 채팅 상세: 보드, 메시지, 입력 영역 */
 .admin-chat-detail-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
@@ -637,14 +402,12 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
 }
 
 .admin-chat-shell--detail-board {
+  display: flex;
+  flex-direction: column;
   padding: 0;
   overflow: hidden;
   border: 1px solid #ebe6da;
   box-shadow: 0 18px 34px rgba(26, 28, 28, 0.06);
-}
-
-.admin-chat-detail-page {
-  padding-bottom: 1rem;
 }
 
 .admin-chat-detail-topbar {
@@ -682,9 +445,21 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
 }
 
 .admin-chat-detail-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-start;
   min-height: 40rem;
-  padding: 1.4rem 1.5rem 2rem;
+  overflow-y: auto;
+  padding: 1.4rem 1.5rem;
   background: #fffdf8;
+}
+
+.admin-chat-detail-body__stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1.15rem;
 }
 
 .admin-chat-detail-state-toggle {
@@ -694,13 +469,9 @@ body:has(.sidebar-frame) .sidebar-frame-frame {
   margin-bottom: 1rem;
 }
 
-body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
-  align-items: stretch;
-}
-
 .admin-chat-room__system--detail {
   display: table;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto;
   text-align: center;
 }
 
@@ -708,7 +479,7 @@ body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
   display: flex;
   gap: 0.85rem;
   align-items: flex-start;
-  margin-bottom: 1.15rem;
+  margin-bottom: 0;
 }
 
 .admin-chat-detail-message--admin {
@@ -1005,6 +776,7 @@ body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
   margin-top: 0;
 }
 
+/* 관리자 채팅: 공통 모달과 유틸리티 상태 */
 .admin-chat-modal {
   position: fixed;
   inset: 0;
@@ -1172,6 +944,7 @@ body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
   display: none !important;
 }
 
+/* 관리자 채팅: 반응형 조정 */
 @media (max-width: 900px) {
   .sidebar-frame {
     width: 100%;
@@ -1221,17 +994,48 @@ body:has(.admin-chat-detail-page) > .flex.flex-grow.w-full.pt-16 {
   }
 
   .admin-chat-detail-topbar {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "back center"
+      "action action";
+    row-gap: 0.75rem;
+    align-items: start;
     padding: 0.85rem 1rem;
   }
 
   .admin-chat-detail-topbar__center {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    grid-area: center;
+    justify-content: flex-start;
+    align-self: center;
+    min-width: 0;
   }
 
   .admin-chat-detail-topbar__side,
   .admin-chat-detail-topbar__side--right {
+    justify-content: flex-start;
+  }
+
+  .admin-chat-detail-topbar__side {
+    grid-area: back;
+  }
+
+  .admin-chat-detail-topbar__side--right {
+    grid-area: action;
     justify-content: space-between;
+  }
+
+  .admin-chat-detail-topbar .admin-chat-outline-button {
+    width: 100%;
+  }
+
+  .admin-chat-detail-topbar__center strong {
+    min-width: 0;
+  }
+
+  .admin-chat-detail-topbar__center [data-status-badge] {
+    flex-shrink: 0;
+    margin-top: 0;
   }
 
   .admin-chat-detail-header__side,
