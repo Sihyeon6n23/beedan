@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Chat List', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Chat Management', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Admin Chat List</title>
+<title th:fragment="title">BEEDAN | 관리자 채팅 목록</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
@@ -18,8 +18,8 @@
     <section class="admin-chat-page admin-chat-list-page">
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
-                <span class="admin-chat-kicker">Curated Conversations</span>
-                <h1 class="admin-chat-title">채팅 상담 관리</h1>
+                <span class="admin-chat-kicker">Customer Conversations</span>
+                <h2 class="admin-chat-title">채팅 상담 관리</h2>
             </div>
             <div class="admin-chat-shell__rule">
                 <span></span>
