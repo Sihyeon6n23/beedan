@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data @Builder @RequiredArgsConstructor @AllArgsConstructor
-public class Notice {
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notiId;

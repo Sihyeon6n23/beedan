@@ -8,18 +8,18 @@
 <title th:fragment="title">BEEDAN | Notification</title>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/notice/notice-list.css}">
-    <div class="notice-list-page">
-        <header class="notice-page-header">
-            <div class="notice-page-title">
-                <span class="notice-sub-label">Communication Ledger</span>
+    <link rel="stylesheet" th:href="@{/css/notification/notification-list.css}">
+    <div class="notification-list-page">
+        <header class="notification-page-header">
+            <div class="notification-page-title">
+                <span class="notification-sub-label">Communication Ledger</span>
                 <h1>NOTIFICATIONS</h1>
-                <p class="notice-item-desc">Centralized hub for all architectural and logistics updates.</p>
+                <p class="notification-item-desc">Centralized hub for all architectural and logistics updates.</p>
             </div>
             <button class="btn-secondary py-3 px-6">Mark all as read</button>
         </header>
 
-        <nav class="notice-filter-bar">
+        <nav class="notification-filter-bar">
             <button class="filter-btn active">All</button>
             <button class="filter-btn">Unread</button>
             <button class="filter-btn">System</button>
@@ -27,24 +27,24 @@
             <button class="filter-btn">Inquiry</button>
         </nav>
 
-        <div class="notice-list-container">
-            <th:block th:if="${not #lists.isEmpty(noticeDtoList)}">
-                <article class="notice-full-item unread" th:each="notice : ${noticeDtoList}">
-                    <div class="notice-icon-square">
+        <div class="notification-list-container">
+            <th:block th:if="${not #lists.isEmpty(notificationDtoList)}">
+                <article class="notification-full-item unread" th:each="notification : ${notificationDtoList}">
+                    <div class="notification-icon-square">
                         <span class="material-symbols-outlined text-primary">request_quote</span>
                     </div>
-                    <div class="notice-info-box">
-                        <div class="notice-top-row">
-                            <h3 class="notice-item-title" th:text="${notice.notiTtl}">알림 제목</h3>
-                            <span class="notice-item-time">2 hours ago</span>
+                    <div class="notification-info-box">
+                        <div class="notification-top-row">
+                            <h3 class="notification-item-title" th:text="${notification.notiTtl}">알림 제목</h3>
+                            <span class="notification-item-time">2 hours ago</span>
                         </div>
-                        <p class="notice-item-desc" th:text="${notice.notiCon}">알림 내용</p>
+                        <p class="notification-item-desc" th:text="${notification.notiCon}">알림 내용</p>
                     </div>
                     <button class="text-primary font-bold text-xs underline uppercase">View</button>
                 </article>
             </th:block>
 
-            <th:block th:unless="${not #lists.isEmpty(noticeDtoList)}">
+            <th:block th:unless="${not #lists.isEmpty(notificationDtoList)}">
                 <div class="flex flex-col items-center justify-center py-20 text-stone-400">
                     <span class="material-symbols-outlined text-6xl mb-4 opacity-50">notifications_off</span>
                     <h3 class="text-lg font-bold text-stone-700 mb-2">수신된 알림이 없습니다</h3>
@@ -53,8 +53,8 @@
             </th:block>
         </div>
 
-        <div class="notice-pagination" th:if="${not #lists.isEmpty(noticeDtoList)}">
-            <span class="notice-item-time">Page 1-5 of 1,280</span>
+        <div class="notification-pagination" th:if="${not #lists.isEmpty(notificationDtoList)}">
+            <span class="notification-item-time">Page 1-5 of 1,280</span>
             <div class="flex gap-1">
                 <button class="w-10 h-10 bg-stone-200">◀</button>
                 <button class="w-10 h-10 bg-primary-container text-primary font-bold">1</button>

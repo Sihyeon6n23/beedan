@@ -3,12 +3,9 @@ package com.goodee.beedan.common.constant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 @Getter
 @AllArgsConstructor
-public enum NoticeType {
+public enum NotificationType {
     QUOTATION_APPROVE("견적 승인 완료", "요청하신 견적[%s]이 승인 처리되었습니다.", "/quote/detail?id=%s"),
     QUOTATION_REJECT("견적 요청 거절됨", "요청하신 견적[%s]이 반려되었습니다.", "/quote/detail?id=%s"),
 
