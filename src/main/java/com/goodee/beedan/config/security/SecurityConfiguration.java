@@ -18,12 +18,10 @@ public class SecurityConfiguration {
         http
                 .csrf(withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/error/**").permitAll() // 디버깅용
-                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll() // 정적 리소스
-                        .requestMatchers("/", "/stock/list", "/mypage/detail").permitAll() // 게시판
-                        .requestMatchers("/signup").permitAll() // 인증
-                        .requestMatchers("/member/**").hasAuthority("ROLE_ADMIN") // 관리자
-                        .anyRequest().authenticated() // 그 외
+                        .requestMatchers("/error/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+                        .requestMatchers("/signup", "/**").permitAll() // 인증
+                        //.anyRequest().authenticated() // 그 외
                 )
                 .formLogin(login -> login
                         .loginPage("/auth/signin")
