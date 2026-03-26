@@ -34,16 +34,13 @@ public class FeePolicy {
         @Column(length = 50, nullable = false)
         private String fpFeeTy; // SERVICE_COMMISION, SHIPPING
         @Column(length = 20, nullable = false)
-        private Long bgpGr;     // STANDARD PREMIUM VIP
-        @Column(nullable = false)
-        private Enum fpCalcTy;  // RATE FIXED
+        private String bgpGr;     // STANDARD PREMIUM VIP
+        @Enumerated(EnumType.STRING)
+        private FeeCalculationType fpCalcTy;  // RATE FIXED
         @Column(precision = 10, scale = 4, nullable = false)
         private BigDecimal fpVal;// ex) RATE = 5% FIXED = 50,000
-        @Column(nullable = false)
         private Boolean fpAcYn; // 활성 여부
-        @Column(nullable = false)
         private LocalDateTime fpEfFrDt; // 적용 시작일
-        @Column(nullable = false)
         private LocalDateTime fpEfToDt; // 적용 종료일 (null = 무기한)
         private String fpDes; // 관리자 메모
         @CreatedDate
@@ -54,6 +51,10 @@ public class FeePolicy {
         @Column(nullable = false)
         private LocalDateTime fpUpDt;
 
+        @PrePersist
+        protected void onCreate() {
+                if(this.fpAcYn == null) this.fpAcYn = true;
+        }
 
         public void deactivate() {
                 this.fpAcYn = false;
@@ -83,14 +84,12 @@ public class FeePolicy {
                 return true;
 
                 }
-public BigDecimal apply(BigDecimal amount) {
-        return
+        public BigDecimal apply(BigDecimal amount) {
+                return
                 switch (this.fpCalcTy) {
-                        case FeeCalculationType.RATE -> amount.multiply(this.fpVal)
+                        case RATE -> amount.multiply(this.fpVal)
                                 .setScale(0, RoundingMode.HALF_UP);
-                        case FeeCalculationType.FIXED -> this.fpVal.setScale(0, RoundingMode.HALF_UP);
-                        default -> throw new IllegalStateException(
-                                "알 수 없는 계산 방식: " + this.fpCalcTy);
+                        case FIXED -> this.fpVal.setScale(0, RoundingMode.HALF_UP);
                 };
         }
 }

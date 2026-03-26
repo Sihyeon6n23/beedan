@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "BUYER_GRADE_POLICY")
-@Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @Builder
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -26,17 +26,19 @@ public class BuyerGradePolicy {
     private BigDecimal bgpMinTtAm; // 최소 누적 금액 (null=미적용)
     private LocalDateTime bgpEfFrDt; // 정책 시작일
     private LocalDateTime bgpEfToDt; // 정책 종료일 (null=무기한)
-    @Column(columnDefinition = "TEXT")
     private String bgpDes; // 등급 설명
-    @Builder.Default
-    @Column(nullable = false)
-    private Boolean bgpAcYn = true; // 활성 여부
+    private Boolean bgpAcYn; // 활성 여부
     @CreatedDate
     @Column(updatable = false, nullable = false)
     private LocalDateTime bgpCrDt;
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime bgpUpDt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.bgpAcYn == null) this.bgpAcYn = true;
+    }
 
     public void deactivate() {
         this.bgpAcYn = false;
@@ -52,6 +54,7 @@ public class BuyerGradePolicy {
         this.bgpMinOrdCnt = minOrderCount;
         this.bgpMinTtAm = minTotalAmount;
         this.bgpEfFrDt = effectFromDate;
+        this.bgpEfToDt = effectToDate;
         this.bgpDes = description;
     }
 

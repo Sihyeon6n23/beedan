@@ -56,6 +56,10 @@ dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-mail"
 	// WebSocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// 저 테스트에서 로그가 안 찍혀서 추가해봤어요 -시현
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
