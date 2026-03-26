@@ -1,4 +1,4 @@
-CREATE TABLE `NOTI`
+CREATE TABLE `NOTICE`
 (
     `noti_id`         BIGINT     NOT NULL,
     `noti_ttl`        VARCHAR(30) NULL,

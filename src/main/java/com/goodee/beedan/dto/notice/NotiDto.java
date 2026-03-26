@@ -1,4 +1,4 @@
-package com.goodee.beedan.dto;
+package com.goodee.beedan.dto.notice;
 
 import lombok.Builder;
 import lombok.Data;
