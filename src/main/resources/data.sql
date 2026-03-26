@@ -113,6 +113,47 @@ ALTER TABLE cart     ALTER COLUMN ca_id  RESTART WITH 100;
 -- =====================
 -- 고희권 START
 -- =====================
+-- 1. 관리자 계정 (ROOT)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 2. 일반 사용자 계정 (USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'user01',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '홍길동',
+             '010-1234-5678',
+             'user01@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 3. 비즈니스/기업 사용자 계정 (ADMIN 혹은 USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'biz_user',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ADMIN',
+             '김철수',
+             '123-45-67890',
+             '(주)테스트컴퍼니',
+             '서울시 강남구 역삼동',
+             'ACTIVE',
+             NOW()
+         );
 -- =====================
 -- 고희권 END
 -- =====================
