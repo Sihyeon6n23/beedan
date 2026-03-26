@@ -174,6 +174,47 @@ VALUES
 -- =====================
 -- 고희권 START
 -- =====================
+-- 1. 관리자 계정 (ROOT)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 2. 일반 사용자 계정 (USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'user01',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '홍길동',
+             '010-1234-5678',
+             'user01@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 3. 비즈니스/기업 사용자 계정 (ADMIN 혹은 USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'biz_user',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ADMIN',
+             '김철수',
+             '123-45-67890',
+             '(주)테스트컴퍼니',
+             '서울시 강남구 역삼동',
+             'ACTIVE',
+             NOW()
+         );
 -- =====================
 -- 고희권 END
 -- =====================
@@ -193,6 +234,17 @@ VALUES
 -- =====================
 -- 임 욱 START
 -- =====================
+INSERT INTO ORDER_BASE (ord_base_nm, ord_base_rcv_nm, ord_base_adr_da, ord_base_adr_dt, qu_dt_id, qu_info_id, qu_id, ng_id)
+VALUES ('홍길동', '주문자와 동일', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 1, 1, 1, 1);
+
+
+INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_cre_dt, noti_upd_mem_id, mem_id)
+VALUES
+    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NOW(), NULL, 1),
+    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NOW(), NULL, 1);
 -- =====================
 -- 임 욱 END
 -- =====================

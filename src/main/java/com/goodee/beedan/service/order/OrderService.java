@@ -23,6 +23,10 @@ public class OrderService {
         return orderList;
     }
 
+    public void createOrder(Long id){
+
+    }
+
     public OrderDto mapToOrderDto(Order order){
         OrderDto orderDto = OrderDto.builder()
                 .ord_base_id(order.getOrd_base_id())

@@ -1,27 +1,29 @@
 package com.goodee.beedan.controller.notification;
 
+import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.notification.NotificationDto;
+import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/notice")
+@RequestMapping("/notification")
 public class NotificationController {
-    private final NotificationService notiService;
+    private final NotificationService notificationService;
 
-    @GetMapping("/notification/list")
-    public String getNotiList(Model model){
-        List<NotificationDto> notificationDtoList = null;
-
-        model.addAttribute("notiDtoList", notificationDtoList);
-
-        return "notice/notice-list";
+    @GetMapping("/list")
+    public String getNotiList(){
+        return "notification/notification-list";
     }
 }
