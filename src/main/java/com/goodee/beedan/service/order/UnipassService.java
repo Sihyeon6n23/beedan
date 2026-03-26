@@ -9,10 +9,10 @@ import java.net.URI;
 
 @Service
 public class UnipassService {
-    @Value("${unipass.api.key}")
+    @Value("${unipass.api.key:}")
     private String apiKey;
 
-    @Value("${unipass.api.url}")
+    @Value("${unipass.api.url:}")
     private String apiUrl;
 
     public String getCargoStatus(String hblNo, String blYear) {
