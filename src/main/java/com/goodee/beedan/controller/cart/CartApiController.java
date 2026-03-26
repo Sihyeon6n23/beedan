@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cart/api")
+@RequestMapping("/api/cart")
 @RequiredArgsConstructor
 public class CartApiController {
 
     private final CartService cartService;
 
     @DeleteMapping("/{caId}")
-    public ResponseEntity<Void> delete(@PathVariable("caId") Long caId) {
+    public ResponseEntity<Void> delete(@PathVariable Long caId) {
         cartService.deleteItem(caId);
         return ResponseEntity.ok().build();
     }

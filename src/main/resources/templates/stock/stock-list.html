@@ -81,6 +81,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link th:href="@{/css/stock/stock-list.css}" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script th:inline="javascript">
+    // 테스트용 임시 로그인 아이디 부여
+    const loginMemId = /*[[1]]*/ null;
+</script>
 <!-- TopNavBar -->
 
 <div class="flex gap-12 px-12 pb-20 max-w-[1600px] mx-auto w-[calc(100vw-3rem)]">
@@ -165,8 +169,14 @@
                             <span class="material-symbols-outlined text-5xl text-on-surface-variant">image_not_supported</span>
                         </div>
                         <div class="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/5 transition-colors duration-300"></div>
-                        <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
-                            Go to Details
+                        <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase flex items-center justify-between px-4">
+                            <span>Go to Details</span>
+                            <span type="button" class="heart-btn cursor-pointer" th:data-st-id="${item.stId}" onclick="toggleHeart(this); event.stopPropagation();">
+                                <span class="material-symbols-outlined text-[20px] transition-colors"
+                                      th:data-filled="${item.wished}"
+                                      th:classappend="${item.wished} ? 'text-red-500' : 'text-on-primary-container hover:text-red-500'"
+                                      th:style="${item.wished} ? 'font-variation-settings: \'FILL\' 1' : 'font-variation-settings: \'FILL\' 0'">favorite</span>
+                            </span>
                         </button>
                     </div>
                     <div class="space-y-1">
@@ -207,7 +217,61 @@
 
 </div>
 
+<!-- 로그인 필요 시 모달 -->
+<div id="login-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm" onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-surface-container-lowest border border-outline-variant w-[360px] px-10 py-10 text-center">
+        <span class="material-symbols-outlined text-4xl text-primary-container mb-4 block">lock</span>
+        <h3 class="font-headline font-extrabold text-lg tracking-tight text-on-surface mb-2">LOGIN REQUIRED</h3>
+        <p class="font-body text-sm text-on-surface-variant mb-8">로그인이 필요합니다.</p>
+        <button onclick="document.getElementById('login-modal').classList.add('hidden')"
+                class="px-8 py-3 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase hover:opacity-90 transition-opacity">
+            확인
+        </button>
+    </div>
+</div>
+
 <script>
+    // 하트 버튼 토글, 찜 목록 비동기 추가,삭제
+    function toggleHeart(el) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        // 비로그인 사용자가 하트 클릭시
+        if (!loginMemId) {
+            // 모달 띄우기
+            document.getElementById('login-modal').classList.remove('hidden');
+            return;
+        }
+
+
+        const icon = el.classList.contains('material-symbols-outlined') ? el :
+            el.querySelector('.material-symbols-outlined');
+        const heartBtn = el.classList.contains('heart-btn') ? el : el.closest('.heart-btn');
+        const stId = heartBtn.dataset.stId;
+        const isFilled = icon.dataset.filled === 'true';
+
+        if (isFilled) {
+            // 찜 해제
+            axios.delete('/api/wishlist/' + stId)
+                .then(() => {
+                    icon.dataset.filled = 'false';
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                    icon.classList.remove('text-red-500');
+                    icon.classList.add('text-on-primary-container');
+                })
+                .catch(err => console.error('찜 해제 실패:', err));
+        } else {
+            // 찜 추가
+            axios.post('/api/wishlist/' + stId)
+                .then(() => {
+                    icon.dataset.filled = 'true';
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                    icon.classList.remove('text-on-primary-container');
+                    icon.classList.add('text-red-500');
+                })
+                .catch(err => console.error('찜 추가 실패:', err));
+        }
+    }
 (function() {
     let currentPage = 0;
 
@@ -258,8 +322,15 @@
                         : `<div class="w-full h-full flex items-center justify-center bg-surface-container"><span class="material-symbols-outlined text-5xl text-on-surface-variant">image_not_supported</span></div>`
                     }
                     <div class="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/5 transition-colors duration-300"></div>
-                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase">
-                        Go to Details
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase flex items-center justify-between px-4">
+                        <span>Go to Details</span>
+                        <span class="heart-btn cursor-pointer" data-st-id="${item.stId}" onclick="toggleHeart(this); event.stopPropagation();">
+                              <span class="material-symbols-outlined text-[20px] transition-colors
+                                    ${item.wished ? 'text-red-500' : 'text-on-primary-container hover:text-red-500'}"
+                                    data-filled="${item.wished}"
+                                    style="font-variation-settings: 'FILL' ${item.wished ? 1 : 0};">favorite
+                              </span>
+                        </span>
                     </button>
                 </div>
                 <div class="space-y-1">

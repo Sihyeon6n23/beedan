@@ -344,7 +344,7 @@
 
     document.getElementById('delete-confirm').addEventListener('click', () => {
         if (!deleteTargetCaId) return;
-        axios.delete('/cart/api/' + deleteTargetCaId)
+        axios.delete('/api/cart' + deleteTargetCaId)
             .then(() => {
                 const row = document.querySelector('.cart-row[data-ca-id="' + deleteTargetCaId + '"]');
                 if (row) row.remove();
@@ -371,7 +371,7 @@
         });
         if (updates.length === 0) return;
 
-        axios.patch('/cart/api/update', updates)
+        axios.patch('/api/cart/update', updates)
             .then(() => alert('수량이 변경되었습니다.'))
             .catch(err => {
                 console.error('수량 변경 실패:', err);
@@ -381,31 +381,29 @@
 
     // ===== REQUEST QUOTE (체크된 상품만) =====
     document.getElementById('btn-request-quote').addEventListener('click', () => {
-        const selected = [];
+        const stIds = [];
+        const qtys = [];
         document.querySelectorAll('.cart-row').forEach(row => {
             const cb = row.querySelector('.cart-check');
             if (cb && cb.checked) {
                 const input = row.querySelector('.qty-input');
-                selected.push({
-                    caId: parseInt(row.dataset.caId),
-                    stId: parseInt(row.dataset.stId),
-                    caStQn: input ? parseInt(input.value) || 1 : parseInt(row.dataset.qty || 1)
-                });
+                stIds.push(row.dataset.stId);
+                qtys.push(input ? parseInt(input.value) || 1 : 1);
             }
         });
-        if (selected.length === 0) {
+        if (stIds.length === 0) {
             alert('견적 요청할 상품을 선택해주세요.');
             return;
         }
-        // hidden form으로 전달
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/quote/request';
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'items';
-        input.value = JSON.stringify(selected);
-        form.appendChild(input);
+        stIds.forEach(id => {
+            form.innerHTML += `<input type="hidden" name="stIds" value="${id}">`;
+        });
+        qtys.forEach(qty => {
+            form.innerHTML += `<input type="hidden" name="qns" value="${qty}">`;
+        });
         document.body.appendChild(form);
         form.submit();
     });

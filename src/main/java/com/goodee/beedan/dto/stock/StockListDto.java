@@ -15,4 +15,5 @@ public class StockListDto {
     private BigDecimal stPr;
     private String stCur;
     private String stImgUrl;
+    private boolean wished;
 }
