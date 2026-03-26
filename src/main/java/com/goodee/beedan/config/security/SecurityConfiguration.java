@@ -6,15 +6,19 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+
 import static org.springframework.security.config.Customizer.*;
 
 @Configuration
 public class SecurityConfiguration {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, CustomFailureHandler customFailureHandler) throws Exception {
         http
                 .csrf(withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
@@ -25,17 +29,18 @@ public class SecurityConfiguration {
                 )
                 .formLogin(login -> login
                         .loginPage("/auth/signin")
-                        .defaultSuccessUrl("/")
+                        .successHandler(customSuccessHandler)
+                        .failureHandler(customFailureHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/auth/signout")
                         .logoutSuccessUrl("/")
                         .permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionFixation().changeSessionId() // 세션 고정 공격 방지 (권장)
                 );
-
-
-
         return http.build();
 
     }
@@ -51,5 +56,16 @@ public class SecurityConfiguration {
         return web -> web.ignoring().requestMatchers(
                 "/h2-console/**"
         );
+    }
+
+    // 세션변경 이벤트를 감지하기 위한 리스너 등록
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 }

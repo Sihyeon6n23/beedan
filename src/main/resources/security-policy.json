@@ -1,0 +1,15 @@
+{
+  "is_login_failure_limit_enabled" : true,
+  "max_login_failure_count" : 1,
+  "is_account_lock_enabled" : true,
+  "account_lock_duration_minutes" : 20,
+  "is_session_timeout_enabled" : true,
+  "session_timeout_minutes" : 0,
+  "is_file_upload_allow_list_enabled" : false,
+  "file_upload_allow_list" : "",
+  "is_audit_log_enabled" : false,
+  "log_retention_days" : 0,
+  "is_concurrent_login_prevented" : true,
+  "is_password_expiry_enabled" : false,
+  "password_expiry_days" : 0
+}
