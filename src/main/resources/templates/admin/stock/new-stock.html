@@ -39,7 +39,14 @@
 
         <!-- 등록된 URL 목록 -->
         <div class="admin-crawling-shell">
-            <h2 class="admin-crawling-section-title">등록된 크롤링 URL</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="admin-crawling-section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">등록된 크롤링 URL</h2>
+                <button th:unless="${urls.isEmpty()}" id="crawlAllBtn" onclick="crawlAll()"
+                        class="admin-crawling-btn admin-crawling-btn--primary">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">play_circle</span>
+                    전체 크롤링
+                </button>
+            </div>
 
             <div th:if="${urls.isEmpty()}" style="padding: 2rem 0; text-align: center; font-size: 0.875rem;">
                 등록된 URL이 없습니다.
@@ -50,9 +57,12 @@
                     <thead>
                     <tr>
                         <th>URL</th>
-                        <th style="width: 9rem;">브랜드</th>
-                        <th style="width: 9rem;">카테고리</th>
-                        <th style="width: 10rem;">크롤링</th>
+                        <th style="width: 7rem;">브랜드</th>
+                        <th style="width: 7rem;">카테고리</th>
+                        <th style="width: 5rem;">방식</th>
+                        <th style="width: 4.5rem;">자동</th>
+                        <th style="width: 7rem;">크롤링</th>
+                        <th style="width: 6rem;">셀렉터</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -60,12 +70,41 @@
                         <td class="url-cell" th:text="${url.urlUrl}"></td>
                         <td th:text="${brandMap[url.brId]}"></td>
                         <td th:text="${url.catId == 0} ? 'AI 자동 분류' : ${catMap[url.catId]}"></td>
+                        <td th:text="${url.urlTy != null} ? ${url.urlTy} : '미확인'"></td>
+                        <td style="text-align: center;">
+                            <button onclick="toggleUseYn(this)"
+                                    th:data-id="${url.urlId}"
+                                    th:data-use="${url.urlAtYn}"
+                                    class="admin-crawling-btn admin-crawling-btn--outline"
+                                    th:style="${url.urlAtYn} ? 'background: #ffd700; color: #1a1c1c; border-color: #ffd700;' : ''">
+                                <span th:text="${url.urlAtYn} ? 'ON' : 'OFF'"></span>
+                            </button>
+                        </td>
                         <td>
                             <button onclick="openCrawlModal(this)"
                                     th:data-id="${url.urlId}"
+                                    th:data-url-ty="${url.urlTy}"
+                                    th:data-sel-item="${url.urlSelItem}"
+                                    th:data-sel-nm="${url.urlSelNm}"
+                                    th:data-sel-pr="${url.urlSelPr}"
+                                    th:data-sel-img="${url.urlSelImg}"
+                                    th:data-currency="${url.urlCur}"
                                     class="admin-crawling-btn admin-crawling-btn--primary">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
-                                크롤링 시작
+                                LOAD
+                            </button>
+                        </td>
+                        <td>
+                            <button th:if="${url.urlTy == null or !url.urlTy.equals('SHOPIFY')}"
+                                    onclick="openEditSelectorModal(this)"
+                                    th:data-id="${url.urlId}"
+                                    th:data-sel-item="${url.urlSelItem}"
+                                    th:data-sel-nm="${url.urlSelNm}"
+                                    th:data-sel-pr="${url.urlSelPr}"
+                                    th:data-sel-img="${url.urlSelImg}"
+                                    th:data-currency="${url.urlCur}"
+                                    class="admin-crawling-btn admin-crawling-btn--outline">
+                                수정
                             </button>
                         </td>
                     </tr>
@@ -77,29 +116,32 @@
         <!-- URL 등록 폼 -->
         <div class="admin-crawling-shell">
             <h2 class="admin-crawling-section-title">URL 등록</h2>
-            <form th:object="${url}" th:action="@{/admin/newstock/url}" method="post" class="admin-crawling-form">
+            <form th:object="${url}" th:action="@{/admin/newstock/url}" method="post" class="admin-crawling-form" onsubmit="return validateUrlForm(this)">
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">크롤링 URL</label>
-                    <input type="url" th:field="*{urlUrl}" required placeholder="https://example.com/collections/outerwear"
+                    <input type="url" th:field="*{urlUrl}" placeholder="https://example.com/collections/outerwear"
                            class="admin-crawling-input"/>
+                    <span class="field-error" data-for="urlUrl"></span>
                 </div>
                 <div class="admin-crawling-row">
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">브랜드 <span>(선택 또는 새 이름 입력)</span></label>
-                        <input type="text" th:field="*{brNm}" list="brand-list" required placeholder="Kapital"
+                        <input type="text" th:field="*{brNm}" list="brand-list" placeholder="Kapital"
                                class="admin-crawling-input"/>
                         <datalist id="brand-list">
                             <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
                         </datalist>
+                        <span class="field-error" data-for="brNm"></span>
                     </div>
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">카테고리 <span>(선택, 직접 입력, AI 자동 분류)</span></label>
-                        <input type="text" th:field="*{catNm}" list="cat-list" required placeholder="Outwear 또는 AI 자동 분류"
+                        <input type="text" th:field="*{catNm}" list="cat-list" placeholder="Outwear 또는 AI 자동 분류"
                                class="admin-crawling-input"/>
                         <datalist id="cat-list">
                             <option value="AI 자동 분류"></option>
                             <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
                         </datalist>
+                        <span class="field-error" data-for="catNm"></span>
                     </div>
                 </div>
                 <div>
@@ -195,8 +237,8 @@
     <div class="admin-crawling-modal">
         <h3 class="admin-crawling-modal__title">CSS 셀렉터 입력</h3>
         <p class="admin-crawling-modal__subtitle">Shopify 기반 사이트는 자동 감지되므로 입력 불필요</p>
-        <form id="crawlForm" method="post" class="admin-crawling-modal-form">
-            <input type="hidden" name="urlId" id="crawlUrlId"/>
+        <form id="crawlForm" class="admin-crawling-modal-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">상품 컨테이너 selector</label>
                 <input type="text" name="selItem" placeholder=".product-item" class="admin-crawling-input"/>
@@ -243,11 +285,7 @@
     <div class="admin-crawling-modal">
         <h3 class="admin-crawling-modal__title">Shopify 사이트 감지됨</h3>
         <p class="admin-crawling-modal__subtitle">상품 데이터를 자동으로 가져옵니다. 통화 기호만 입력하세요.</p>
-        <form id="shopifyForm" method="post" class="admin-crawling-modal-form">
-            <input type="hidden" name="selItem" value=""/>
-            <input type="hidden" name="selNm" value=""/>
-            <input type="hidden" name="selPr" value=""/>
-            <input type="hidden" name="selImg" value=""/>
+        <form id="shopifyForm" class="admin-crawling-modal-form">
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">통화 기호</label>
                 <input type="text" name="currency" list="currency-list-shopify" placeholder="₩" maxlength="5" required
@@ -275,7 +313,74 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-<script>
+<script th:inline="javascript">
+    const csrfToken = /*[[${_csrf.token}]]*/ '';
+    const csrfParam = /*[[${_csrf.parameterName}]]*/ '_csrf';
+    const csrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+
+    // 현재 크롤링 대상 URL id (모달에서 사용)
+    let currentCrawlId = null;
+
+    // 전체 크롤링 (TODO: 백엔드 연동)
+    function crawlAll() {
+        alert('전체 크롤링 기능은 아직 구현 중입니다.');
+    }
+
+    // 자동 포함 토글 (urlUseYn)
+    function toggleUseYn(btn) {
+        const id = btn.dataset.id;
+        const current = btn.dataset.use === 'true';
+        const newVal = !current;
+
+        fetch('/api/newstock/autoyn/' + id, {
+            method: 'POST',
+            headers: { [csrfHeader]: csrfToken }
+        })
+        .then(r => { if (!r.ok) throw new Error(); })
+        .then(() => {
+            btn.dataset.use = String(newVal);
+            btn.querySelector('span').textContent = newVal ? 'ON' : 'OFF';
+            btn.style.background = newVal ? '#ffd700' : '';
+            btn.style.color = newVal ? '#1a1c1c' : '';
+            btn.style.borderColor = newVal ? '#ffd700' : '';
+        })
+        .catch(() => alert('변경 실패'));
+    }
+
+    // 셀렉터 수정 모달 (crawlModal 재활용, action을 /selector/{id}로)
+    function openEditSelectorModal(btn) {
+        const id = btn.dataset.id;
+        const form = document.getElementById('crawlForm');
+        form.action = '/admin/newstock/selector/' + id;
+        form.querySelector('[name="selItem"]').value = btn.dataset.selItem || '';
+        form.querySelector('[name="selNm"]').value = btn.dataset.selNm || '';
+        form.querySelector('[name="selPr"]').value = btn.dataset.selPr || '';
+        form.querySelector('[name="selImg"]').value = btn.dataset.selImg || '';
+        form.querySelector('[name="currency"]').value = btn.dataset.currency || '';
+        // 모달을 수정 모드로 열기
+        document.getElementById('crawlModal').dataset.mode = 'edit';
+        document.getElementById('crawlModal').classList.add('is-open');
+    }
+
+    // url form 입력 검증
+    function validateUrlForm(form) {
+        form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+        if (!form.urlUrl.value.trim()) {
+            form.querySelector('[data-for="urlUrl"]').textContent = 'URL을 입력하세요.';
+            return false;
+        }
+        if (!form.brNm.value.trim()) {
+            form.querySelector('[data-for="brNm"]').textContent = '브랜드명을 입력하세요.';
+            return false;
+        }
+        if (!form.catNm.value.trim()) {
+            form.querySelector('[data-for="catNm"]').textContent = '카테고리를 입력하세요.';
+            return false;
+        }
+        return true;
+    }
+
     // 탭 전환
     const page = document.querySelector('.admin-crawling-page');
     const initialTab = page ? page.dataset.activeTab : 'external';
@@ -295,45 +400,92 @@
 
     switchTab(initialTab);
 
-    // 크롤링 모달
+    // === 크롤링 플로우 ===
+
+    // 타입에 맞는 모달 열기 + 기존 셀렉터 pre-fill
+    function openModalByType(type, id, btn) {
+        currentCrawlId = id;
+
+        if (type === 'shopify') {
+            const shopifyForm = document.getElementById('shopifyForm');
+            shopifyForm.querySelector('[name="currency"]').value = btn.dataset.currency || '';
+            document.getElementById('shopifyModal').classList.add('is-open');
+        } else {
+            const crawlForm = document.getElementById('crawlForm');
+            crawlForm.querySelector('[name="selItem"]').value = btn.dataset.selItem || '';
+            crawlForm.querySelector('[name="selNm"]').value = btn.dataset.selNm || '';
+            crawlForm.querySelector('[name="selPr"]').value = btn.dataset.selPr || '';
+            crawlForm.querySelector('[name="selImg"]').value = btn.dataset.selImg || '';
+            crawlForm.querySelector('[name="currency"]').value = btn.dataset.currency || '';
+            document.getElementById('crawlModal').classList.add('is-open');
+        }
+    }
+
+    // 크롤링 시작 버튼 클릭
     function openCrawlModal(btn) {
         const id = btn.dataset.id;
-        const origText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">hourglass_empty</span> 확인 중...';
+        const urlTy = btn.dataset.urlTy;
 
-        fetch('/admin/newstock/check-type/' + id)
-            .then(r => r.json())
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = origText;
+        if (urlTy) {
+            // 재크롤링 — 타입을 이미 알고 있음
+            const type = urlTy === 'SHOPIFY' ? 'shopify' : 'html';
+            openModalByType(type, id, btn);
+        } else {
+            // 첫 크롤링 — check-type 호출 (타입 감지 + DB 저장)
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">hourglass_empty</span> 확인 중...';
 
-                // 셀렉터가 이미 저장된 경우 → 모달 없이 바로 실행
-                if (data.hasSel === 'true') {
-                    const form = document.createElement('form');
-                    form.method = 'post';
-                    form.action = '/admin/newstock/run/' + id;
-                    document.body.appendChild(form);
-                    form.submit();
-                    return;
-                }
+            fetch('/admin/newstock/check-type/' + id)
+                .then(r => r.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                    openModalByType(data.type, id, btn);
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                    // 실패 시 HTML 모달을 기본으로 열기
+                    openModalByType('html', id, btn);
+                });
+        }
+    }
 
-                if (data.type === 'shopify') {
-                    document.getElementById('shopifyForm').action = '/admin/newstock/run/' + id;
-                    document.getElementById('shopifyModal').classList.add('is-open');
-                } else {
-                    document.getElementById('crawlUrlId').value = id;
-                    document.getElementById('crawlForm').action = '/admin/newstock/run/' + id;
-                    document.getElementById('crawlModal').classList.add('is-open');
-                }
-            })
-            .catch(() => {
-                btn.disabled = false;
-                btn.innerHTML = origText;
-                document.getElementById('crawlUrlId').value = id;
-                document.getElementById('crawlForm').action = '/admin/newstock/run/' + id;
-                document.getElementById('crawlModal').classList.add('is-open');
-            });
+    // 셀렉터 저장 후 크롤링 실행
+    function saveSelectorAndRun(formEl) {
+        const id = currentCrawlId;
+        const formData = new FormData(formEl);
+
+        // 로딩 표시
+        const loadingEl = formEl.closest('.admin-crawling-modal').querySelector('.admin-crawling-loading');
+        if (loadingEl) loadingEl.classList.add('is-active');
+
+        // CSRF 토큰을 formData에 추가
+        formData.append(csrfParam, csrfToken);
+
+        // 1단계: 셀렉터 저장 (fetch, redirect 응답 무시)
+        fetch('/admin/newstock/selector/' + id, {
+            method: 'POST',
+            body: formData,
+            redirect: 'follow'
+        })
+        .then(r => {
+            if (!r.ok && r.status !== 302 && r.status !== 200) throw new Error('저장 실패');
+        })
+        .then(() => {
+            // 2단계: 크롤링 실행 (동기 form submit)
+            const runForm = document.createElement('form');
+            runForm.method = 'post';
+            runForm.action = '/admin/newstock/run/' + id;
+            runForm.innerHTML = '<input type="hidden" name="' + csrfParam + '" value="' + csrfToken + '">';
+            document.body.appendChild(runForm);
+            runForm.submit();
+        })
+        .catch(() => {
+            if (loadingEl) loadingEl.classList.remove('is-active');
+            alert('셀렉터 저장 실패');
+        });
     }
 
     function closeCrawlModal() {
@@ -344,12 +496,25 @@
         document.getElementById('shopifyModal').classList.remove('is-open');
     }
 
-    document.getElementById('crawlForm').addEventListener('submit', function () {
-        document.getElementById('crawlLoading').classList.add('is-active');
+    // HTML 모달 submit
+    document.getElementById('crawlForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const modal = document.getElementById('crawlModal');
+        if (modal.dataset.mode === 'edit') {
+            // 셀렉터 수정 모드 → 일반 form submit
+            modal.dataset.mode = '';
+            this.method = 'post';
+            this.submit();
+        } else {
+            // 크롤링 모드 → 셀렉터 저장 후 크롤링 실행
+            saveSelectorAndRun(this);
+        }
     });
 
-    document.getElementById('shopifyForm').addEventListener('submit', function () {
-        document.getElementById('shopifyLoading').classList.add('is-active');
+    // Shopify 모달 submit
+    document.getElementById('shopifyForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveSelectorAndRun(this);
     });
 </script>
 </th:block>

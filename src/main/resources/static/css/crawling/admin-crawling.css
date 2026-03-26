@@ -43,8 +43,8 @@
 }
 
 .admin-crawling-tab.is-active {
-  color: var(--color-on-surface);
-  border-bottom-color: var(--color-on-surface);
+  color: #ffd700;
+  border-bottom-color: #ffd700;
 }
 
 .admin-crawling-tab-panel {
@@ -72,7 +72,7 @@
 
 /* 헤더 */
 .admin-crawling-kicker {
-  color: var(--color-primary);
+  color: #ffd700;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.2em;
@@ -127,10 +127,14 @@
 }
 
 .admin-crawling-table thead {
-  background: var(--color-surface-container-low);
+  background: #1a1c1c;
   position: sticky;
   top: 0;
   z-index: 1;
+}
+
+.admin-crawling-table th {
+  color: #ffd700;
 }
 
 .admin-crawling-table th {
@@ -139,7 +143,6 @@
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-on-surface-variant);
   text-align: left;
 }
 
@@ -151,7 +154,7 @@
 }
 
 .admin-crawling-table td.url-cell {
-  color: var(--color-primary);
+  color: #d4a800;
   word-break: break-all;
 }
 
@@ -171,12 +174,12 @@
 }
 
 .admin-crawling-btn--primary {
-  background: var(--color-on-surface);
-  color: var(--color-surface-container-lowest);
+  background: #ffd700;
+  color: #1a1c1c;
 }
 
 .admin-crawling-btn--primary:hover {
-  background: var(--color-on-surface-variant);
+  background: #e6c200;
 }
 
 .admin-crawling-btn--outline {
@@ -229,7 +232,7 @@
 }
 
 .admin-crawling-input:focus {
-  border-color: var(--color-on-surface);
+  border-color: #ffd700;
 }
 
 .admin-crawling-row {
@@ -251,7 +254,7 @@
   color: var(--color-on-surface);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--color-surface-container-highest);
+  border-bottom: 2px solid #ffd700;
 }
 
 /* 모달 */
@@ -330,7 +333,7 @@
   width: 2.5rem;
   height: 2.5rem;
   border: 3px solid var(--color-surface-container-highest);
-  border-top-color: var(--color-on-surface);
+  border-top-color: #ffd700;
   border-radius: 9999px;
   animation: spin 0.7s linear infinite;
 }
@@ -348,4 +351,10 @@
 .admin-crawling-loading__sub {
   font-size: 0.75rem;
   color: var(--color-on-surface-variant);
+}
+
+/* 폼 검증 에러 */
+.field-error {
+  font-size: 0.7rem;
+  color: #dc2626;
 }

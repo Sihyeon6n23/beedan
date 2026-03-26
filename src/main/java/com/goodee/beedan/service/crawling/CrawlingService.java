@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.goodee.beedan.dto.crawling.SelectorForm;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -44,33 +46,82 @@ public class CrawlingService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Transactional
+    public void autoYnChange(Long urlId) {
+        CrawlingUrl crawlingUrl = crawlingUrlRepository.findById(urlId).orElseThrow();
+        crawlingUrl.setUrlAtYn(!crawlingUrl.isUrlAtYn());
+    }
+
     private record RawProduct(String name, BigDecimal price, String imgUrl) {}
 
     public List<CrawlingUrl> findAllUrls() {
-        return crawlingUrlRepository.findAll();
+
+        return crawlingUrlRepository.findByUrlDelYnFalse();
     }
 
     @Transactional
     public void saveUrl(CrawlingUrl crawlingUrl) {
+
         crawlingUrlRepository.save(crawlingUrl);
     }
 
     @Transactional
-    public int crawl(Long urlId, String selItem, String selNm, String selPr, String selImg, String currency) throws IOException {
+    public void updateSelector(Long urlId, SelectorForm dto) {
+        CrawlingUrl url = crawlingUrlRepository.findById(urlId)
+                .orElseThrow(() -> new IllegalArgumentException("URL not found: " + urlId));
+        url.setUrlSelItem(dto.getSelItem());
+        url.setUrlSelNm(dto.getSelNm());
+        url.setUrlSelPr(dto.getSelPr());
+        url.setUrlSelImg(dto.getSelImg());
+        url.setUrlCur(dto.getCurrency());
+    }
+
+    @Transactional
+    public int crawl(Long urlId) throws IOException {
         CrawlingUrl crawlingUrl = crawlingUrlRepository.findById(urlId)
                 .orElseThrow(() -> new IllegalArgumentException("URL not found: " + urlId));
+
+        String selItem  = crawlingUrl.getUrlSelItem();
+        String selNm    = crawlingUrl.getUrlSelNm();
+        String selPr    = crawlingUrl.getUrlSelPr();
+        String selImg   = crawlingUrl.getUrlSelImg();
+        String currency = crawlingUrl.getUrlCur();
 
         boolean aiMode = AI_CATEGORY_ID.equals(crawlingUrl.getCatId());
 
         Brand brand = brandRepository.findById(crawlingUrl.getBrId()).orElse(null);
         Category fixedCategory = aiMode ? null : categoryRepository.findById(crawlingUrl.getCatId()).orElse(null);
 
-        // 1단계: Shopify JSON 시도 → 실패 시 Jsoup → 0개면 Playwright 폴백
-        List<RawProduct> rawList = tryShopifyJson(crawlingUrl.getUrlUrl());
-        if (rawList == null) {
-            rawList = crawlHtml(crawlingUrl.getUrlUrl(), selItem, selNm, selPr, selImg);
-            if (rawList.isEmpty()) {
-                rawList = crawlWithPlaywright(crawlingUrl.getUrlUrl(), selItem, selNm, selPr, selImg);
+        // 1단계: 저장된 방식이 있으면 먼저 시도, 없거나 실패 시 폴백
+        String url = crawlingUrl.getUrlUrl();
+        String method = crawlingUrl.getUrlTy();
+        List<RawProduct> rawList = null;
+        String usedMethod = null;
+
+        if ("SHOPIFY".equals(method)) {
+            rawList = tryShopifyJson(url);
+            if (rawList != null) usedMethod = "SHOPIFY";
+        } else if ("JSOUP".equals(method)) {
+            rawList = crawlHtml(url, selItem, selNm, selPr, selImg);
+            if (!rawList.isEmpty()) usedMethod = "JSOUP";
+        } else if ("PLAYWRIGHT".equals(method)) {
+            rawList = crawlWithPlaywright(url, selItem, selNm, selPr, selImg);
+            if (!rawList.isEmpty()) usedMethod = "PLAYWRIGHT";
+        }
+
+        // 저장된 방식 실패 또는 없으면 → 기존 폴백
+        if (usedMethod == null) {
+            rawList = tryShopifyJson(url);
+            if (rawList != null) {
+                usedMethod = "SHOPIFY";
+            } else {
+                rawList = crawlHtml(url, selItem, selNm, selPr, selImg);
+                if (!rawList.isEmpty()) {
+                    usedMethod = "JSOUP";
+                } else {
+                    rawList = crawlWithPlaywright(url, selItem, selNm, selPr, selImg);
+                    if (!rawList.isEmpty()) usedMethod = "PLAYWRIGHT";
+                }
             }
         }
 
@@ -93,14 +144,14 @@ public class CrawlingService {
         int i = 0;
         for (RawProduct raw : rawList) {
             String catNm;
-            String catId;
+            Long catId;
             if (aiMode) {
                 catNm = aiCategoryMap.getOrDefault(raw.name(), "");
                 Category aiCat = categoryRepository.findByCatNm(catNm).orElse(null);
-                catId = aiCat != null ? String.valueOf(aiCat.getCatId()) : "";
+                catId = aiCat != null ? aiCat.getCatId() : null;
             } else {
                 catNm = fixedCategory != null ? fixedCategory.getCatNm() : "";
-                catId = fixedCategory != null ? String.valueOf(fixedCategory.getCatId()) : "";
+                catId = fixedCategory != null ? fixedCategory.getCatId() : null;
             }
 
             java.util.Optional<Stock> existing =
@@ -116,7 +167,7 @@ public class CrawlingService {
                         .stCd(stCd)
                         .brId(crawlingUrl.getBrId())
                         .stBrNm(brand != null ? brand.getBrNm() : "")
-                        .stCat(catId)
+                        .catId(catId)
                         .stCatNm(catNm)
                         .stNm(raw.name())
                         .stPr(raw.price())
@@ -133,6 +184,12 @@ public class CrawlingService {
                         .build());
                 newCount++;
             }
+        }
+
+        // 성공한 크롤링 방식 저장
+        if (usedMethod != null) {
+            crawlingUrl.setUrlTy(usedMethod);
+            crawlingUrl.setUrlUpdDt(LocalDateTime.now());
         }
 
         return newCount;

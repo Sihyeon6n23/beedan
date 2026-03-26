@@ -1,9 +1,12 @@
+-- =====================
+-- 최준희 START
+-- =====================
 CREATE TABLE IF NOT EXISTS stock (
     st_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
     st_cd        VARCHAR(50),
     br_id        BIGINT,
     st_br_nm     VARCHAR(20),
-    st_cat       VARCHAR(20),
+    cat_id       VARCHAR(20),
     st_cat_nm    VARCHAR(20),
     st_nm        VARCHAR(50),
     st_pr        DECIMAL(10,2),
@@ -48,7 +51,12 @@ CREATE TABLE IF NOT EXISTS crawling_url (
     url_sel_nm   VARCHAR(100),
     url_sel_pr   VARCHAR(100),
     url_sel_img  VARCHAR(300),
-    url_cur      VARCHAR(5)
+    url_cur      VARCHAR(5),
+    url_ty       VARCHAR(20),
+    url_upd_dt   DATETIME,
+    url_use_yn   BOOLEAN,
+    url_del_yn   BOOLEAN,
+    url_at_yn    BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS wishlist (
@@ -57,3 +65,73 @@ CREATE TABLE IF NOT EXISTS wishlist (
     mem_id       BIGINT,
     wi_cre_dt    DATETIME
 );
+-- =====================
+-- 최준희 END
+-- =====================
+
+-- =====================
+-- 백시현 START
+-- =====================
+
+
+-- =====================
+-- 백시현 END
+-- =====================
+
+
+
+-- =====================
+-- 고희권 START
+-- =====================
+DROP TABLE IF EXISTS member;
+
+CREATE TABLE member (
+                        mem_id         BIGINT         NOT NULL AUTO_INCREMENT,
+                        mem_lgn_id     VARCHAR(50)    NOT NULL,
+                        mem_lgn_pw     VARCHAR(100)   NOT NULL,
+                        mem_aut        ENUM('USER', 'ADMIN', 'ROOT') NOT NULL,
+                        mem_nm         VARCHAR(50)    NULL,
+                        mem_mb_phn     VARCHAR(50)    NULL,
+                        mem_ci         VARCHAR(100)   NULL,
+                        mem_eml        VARCHAR(50)    NULL,
+                        mem_biz_no     VARCHAR(50)    NULL,
+                        mem_biz_cre_dt DATETIME       NULL,
+                        mem_biz_ttl    VARCHAR(50)    NULL,
+                        mem_pos_cd     VARCHAR(100)   NULL,
+                        mem_biz_adr    VARCHAR(100)   NULL,
+                        mem_biz_dt_adr VARCHAR(100)   NULL,
+                        mem_ceo_nm     VARCHAR(50)    NULL,
+                        mem_ceo_phn    VARCHAR(50)    NULL,
+                        mem_cmp_tel    VARCHAR(50)    NULL,
+                        mem_lgn_tr     BIGINT         NOT NULL DEFAULT 0,
+                        mem_loc_dt     DATETIME       NULL,
+                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK') NOT NULL DEFAULT 'ACTIVE',
+                        mem_upd_id     BIGINT         NULL,
+                        mem_upd_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
+                        mem_cre_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
+
+                        PRIMARY KEY (mem_id),
+                        CONSTRAINT uk_mem_lgn_id UNIQUE (mem_lgn_id) -- H2와 MySQL 모두 호환되는 문법
+);
+-- =====================
+-- 고희권 END
+-- =====================
+
+
+
+-- =====================
+-- 장 준 START
+-- =====================
+-- =====================
+-- 장 준 END
+-- =====================
+
+
+
+
+-- =====================
+-- 임 욱 START
+-- =====================
+-- =====================
+-- 임 욱 END
+-- =====================
