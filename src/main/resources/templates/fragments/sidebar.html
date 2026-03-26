@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="frame(title, subTitle, menuContent)">
-    <aside class="hidden md:block w-64 border-r border-stone-100 py-4 px-4 bg-stone-50 h-full overflow-y-auto">
-        <div class="fixed">
-            <div class="px-10 pt-8 mb-8">
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+    <aside class="sidebar-frame hidden md:block w-64 min-h-full bg-stone-50 overflow-y-auto">
+        <div class="sidebar-frame__inner h-full w-full">
+            <div class="sidebar-frame__header">
                 <h3 class="font-headline text-lg font-extrabold tracking-tighter text-stone-900" th:text="${title}">Member Curation</h3>
                 <p class="text-[10px] font-semibold text-primary uppercase tracking-widest" th:text="${subTitle}">onboarding</p>
+                <div class="sidebar-frame__rule">
+                    <span></span>
+                </div>
             </div>
 
-            <nav class="flex flex-col gap-1 mt-6">
+            <nav class="sidebar-frame__nav flex flex-col gap-1">
                 <div th:replace="${menuContent}"></div>
             </nav>
         </div>

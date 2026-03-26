@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/layout :: layout(
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/layout :: layout(
           ~{::title},
           null,
           ~{::content}
@@ -9,22 +8,31 @@
 <title th:fragment="title">BEEDAN | Registration</title>
 
 <th:block th:fragment="content">
+
+  <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
   <header class="mb-12">
     <p class="text-primary uppercase font-black text-[10px] tracking-[0.2em] mb-2">Member Onboarding</p>
-    <h1 class="font-headline font-black text-5xl md:text-6xl tracking-tighter uppercase leading-none">Business Registration</h1>
+    <h1 class="font-headline font-black text-5xl md:text-6xl tracking-tighter uppercase leading-none">Business
+      Registration</h1>
   </header>
 
-  <form th:action="@{/auth/signup}" method="POST" class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
+  <form th:action="@{/auth/signup}" method="POST"
+        class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
 
     <section class="space-y-6">
       <div class="flex items-center gap-4 mb-8">
-        <span class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">01</span>
+        <span
+                class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">01</span>
         <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">계정 정보</h2>
       </div>
 
       <div class="grid grid-cols-1 gap-6">
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">로그인 아이디 <span class="text-error">*</span></label>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">로그인 아이디 <span
+                  class="text-error">*</span></label>
           <div class="flex gap-2">
             <input type="text" name="userLoginId" class="bd-input flex-grow" placeholder="Preferred Username" required>
             <button type="button" class="btn-secondary px-2 whitespace-nowrap">중복 확인</button>
@@ -33,30 +41,35 @@
         </div>
 
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이메일 <span class="text-error">*</span></label>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이메일 <span
+                  class="text-error">*</span></label>
           <input type="email" name="email" class="bd-input" placeholder="name@company.jp" required>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 <span class="text-error">*</span></label>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 <span
+                    class="text-error">*</span></label>
             <input type="password" name="password" class="bd-input" required>
           </div>
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 확인 <span class="text-error">*</span></label>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 확인 <span
+                    class="text-error">*</span></label>
             <input type="password" name="confirmPassword" class="bd-input" required>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이름 <span class="text-error">*</span></label>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이름 <span
+                    class="text-error">*</span></label>
             <div class="flex gap-2">
               <input type="text" name="name" class="bd-input flex-grow" required>
             </div>
           </div>
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">휴대전화 번호 <span class="text-error">*</span></label>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">휴대전화 번호 <span
+                    class="text-error">*</span></label>
             <div class="flex gap-2">
               <input type="tel" name="phone" class="bd-input flex-grow" placeholder="000-0000-0000" required>
               <input type="hidden" name="ci" required> <!-- 인증 성공시 CI값을 해당 위치에 입력-->
@@ -69,54 +82,162 @@
 
     <section class="space-y-6 pt-8 border-t border-outline-variant">
       <div class="flex items-center gap-4 mb-8">
-        <span class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">02</span>
-        <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">Business Verification</h2>
+        <span
+                class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">02</span>
+        <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">Business Verification
+        </h2>
       </div>
 
       <div class="space-y-6">
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Business Registration Number <span class="text-error">*</span></label>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">사업자 등록 번호
+            <span class="text-error">*</span>
+          </label>
           <div class="flex gap-2">
-            <input type="text" name="businessRegNum" class="bd-input flex-grow" placeholder="13-digit Corporate Number" required>
-            <button type="button" class="btn-primary py-3 px-6 !text-xs whitespace-nowrap">Verify</button>
-          </div>
-          <div class="flex items-center gap-2 text-[10px] text-primary">
-            <span class="material-symbols-outlined !text-sm">verified</span>
-            <span>Verification Successful</span>
+            <input type="text" name="businessRegNum" id="b_no" class="bd-input flex-grow" placeholder="- 제외 10자리를 입력하세요" required>
           </div>
         </div>
 
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Company Name</label>
-          <input type="text" name="companyName" class="bd-input bg-surface-container-low text-stone-500 cursor-not-allowed" value="GINZA ARCHITECTURAL ATELIER CO., LTD." readonly>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">
+            상호<span class="text-error">*</span>
+          </label>
+          <input type="text" name="companyName" id="b_nm"
+                 class="bd-input"
+                 placeholder="사업자등록증 상호명">
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">CEO Name <span class="text-error">*</span></label>
-            <input type="text" name="ceoName" class="bd-input" required>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">
+              대표자명<span class="text-error">*</span>
+            </label>
+            <input type="text" name="ceoName" id="p_nm" class="bd-input" required>
           </div>
           <div class="space-y-2">
-            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Establishment Date <span class="text-error">*</span></label>
-            <input type="month" name="establishmentDate" class="bd-input" required>
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">
+              개업연월일 <span class="text-error">*</span>
+            </label>
+            <input type="date" name="establishmentDate" id="start_dt" class="bd-input" required>
+          </div>
+        </div>
+        <div class="space-y-2 flex justify-between">
+          <div id="validation-status" class="flex items-center gap-2 text-[10px]">
+            <span id="status-icon" class="material-symbols-outlined !text-sm"></span>
+            <span id="status-text"></span>
+          </div>
+          <div>
+            <button type="button" id="bizValidationBtn" class="btn-primary py-3 px-6 !text-xs whitespace-nowrap">인증</button>
           </div>
         </div>
 
         <div class="space-y-2">
-          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">Representative Contact <span class="text-error">*</span></label>
-          <input type="tel" name="repPhone" class="bd-input" placeholder="Direct Line or Extension" required>
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">대표전화번호
+            <span class="text-error">*</span></label>
+          <input type="tel" name="repPhone" class="bd-input" placeholder="000-0000-0000" required>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">회사 주소 <span
+                  class="text-error">*</span></label>
+          <div class="flex gap-2">
+            <input type="text" id="postcode" name="companyAddress" class="bd-input flex-grow" placeholder="우편번호" required>
+            <button type="button" id="searchPostCode" class="btn-secondary px-4 whitespace-nowrap">우편번호 찾기</button>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <input type="text" id="baseAddress" name="companyAddressDetail" class="bd-input" placeholder="회사주소" required>
+          <input type="text" id="detailAddress" name="companyAddressDetail" class="bd-input" placeholder="상세주소" required>
         </div>
       </div>
     </section>
 
     <footer class="pt-8 border-t border-outline-variant flex flex-col gap-4">
-      <button type="submit" class="btn-primary w-full py-5 text-base">Join Now</button>
-      <button type="button" class="btn-ghost mx-auto">Cancel Registration</button>
+      <button type="submit" class="btn-primary w-full py-5 text-base">가입 요청</button>
     </footer>
   </form>
 
   <p class="mt-8 text-center md:text-left text-[10px] text-stone-400 uppercase tracking-widest">
-    Having trouble? <a th:href="@{/support}" class="text-primary font-bold underline underline-offset-4">Contact Curator Support</a>
+    Having trouble? <a th:href="@{/support}" class="text-primary font-bold underline underline-offset-4">Contact Curator
+    Support</a>
   </p>
+
+  <script th:src="@{/js/postcode/postcode.js}"></script>
+  <script th:src="@{/js/auth/biz-number-validation.js}"></script>
+
+
+  <script>
+    // 우편번호 찾기 API연결
+    let searchPostCodeBtn = document.getElementById("searchPostCode");
+    searchPostCodeBtn.addEventListener('click', () => {
+      execDaumPostcode();
+    })
+
+    // 사업자등록번호 검증 API 연결
+    let bizValidationBtn = document.getElementById("bizValidationBtn");
+    bizValidationBtn.addEventListener('click', async () => {
+      let bNoEl = document.getElementById("b_no");
+      let bNmEl = document.getElementById("b_nm");
+      let pNmEl = document.getElementById("p_nm");
+      let sDtEl = document.getElementById("start_dt");
+
+      const bizDto = {
+        b_no: bNoEl.value,
+        b_nm: bNmEl.value,
+        p_nm: pNmEl.value,
+        start_dt: sDtEl.value.replace(/-/g, "")
+      }
+
+      let isFormValue = true;
+      let emptyField;
+      const filedNames = {b_no: "사업자번호", b_nm: "상호명", p_nm: "대표자명", start_dt: "개업연원일"};
+      for (const [key, value] of Object.entries(bizDto)) {
+        if (!value) {
+          emptyField = key;
+          document.getElementById(key).focus();
+          alert(`${filedNames[emptyField]}을/를 입력해주세요.`);
+          return;
+        }
+      }
+
+      const result = await BizNumberValidation.validate(bizDto);
+      let data = result.data[0];
+      console.log("html script result:" + result);
+
+
+
+      const lockInputFields = () => {
+        const elements = [bNoEl, bNmEl, pNmEl, sDtEl];
+
+        elements.forEach(el => {
+          // 읽기 전용으로 변경
+          el.readOnly = true;
+
+          // 기존 배경색 클래스가 있다면 제거 (예: bg-white)
+          el.classList.remove("bg-white");
+
+          // 요청하신 클래스들 추가
+          el.classList.add(
+                  "bg-surface-container-low",
+                  "text-stone-500",
+                  "cursor-not-allowed"
+          );
+        });
+      };
+
+      if (data.valid === "01") {
+        let validationStatus = document.getElementById("validation-status");
+        let statusIcon = document.getElementById("status-icon");
+        let statusText = document.getElementById("status-text");
+
+        statusIcon.innerText = "verified";
+        statusText.innerText = "사업자정보 인증을 완료했습니다.";
+        lockInputFields();
+      } else if (data.valid === "02") {
+        alert(data.valid);
+      }
+    })
+  </script>
 </th:block>
+
 </html>
