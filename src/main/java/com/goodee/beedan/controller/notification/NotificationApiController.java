@@ -27,11 +27,11 @@ public class NotificationApiController {
 
     @PatchMapping("/{id}/read")
     public ResponseEntity<List<NotificationDto>> read(
-            @PathVariable("id") Long notiId/*,
-            @AuthenticationPrincipal MemberUserDetails userDetails*/){
+            @PathVariable("id") Long notiId,
+            @AuthenticationPrincipal MemberUserDetails userDetails){
         notificationService.readNotification(notiId);
 
-        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(1L);
+        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
 
         return ResponseEntity.ok(notificationDtoList);
     }

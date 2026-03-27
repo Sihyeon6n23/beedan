@@ -1,6 +1,6 @@
 package com.goodee.beedan.common.constant;
 
-public enum OrderHisotryStatus {
+public enum OrderStatus {
     PREPARING,
     DELIVERING,
     DELIVERIED,
