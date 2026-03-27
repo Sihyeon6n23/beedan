@@ -80,6 +80,13 @@
         },
     }
 </script>
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+<script>
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    if (csrfToken) axios.defaults.headers.common[csrfHeader] = csrfToken;
+</script>
 <style>
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -118,6 +125,7 @@
                         <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Price</th>
                         <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-center">Quantity</th>
                         <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Total</th>
+                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">KRW</th>
                         <th class="py-6 px-4"></th>
                     </tr>
                     </thead>
@@ -125,7 +133,7 @@
 
                     <!-- 장바구니 목록 없을 때 -->
                     <tr th:if="${page.isEmpty()}">
-                        <td colspan="7" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td>
+                        <td colspan="8" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td>
                     </tr>
 
                     <!-- 장바구니 아이템 반복 -->
@@ -136,6 +144,7 @@
                         th:data-price="${item.stPr}"
                         th:data-cur="${item.stCur}"
                         th:data-use-yn="${item.stUseYn}"
+                        th:data-krw-price="${item.stKrwPr}"
                         th:classappend="${stat.even} ? 'bg-surface-container-lowest hover:bg-surface-container transition-colors' : 'bg-surface-container-low hover:bg-surface-container transition-colors'">
                         <!-- 체크박스 -->
                         <td class="py-8 px-4" th:classappend="${!item.stUseYn} ? 'opacity-50' : ''">
@@ -190,6 +199,9 @@
                         <!-- 합계 -->
                         <td class="py-8 px-4 font-extrabold text-right cart-total" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
                             th:text="${item.stCur + ' ' + #numbers.formatDecimal(item.stPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA', 2, 'POINT')}"></td>
+                        <!-- KRW 환산 -->
+                        <td class="py-8 px-4 font-extrabold text-right cart-krw-total" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
+                            th:text="${'₩ ' + #numbers.formatInteger(item.stKrwPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA')}"></td>
                         <!-- 삭제 (항상 활성) -->
                         <td class="py-8 px-4 text-right">
                             <button type="button" class="btn-delete text-error hover:opacity-70 transition-opacity">
@@ -304,6 +316,7 @@
 
     function updateRowTotal(row) {
         const price = parseFloat(row.dataset.price);
+        const krwPrice = parseFloat(row.dataset.krwPrice);
         const cur = row.dataset.cur;
         const qty = parseInt(row.querySelector('.qty-input').value) || 1;
         const total = price * qty;
@@ -312,6 +325,11 @@
             totalTd.textContent = cur + ' ' + Math.floor(total).toLocaleString();
         } else {
             totalTd.textContent = cur + ' ' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        const krwTotalTd = row.querySelector('.cart-krw-total');
+        if (krwTotalTd) {
+            const krwTotal = Math.round(krwPrice * qty / 100) * 100;
+            krwTotalTd.textContent = '₩ ' + krwTotal.toLocaleString();
         }
     }
 
@@ -344,7 +362,7 @@
 
     document.getElementById('delete-confirm').addEventListener('click', () => {
         if (!deleteTargetCaId) return;
-        axios.delete('/api/cart' + deleteTargetCaId)
+        axios.delete('/api/cart/' + deleteTargetCaId)
             .then(() => {
                 const row = document.querySelector('.cart-row[data-ca-id="' + deleteTargetCaId + '"]');
                 if (row) row.remove();

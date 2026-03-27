@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title th:fragment="title">BEEDAN | STOCKS</title>
+    <title th:fragment="title" th:text="${mode == 'wishlist' ? 'BEEDAN | WISHLIST' : 'BEEDAN | STOCKS'}">BEEDAN | STOCKS</title>
 
 </head>
 <body class="bg-surface-container-lowest text-on-surface" th:fragment="content" >
@@ -85,6 +85,8 @@
 <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
 <script th:inline="javascript">
     const memberId = /*[[${memberId}]]*/ null;
+    const pageMode = /*[[${mode}]]*/ null;
+    const apiUrl = pageMode === 'wishlist' ? '/api/wishlist/list' : '/stock/api/list';
 </script>
 <script>
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
@@ -137,12 +139,12 @@
             <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
                 <li>Home</li>
                 <li class="text-neutral-300">/</li>
-                <li class="text-on-primary-container">Stock</li>
+                <li class="text-on-primary-container" th:text="${mode == 'wishlist' ? 'Wishlist' : 'Stock'}">Stock</li>
             </ol>
         </nav>
 
         <div class="flex justify-between items-end mb-12">
-            <h1 class="text-6xl font-headline font-black tracking-tighter">STOCK</h1>
+            <h1 class="text-6xl font-headline font-black tracking-tighter" th:text="${mode == 'wishlist' ? 'WISHLIST' : 'STOCK'}">STOCK</h1>
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
                     <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Search</span>
@@ -173,7 +175,7 @@
 
             <!-- Product Grid -->
             <div id="product-grid" th:unless="${page.isEmpty()}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
-                <div th:each="item : ${page.content}" class="group cursor-pointer">
+                <div th:each="item : ${page.content}" class="group cursor-pointer" th:onclick="'location.href=\'/stock/detail/' + ${item.stId} + '\''">
                     <div class="relative mb-6 overflow-hidden bg-white w-full aspect-[4/5]">
                         <img th:if="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
                              th:src="${item.stImgUrl}"
@@ -209,18 +211,18 @@
             <th:block th:if="${page.totalPages > 1}"
                        th:with="startPage=${T(java.lang.Math).max(0, page.number - 4)},
                                 endPage=${T(java.lang.Math).min(page.totalPages - 1, startPage + 9)}">
-                <a th:href="@{/stock/list(page=${page.number - 1})}"
+                <a th:href="${mode == 'wishlist' ? '/wishlist?page=' + (page.number - 1) : '/stock/list?page=' + (page.number - 1)}"
                    th:classappend="${page.first} ? 'pointer-events-none opacity-30' : ''"
                    class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors">
                     <span class="material-symbols-outlined">chevron_left</span>
                 </a>
                 <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                   th:href="@{/stock/list(page=${i})}"
+                   th:href="${mode == 'wishlist' ? '/wishlist?page=' + i : '/stock/list?page=' + i}"
                    th:text="${i + 1}"
                    th:classappend="${i == page.number} ? 'text-on-surface border-b-4 border-primary-container' : 'text-neutral-400 hover:text-on-surface'"
                    class="w-12 h-12 flex items-center justify-center font-headline font-extrabold text-xs transition-colors">
                 </a>
-                <a th:href="@{/stock/list(page=${page.number + 1})}"
+                <a th:href="${mode == 'wishlist' ? '/wishlist?page=' + (page.number + 1) : '/stock/list?page=' + (page.number + 1)}"
                    th:classappend="${page.last} ? 'pointer-events-none opacity-30' : ''"
                    class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4">
                     Next
@@ -334,7 +336,7 @@
         items.forEach(item => {
             const hasImg = item.stImgUrl && item.stImgUrl.length > 0;
             html += `
-            <div class="group cursor-pointer">
+            <div class="group cursor-pointer" onclick="location.href='/stock/detail/${item.stId}'">
                 <div class="relative mb-6 overflow-hidden bg-white w-full aspect-[4/5]">
                     ${hasImg
                         ? `<img src="${item.stImgUrl}" alt="${item.stNm}" class="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"/>`
@@ -404,7 +406,7 @@
         const categories = getSelectedCategories();
         if (categories.length > 0) params.categories = categories;
 
-        axios.get('/stock/api/list', {
+        axios.get(apiUrl, {
             params,
             paramsSerializer: function(p) {
                 const parts = [];
