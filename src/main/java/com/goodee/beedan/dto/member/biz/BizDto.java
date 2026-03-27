@@ -1,4 +1,4 @@
-package com.goodee.beedan.dto.biz;
+package com.goodee.beedan.dto.member.biz;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
