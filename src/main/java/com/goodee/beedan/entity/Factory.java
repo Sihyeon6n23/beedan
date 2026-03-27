@@ -26,7 +26,7 @@ public class Factory {
     private String faNm;    // 공장명
     @Column(name = "fa_ad", length = 255)
     private String faAd;    // 공장 주소
-    @Column(name = "fa_ad", length = 255)
+    @Column(name = "fa_cty")
     private String faCty;   // 공장 도시
     @Column(name = "fa_c_cd", length = 10)
     private String faCCd;   // 국가코드

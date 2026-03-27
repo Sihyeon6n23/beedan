@@ -26,7 +26,7 @@ public class ExchangeRate {
     @Column(nullable = false, precision = 18, scale =6)
     private BigDecimal erRa;
 
-    @Column(nullable = false)
+    @Column(name = "er_f_dt", nullable = false)
     private LocalDateTime erFDt;    // 환율 기준 시간
 
     @CreatedDate

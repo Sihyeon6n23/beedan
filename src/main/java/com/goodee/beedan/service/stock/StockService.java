@@ -12,20 +12,13 @@ import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.repository.wishlist.WishlistRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +30,17 @@ public class StockService {
     private final CategoryRepository categoryRepository;
     private final WishlistRepository wishlistRepository;
 
+    // 상품 단건 조회
+    public Stock findById(Long stId) {
+        return stockRepository.findById(stId).orElse(null);
+    }
+
+    // 찜 여부 확인
+    public boolean isWished(Long stId, Long memId) {
+        if (memId == null) return false;
+        return wishlistRepository.findByStIdAndMemId(stId, memId) != null;
+    }
+
     // 전체 상품 불러오기
     public Page<StockListDto> findAllStocks(Pageable pageable, Long memId) {
         Set<Long> wishedIds = memId != null
@@ -45,6 +49,19 @@ public class StockService {
                 : Collections.emptySet();
         return stockRepository.findByStExpYnTrue(pageable)
                 .map(stock -> mapToStockListDto(stock, wishedIds));
+    }
+
+    // wishlist 상품 불러오기
+    public Page<StockListDto> findWishedItems(Pageable pageable, List<Wishlist> wishedItems) {
+        List<Long> stIds = wishedItems.stream()
+                .map(Wishlist::getStId)
+                .collect(Collectors.toList());
+        if (stIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        Set<Long> wishedIdSet = new HashSet<>(stIds);
+        return stockRepository.findByStIdInAndStExpYnTrue(stIds, pageable)
+                .map(stock -> mapToStockListDto(stock, wishedIdSet));
     }
 
     // 전체 브랜드 목록 불러오기
@@ -104,6 +121,54 @@ public class StockService {
     }
 
 
+    // wishlist 필터 + 정렬 조회
+    public Page<StockListDto> findWishedFiltered(List<Long> brandIds
+                                                , List<String> catNms
+                                                , String keyword
+                                                , String sort
+                                                , int page
+                                                , Long memId) {
+        List<Long> wishedStIds = wishlistRepository.findAllByMemId(memId).stream()
+                .map(Wishlist::getStId).collect(Collectors.toList());
+        if (wishedStIds.isEmpty()) {
+            return Page.empty();
+        }
+        Set<Long> wishedIdSet = new HashSet<>(wishedStIds);
+
+        Sort sorting = switch (sort != null ? sort : "recent") {
+            case "popularity" -> Sort.by(Sort.Direction.DESC, "stWisCnt");
+            case "price-asc" -> Sort.by(Sort.Direction.ASC, "stPr");
+            case "price-desc" -> Sort.by(Sort.Direction.DESC, "stPr");
+            case "most-purchased" -> Sort.by(Sort.Direction.DESC, "stPurCnt");
+            default -> Sort.by(Sort.Direction.DESC, "stId");
+        };
+
+        Pageable pageable = PageRequest.of(page, 8, sorting);
+
+        Specification<Stock> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("stExpYn")));
+            predicates.add(root.get("stId").in(wishedStIds));
+            if (brandIds != null && !brandIds.isEmpty()) {
+                predicates.add(root.get("brId").in(brandIds));
+            }
+            if (catNms != null && !catNms.isEmpty()) {
+                predicates.add(root.get("stCatNm").in(catNms));
+            }
+            if (keyword != null && !keyword.isBlank()) {
+                String pattern = "%" + keyword.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("stNm")), pattern),
+                        cb.like(cb.lower(root.get("stBrNm")), pattern)
+                ));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return stockRepository.findAll(spec, pageable)
+                .map(stock -> mapToStockListDto(stock, wishedIdSet));
+    }
+
     // 요청 상품 등록 (수동)
     @Transactional
     public void saveManual(NewStockForm newStockForm, String imgUrl) {
@@ -135,6 +200,8 @@ public class StockService {
                 .stPurCnt(null)
                 .build());
     }
+
+
 
     // STOCK 엔티티 객체를 DTO 객체로 변환
     public StockListDto mapToStockListDto(Stock stock, Set<Long> wishedIds) {

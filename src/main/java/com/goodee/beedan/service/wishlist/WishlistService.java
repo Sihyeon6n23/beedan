@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,5 +30,10 @@ public class WishlistService {
     // 관심 상품 삭제
     public void deleteItem(Long stId, Long memId) {
         wishlistRepository.deleteByStIdAndMemId(stId, memId);
+    }
+
+    // 관심 상품 id 추출
+    public List<Wishlist> findAllWishedItems(Long memId) {
+        return wishlistRepository.findAllByMemId(memId);
     }
 }

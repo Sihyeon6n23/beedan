@@ -1,10 +1,12 @@
-package com.goodee.beedan.controller.stock;
+package com.goodee.beedan.controller.wishlist;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.stock.StockListDto;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
+import com.goodee.beedan.entity.Wishlist;
 import com.goodee.beedan.service.stock.StockService;
+import com.goodee.beedan.service.wishlist.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,55 +16,37 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.goodee.beedan.entity.Stock;
 
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/stock")
-public class StockController {
+@RequestMapping("/wishlist")
+public class WishlistController {
+
+    private final WishlistService wishlistService;
     private final StockService stockService;
 
-    // 상품 목록
-    @GetMapping("/list")
-    public String getStocks(
+    @GetMapping
+    public String getWishlistItems(
             @PageableDefault(page = 0, size = 8, sort = "stId", direction = Sort.Direction.DESC)
             Pageable pageable,
             Model model,
-            @AuthenticationPrincipal MemberUserDetails userDetails)
-            {
-                Long memId;
-                if(userDetails == null) {
-                    memId = null;
-                } else {
-                    memId = userDetails.getMemberId();
-                }
-                model.addAttribute("memberId", memId);
-        Page<StockListDto> page = stockService.findAllStocks(pageable, memId);
+            @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Long memId = userDetails != null ? userDetails.getMemberId() : null;
+        model.addAttribute("memberId", memId);
+
+        // 해당 회원의 wishlist에 저장되어 있는 상품 목록
+        List<Wishlist> wishedItems = wishlistService.findAllWishedItems(memId);
+        Page<StockListDto> page = stockService.findWishedItems(pageable, wishedItems);
         List<Brand> brands = stockService.findAllBrands();
         List<Category> categories = stockService.findAllCategories();
 
         model.addAttribute("page", page);
         model.addAttribute("brands", brands);
         model.addAttribute("categories", categories);
+        model.addAttribute("mode", "wishlist");
         return "stock/stock-list";
-    }
-
-    // 상품 상세
-    @GetMapping("/detail/{stId}")
-    public String getStockDetail(@PathVariable Long stId, Model model,
-                                 @AuthenticationPrincipal MemberUserDetails userDetails) {
-        Long memId = userDetails != null ? userDetails.getMemberId() : null;
-        Stock stock = stockService.findById(stId);
-        boolean wished = stockService.isWished(stId, memId);
-
-        model.addAttribute("stock", stock);
-        model.addAttribute("wished", wished);
-        model.addAttribute("memberId", memId);
-        return "stock/stock-detail";
     }
 }

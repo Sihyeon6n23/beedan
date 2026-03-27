@@ -30,35 +30,35 @@ INSERT INTO category VALUES
 INSERT INTO stock (st_cd, br_id, st_br_nm, cat_id, st_cat_nm, st_nm, st_pr, st_cur, st_img_url, st_exp_yn, st_use_yn, st_del_yn, st_req_yn, st_req_mem_id, st_cra_dt, st_cre_dt, st_upd_dt, st_wis_cnt, st_pur_cnt) VALUES
 
 -- Kapital (¥)
-('KAP-001', 1, 'Kapital', '1', 'Outwear',      '25FW Mens Coach Jacket',   1749.99, '¥', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 10),
-('KAP-002', 1, 'Kapital', '1', 'Outwear',      'Boro Padded Jacket',       2100.00, '¥', 'https://images.unsplash.com/photo-1548126032-079a0fb0099d?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  5),
-('KAP-003', 1, 'Kapital', '1', 'Outwear',      'Teru Teru Parka',          1980.00, '¥', 'https://images.unsplash.com/photo-1539109136-da888-59a3bc9f3a10?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6,  3),
-('KAP-004', 1, 'Kapital', '2', 'Knitwear',     'Boro Mix Sweater',          890.00, '¥', 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
-('KAP-005', 1, 'Kapital', '2', 'Knitwear',     'Sashiko Knit Vest',         620.00, '¥', 'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7,  4),
-('KAP-006', 1, 'Kapital', '3', 'Tops',         'Gauze Boro Shirt',          540.00, '¥', 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5,  2),
-('KAP-007', 1, 'Kapital', '3', 'Tops',         'Remake Flannel Shirt',      760.00, '¥', 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  6),
-('KAP-008', 1, 'Kapital', '4', 'Bottoms',      'Kendo Pants',               980.00, '¥', 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 7),
-('KAP-009', 1, 'Kapital', '4', 'Bottoms',      'Boro Remake Jeans',        1200.00, '¥', 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 13, 8),
+('KAP-001', 1, 'Kapital', '2', 'Jacket',      '25FW Mens Coach Jacket',   1749.99, '¥', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 10),
+('KAP-002', 1, 'Kapital', '2', 'Jacket',      'Boro Padded Jacket',       2100.00, '¥', 'https://images.unsplash.com/photo-1548126032-079a0fb0099d?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  5),
+('KAP-003', 1, 'Kapital', '2', 'Jacket',      'Teru Teru Parka',          1980.00, '¥', 'https://images.unsplash.com/photo-1539109136-da888-59a3bc9f3a10?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6,  3),
+('KAP-004', 1, 'Kapital', '4', 'Knitwear',     'Boro Mix Sweater',          890.00, '¥', 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
+('KAP-005', 1, 'Kapital', '4', 'Knitwear',     'Sashiko Knit Vest',         620.00, '¥', 'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7,  4),
+('KAP-006', 1, 'Kapital', '7', 'T-Shirt',         'Gauze Boro Shirt',          540.00, '¥', 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5,  2),
+('KAP-007', 1, 'Kapital', '7', 'T-Shirt',         'Remake Flannel Shirt',      760.00, '¥', 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  6),
+('KAP-008', 1, 'Kapital', '8', 'Bottoms',      'Kendo Pants',               980.00, '¥', 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 7),
+('KAP-009', 1, 'Kapital', '8', 'Bottoms',      'Boro Remake Jeans',        1200.00, '¥', 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 13, 8),
 
 -- Nanamica (¥)
-('NAN-001', 2, 'Nanamica', '1', 'Outwear',     'GORE-TEX Cruiser Jacket',  3200.00, '¥', 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 20, 12),
-('NAN-002', 2, 'Nanamica', '1', 'Outwear',     'Mountain Parka',           2800.00, '¥', 'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 18, 10),
-('NAN-003', 2, 'Nanamica', '1', 'Outwear',     'Club Coat',                3600.00, '¥', 'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 15, 8),
-('NAN-004', 2, 'Nanamica', '3', 'Tops',        'COOLMAX Rugby Shirt',       640.00, '¥', 'https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  5),
-('NAN-005', 2, 'Nanamica', '3', 'Tops',        'SUVIN Jersey Tee',          320.00, '¥', 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 12, 7),
-('NAN-006', 2, 'Nanamica', '4', 'Bottoms',     'COOLMAX Wide Chino',       1100.00, '¥', 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6),
-('NAN-007', 2, 'Nanamica', '4', 'Bottoms',     'Straight Tapered Chino',    980.00, '¥', 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  4),
-('NAN-008', 2, 'Nanamica', '5', 'Accessories', 'Ruck Sack',                1400.00, '¥', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 9),
-('NAN-009', 2, 'Nanamica', '5', 'Accessories', 'Briefcase M',              1800.00, '¥', 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 6),
+('NAN-001', 2, 'Nanamica', '2', 'Jacket',     'GORE-TEX Cruiser Jacket',  3200.00, '¥', 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 20, 12),
+('NAN-002', 2, 'Nanamica', '2', 'Jacket',     'Mountain Parka',           2800.00, '¥', 'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 18, 10),
+('NAN-003', 2, 'Nanamica', '2', 'Coat',     'Club Coat',                3600.00, '¥', 'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 15, 8),
+('NAN-004', 2, 'Nanamica', '7', 'T-Shirt',        'COOLMAX Rugby Shirt',       640.00, '¥', 'https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  5),
+('NAN-005', 2, 'Nanamica', '7', 'T-Shirt',        'SUVIN Jersey Tee',          320.00, '¥', 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 12, 7),
+('NAN-006', 2, 'Nanamica', '8', 'Bottoms',     'COOLMAX Wide Chino',       1100.00, '¥', 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6),
+('NAN-007', 2, 'Nanamica', '8', 'Bottoms',     'Straight Tapered Chino',    980.00, '¥', 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  4),
+('NAN-008', 2, 'Nanamica', '11', 'Bags / Accessories', 'Ruck Sack',                1400.00, '¥', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 9),
+('NAN-009', 2, 'Nanamica', '11', 'Bags / Accessories', 'Briefcase M',              1800.00, '¥', 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 6),
 
 -- Kenzo (€)
-('KNZ-001', 3, 'Kenzo', '1', 'Outwear',        'Boke Flower Peacoat',       890.00, '€', 'https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 22, 14),
-('KNZ-002', 3, 'Kenzo', '1', 'Outwear',        'Tiger Mountain Parka',      720.00, '€', 'https://images.unsplash.com/photo-1467043237213-65f2da53396f?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 17, 11),
-('KNZ-003', 3, 'Kenzo', '3', 'Tops',           'Tiger Print Tee',           180.00, '€', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 30, 20),
-('KNZ-004', 3, 'Kenzo', '3', 'Tops',           'Boke Flower Shirt',         260.00, '€', 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 19, 13),
-('KNZ-005', 3, 'Kenzo', '2', 'Knitwear',       'Tiger Embroidery Sweater',  420.00, '€', 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
-('KNZ-006', 3, 'Kenzo', '5', 'Accessories',    'Tiger Cap',                 120.00, '€', 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 25, 18),
-('KNZ-007', 3, 'Kenzo', '5', 'Accessories',    'Boke Flower Scarf',         150.00, '€', 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6);
+('KNZ-001', 3, 'Kenzo', '2', 'Jacket',        'Boke Flower Peacoat',       890.00, '€', 'https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 22, 14),
+('KNZ-002', 3, 'Kenzo', '2', 'Jacket',        'Tiger Mountain Parka',      720.00, '€', 'https://images.unsplash.com/photo-1467043237213-65f2da53396f?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 17, 11),
+('KNZ-003', 3, 'Kenzo', '7', 'T-Shirt',           'Tiger Print Tee',           180.00, '€', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 30, 20),
+('KNZ-004', 3, 'Kenzo', '7', 'T-Shirt',           'Boke Flower Shirt',         260.00, '€', 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 19, 13),
+('KNZ-005', 3, 'Kenzo', '4', 'Knitwear',       'Tiger Embroidery Sweater',  420.00, '€', 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
+('KNZ-006', 3, 'Kenzo', '11', 'Bags / Accessories',    'Tiger Cap',                 120.00, '€', 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 25, 18),
+('KNZ-007', 3, 'Kenzo', '11', 'Bags / Accessories',    'Boke Flower Scarf',         150.00, '€', 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6);
 
 -- =====================
 -- CART (샘플)
@@ -141,7 +141,7 @@ INSERT INTO NEGOTIATION (ng_nm, ng_cre_dt, mem_id) VALUES
                                                        ('협상 3호', CURRENT_TIMESTAMP(), 2);
 
 INSERT INTO UNIT_GROUP (un_g_nm, un_g_qn, un_g_yn, un_g_cr_dt, un_g_up_dt) VALUES
-                                                                               ('다스', 12, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+    ('다스', 12, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- 다스(un_g_id=2 가정) 기준 할인 정책
 INSERT INTO UNIT_DISCOUNT
@@ -151,17 +151,49 @@ VALUES
     (1, 10, NULL,    0.0500, 0.0000, 'HIGHER', '10다스 이상 수량 5% 할인',  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
     (1, NULL, 500000, 0.0000, 0.0300, 'HIGHER', '50만원 이상 금액 3% 할인', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
+INSERT INTO FACTORY (br_id, fa_nm, fa_ad, fa_cty, fa_c_cd, fa_yn, fa_cr_dt, fa_up_dt) VALUES
+                                                                                          (1, '도쿄 1공장', '도쿄 시부야구 1-1', '도쿄',   'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                          (1, '오사카 1공장', '오사카 난바 2-2', '오사카', 'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                          (2, '상하이 1공장', '상하이 푸동 3-3', '상하이', 'CN', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+INSERT INTO EXCHANGE_RATE (er_cr, er_ra, er_ba, er_f_dt, er_cr_dt) VALUES
+                                                                       ('JPY', 9.012345, 'KRW', '2026-03-24 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('JPY', 9.123456, 'KRW', '2026-03-25 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('JPY', 9.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('USD', 1380.123456, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('EUR', 1500.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
+                                                                       ('CNY', 190.345678, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP());
 
 
+INSERT INTO SHIPPING_RATE
+(sr_c_cd, sr_trsp_ty, sr_sm_qn, sr_sm_am, sr_md_qn, sr_md_am, sr_lg_qn, sr_lg_am, sr_yn, sr_cr_dt, sr_up_dt)
+VALUES
+    ('JP', 'SEA', 1, 50000,  5, 80000,  10, 120000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('JP', 'AIR', 1, 100000, 5, 150000, 10, 200000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CN', 'SEA', 1, 40000,  5, 70000,  10, 100000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CN', 'AIR', 1, 80000,  5, 120000, 10, 160000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
+INSERT INTO PORT_CUSTOMS_RATE
+(pcr_ty, pcr_sm_am, pcr_md_am, pcr_lg_am, pcr_yn, pcr_cr_dt, pcr_up_dt)
+VALUES
+    ('PORT',    30000, 50000, 70000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CUSTOMS', 40000, 60000, 80000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('HS_CODE', 10000, 10000, 10000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
+INSERT INTO DOMESTIC_DELIVERY_RATE
+(ddr_rgn, ddr_am, ddr_e_am, ddr_yn, ddr_cr_dt, ddr_up_dt)
+VALUES
+    ('SEOUL',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('GYEONGGI', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('METRO',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('PROVINCE', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('JEJU',     3000, 3000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('ISLAND',   3000, 5000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
-
-
-
-
-
-
+INSERT INTO QU_BASE (ng_id, qu_sid, qu_rid, qu_stt, qu_op_yn, qu_cre_dt, qu_upd_dt) VALUES
+                                                                                        (1, 1, 2, 'TEMP_SAVE',  FALSE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                        (1, 1, 2, 'SUBMITTED',  TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                        (2, 2, 1, 'APPROVED',   TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 
 

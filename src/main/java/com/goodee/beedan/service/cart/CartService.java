@@ -1,15 +1,19 @@
 package com.goodee.beedan.service.cart;
 
+import com.goodee.beedan.client.exchangeRate.ExchangeRateClient;
 import com.goodee.beedan.dto.cart.CartDto;
 import com.goodee.beedan.dto.cart.CartUpdateDto;
 import com.goodee.beedan.entity.Cart;
 import com.goodee.beedan.repository.cart.CartRepository;
+import com.goodee.beedan.service.exchangeRate.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -17,6 +21,7 @@ import java.util.List;
 @Transactional
 public class CartService {
     private final CartRepository cartRepository;
+    private final ExchangeRateService exchangeRateService;
 
     // 장바구니 목록 (페이징 포함)
     public Page<CartDto> findByMemId(Long memId, Pageable pageable) {
@@ -40,9 +45,14 @@ public class CartService {
             }
         }
     }
-
+    // 상품 가격 -> 원화 환산
+    public BigDecimal getRate(String symbol) {
+        return exchangeRateService.findLatestByCurrencySymbol(symbol).getErRa();
+    }
     // 장바구니 엔티티 객체를 DTO 객체로 변환
     public CartDto mapToCartDto(Cart cart) {
+        BigDecimal erRa = getRate(cart.getStock().getStCur());
+        BigDecimal toKrw = cart.getStock().getStPr().multiply(erRa).setScale(-2, RoundingMode.HALF_UP);
         return CartDto.builder()
                 .caId(cart.getCaId())
                 .caStQn(cart.getCaStQn())
@@ -52,6 +62,7 @@ public class CartService {
                 .stBrNm(cart.getStock().getStBrNm())
                 .stNm(cart.getStock().getStNm())
                 .stPr(cart.getStock().getStPr())
+                .stKrwPr(toKrw)
                 .stCur(cart.getStock().getStCur())
                 .stImgUrl(cart.getStock().getStImgUrl())
                 .stUseYn(cart.getStock().isStUseYn())
