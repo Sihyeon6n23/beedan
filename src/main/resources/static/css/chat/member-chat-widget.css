@@ -633,6 +633,12 @@
   padding: 1rem;
 }
 
+[data-login-modal].member-chat-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+}
+
 .member-chat-modal__backdrop {
   position: absolute;
   inset: 0;

@@ -39,7 +39,7 @@ public class ChatbotResponse {
 
     // 링크 버튼은 버튼명과 URL이 함께 있거나 함께 없어야 한다.
     @Column(name = "cb_res_use_yn", nullable = false)
-    private boolean cbResUseYn;
+    private Boolean cbResUseYn;
 
     @CreatedDate
     @Column(name = "cb_res_cre_dt", nullable = false, updatable = false)
