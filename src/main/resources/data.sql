@@ -196,6 +196,23 @@ INSERT INTO QU_BASE (ng_id, qu_sid, qu_rid, qu_stt, qu_op_yn, qu_cre_dt, qu_upd_
                                                                                         (2, 2, 1, 'APPROVED',   TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 
+INSERT INTO QU_INFO
+(qu_id, ng_id, qu_info_exc_rt, qu_info_cur_cd, bgp_id, fp_id)
+VALUES
+    (1, 1, 9.234567, 'JPY', 1, 1),
+    (2, 1, 1380.123456, 'USD', 2, 2);
+
+
+
+INSERT INTO QU_DETAIL
+(qu_info_id, qu_id, ng_id, st_id, st_nm, qu_dt_qn,
+ fa_id, fa_nm, un_g_id, un_g_nm, qu_u_qn, qu_dt_fg_pr)
+VALUES
+    (1, 1, 1, 1, '면 티셔츠',  100, 1, '도쿄 1공장',  2, '다스', 5, 1200.0000),
+    (1, 1, 1, 2, '청바지',     50,  1, '도쿄 1공장',  2, '다스', 3, 2500.0000),
+    (1, 1, 1, 3, '후드티',     30,  3, '상하이 1공장',2, '다스', 2, 1800.0000);
+
+
 
 -- =====================
 -- 백시현 END
