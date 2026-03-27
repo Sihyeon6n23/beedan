@@ -58,10 +58,39 @@ public class ExchangeRateService {
                         "환율 정보를 찾을 수 없습니다. 통화: " + erCr));
     }
 
+    public ExchangeRate findLatestByCurrencySymbol(String symbol) {
+        String erCr = resolveCurrencyCode(symbol);
+
+        return exchangeRateRepository.findTopByErCrOrderByErFDtDesc(erCr)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "환율 정보를 찾을 수 없습니다. 통화: " + erCr));
+    }
+
     /**
      * 통화별 환율 이력 전체 조회
      */
     public List<ExchangeRate> findAllByCurrency(String erCr) {
         return exchangeRateRepository.findAllByErCrOrderByErFDtDesc(erCr);
     }
+
+    /**
+     * 통화 기호 → 통화 코드 변환
+     * ¥ → JPY, $ → USD, € → EUR, CNY → CNY
+     */
+    public String resolveCurrencyCode(String symbol) {
+        if (symbol == null) throw new IllegalArgumentException("통화 기호가 null입니다.");
+        return switch (symbol.trim()) {
+            case "¥"   -> "JPY";
+            case "$"   -> "USD";
+            case "€"   -> "EUR";
+            case "CNY" -> "CNY";
+            default    -> throw new IllegalArgumentException("지원하지 않는 통화 기호입니다: " + symbol);
+        };
+    }
+
+
+
+
+
+
 }
