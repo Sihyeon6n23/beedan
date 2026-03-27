@@ -26,7 +26,7 @@ public class DomesticDeliveryRate {
     private String ddrRgn;  // 지역 구분 SEOUL GYEONGGI METRO PROVINCE
     @Column(precision = 18, scale = 0)
     private BigDecimal ddrAm;   // 기본 배송비
-    @Column(precision = 18, scale = 0)
+    @Column(name = "ddr_e_am", precision = 18, scale = 0)
     private BigDecimal ddrEAm;  // 추가 배송비
     private String ddrDes;  // 관리자 메모
     private Boolean ddrYn;
@@ -34,6 +34,17 @@ public class DomesticDeliveryRate {
     private LocalDateTime ddrCrDt;
     @LastModifiedDate
     private LocalDateTime ddrUpDt;
+
+    @PrePersist
+    protected void onCreate(){
+        if (this.ddrYn == null) this.ddrYn = true;
+        if (this.ddrEAm == null) this.ddrEAm = BigDecimal.ZERO;
+
+    }
+
+    public void deactivate() {
+        this.ddrYn = false;
+    }
 
     @Builder
     public DomesticDeliveryRate(

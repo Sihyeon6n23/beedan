@@ -1,5 +1,6 @@
 package com.goodee.beedan.entity;
 
+import com.goodee.beedan.common.constant.TransportType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,8 +22,10 @@ public class ShippingRate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long srId;
+    @Column(name = "sr_c_cd", length = 10)
     private String srCCd;   //출발 국가코드
-    private String srTrspTy;    // 운송 수단(SEA AIR EXPRESS)
+    @Enumerated(EnumType.STRING)
+    private TransportType srTrspTy;    // 운송 수단(SEA AIR EXPRESS)
     private Integer  srSmQn;  // 소형 기준 유닛 수
     @Column(precision = 18, scale = 0)
     private BigDecimal   srSmAm;  // 소형 운임비
@@ -32,6 +35,7 @@ public class ShippingRate {
     private Integer  srLgQn;  // 대형 기준 유닛 수
     @Column(precision = 18, scale = 0)
     private BigDecimal  srLgAm;  // 대형 운임비
+    @Column(name = "sr_yn", columnDefinition = "BOOLEAN")
     private Boolean srYn;   // 활성 여부
     private String srDes;
     @CreatedDate
@@ -42,7 +46,7 @@ public class ShippingRate {
     @Builder
     public ShippingRate(
             String countryCode,
-            String transportType,
+            TransportType transportType,
             Integer smallQuantity, BigDecimal smallAmount,
             Integer mediumQuantity, BigDecimal mediumAmount,
             Integer largeQuantity, BigDecimal largeAmount,
@@ -58,6 +62,11 @@ public class ShippingRate {
         this.srLgAm = largeAmount;
         this.srYn = true;
         this.srDes = description;
+    }
+
+    @PrePersist
+    protected void onCreate(){
+        if (this.srYn == null) this.srYn = true;
     }
 
     public void deactivate() {
