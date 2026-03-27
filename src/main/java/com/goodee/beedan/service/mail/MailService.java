@@ -31,7 +31,7 @@ public class MailService {
                     notificationType.getDefaultTitle(), content, fullUrl
             );
 
-            helper.setFrom("{your_email}@naver.com");
+            helper.setFrom("Beedan");
             helper.setTo(emailAddress);
             helper.setSubject(title);
             helper.setText(htmlContent, true);

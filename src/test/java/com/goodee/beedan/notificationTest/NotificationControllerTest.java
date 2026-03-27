@@ -2,6 +2,7 @@ package com.goodee.beedan.notificationTest;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.config.security.MemberUserDetails;
+import com.goodee.beedan.controller.notification.NotificationApiController;
 import com.goodee.beedan.dto.notification.NotificationDto;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.repository.notification.NotificationRepository;
@@ -10,8 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,8 +29,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(NotificationApiController.class)
 public class NotificationControllerTest {
 
     @Autowired
@@ -78,27 +77,39 @@ public class NotificationControllerTest {
     }
 
     @Test
-    @DisplayName("알림 읽음 처리 성공 테스트")
-    @WithMockUser // csrf 토큰 필요함, 사용자 인증 정보 필요함
+    @DisplayName("알림 읽음 처리 성공 시 미확인 알림 목록 반환 테스트")
+    @WithMockUser
     void updateNotificationReadStatus() throws Exception {
         Long notificationId = 1L;
 
+        NotificationDto mockDto = new NotificationDto();
+
+        given(notificationService.getUnReadNotificationList(any())).willReturn(List.of(mockDto));
+
         mockMvc.perform(patch("/api/notification/" + notificationId + "/read")
-                        .with(csrf()) // CSRF 토큰을 가짜로 생성해서 함께 보냄
+                        .with(user(mockUser))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0]").exists()) // DTO 필드 검증 전 객체가 있는지 확인
                 .andDo(print());
     }
 
     @Test
     @DisplayName("모든 알림 읽음 처리 및 미확인 목록 반환 테스트")
     void readAllNotifications() throws Exception {
-        mockMvc.perform(patch("/api/notification/read-all") // 1. @PutMapping 이므로 put() 사용
-                        .with(csrf())                    // 2. 보안을 위한 CSRF 토큰
-                        .with(user(mockUser))            // 3. @AuthenticationPrincipal에 들어갈 유저 주입
+        // given: 모두 읽음 처리했으므로, 남은 '미확인' 알림 목록 조회 시 빈 배열([])을 반환하도록 대본 설정
+        given(notificationService.getUnReadNotificationList(any())).willReturn(List.of());
+
+        // when & then
+        mockMvc.perform(patch("/api/notification/read-all")
+                        .with(csrf())
+                        .with(user(mockUser))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())              // 4. ResponseEntity.ok()이므로 200 기대
-                .andExpect(jsonPath("$").isArray())      // 5. 반환값이 List<NotificationDto>인지 확인
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0)) // 배열 크기가 0인지 완벽 검증!
                 .andDo(print());
     }
 
@@ -106,29 +117,39 @@ public class NotificationControllerTest {
     @DisplayName("특정 알림 삭제 테스트")
     @WithMockUser
     void deleteNotification() throws Exception {
-        // given: 삭제할 알림 ID
+        // given: 삭제할 알림 ID 지정
         Long notificationId = 1L;
+
+        // 특정 알림 1개를 삭제한 후, 아직 남은 다른 알림(MockDto)이 1개 있다고 가짜 설정
+        NotificationDto remainingDto = new NotificationDto();
+        given(notificationService.getUnReadNotificationList(any())).willReturn(List.of(remainingDto));
 
         // when & then
         mockMvc.perform(patch("/api/notification/" + notificationId + "/delete")
                         .with(csrf())
                         .with(user(mockUser)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1)) // 남은 알림이 1개인지 검증
                 .andDo(print());
     }
 
     @Test
     @DisplayName("모든 알림 삭제 처리 및 미확인 목록 반환 테스트")
     void deleteAllNotifications() throws Exception {
-        mockMvc.perform(patch("/api/notification/delete-all") // 1. @PutMapping 이므로 put() 사용
-                        .with(csrf())                    // 2. 보안을 위한 CSRF 토큰
-                        .with(user(mockUser))            // 3. @AuthenticationPrincipal에 들어갈 유저 주입
+        // given: 모두 삭제 처리했으므로, 남은 알림 목록 조회 시 빈 배열([])을 반환하도록 설정
+        given(notificationService.getUnReadNotificationList(any())).willReturn(List.of());
+
+        // when & then
+        mockMvc.perform(patch("/api/notification/delete-all")
+                        .with(csrf())
+                        .with(user(mockUser))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())              // 4. ResponseEntity.ok()이므로 200 기대
-                .andExpect(jsonPath("$").isArray())      // 5. 반환값이 List<NotificationDto>인지 확인
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0)) // 배열 크기가 0인지 검증
                 .andDo(print());
     }
-
 
 
 

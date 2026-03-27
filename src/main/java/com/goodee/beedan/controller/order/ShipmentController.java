@@ -1,4 +1,4 @@
-package com.goodee.beedan.controller.member.order;
+package com.goodee.beedan.controller.order;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
