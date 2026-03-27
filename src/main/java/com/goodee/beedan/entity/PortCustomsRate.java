@@ -33,7 +33,12 @@ public class PortCustomsRate {
     @CreatedDate
     private LocalDateTime pcrCrDt;
     @LastModifiedDate
-    private LocalDateTime prUpDt;
+    private LocalDateTime pcrUpDt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.pcrYn == null) this.pcrYn = true;
+    }
 
     @Builder
     public PortCustomsRate(

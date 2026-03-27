@@ -28,7 +28,7 @@ public class QuoteBase {
     @Enumerated(EnumType.STRING)
     private QuoteStatus quStt;  // 견적 상태
     private LocalDateTime quExpDt;  // 만료 시간
-    private Boolean quOpenYn;   // 열람 여부
+    private Boolean quOpYn;   // 열람 여부
     private String quCon;   // 답변 내용
     @CreatedDate
     private LocalDateTime quCreDt;
@@ -39,14 +39,13 @@ public class QuoteBase {
     public QuoteBase(
             Long negoId,
             Long senderId,
-            Long receiverId,
-            LocalDateTime desiredDate
+            Long receiverId
     ){
         this.ngId = negoId;
         this.quSid = senderId;
         this.quRid = receiverId;
         this.quStt = QuoteStatus.TEMP_SAVE;
-        this.quOpenYn = false;
+        this.quOpYn = false;
     }
 
     public void submit(){
@@ -67,7 +66,7 @@ public class QuoteBase {
     }
 
     public void opened() {
-        this.quOpenYn = true;
+        this.quOpYn = true;
     }
 
     public boolean isExpired() {
