@@ -248,6 +248,33 @@ INSERT INTO member (
 -- =====================
 -- 장 준 START
 -- =====================
+INSERT INTO chatbot_topic
+(cb_tp_id, cb_tp_nm, cb_tp_lvl, cb_tp_ord, cb_tp_use_yn, cb_tp_cre_dt, cb_tp_upd_dt, cb_tp_prn_id)
+VALUES
+    (1, '배송 문의', 1, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (2, '견적 문의', 1, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (3, '결제 문의', 1, 3, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (4, '회원정보 문의', 1, 4, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
+    (5, '배송 조회', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+    (6, '통관/입고 일정', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+    (7, '견적 요청 방법', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+    (8, '최소 발주 수량', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+    (9, '로그인/비밀번호', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4),
+    (10, '사업자 정보 변경', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4);
+
+INSERT INTO chatbot_response
+(cb_res_id, cb_res_ttl, cb_res_con, cb_res_lnk_btn_nm, cb_res_lnk_url, cb_res_use_yn, cb_res_cre_dt, cb_res_upd_dt, cb_tp_id)
+VALUES
+    (1, '배송 조회 안내', '마이페이지의 주문/배송 내역에서 진행 상태를 확인하실 수 있습니다. 국내 배송 시작 이후에는 송장 정보가 순차적으로 반영되며, 현지 출고 직후에는 상태 반영까지 다소 시간이 걸릴 수 있습니다.', '주문 내역 보기', '/member/order/list', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5),
+    (2, '통관 및 입고 일정 안내', '통관과 입고 일정은 상품 종류, 현지 출고 시점, 세관 상황에 따라 달라질 수 있습니다. 급한 일정이 있는 경우 상담사 연결을 통해 주문번호와 희망 납기일을 함께 남겨주시면 확인 후 안내드립니다.', NULL, NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6),
+    (3, '견적 요청 방법 안내', '원하시는 상품명, 브랜드, 수량, 옵션 정보를 준비하신 뒤 견적 요청 페이지에서 접수해 주세요. 요청 내용이 구체적일수록 상담과 산출이 더 빠르게 진행됩니다.', '견적 요청하기', '/quote/write', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7),
+    (4, '최소 발주 수량 안내', '최소 발주 수량은 브랜드와 상품마다 다를 수 있습니다. 대량 구매나 정기 발주를 검토 중이신 경우 상담사 연결을 통해 예상 수량을 알려주시면 확인 후 안내드립니다.', NULL, NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8),
+    (5, '결제 안내', '결제 가능 수단과 결제 진행 상태는 결제 안내 화면에서 확인하실 수 있습니다. 카드 결제 오류나 입금 확인 지연이 있는 경우 상담사 연결을 통해 주문 정보와 함께 문의해 주세요.', '결제 내역 보기', '/payment/check', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3),
+    (6, '로그인/비밀번호 안내', '로그인이 되지 않거나 비밀번호를 분실하신 경우 로그인 화면의 찾기 기능을 이용해 주세요. 반복 로그인 실패로 계정이 잠긴 경우에는 상담사 연결을 통해 본인 확인 후 안내받으실 수 있습니다.', '로그인 페이지로 이동', '/auth/signin', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9),
+    (7, '사업자 정보 변경 안내', '상호, 대표자명, 사업장 주소 등 사업자 정보 변경이 필요한 경우 마이페이지에서 수정 가능한 항목을 먼저 확인해 주세요. 증빙서류 확인이 필요한 변경 건은 상담사 연결 후 처리됩니다.', '마이페이지로 이동', '/mypage/main', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10);
+
+ALTER TABLE chatbot_topic ALTER COLUMN cb_tp_id RESTART WITH 100;
+ALTER TABLE chatbot_response ALTER COLUMN cb_res_id RESTART WITH 100;
 -- =====================
 -- 장 준 END
 -- =====================

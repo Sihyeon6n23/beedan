@@ -3,7 +3,9 @@
 <th:block th:fragment="memberChatWidget">
     <link rel="stylesheet" th:href="@{/css/chat/member-chat-widget.css}">
 
-    <section class="member-chat-widget" data-member-chat>
+    <section class="member-chat-widget"
+             data-member-chat
+             th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')}, data-login-url=@{/auth/signin}">
         <button type="button" class="member-chat-launcher" data-widget-toggle aria-expanded="false" aria-controls="member-chat-panel">
             <span class="material-symbols-outlined">chat</span>
             <svg class="member-chat-launcher__badge" aria-hidden="true" viewBox="0 0 10 10" focusable="false">
@@ -37,25 +39,11 @@
                         </div>
                     </article>
 
-                    <div class="member-chat-topics">
-                        <button type="button" class="member-chat-topic-button">
-                            <span>배송 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button type="button" class="member-chat-topic-button">
-                            <span>견적 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button type="button" class="member-chat-topic-button">
-                            <span>결제 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button type="button" class="member-chat-topic-button">
-                            <span>회원 / 계정 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                    </div>
+                    <div class="member-chat-topics" data-chatbot-topics></div>
 
+                    <div class="member-chat-response" data-chatbot-response></div>
+                    <div class="member-chat-actions" data-chatbot-actions></div>
+                    
                     <div class="member-chat-divider">
                         <span></span>
                         <em>또는</em>
@@ -86,7 +74,7 @@
                             <div class="member-chat-room-item__head">
                                 <div class="member-chat-room-item__title">
                                     <strong>견적 문의</strong>
-                                    <span class="member-chat-state member-chat-state--ongoing">상담 중</span>
+                                    <span class="member-chat-state member-chat-state--ongoing">상담중</span>
                                 </div>
                                 <span class="member-chat-room-item__time">14:02 PM</span>
                             </div>
@@ -233,8 +221,8 @@
                 <div class="member-chat-modal__backdrop" data-chat-modal-close></div>
                 <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-chat-modal-title">
                     <div class="member-chat-modal__accent"></div>
-                    <h3 id="member-chat-modal-title">진행 중인 채팅방이 있습니다</h3>
-                    <p>새 문의를 시작하기 전에 현재 진행 중인 상담방으로 이동하시겠습니까?</p>
+                    <h3 id="member-chat-modal-title">이미 진행 중인 채팅방이 있습니다</h3>
+                    <p>현재 진행 중인 상담방으로 이동하시겠습니까?</p>
                     <div class="member-chat-modal__actions">
                         <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-chat-modal-confirm>
                             채팅방으로 이동
@@ -243,6 +231,24 @@
                             취소
                         </button>
                     </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="member-chat-modal is-hidden" data-login-modal aria-hidden="true">
+            <div class="member-chat-modal__backdrop" data-login-modal-close></div>
+            <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-login-modal-title">
+                <div class="member-chat-modal__accent"></div>
+                <h3 id="member-login-modal-title">로그인이 필요합니다</h3>
+                <p>로그인해야 위젯을 사용하실 수 있습니다.</p>
+                <div class="member-chat-modal__actions">
+                    <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-login-modal-confirm>
+                        로그인 페이지로 이동
+                    </button>
+                    <button type="button" class="member-chat-modal__button" data-login-modal-close>
+                        취소
+                    </button>
                 </div>
             </div>
         </div>
