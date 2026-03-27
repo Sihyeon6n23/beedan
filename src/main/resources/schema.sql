@@ -259,6 +259,89 @@ CREATE TABLE QU_BASE (
                          PRIMARY KEY (qu_id)
 );
 
+DROP TABLE IF EXISTS QU_INFO;
+
+CREATE TABLE QU_INFO (
+                         qu_info_id          BIGINT          NOT NULL AUTO_INCREMENT,
+                         qu_id               BIGINT          NOT NULL,
+                         ng_id               BIGINT          NOT NULL,
+                         qu_info_exc_rt      DECIMAL(18, 6)  NULL,
+                         qu_info_cur_cd      VARCHAR(10)     NULL,
+                         bgp_id              BIGINT          NULL,
+                         fp_id               BIGINT          NULL,
+                         qu_info_srv_fe      DECIMAL(18, 0)  NULL,
+                         qu_info_srv_fe_r    DECIMAL(10, 4)  NULL,
+                         qu_info_srv_fe_am   DECIMAL(18, 0)  NULL,
+                         qu_info_dd_am       DECIMAL(18, 0)  NULL,
+                         qu_info_dd_ex_am    DECIMAL(18, 0)  NULL,
+                         qu_info_dom_shi_fe  DECIMAL(18, 0)  NULL,
+                         qu_info_int_shi_fe  DECIMAL(18, 0)  NULL,
+                         qu_info_ttl_shi_fe  DECIMAL(18, 0)  NULL,
+                         qu_info_tax         DECIMAL(18, 0)  NULL,
+                         qu_info_tp          DECIMAL(18, 0)  NULL,
+                         qu_info_dis_tp      DECIMAL(18, 0)  NULL,
+                         qu_info_ps          TEXT            NULL,
+                         qu_info_dsr_dt      DATETIME        NULL,
+
+                         PRIMARY KEY (qu_info_id)
+);
+
+DROP TABLE IF EXISTS QU_DETAIL;
+
+CREATE TABLE QU_DETAIL (
+                           qu_dt_id        BIGINT          NOT NULL AUTO_INCREMENT,
+                           qu_info_id      BIGINT          NOT NULL,
+                           qu_id           BIGINT          NOT NULL,
+                           ng_id           BIGINT          NOT NULL,
+                           st_id           BIGINT          NULL,
+                           st_nm           VARCHAR(50)     NULL,
+                           qu_dt_qn        INT             NULL,
+                           fa_id           BIGINT          NULL,
+                           fa_nm           VARCHAR(100)    NULL,
+                           un_g_id         BIGINT          NULL,
+                           un_g_nm         VARCHAR(20)     NULL,
+                           qu_u_qn         INT             NULL,
+                           qu_dt_fg_pr     DECIMAL(18, 4)  NULL,
+                           qu_dt_kr_pr     DECIMAL(18, 0)  NULL,
+                           qu_dt_pr        DECIMAL(18, 0)  NULL,
+                           qu_dt_re        TEXT            NULL,
+
+                           PRIMARY KEY (qu_dt_id)
+);
+
+DROP TABLE IF EXISTS QU_SHIP_FEE;
+
+CREATE TABLE QU_SHIP_FEE (
+                             qsf_id      BIGINT          NOT NULL AUTO_INCREMENT,
+                             qu_info_id  BIGINT          NULL,
+                             qu_id       BIGINT          NULL,
+                             ng_id       BIGINT          NULL,
+                             fa_id       BIGINT          NULL,
+                             qsf_fa_nm   VARCHAR(100)    NULL,
+                             qsf_fa_c_cd VARCHAR(10)     NULL,
+                             qsf_trsp_ty VARCHAR(10)     NULL,
+                             qsf_un_qn   INT             NULL,
+                             qsf_sr_am   DECIMAL(18, 0)  NULL,
+                             qsf_sr_yn   BOOLEAN         NULL,
+                             qsf_sr_des  TEXT            NULL,
+                             qsf_prt_am  DECIMAL(18, 0)  NULL,
+                             qsf_cst_am  DECIMAL(18, 0)  NULL,
+                             qsf_hs_cd   DECIMAL(18, 0)  NULL,
+                             qsf_ins_yn  BOOLEAN         NULL,
+                             qsf_ins_am  DECIMAL(18, 0)  NULL,
+                             qsf_cif_am  DECIMAL(18, 0)  NULL,
+                             qsf_dty_r   DECIMAL(10, 4)  NULL,
+                             qsf_dty     DECIMAL(18, 0)  NULL,
+                             qsf_vat     DECIMAL(18, 0)  NULL,
+                             qsf_dsc_r   DECIMAL(10, 4)  NULL,
+                             qsf_dsc_am  DECIMAL(18, 0)  NULL,
+                             qsf_ttl     DECIMAL(18, 0)  NULL,
+                             qsf_cr_dt   DATETIME        NULL,
+                             qsf_up_dt   DATETIME        NULL,
+
+                             PRIMARY KEY (qsf_id)
+);
+
 -- =====================
 -- 백시현 END
 -- =====================

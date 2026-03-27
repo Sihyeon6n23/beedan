@@ -31,8 +31,11 @@ public class QuoteDetail {
     private Integer quDtQn;  // 상품 수량
     private Long faId;  //Factory
     private String faNm;    //공장 이름
+    @Column(name = "un_g_id")
     private Long unGId; // 묶음 단위 아이디
+    @Column(name = "un_g_nm")
     private String unGNm;   // 묶음 단위명
+    @Column(name = "qu_u_qn")
     private Integer quUQn;  // 묶음 수량
 
     @Column(precision = 18, scale = 4)
@@ -43,10 +46,6 @@ public class QuoteDetail {
     private BigDecimal quDtPr;      // 원화 합계
 
     private String quDtRe;  // 비고
-    @CreatedDate
-    private LocalDateTime quDtCrDt;
-    @LastModifiedDate
-    private LocalDateTime quDtUpDt;
 
     @Builder
     public QuoteDetail(
@@ -92,12 +91,5 @@ public class QuoteDetail {
     public Integer getTotalUnitCount(){
         return this.quUQn;
     }
-
-
-
-
-
-
-
 
 }

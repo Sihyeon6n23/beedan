@@ -30,7 +30,7 @@ public class QuoteInfo {
 
     @Column(precision = 18, scale = 0)
     private BigDecimal quInfoSrvFe; // 서비스 수수료
-    @Column(precision = 10, scale = 4)
+    @Column(name = "qu_info_srv_fe_r", precision = 10, scale = 4)
     private BigDecimal quInfoSrvFeR;    // 서비스 수수료 할인율
     @Column(precision = 18, scale = 0)
     private BigDecimal quInfoSrvFeAm;   // 할인 후 서비스 수수료
@@ -52,6 +52,8 @@ public class QuoteInfo {
     private BigDecimal quInfoTax;   // 관부가세 합계
     @Column(precision = 18, scale = 0)
     private BigDecimal quInfoTp;    // 최종 합계
+    @Column(precision = 18, scale = 0)
+    private BigDecimal quInfoDisTp; // 할인된 총 금액
     private String quInfoPs;    // 특기사항
     private LocalDateTime quInfoDsrDt;  // 희망 수령일
 
@@ -62,7 +64,9 @@ public class QuoteInfo {
             String currencyCode,
             BigDecimal exchangeRate,
             Long buyerGradePolicyId,
-            Long feePolicyId
+            Long feePolicyId,
+            String ps,
+            LocalDateTime desiredDate
     ){
         this.quId = quoteId;
         this.ngId = negoId;
@@ -70,6 +74,8 @@ public class QuoteInfo {
         this.quInfoExcRt = exchangeRate;
         this.bgpId = buyerGradePolicyId;
         this.fpId = feePolicyId;
+        this.quInfoPs = ps;
+        this.quInfoDsrDt = desiredDate;
     }
 
     public void calculateServiceFee(
