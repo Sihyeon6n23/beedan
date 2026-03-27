@@ -1,4 +1,4 @@
-package com.goodee.beedan.service.auth.biz;
+package com.goodee.beedan.service.auth.phone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goodee.beedan.dto.biz.BizDto;
@@ -19,26 +19,20 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BizValidateService {
-    @Qualifier("bizValidationWebClient")
-    private final WebClient bizValidationWebClient;
-    private ObjectMapper objectMapper;
-
-    @Value("${biz.validation.api.key}")
+public class PortOneService {
+    @Qualifier("portOneWebClient")
+    private final WebClient portOneWebClient;
+    private final ObjectMapper objectMapper;
+    @Value("${portone.phone.certification.api.key}")
     private String apiKey;
 
-    public Mono<Map<String, Object>> validate(BizDto bizDto) {
-        Map<String, Object> bizDtoMap = objectMapper.convertValue(bizDto, Map.class);
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("businesses", Collections.singletonList(bizDtoMap));
-
-        Mono<Map<String, Object>> mono = bizValidationWebClient.post()
+    public Mono<Map<String, Object>> verify(String impUid) {
+        Mono<Map<String, Object>> mono = portOneWebClient.get()
                 .uri(uriBuilder -> uriBuilder
-                            .queryParam("serviceKey", apiKey)
-                            .build()
+                            .path("/identity-verifications/{id}")
+                            .build(impUid)
                 )
-                .bodyValue(requestBody)
+                .header("Authorization", "PortOne " + apiKey)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>(){});
         return mono;

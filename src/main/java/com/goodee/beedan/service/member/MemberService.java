@@ -59,4 +59,8 @@ public class MemberService {
         member.setMemLgnTr(0L);
         member.setMemStt(MemberStatus.ACTIVE.toString());
     }
+
+    public void insertMember(Member member) {
+        memberRepository.save(member);
+    }
 }
