@@ -165,13 +165,35 @@ INSERT INTO EXCHANGE_RATE (er_cr, er_ra, er_ba, er_f_dt, er_cr_dt) VALUES
                                                                        ('CNY', 190.345678, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP());
 
 
+INSERT INTO SHIPPING_RATE
+(sr_c_cd, sr_trsp_ty, sr_sm_qn, sr_sm_am, sr_md_qn, sr_md_am, sr_lg_qn, sr_lg_am, sr_yn, sr_cr_dt, sr_up_dt)
+VALUES
+    ('JP', 'SEA', 1, 50000,  5, 80000,  10, 120000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('JP', 'AIR', 1, 100000, 5, 150000, 10, 200000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CN', 'SEA', 1, 40000,  5, 70000,  10, 100000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CN', 'AIR', 1, 80000,  5, 120000, 10, 160000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
+INSERT INTO PORT_CUSTOMS_RATE
+(pcr_ty, pcr_sm_am, pcr_md_am, pcr_lg_am, pcr_yn, pcr_cr_dt, pcr_up_dt)
+VALUES
+    ('PORT',    30000, 50000, 70000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CUSTOMS', 40000, 60000, 80000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('HS_CODE', 10000, 10000, 10000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
+INSERT INTO DOMESTIC_DELIVERY_RATE
+(ddr_rgn, ddr_am, ddr_e_am, ddr_yn, ddr_cr_dt, ddr_up_dt)
+VALUES
+    ('SEOUL',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('GYEONGGI', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('METRO',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('PROVINCE', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('JEJU',     3000, 3000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('ISLAND',   3000, 5000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
-
-
-
-
+INSERT INTO QU_BASE (ng_id, qu_sid, qu_rid, qu_stt, qu_op_yn, qu_cre_dt, qu_upd_dt) VALUES
+                                                                                        (1, 1, 2, 'TEMP_SAVE',  FALSE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                        (1, 1, 2, 'SUBMITTED',  TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+                                                                                        (2, 2, 1, 'APPROVED',   TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 
 

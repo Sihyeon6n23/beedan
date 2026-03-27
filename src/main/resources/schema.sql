@@ -191,7 +191,73 @@ CREATE TABLE EXCHANGE_RATE (
 
                                PRIMARY KEY (er_id)
 );
+DROP TABLE IF EXISTS SHIPPING_RATE;
 
+CREATE TABLE SHIPPING_RATE (
+                               sr_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                               sr_c_cd     VARCHAR(10)     NULL,
+                               sr_trsp_ty  VARCHAR(10)     NULL,
+                               sr_sm_qn    INT             NULL,
+                               sr_sm_am    DECIMAL(18, 0)  NULL,
+                               sr_md_qn    INT             NULL,
+                               sr_md_am    DECIMAL(18, 0)  NULL,
+                               sr_lg_qn    INT             NULL,
+                               sr_lg_am    DECIMAL(18, 0)  NULL,
+                               sr_yn       BOOLEAN         NULL,
+                               sr_des      TEXT            NULL,
+                               sr_cr_dt    DATETIME        NULL,
+                               sr_up_dt    DATETIME        NULL,
+
+                               PRIMARY KEY (sr_id)
+);
+
+DROP TABLE IF EXISTS PORT_CUSTOMS_RATE;
+
+CREATE TABLE PORT_CUSTOMS_RATE (
+                                   pcr_id      BIGINT          NOT NULL AUTO_INCREMENT,
+                                   pcr_ty      VARCHAR(20)     NULL,
+                                   pcr_sm_am   DECIMAL(18, 0)  NULL,
+                                   pcr_md_am   DECIMAL(18, 0)  NULL,
+                                   pcr_lg_am   DECIMAL(18, 0)  NULL,
+                                   pcr_yn      BOOLEAN         NULL,
+                                   pcr_des     TEXT            NULL,
+                                   pcr_cr_dt   DATETIME        NULL,
+                                   pcr_up_dt   DATETIME        NULL,
+
+                                   PRIMARY KEY (pcr_id)
+);
+
+DROP TABLE IF EXISTS DOMESTIC_DELIVERY_RATE;
+
+CREATE TABLE DOMESTIC_DELIVERY_RATE (
+                                        ddr_id      BIGINT          NOT NULL AUTO_INCREMENT,
+                                        ddr_rgn     VARCHAR(20)     NULL,
+                                        ddr_am      DECIMAL(18, 0)  NULL,
+                                        ddr_e_am    DECIMAL(18, 0)  NULL,
+                                        ddr_des     TEXT            NULL,
+                                        ddr_yn      BOOLEAN         NULL,
+                                        ddr_cr_dt   DATETIME        NULL,
+                                        ddr_up_dt   DATETIME        NULL,
+
+                                        PRIMARY KEY (ddr_id)
+);
+
+DROP TABLE IF EXISTS QU_BASE;
+
+CREATE TABLE QU_BASE (
+                         qu_id       BIGINT          NOT NULL AUTO_INCREMENT,
+                         ng_id       BIGINT          NULL,
+                         qu_sid      BIGINT          NULL,
+                         qu_rid      BIGINT          NULL,
+                         qu_stt      VARCHAR(20)     NULL,
+                         qu_exp_dt   DATETIME        NULL,
+                         qu_op_yn    BOOLEAN         NULL,
+                         qu_con      TEXT            NULL,
+                         qu_cre_dt   DATETIME        NULL,
+                         qu_upd_dt   DATETIME        NULL,
+
+                         PRIMARY KEY (qu_id)
+);
 
 -- =====================
 -- 백시현 END
