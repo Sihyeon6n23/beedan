@@ -80,7 +80,7 @@ public class NotificationServiceTest {
 
         given(notificationRepository.findById(notiId)).willReturn(Optional.of(noti1));
 
-        notificationService.readNotification(notiId);
+        notificationService.readNotification(notiId, member.getMemId());
 
         assertTrue(noti1.getNotiReaYn(), "알림 상태가 true로 변경되어야 합니다.");
     }

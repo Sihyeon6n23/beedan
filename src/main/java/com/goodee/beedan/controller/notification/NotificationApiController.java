@@ -18,25 +18,14 @@ import java.util.List;
 public class NotificationApiController {
     private final NotificationService notificationService;
 
-   @GetMapping("/list")
+   @GetMapping
     public ResponseEntity<List<NotificationDto>> getNotificationList(@AuthenticationPrincipal MemberUserDetails userDetails) {
        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
 
        return ResponseEntity.ok(notificationDtoList);
    }
 
-    @PatchMapping("/{id}/read")
-    public ResponseEntity<List<NotificationDto>> read(
-            @PathVariable("id") Long notiId,
-            @AuthenticationPrincipal MemberUserDetails userDetails){
-        notificationService.readNotification(notiId);
-
-        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
-
-        return ResponseEntity.ok(notificationDtoList);
-    }
-
-    @PatchMapping("/read-all")
+    @PatchMapping
     public ResponseEntity<List<NotificationDto>> readAll(@AuthenticationPrincipal MemberUserDetails userDetails){
         notificationService.readAll(userDetails.getMemberId());
 
@@ -45,18 +34,29 @@ public class NotificationApiController {
         return ResponseEntity.ok(notificationDtoList);
     }
 
-    @PatchMapping("/{id}/delete")
-    public ResponseEntity<List<NotificationDto>> delete(
-            @PathVariable("id")Long notiId,
+    @PatchMapping("/{id}")
+    public ResponseEntity<List<NotificationDto>> read(
+            @PathVariable("id") Long notiId,
             @AuthenticationPrincipal MemberUserDetails userDetails){
-        notificationService.deleteNotification(notiId);
+        notificationService.readNotification(notiId , userDetails.getMemberId());
 
         List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
 
         return ResponseEntity.ok(notificationDtoList);
     }
 
-    @PatchMapping("/delete-all")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<List<NotificationDto>> delete(
+            @PathVariable("id")Long notiId,
+            @AuthenticationPrincipal MemberUserDetails userDetails){
+        notificationService.deleteNotification(notiId, userDetails.getMemberId());
+
+        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
+
+        return ResponseEntity.ok(notificationDtoList);
+    }
+
+    @DeleteMapping
     public ResponseEntity<List<NotificationDto>> deleteAll(@AuthenticationPrincipal MemberUserDetails userDetails){
         notificationService.deleteAll(userDetails.getMemberId());
 
@@ -67,15 +67,7 @@ public class NotificationApiController {
 
     @GetMapping("/unread-count")
     public ResponseEntity<Integer> getUnreadCount(@AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) {
-            System.out.println("디버깅: userDetails가 null입니다!");
-            return ResponseEntity.ok(0);
-        }
-
         int count = notificationService.getUnreadCount(userDetails.getMemberId());
-
-        System.out.println("디버깅: 요청온 memId = " + userDetails.getMemberId());
-        System.out.println("디버깅: 조회된 알림 개수 = " + count);
 
         return ResponseEntity.ok(count);
     }

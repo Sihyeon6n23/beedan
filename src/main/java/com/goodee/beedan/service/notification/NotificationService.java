@@ -53,14 +53,18 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    public void deleteNotification(Long notiId) { //
+    public void deleteNotification(Long notiId, Long memId) {
+        memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+
         Notification notification = notificationRepository.findById(notiId).orElseThrow(() -> new IllegalArgumentException("Can't find notice"));
         notification.setNotiDelYn(true);
     }
 
     public void deleteAll(Long memId){ notificationRepository.updateAllDelYnByMemId(memId); }
 
-    public void readNotification(Long notiId){
+    public void readNotification(Long notiId, Long memId){
+        memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+
         Notification notification = notificationRepository.findById(notiId).orElseThrow(()->new IllegalArgumentException("Can't find notice"));
         notification.setNotiReaYn(true);
     }

@@ -8,60 +8,10 @@
 <title th:fragment="title">BEEDAN | Notification</title>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/notification/notification-list.css}">
-    <div class="notification-list-page">
-        <header class="notification-page-header">
-            <div class="notification-page-title">
-                <span class="notification-sub-label">Communication Ledger</span>
-                <h1>NOTIFICATIONS</h1>
-                <p class="notification-item-desc">Centralized hub for all architectural and logistics updates.</p>
-            </div>
-            <a class="btn-secondary py-3 px-6" th:href="@{/notification/readAll}">Mark all as read</a>
-        </header>
+    <link rel="stylesheet" th:href="@{/css/component.css}">
 
-        <nav class="notification-filter-bar">
-            <button class="filter-btn active">All</button>
-            <a class="filter-btn" th:href="@{/notification/unreadList}">Unread</a>
-            <button class="filter-btn">System</button>
-            <button class="filter-btn">Shipping</button>
-            <button class="filter-btn">Inquiry</button>
-        </nav>
 
-        <div class="notification-list-container">
-            <th:block th:if="${not #lists.isEmpty(notificationDtoList)}">
-                <article class="notification-full-item unread" th:each="notification : ${notificationDtoList}">
-                    <div class="notification-icon-square">
-                        <span class="material-symbols-outlined text-primary">request_quote</span>
-                    </div>
-                    <div class="notification-info-box">
-                        <div class="notification-top-row">
-                            <h3 class="notification-item-title" th:text="${notification.notiTtl}">알림 제목</h3>
-                            <span class="notification-item-time">2 hours ago</span>
-                        </div>
-                        <p class="notification-item-desc" th:text="${notification.notiCon}">알림 내용</p>
-                    </div>
-                    <button class="text-primary font-bold text-xs underline uppercase">View</button>
-                </article>
-            </th:block>
 
-            <th:block th:unless="${not #lists.isEmpty(notificationDtoList)}">
-                <div class="flex flex-col items-center justify-center py-20 text-stone-400">
-                    <span class="material-symbols-outlined text-6xl mb-4 opacity-50">notifications_off</span>
-                    <h3 class="text-lg font-bold text-stone-700 mb-2">수신된 알림이 없습니다</h3>
-                    <p class="text-sm">현재 확인할 수 있는 새로운 알림 내역이 없거나, 데이터를 불러오지 못했습니다.</p>
-                </div>
-            </th:block>
-        </div>
 
-        <div class="notification-pagination" th:if="${not #lists.isEmpty(notificationDtoList)}">
-            <span class="notification-item-time">Page 1-5 of 1,280</span>
-            <div class="flex gap-1">
-                <button class="w-10 h-10 bg-stone-200">◀</button>
-                <button class="w-10 h-10 bg-primary-container text-primary font-bold">1</button>
-                <button class="w-10 h-10 bg-white border border-stone-200">2</button>
-                <button class="w-10 h-10 bg-stone-200">▶</button>
-            </div>
-        </div>
-    </div>
 </th:block>
 </html>

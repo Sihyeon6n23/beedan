@@ -1,26 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="notificationDropdown" id="notificationDropdown" class="notification-wrapper hidden">
-    <div class="notification-container">
-        <header class="notification-header">
-            <h3>Notifications</h3>
-            <button class="btn-mark-read">Mark all as read</button>
+
+<div th:fragment="notificationDropdown" id="notiDropdown" class="dropdown-panel hidden absolute right-0 z-50">
+    <div class="flex flex-col h-full">
+        <header class="p-4 border-b border-[var(--pub-border)] flex justify-between items-center bg-[var(--pub-bg-card)]">
+            <h3 class="text-sm font-bold text-[var(--pub-text-main)]">Notifications</h3>
+            <button type="button" onclick="handleAction('readAll')" class="text-link">Mark all as read</button>
         </header>
 
-        <div class="notification-list custom-scrollbar">
-            <article class="notification-item unread">
-                    <article class="notification-full-item unread">
-                        <div class="notification-info-box">
+        <div class="notification-info-box max-h-[500px] overflow-y-auto custom-scrollbar" id="notiContent">
+
+            <ul th:fragment="notificationList(notifications)" class="data-list-container">
+
+                <li th:if="${#lists.isEmpty(notifications)}">
+                    <div class="py-24 text-center text-xs text-[var(--pub-text-muted)]">새로운 알림이 없습니다.</div>
+                </li>
+
+                <li th:each="noti : ${notifications}"
+                    th:classappend="${noti.readYn == 'N' ? 'unread' : ''}"
+                    class="data-list-item"
+                    th:onclick="|handleAction('read', ${noti.notiId})|">
+
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <strong class="text-sm text-[var(--pub-text-main)]" th:text="${noti.notiTtl}">알림 제목</strong>
+                            <span th:if="${noti.readYn == 'N'}" class="status-badge" style="background:var(--pub-primary); color:var(--pub-text-main);">NEW</span>
                         </div>
-                        <button class="text-primary font-bold text-xs underline uppercase">View</button>
-                    </article>
-            </article>
+                        <p class="text-xs text-[var(--pub-text-sub)] mt-1" th:text="${noti.notiCon}">알림 내용</p>
+                        <small class="text-[10px] text-[var(--pub-text-muted)]" th:text="${#temporals.format(noti.notiCreAt, 'yyyy-MM-dd HH:mm')}">날짜</small>
+                    </div>
+
+                    <button type="button" class="close-btn" th:onclick="|event.stopPropagation(); handleAction('delete', ${noti.notiId})|">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+                    </button>
+                </li>
+            </ul>
+
         </div>
 
-        <footer class="notification-footer">
-            <button class="btn-view-all">
-                <a th:href="@{/notification/list}">View All Notifications</a>
-            </button>
+        <footer class="p-3 border-t border-[var(--pub-border)] bg-[var(--pub-bg-sidebar)] text-center">
+            <a th:href="@{/notification/list}" class="text-xs font-bold no-underline">View All Notifications</a>
         </footer>
     </div>
 </div>
