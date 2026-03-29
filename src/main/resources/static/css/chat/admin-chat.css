@@ -1,4 +1,4 @@
-/* 관리자 채팅: 공통 페이지 레이아웃 */
+/* 愿由ъ옄 梨꾪똿: 怨듯넻 ?섏씠吏 ?덉씠?꾩썐 */
 .admin-chat-page {
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
   }
 }
 
-/* 관리자 채팅: 공통 셸과 제어 영역 */
+/* 愿由ъ옄 梨꾪똿: 怨듯넻 ?멸낵 ?쒖뼱 ?곸뿭 */
 .admin-chat-shell {
   background: var(--color-surface-container-lowest);
   box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
@@ -142,7 +142,7 @@
   color: var(--color-on-background);
 }
 
-/* 관리자 채팅 목록: 페이지 전용 레이아웃 */
+/* 愿由ъ옄 梨꾪똿 紐⑸줉: ?섏씠吏 ?꾩슜 ?덉씠?꾩썐 */
 .admin-chat-list-page {
   max-width: 1220px;
 }
@@ -317,7 +317,7 @@
   color: var(--color-secondary);
 }
 
-/* 관리자 채팅 상세: 페이지 전용 레이아웃 */
+/* 愿由ъ옄 梨꾪똿 ?곸꽭: ?섏씠吏 ?꾩슜 ?덉씠?꾩썐 */
 .admin-chat-detail-page {
   max-width: 1040px;
   padding-bottom: 1rem;
@@ -349,7 +349,8 @@
   align-items: center;
 }
 
-.sidebar-frame-button {
+.sidebar-frame-button,
+.admin-chat-page-button {
   min-width: 3rem;
   height: 3rem;
   padding: 0 0.9rem;
@@ -362,18 +363,21 @@
   transition: all 0.2s ease;
 }
 
-.sidebar-frame-button:hover {
+.sidebar-frame-button:hover,
+.admin-chat-page-button:hover {
   background: #fffdfa;
   color: var(--color-on-background);
   border-color: rgba(112, 93, 0, 0.18);
 }
 
-.sidebar-frame-button--wide {
+.sidebar-frame-button--wide,
+.admin-chat-page-button--wide {
   min-width: 4.5rem;
   background: var(--color-surface-container-low);
 }
 
-.sidebar-frame-button.is-current {
+.sidebar-frame-button.is-current,
+.admin-chat-page-button.is-current {
   border-color: var(--color-primary-container);
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
@@ -391,7 +395,7 @@
   background: var(--color-surface-container-lowest);
 }
 
-/* 관리자 채팅 상세: 보드, 메시지, 입력 영역 */
+/* 愿由ъ옄 梨꾪똿 ?곸꽭: 蹂대뱶, 硫붿떆吏, ?낅젰 ?곸뿭 */
 .admin-chat-detail-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
@@ -776,7 +780,7 @@
   margin-top: 0;
 }
 
-/* 관리자 채팅: 공통 모달과 유틸리티 상태 */
+/* 愿由ъ옄 梨꾪똿: 怨듯넻 紐⑤떖怨??좏떥由ы떚 ?곹깭 */
 .admin-chat-modal {
   position: fixed;
   inset: 0;
@@ -944,7 +948,7 @@
   display: none !important;
 }
 
-/* 관리자 채팅: 반응형 조정 */
+/* 愿由ъ옄 梨꾪똿: 諛섏쓳??議곗젙 */
 @media (max-width: 900px) {
   .sidebar-frame {
     width: 100%;
@@ -1106,3 +1110,4 @@
     align-items: flex-start;
   }
 }
+
