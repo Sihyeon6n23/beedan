@@ -488,8 +488,8 @@ CREATE TABLE `NOTIFICATION`
     `noti_ref`        VARCHAR(30) NULL,
     `noti_rea_yn`     BOOLEAN NULL,
     `noti_del_yn`     BOOLEAN NULL,
-    `noti_cre_dt`     DATETIME NULL,
-    `noti_upd_dt`     DATETIME NULL,
+    `noti_cre_dt`     DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    `noti_upd_dt`     DATETIME NULL ,
     `noti_upd_mem_id` VARCHAR(4) NULL,
     `mem_id`          BIGINT NULL
 );

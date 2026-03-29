@@ -100,7 +100,7 @@ public class NotificationServiceTest {
         Notification noti2 = Notification.builder().notiTtl("test title2").notiReaYn(false).member(member).build();
 
         given(memberRepository.findById(memId)).willReturn(Optional.of(member));
-        given(notificationRepository.findUnReadAndNotDeleteListByMemId(memId))
+        given(notificationRepository.findAllNotDeletedByMemId(memId))
                 .willReturn(List.of(noti1, noti2));
 
         // when

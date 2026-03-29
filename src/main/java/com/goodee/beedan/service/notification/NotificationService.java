@@ -26,7 +26,7 @@ public class NotificationService {
     public List<NotificationDto> getUnReadNotificationList(Long memId){
         memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
         List<NotificationDto> notificationDtoList = notificationRepository
-                .findUnReadAndNotDeleteListByMemId(memId)
+                .findAllNotDeletedByMemId(memId)
                 .stream()
                 .map(notification -> mapToNotificationDto(notification))
                 .toList();
@@ -92,7 +92,7 @@ public class NotificationService {
                 .notiTtl(notification.getNotiTtl())
                 .notiCon(notification.getNotiCon())
                 .notiReaYn(notification.getNotiReaYn())
-                .notiCreAt(notification.getNotiCreDt())
+                .notiCreDt(notification.getNotiCreDt())
                 .notiUptDt(notification.getNotiUpdDt())
                 .build();
     }
