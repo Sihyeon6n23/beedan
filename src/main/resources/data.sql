@@ -334,8 +334,13 @@ ALTER TABLE chatbot_response ALTER COLUMN cb_res_id RESTART WITH 100;
 -- =====================
 -- 임 욱 START
 -- =====================
-INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_st)
-VALUES ('주문자와 동일', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 1, '1234', 'PREPARING');
+INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt, ord_base_cre_dt)
+VALUES
+('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 2, '1234', 'PREPARING', CURRENT_TIMESTAMP),
+('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
+('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
+('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 2, '1234', 'DELIVERED', CURRENT_TIMESTAMP),
+('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 2, '1234', 'CANCELLED', CURRENT_TIMESTAMP);
 
 INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_upd_mem_id, mem_id)
 VALUES

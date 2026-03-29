@@ -170,9 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
                    const badge = document.querySelector('#notiIcon span.bg-primary');
                    if (badge) {
                        if (count > 0) {
-                           badge.removeAttribute('style');
-
                            badge.style.setProperty('display', 'flex', 'important');
+                           badge.style.setProperty('border-radius', '999px', 'important');
                            badge.innerText = count > 99 ? '99+' : count;
                        } else {
                            badge.style.setProperty('display', 'none', 'important');

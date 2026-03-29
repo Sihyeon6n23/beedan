@@ -37,7 +37,7 @@
                 <span class="material-symbols-outlined">notifications</span>
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
 
-                <div th:replace="~{fragments/notification :: notificationDropdown}"></div>
+                <div th:replace="~{notification/notification :: notificationDropdown}"></div>
             </div>
 
             <a th:href="@{/wishlist}" sec:authorize="hasRole('USER')" class="cursor-pointer hover:opacity-70 transition-opacity no-underline text-stone-900">
