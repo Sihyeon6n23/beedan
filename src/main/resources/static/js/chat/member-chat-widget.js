@@ -11,6 +11,11 @@ document.addEventListener("DOMContentLoaded", function () {
   var chatbotActions = widget.querySelector("[data-chatbot-actions]");
   var chatListContent = widget.querySelector(".member-chat-content--list");
   var chatListEnd = widget.querySelector(".member-chat-list-end");
+  var chatRoomTitle = widget.querySelector("[data-chat-room-title]");
+  var chatRoomMessages = widget.querySelector("[data-chat-room-messages]");
+  var chatRoomCloseButton = widget.querySelector("[data-chat-room-close]");
+  var chatRoomMessageInput = widget.querySelector(".member-chat-room-footer input");
+  var chatRoomSendButton = widget.querySelector(".member-chat-send-button");
   var closeButtons = widget.querySelectorAll("[data-widget-close]");
   var viewButtons = widget.querySelectorAll("[data-view-target]");
   var navButtons = widget.querySelectorAll(".member-chat-bottom-nav__item");
@@ -24,14 +29,14 @@ document.addEventListener("DOMContentLoaded", function () {
   var newChatButton = widget.querySelector("[data-new-chat-trigger]");
   var isFirstTopicsLoaded = false;
   var currentTopicId = null;
+  var currentChatRoomId = null;
   var pendingChatRoom = null;
   var isAuthenticated = widget.dataset.authenticated === "true";
   var loginUrl = widget.dataset.loginUrl || "/auth/signin";
-  // CSRF 토큰은 레이아웃 공통 meta 태그에서 읽음
   var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
   var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
 
-  // 버튼 목록을 받아와 챗봇 질의 영역에 다시 출력
+  // 챗봇 질의 버튼 목록 출력
   function renderTopicButtons(topics) {
     if (!chatbotTopics) {
       return;
@@ -65,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 최종 응답은 제목과 본문 출력 (임시)
+  // 최종 응답 제목/본문 출력
   function renderResponse(response) {
     if (!chatbotResponse) {
       return;
@@ -86,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     chatbotResponse.appendChild(content);
   }
 
-  // 최종 응답 화면에서 관련 페이지 이동, 상담사 연결, 처음으로 버튼 출력
+  // 최종 응답 화면 액션 버튼 구성
   function renderResponseActions(response) {
     if (!chatbotActions) {
       return;
@@ -119,16 +124,13 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        // 이미 활성 방이 있으면 모달을 띄워 이동 여부를 한 번 더 확인
         if (chatRoom.existingRoom) {
           pendingChatRoom = chatRoom;
           setModalOpen(true);
           return;
         }
 
-        renderCreatedChatRoom(chatRoom);
-        setPanelOpen(true);
-        setView("chat-list");
+        loadMemberChatRoomDetail(chatRoom.chRoId);
       });
     });
     chatbotActions.appendChild(consultButton);
@@ -143,84 +145,221 @@ document.addEventListener("DOMContentLoaded", function () {
     chatbotActions.appendChild(restartButton);
   }
 
-  // 생성되거나 반환된 채팅방을 목록 상단에 바로 출력
-  function renderCreatedChatRoom(chatRoom) {
+  // 채팅방 상태 배지 정보 변환
+  function getChatRoomStateMeta(status) {
+    if (status === "CLOSED") {
+      return { label: "종료", badgeClass: "member-chat-state member-chat-state--closed" };
+    }
+
+    if (status === "OPEN") {
+      return { label: "접수", badgeClass: "member-chat-state member-chat-state--ongoing" };
+    }
+
+    return { label: "상담중", badgeClass: "member-chat-state member-chat-state--ongoing" };
+  }
+
+  // 목록 시간 표시 형식 변환
+  function formatChatRoomTime(dateTime) {
+    if (!dateTime) {
+      return "방금";
+    }
+
+    var date = new Date(dateTime);
+    if (Number.isNaN(date.getTime())) {
+      return "방금";
+    }
+
+    var now = new Date();
+    var isSameDay = now.toDateString() === date.toDateString();
+    if (isSameDay) {
+      return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+
+    return date.toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" });
+  }
+
+  // 회원 채팅방 목록 출력
+  function renderMemberChatRooms(chatRooms) {
     if (!chatListContent) {
       return;
     }
 
-    var existingRoomElement = chatListContent.querySelector('[data-chat-room-id="' + chatRoom.chRoId + '"]');
-    if (existingRoomElement) {
-      existingRoomElement.remove();
-    }
+    chatListContent.querySelectorAll(".member-chat-room-item").forEach(function (item) {
+      item.remove();
+    });
 
-    var roomButton = document.createElement("button");
-    var iconWrap = document.createElement("div");
-    var icon = document.createElement("span");
-    var body = document.createElement("div");
-    var head = document.createElement("div");
-    var titleWrap = document.createElement("div");
-    var title = document.createElement("strong");
-    var state = document.createElement("span");
-    var time = document.createElement("span");
-    var summary = document.createElement("div");
-    var summaryText = document.createElement("p");
-    var blade = document.createElement("span");
+    chatRooms.forEach(function (chatRoom) {
+      var roomButton = document.createElement("button");
+      var iconWrap = document.createElement("div");
+      var icon = document.createElement("span");
+      var body = document.createElement("div");
+      var head = document.createElement("div");
+      var titleWrap = document.createElement("div");
+      var title = document.createElement("strong");
+      var state = document.createElement("span");
+      var time = document.createElement("span");
+      var summary = document.createElement("div");
+      var summaryText = document.createElement("p");
+      var blade = document.createElement("span");
+      var unreadDot = null;
+      var stateMeta = getChatRoomStateMeta(chatRoom.chRoStt);
+      var summaryMessage = chatRoom.lastMessageContent || "상담 대기 중입니다.";
+      var displayTime = formatChatRoomTime(chatRoom.lastMessageCreatedAt || chatRoom.chRoCreDt);
 
-    roomButton.type = "button";
-    roomButton.className = "member-chat-room-item member-chat-room-item--ongoing is-active";
-    roomButton.dataset.viewTarget = "chat-room";
-    roomButton.dataset.chatRoomId = String(chatRoom.chRoId);
+      roomButton.type = "button";
+      roomButton.className = "member-chat-room-item" + (chatRoom.unread ? " is-active" : "");
+      roomButton.dataset.chatRoomId = String(chatRoom.chRoId);
 
-    iconWrap.className = "member-chat-room-item__icon";
-    icon.className = "material-symbols-outlined";
-    icon.textContent = "support_agent";
-    iconWrap.appendChild(icon);
+      iconWrap.className = "member-chat-room-item__icon";
+      icon.className = "material-symbols-outlined";
+      icon.textContent = chatRoom.chRoStt === "CLOSED" ? "chat_bubble" : "support_agent";
+      iconWrap.appendChild(icon);
 
-    body.className = "member-chat-room-item__body";
-    head.className = "member-chat-room-item__head";
-    titleWrap.className = "member-chat-room-item__title";
-    title.textContent = chatRoom.chRoTtl;
-    state.className = "member-chat-state member-chat-state--ongoing";
-    state.textContent = chatRoom.existingRoom ? "진행 중" : "접수됨";
-    time.className = "member-chat-room-item__time";
-    time.textContent = "방금";
+      body.className = "member-chat-room-item__body";
+      head.className = "member-chat-room-item__head";
+      titleWrap.className = "member-chat-room-item__title";
+      title.textContent = chatRoom.chRoTtl;
+      state.className = stateMeta.badgeClass;
+      state.textContent = stateMeta.label;
+      time.className = "member-chat-room-item__time";
+      time.textContent = displayTime;
 
-    titleWrap.appendChild(title);
-    titleWrap.appendChild(state);
-    head.appendChild(titleWrap);
-    head.appendChild(time);
+      titleWrap.appendChild(title);
+      titleWrap.appendChild(state);
+      head.appendChild(titleWrap);
+      head.appendChild(time);
 
-    summary.className = "member-chat-room-item__summary";
-    summaryText.textContent = chatRoom.existingRoom
-      ? "이미 진행 중인 채팅방으로 이동할 수 있습니다."
-      : "채팅방이 생성되었습니다. 상담사를 기다리는 중입니다.";
-    summary.appendChild(summaryText);
+      summary.className = "member-chat-room-item__summary";
+      summaryText.textContent = summaryMessage;
+      summary.appendChild(summaryText);
 
-    body.appendChild(head);
-    body.appendChild(summary);
+      if (chatRoom.unread) {
+        unreadDot = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        unreadDot.setAttribute("class", "member-chat-room-item__unread");
+        unreadDot.setAttribute("aria-hidden", "true");
+        unreadDot.setAttribute("viewBox", "0 0 10 10");
+        unreadDot.setAttribute("focusable", "false");
 
-    blade.className = "member-chat-room-item__blade";
-    blade.setAttribute("aria-hidden", "true");
+        var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", "5");
+        circle.setAttribute("cy", "5");
+        circle.setAttribute("r", "5");
+        unreadDot.appendChild(circle);
+        summary.appendChild(unreadDot);
+      }
 
-    roomButton.appendChild(iconWrap);
-    roomButton.appendChild(body);
-    roomButton.appendChild(blade);
+      body.appendChild(head);
+      body.appendChild(summary);
 
-    if (chatListEnd) {
-      chatListContent.insertBefore(roomButton, chatListEnd);
-    } else {
-      chatListContent.prepend(roomButton);
-    }
+      blade.className = "member-chat-room-item__blade";
+      blade.setAttribute("aria-hidden", "true");
+
+      roomButton.appendChild(iconWrap);
+      roomButton.appendChild(body);
+      roomButton.appendChild(blade);
+
+      if (chatListEnd) {
+        chatListContent.insertBefore(roomButton, chatListEnd);
+      } else {
+        chatListContent.appendChild(roomButton);
+      }
+    });
   }
 
-  // 챗봇 첫 화면으로 돌아가 1차 질의 목록 다시 출력
+  // 상세 메시지 시간 표시 형식 변환
+  function formatChatMessageTime(dateTime) {
+    if (!dateTime) {
+      return "";
+    }
+
+    var date = new Date(dateTime);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+
+  // 메시지 없는 상세 화면 안내 출력
+  function renderEmptyChatRoomDetail() {
+    if (!chatRoomMessages) {
+      return;
+    }
+
+    var emptyText = document.createElement("p");
+    emptyText.className = "member-chat-room-empty";
+    emptyText.textContent = "아직 등록된 메시지가 없습니다.";
+    chatRoomMessages.appendChild(emptyText);
+  }
+
+  // 채팅방 상세 화면 출력
+  function renderMemberChatRoomDetail(chatRoomDetail) {
+    if (!chatRoomMessages || !chatRoomTitle) {
+      return;
+    }
+
+    currentChatRoomId = chatRoomDetail.chRoId;
+    chatRoomTitle.textContent = chatRoomDetail.chRoTtl;
+    chatRoomMessages.innerHTML = "";
+
+    if (!chatRoomDetail.messages || chatRoomDetail.messages.length === 0) {
+      renderEmptyChatRoomDetail();
+      return;
+    }
+
+    chatRoomDetail.messages.forEach(function (message) {
+      var article = document.createElement("article");
+      var body = document.createElement("div");
+      var bubble = document.createElement("div");
+      var time = document.createElement("span");
+      var isUserMessage = message.chMsSenTy === "USER";
+
+      article.className = "member-chat-message " + (isUserMessage ? "member-chat-message--right" : "member-chat-message--left");
+
+      if (!isUserMessage) {
+        var avatar = document.createElement("div");
+        avatar.className = "member-chat-message__avatar";
+        avatar.textContent = "B";
+        article.appendChild(avatar);
+      }
+
+      body.className = "member-chat-message__body";
+      bubble.className = "member-chat-message__bubble" + (isUserMessage ? " member-chat-message__bubble--accent" : "");
+      bubble.textContent = message.chMsCon;
+      time.textContent = formatChatMessageTime(message.chMsCreDt);
+
+      body.appendChild(bubble);
+      body.appendChild(time);
+      article.appendChild(body);
+      chatRoomMessages.appendChild(article);
+    });
+  }
+
+  // 회원 채팅방 목록 비동기 조회
+  function loadMemberChatRooms() {
+    return fetch("/api/chat/rooms")
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load member chat rooms.");
+        }
+
+        return response.json();
+      })
+      .then(function (chatRooms) {
+        renderMemberChatRooms(chatRooms || []);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 챗봇 첫 화면 복귀
   function resetToFirstTopics() {
     currentTopicId = null;
     return loadFirstLevelTopics();
   }
 
-  // 챗봇 첫 화면에 노출할 1차 질의 목록 조회
+  // 1차 질의 목록 비동기 조회
   function loadFirstLevelTopics() {
     return fetch("/api/chatbot/topics/first")
       .then(function (response) {
@@ -239,7 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  // 사용자가 선택한 질의의 다음 단계가 2차 질의 목록인지 최종 응답인지 조회
+  // 선택한 질의의 다음 단계(하위 질의 또는 최종 응답)를 비동기로 불러옴
   function loadNextStep(topicId) {
     currentTopicId = topicId;
 
@@ -267,7 +406,69 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  // 챗봇 최종 응답에서 상담사 연결을 누르면 활성 방을 반환하거나 새 방을 생성
+  // 채팅방 상세를 비동기로 불러와 chat-room 화면으로 이동
+  function loadMemberChatRoomDetail(chRoId) {
+    return fetch("/api/chat/rooms/" + chRoId)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load member chat room detail.");
+        }
+
+        return response.json();
+      })
+      .then(function (chatRoomDetail) {
+        renderMemberChatRoomDetail(chatRoomDetail);
+        setPanelOpen(true);
+        setView("chat-room");
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 현재 상세 채팅방에 회원 메시지를 비동기로 전송하고 저장 후 상세를 다시 불러옴
+  function sendMemberChatMessage() {
+    if (!currentChatRoomId || !chatRoomMessageInput) {
+      return;
+    }
+
+    var messageContent = chatRoomMessageInput.value;
+    if (!messageContent || !messageContent.trim()) {
+      return;
+    }
+
+    var headers = {
+      "Content-Type": "application/json"
+    };
+
+    if (csrfToken) {
+      headers[csrfHeader] = csrfToken;
+    }
+
+    return fetch("/api/chat/rooms/" + currentChatRoomId + "/messages", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({
+        chMsCon: messageContent
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to send member chat message.");
+        }
+
+        return response.json();
+      })
+      .then(function () {
+        chatRoomMessageInput.value = "";
+        return loadMemberChatRoomDetail(currentChatRoomId);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 챗봇 상담 연결 요청으로 채팅방을 생성하거나 기존 활성 방을 반환받음
   function openChatRoomFromChatbot(topicId) {
     var headers = {};
     if (csrfToken) {
@@ -290,6 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
+  // 위젯 패널 열림/닫힘 상태를 제어
   function setPanelOpen(isOpen) {
     panel.classList.toggle("is-hidden", !isOpen);
     panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
@@ -299,6 +501,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // 현재 보고 있는 위젯 화면을 전환
   function setView(viewName) {
     var navViewName = viewName === "chat-room" ? "chat-list" : viewName;
 
@@ -309,14 +512,18 @@ document.addEventListener("DOMContentLoaded", function () {
     navButtons.forEach(function (button) {
       button.classList.toggle("is-active", button.dataset.viewTarget === navViewName);
     });
+
+    if (viewName === "chat-list" && isAuthenticated) {
+      loadMemberChatRooms();
+    }
   }
 
+  // 기존 활성 채팅방 안내 모달을 열고 닫음
   function setModalOpen(isOpen) {
     if (!modal) {
       return;
     }
 
-    // 모달을 닫을 때는 내부 버튼에 남아 있는 포커스를 위젯 런처로 돌림
     if (!isOpen && modal.contains(document.activeElement)) {
       document.activeElement.blur();
       if (launcher) {
@@ -328,12 +535,12 @@ document.addEventListener("DOMContentLoaded", function () {
     modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
   }
 
+  // 비로그인 사용자용 로그인 안내 모달을 열고 닫음
   function setLoginModalOpen(isOpen) {
     if (!loginModal) {
       return;
     }
 
-    // 로그인 안내 모달을 닫을 때도 포커스를 런처로 돌린다.
     if (!isOpen && loginModal.contains(document.activeElement)) {
       document.activeElement.blur();
       if (launcher) {
@@ -346,7 +553,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   launcher.addEventListener("click", function () {
-    // 비로그인 사용자는 위젯을 열지 않고 로그인 안내 모달만 보여줌
     if (!isAuthenticated) {
       setLoginModalOpen(true);
       return;
@@ -396,18 +602,17 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   if (modalConfirmButton) {
-    // 모달 확인 시 기존 활성 방을 목록에 표시하고 채팅 목록으로 이동
+    // 기존 활성 방 상세 화면 이동
     modalConfirmButton.addEventListener("click", function () {
       if (!pendingChatRoom) {
         setModalOpen(false);
         return;
       }
 
-      renderCreatedChatRoom(pendingChatRoom);
+      var targetRoomId = pendingChatRoom.chRoId;
       pendingChatRoom = null;
       setModalOpen(false);
-      setPanelOpen(true);
-      setView("chat-list");
+      loadMemberChatRoomDetail(targetRoomId);
     });
   }
 
@@ -418,7 +623,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (chatbotTopics) {
-    // 동적으로 생성된 topic 버튼도 처리할 수 있도록 컨테이너에 이벤트를 위임
     chatbotTopics.addEventListener("click", function (event) {
       var topicButton = event.target.closest(".member-chat-topic-button");
       if (!topicButton) {
@@ -426,6 +630,46 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       loadNextStep(topicButton.dataset.topicId);
+    });
+  }
+
+  if (chatListContent) {
+    // 채팅방 목록 클릭은 이벤트 위임으로 처리
+    chatListContent.addEventListener("click", function (event) {
+      var roomButton = event.target.closest(".member-chat-room-item");
+      if (!roomButton || !roomButton.dataset.chatRoomId) {
+        return;
+      }
+
+      loadMemberChatRoomDetail(roomButton.dataset.chatRoomId);
+    });
+  }
+
+  if (chatRoomSendButton) {
+    // 전송 버튼 클릭 시 현재 상세 채팅방에 메시지를 저장
+    chatRoomSendButton.addEventListener("click", function () {
+      sendMemberChatMessage();
+    });
+  }
+
+  if (chatRoomMessageInput) {
+    // 입력창에서 Enter를 누르면 메시지를 전송
+    chatRoomMessageInput.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" || event.shiftKey) {
+        return;
+      }
+
+      event.preventDefault();
+      sendMemberChatMessage();
+    });
+  }
+
+  if (chatRoomCloseButton) {
+    // 종료 기능은 이후 단계에서 연결
+    chatRoomCloseButton.addEventListener("click", function () {
+      if (!currentChatRoomId) {
+        return;
+      }
     });
   }
 

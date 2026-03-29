@@ -143,62 +143,15 @@
                         <span class="material-symbols-outlined">arrow_back</span>
                     </button>
                     <div class="member-chat-room-topbar__title">
-                        <strong>BEEDAN</strong>
+                        <!-- 채팅방 제목 출력 -->
+                        <strong data-chat-room-title>BEEDAN</strong>
                     </div>
-                    <button type="button" class="member-chat-room-close-button">상담 종료</button>
+                    <!-- 상담 종료 버튼 -->
+                    <button type="button" class="member-chat-room-close-button" data-chat-room-close>상담 종료</button>
                 </header>
 
-                <div class="member-chat-content member-chat-content--room">
-                    <div class="member-chat-date-divider">2026.03.23</div>
-
-                    <article class="member-chat-message member-chat-message--left">
-                        <div class="member-chat-message__avatar">B</div>
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble">
-                                안녕하세요. 주문 예정 수량과 납기 일정을 확인해 주시면 견적 구성과 진행 가능 범위를 안내드리겠습니다.
-                            </div>
-                            <span>오후 2:30</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--right">
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble member-chat-message__bubble--accent">
-                                네, 지츠 주문건 기준으로 500개 수량 이상으로 검토 중이며 일정도 함께 확인하고 싶습니다.
-                            </div>
-                            <span>오후 2:32</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--left">
-                        <div class="member-chat-message__avatar">B</div>
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble">
-                                확인 중입니다. 오늘 오후 안으로 예상 단가와 납기 기준을 정리해서 다시 안내드리겠습니다.
-                            </div>
-                            <span>오후 2:35</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--left">
-                        <div class="member-chat-message__avatar member-chat-message__avatar--ghost"></div>
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble">
-                                필요하시면 관련 서류 준비 일정도 함께 정리해 드릴 수 있습니다.
-                            </div>
-                            <span>오후 2:35</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--right">
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble member-chat-message__bubble--accent">
-                                네, 부탁드립니다. 준비해야 하는 자료가 있으면 같이 안내해 주세요.
-                            </div>
-                            <span>오후 2:38</span>
-                        </div>
-                    </article>
-                </div>
+                <!-- 실제 메시지 출력 부분 -->
+                <div class="member-chat-content member-chat-content--room" data-chat-room-messages></div>
 
                 <footer class="member-chat-room-footer">
                     <input type="text" placeholder="메시지를 입력해 주세요..">

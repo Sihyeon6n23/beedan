@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.chat;
 
+import com.goodee.beedan.common.constant.ChatRoomStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,9 +16,11 @@ import java.time.LocalDateTime;
 public class MemberChatRoomListDto {
     private Long chRoId;
     private String chRoTtl;
-    private String chRoStt;
+    private ChatRoomStatus chRoStt;
+    private LocalDateTime chRoCreDt;
+
     private String lastMessageContent;
     private LocalDateTime lastMessageCreatedAt;
-    private LocalDateTime chRoCreDt;
+
     private Boolean unread;
 }
