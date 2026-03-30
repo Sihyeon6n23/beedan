@@ -86,7 +86,7 @@
 <script th:inline="javascript">
     const memberId = /*[[${memberId}]]*/ null;
     const pageMode = /*[[${mode}]]*/ null;
-    const apiUrl = pageMode === 'wishlist' ? '/api/wishlist/list' : '/stock/api/list';
+    const apiUrl = pageMode === 'wishlist' ? '/api/wishlist/list' : '/api/stock/list';
 </script>
 <script>
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';

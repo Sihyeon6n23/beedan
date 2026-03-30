@@ -62,6 +62,7 @@
 <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
 <script th:inline="javascript">
     const memberId = /*[[${memberId}]]*/ null;
+    const stockId = /*[[${stock.stId}]]*/ null;
 </script>
 <script>
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
@@ -134,12 +135,12 @@
             <div class="flex items-center gap-6 mb-10">
                 <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Quantity</span>
                 <div class="flex items-center bg-surface-container-high">
-                    <button type="button" id="btn-qty-minus" class="p-3 hover:text-primary transition-colors">
+                    <button type="button" id="btn-qn-minus" class="p-3 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-sm">remove</span>
                     </button>
-                    <input id="qty-input" type="number" min="1" value="1"
+                    <input id="qn-input" type="number" min="1" value="1"
                            class="w-16 bg-transparent border-none text-center font-bold focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"/>
-                    <button type="button" id="btn-qty-plus" class="p-3 hover:text-primary transition-colors">
+                    <button type="button" id="btn-qn-plus" class="p-3 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-sm">add</span>
                     </button>
                 </div>
@@ -500,19 +501,39 @@
     </div>
 </div>
 
+<div id="cart-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm"
+     onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-surface-container-lowest border border-outline-variant w-[400px] px-10 py-10 text-center">
+        <!-- 아이콘: JS에서 동적 변경 -->
+        <span id="cart-modal-icon" class="material-symbols-outlined text-4xl text-primary-container mb-4
+ block"></span>
+        <!-- 메시지 -->
+        <p id="cart-modal-msg" class="font-body text-sm text-on-surface-variant mb-8"></p>
+        <!-- 버튼 2개 -->
+        <div class="flex gap-3">
+            <button onclick="document.getElementById('cart-modal').classList.add('hidden')"
+                    class="flex-1 py-3 border border-outline-variant ...">
+                계속 쇼핑하기
+            </button>
+            <a href="/cart" class="flex-1 py-3 bg-primary-container ...">
+                장바구니 이동
+            </a>
+        </div>
+    </div>
+</div>
 <script>
     // 수량 +/-
-    document.getElementById('btn-qty-minus').addEventListener('click', function() {
-        const input = document.getElementById('qty-input');
+    document.getElementById('btn-qn-minus').addEventListener('click', function() {
+        const input = document.getElementById('qn-input');
         const val = parseInt(input.value) || 1;
         if (val > 1) input.value = val - 1;
     });
-    document.getElementById('btn-qty-plus').addEventListener('click', function() {
-        const input = document.getElementById('qty-input');
+    document.getElementById('btn-qn-plus').addEventListener('click', function() {
+        const input = document.getElementById('qn-input');
         const val = parseInt(input.value) || 1;
         input.value = val + 1;
     });
-    document.getElementById('qty-input').addEventListener('change', function() {
+    document.getElementById('qn-input').addEventListener('change', function() {
         if (parseInt(this.value) < 1 || isNaN(parseInt(this.value))) this.value = 1;
     });
 
@@ -556,7 +577,17 @@
             document.getElementById('login-modal').classList.remove('hidden');
             return;
         }
-        alert('장바구니 담기 API가 아직 준비되지 않았습니다.');
+
+        const qn= parseInt(document.getElementById('qn-input').value) || 1;
+
+        axios.post('/api/cart/' + stockId + '?qn=' + qn)
+            .then(res => {
+                const exists = res.data;
+                document.getElementById('cart-modal-icon').textContent = exists ? 'info' : 'check_circle';
+                document.getElementById('cart-modal-msg').textContent = exists ? '이미 장바구니에 있습니다.' : '장바구니에 담겼습니다.';
+                document.getElementById('cart-modal').classList.remove('hidden');
+            })
+            .catch(err => console.error('장바구니 추가 실패 : ' . err))
     });
 </script>
 
