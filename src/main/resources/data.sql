@@ -347,7 +347,7 @@ INSERT INTO chat_room (
              'OPEN',
              CURRENT_TIMESTAMP,
              CURRENT_TIMESTAMP,
-             (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01'),
+             (SELECT mem_id FROM member WHERE mem_lgn_id = 'admin'),
              NULL
          );
 
@@ -361,9 +361,9 @@ INSERT INTO chat_message (
                  SELECT ch_ro_id
                  FROM chat_room
                  WHERE ch_ro_ttl = '미읽음 테스트 문의'
-                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
+                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'admin')
              ),
-             (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
+             (SELECT mem_id FROM member WHERE mem_lgn_id = 'admin')
          );
 
 INSERT INTO chat_room_read_status (
@@ -375,29 +375,29 @@ INSERT INTO chat_room_read_status (
                  SELECT ch_ro_id
                  FROM chat_room
                  WHERE ch_ro_ttl = '미읽음 테스트 문의'
-                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
+                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'admin')
              ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01'),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'admin'),
     NULL
 );
 
 INSERT INTO chat_room (
     ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
 ) VALUES
-    ('관리자 상호명 테스트 문의', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 2', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 3', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 4', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 5', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL);
+    ('관리자 상호명 테스트 문의', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'), NULL),
+    ('관리자 목록 테스트 문의 2', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'), NULL),
+    ('관리자 목록 테스트 문의 3', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'), NULL),
+    ('관리자 목록 테스트 문의 4', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'), NULL),
+    ('관리자 목록 테스트 문의 5', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'), NULL);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
 ) VALUES
-    ('USER', '관리자 목록에서 상호명 표시 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 상호명 테스트 문의' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 두 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 2' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 세 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 3' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 네 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 4' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 다섯 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 5' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'));
+    ('USER', '관리자 목록에서 상호명 표시 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 상호명 테스트 문의' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')),
+    ('USER', '관리자 목록 두 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 2' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')),
+    ('USER', '관리자 목록 세 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 3' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')),
+    ('USER', '관리자 목록 네 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 4' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')),
+    ('USER', '관리자 목록 다섯 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 5' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'));
 
 INSERT INTO chat_room (
     ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
@@ -407,7 +407,7 @@ SELECT
     'OPEN',
     DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
     DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     NULL
 FROM SYSTEM_RANGE(6, 13);
 
@@ -422,9 +422,9 @@ SELECT
         SELECT ch_ro_id
         FROM chat_room
         WHERE ch_ro_ttl = '관리자 목록 OPEN 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
-          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
 FROM SYSTEM_RANGE(6, 13);
 
 INSERT INTO chat_room (
@@ -435,8 +435,8 @@ SELECT
     'ONGOING',
     DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
     DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
 FROM SYSTEM_RANGE(1, 13);
 
 INSERT INTO chat_message (
@@ -450,9 +450,9 @@ SELECT
         SELECT ch_ro_id
         FROM chat_room
         WHERE ch_ro_ttl = '관리자 목록 ONGOING 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
-          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
 FROM SYSTEM_RANGE(1, 13);
 
 INSERT INTO chat_room (
@@ -465,8 +465,8 @@ SELECT
     DATEADD('DAY', -X, CURRENT_TIMESTAMP),
     DATEADD('DAY', -X, CURRENT_TIMESTAMP),
     'ADMIN',
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
 FROM SYSTEM_RANGE(1, 13);
 
 INSERT INTO chat_message (
@@ -480,9 +480,9 @@ SELECT
         SELECT ch_ro_id
         FROM chat_room
         WHERE ch_ro_ttl = '관리자 목록 CLOSED 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
-          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
 FROM SYSTEM_RANGE(1, 13);
 -- =====================
 -- 장 준 END
