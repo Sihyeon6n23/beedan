@@ -88,48 +88,7 @@ html, body {
     color: var(--color-text-id);
 }
 
-/* ============================================================
-   ② Status Timeline
-   ============================================================ */
-.status-timeline {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    background: var(--color-surface);
-    padding: 4px;
-    width: 1159px;
-    max-width: 100%;
-}
-
-.timeline-step {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 24px 24px 24px 28px;
-    border-left: 4px solid transparent;
-    background: var(--color-white);
-}
-
-.step-done  { background: var(--color-white); border-left-color: var(--color-gold-dark); }
-.step-active{ background: var(--color-gold);  border-left-color: var(--color-gold-border); }
-.step-pending{ background: var(--color-surface); border-left-color: #d4d4d4; }
-
-.step-label {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    line-height: 15px;
-}
-.step-done   .step-label  { color: var(--color-gold-dark); }
-.step-active .step-label  { color: var(--color-gold-border); }
-.step-pending .step-label { color: var(--color-text-light); }
-
-.step-desc { font-size: 14px; line-height: 20px; font-weight: 600; }
-.step-done   .step-desc   { color: var(--color-text-primary); }
-.step-active .step-desc--bold { color: var(--color-text-primary); font-weight: 700; }
-.step-pending .step-desc--muted { color: var(--color-text-light); }
+/* ② Status Timeline → fragments/quoteAndPayment/roadToPayment.html + roadToPayment.css 참조 */
 
 /* ============================================================
    ③ Body Layout
@@ -569,14 +528,12 @@ html, body {
    ============================================================ */
 @media (max-width: 1200px) {
     .page-title { font-size: 52px; }
-    .status-timeline { width: 100%; }
     .cost-summary-heading { padding: 0; }
     .cost-cards-grid { padding: 0; gap: 16px; }
 }
 
 @media (max-width: 900px) {
     .page-title { font-size: 40px; letter-spacing: -2px; }
-    .status-timeline { grid-template-columns: repeat(3, 1fr); }
     .fees-grid { grid-template-columns: 1fr; }
     .cost-cards-grid { grid-template-columns: 1fr; }
     .final-payment-card { width: 100%; }
@@ -585,7 +542,6 @@ html, body {
 @media (max-width: 600px) {
     .main { padding: 48px 20px; }
     .page-title { font-size: 32px; letter-spacing: -1px; }
-    .status-timeline { grid-template-columns: repeat(2, 1fr); }
     .payment-amount { font-size: 36px; }
 }
 

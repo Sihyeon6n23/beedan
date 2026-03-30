@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>결제 — BEEDAN</title>
     <link rel="stylesheet" th:href="@{/css/payment/payment-check.css}">
+    <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
 
@@ -21,6 +22,9 @@
             <span class="title-label">보안 법인 결제</span>
         </div>
     </div>
+
+    <!-- 진행 상태 타임라인 -->
+    <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
 
     <!-- 메인 컨텐츠 -->
     <div class="main-content">

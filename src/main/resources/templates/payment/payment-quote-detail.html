@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Goodee — 결제 완료</title>
     <link rel="stylesheet" th:href="@{/css/payment/payment-quote-detail.css}">
+    <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -37,37 +38,8 @@
                 </div>
             </header>
 
-            <!-- ② 진행 타임라인 -->
-            <section class="section">
-                <div class="section-heading">
-                    <span class="section-label">진행 상태</span>
-                    <div class="section-divider"></div>
-                </div>
-                <div class="timeline">
-                    <div class="timeline-track"></div>
-                    <div class="timeline-step step-done">
-                        <div class="step-badge step-badge--active">01</div>
-                        <div class="step-info">
-                            <span class="step-title">주문 접수</span>
-                            <span class="step-date done">2024년 10월 24일 · 09:14</span>
-                        </div>
-                    </div>
-                    <div class="timeline-step step-done">
-                        <div class="step-badge step-badge--active">02</div>
-                        <div class="step-info">
-                            <span class="step-title">결제 승인</span>
-                            <span class="step-date done">2024년 10월 24일 · 09:16</span>
-                        </div>
-                    </div>
-                    <div class="timeline-step step-pending">
-                        <div class="step-badge step-badge--pending">03</div>
-                        <div class="step-info">
-                            <span class="step-title pending">물류 처리 중</span>
-                            <span class="step-date pending">예상: 영업일 기준 1~2일</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <!-- ② 진행 상태 타임라인 -->
+            <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
 
             <!-- ③ 본문 -->
             <div class="body-grid">

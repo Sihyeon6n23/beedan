@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+
+<div th:fragment="timeline(activeStep)" class="status-timeline">
+
+    <!-- 01. 견적 요청 -->
+    <div th:with="s=(${activeStep > 1} ? 'done' : (${activeStep == 1} ? 'active' : 'pending'))"
+         th:class="'timeline-step step-' + ${s}">
+        <span class="step-label">01. 견적 요청</span>
+        <span th:class="'step-desc' + (${s == 'active'} ? ' step-desc--bold' : (${s == 'pending'} ? ' step-desc--muted' : ''))"
+              th:text="${s == 'done'} ? '접수 완료' : (${s == 'active'} ? '견적 요청 진행 중' : '요청 대기')"></span>
+    </div>
+
+    <!-- 02. 견적 확인 -->
+    <div th:with="s=(${activeStep > 2} ? 'done' : (${activeStep == 2} ? 'active' : 'pending'))"
+         th:class="'timeline-step step-' + ${s}">
+        <span class="step-label">02. 견적 확인</span>
+        <span th:class="'step-desc' + (${s == 'active'} ? ' step-desc--bold' : (${s == 'pending'} ? ' step-desc--muted' : ''))"
+              th:text="${s == 'done'} ? '큐레이터 검증 완료' : (${s == 'active'} ? '견적 확인 중' : '확인 대기')"></span>
+    </div>
+
+    <!-- 03. 견적 승인 -->
+    <div th:with="s=(${activeStep > 3} ? 'done' : (${activeStep == 3} ? 'active' : 'pending'))"
+         th:class="'timeline-step step-' + ${s}">
+        <span class="step-label">03. 견적 승인</span>
+        <span th:class="'step-desc' + (${s == 'active'} ? ' step-desc--bold' : (${s == 'pending'} ? ' step-desc--muted' : ''))"
+              th:text="${s == 'done'} ? '견적 승인 완료' : (${s == 'active'} ? '견적 승인 대기' : '승인 대기')"></span>
+    </div>
+
+    <!-- 04. 대금 결제 -->
+    <div th:with="s=(${activeStep > 4} ? 'done' : (${activeStep == 4} ? 'active' : 'pending'))"
+         th:class="'timeline-step step-' + ${s}">
+        <span class="step-label">04. 대금 결제</span>
+        <span th:class="'step-desc' + (${s == 'active'} ? ' step-desc--bold' : (${s == 'pending'} ? ' step-desc--muted' : ''))"
+              th:text="${s == 'done'} ? '결제 완료' : (${s == 'active'} ? '결제 진행 중' : '결제 대기')"></span>
+    </div>
+
+    <!-- 05. 발주 확정 -->
+    <div th:with="s=(${activeStep > 5} ? 'done' : (${activeStep == 5} ? 'active' : 'pending'))"
+         th:class="'timeline-step step-' + ${s}">
+        <span class="step-label">05. 발주 확정</span>
+        <span th:class="'step-desc' + (${s == 'active'} ? ' step-desc--bold' : (${s == 'pending'} ? ' step-desc--muted' : ''))"
+              th:text="${s == 'done'} ? '발주 확정 완료' : (${s == 'active'} ? '발주 확정 중' : '발주 등록')"></span>
+    </div>
+
+</div>
+
+</body>
+</html>

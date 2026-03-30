@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+
+<!-- ===== 운임 + 대행 수수료 카드 ===== -->
+<div th:fragment="feeCards" class="fee-fragment">
+
+    <div class="fees-grid">
+        <!-- 예상 운임 비용 -->
+        <div class="fee-card" onclick="openModal('logistics')">
+            <div class="fee-card-header">
+                <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1h14v10H1V1zm14 3h4l2 3v4h-6V4z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                    <circle cx="4.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                    <circle cx="16.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                </svg>
+                <h3 class="fee-card-title">예상 운임 비용</h3>
+            </div>
+            <div class="fee-items">
+                <div class="fee-item">
+                    <span class="fee-label">해외 운임</span>
+                    <span class="fee-value" id="fc-shipping">-</span>
+                </div>
+                <div class="fee-item">
+                    <span class="fee-label">항만/통관/HS Code</span>
+                    <span class="fee-value" id="fc-port-customs">-</span>
+                </div>
+                <div class="fee-item">
+                    <span class="fee-label">보험료</span>
+                    <span class="fee-value" id="fc-insurance">-</span>
+                </div>
+                <div class="fee-item">
+                    <span class="fee-label">관세 + 부가세</span>
+                    <span class="fee-value" id="fc-duty-vat">-</span>
+                </div>
+                <div class="fee-subtotal">
+                    <span class="fee-subtotal-label">운송 비용 소계</span>
+                    <span class="fee-subtotal-value" id="fc-logistics-total">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 구매 대행 수수료 -->
+        <div class="fee-card" onclick="openModal('procurement')">
+            <div class="fee-card-header">
+                <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 1H2C1.4 1 1 1.4 1 2v16c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V6l-5-5z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M10 1v5h5" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M4 10h8M4 13h6" stroke="#1a1c1c" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <h3 class="fee-card-title">구매 대행 수수료</h3>
+            </div>
+            <div class="fee-items">
+                <div class="fee-item">
+                    <span class="fee-label">서비스 수수료</span>
+                    <span class="fee-value" id="fc-service">-</span>
+                </div>
+                <div class="fee-item">
+                    <span class="fee-label">서류 발급 및 인허가비</span>
+                    <span class="fee-value" id="fc-doc">-</span>
+                </div>
+                <div class="fee-item">
+                    <span class="fee-label">1차 품질 검사</span>
+                    <span class="fee-value">₩0 <em class="included-badge">INCLUDED</em></span>
+                </div>
+                <div class="fee-subtotal">
+                    <span class="fee-subtotal-label">대행 서비스 소계</span>
+                    <span class="fee-subtotal-value" id="fc-procurement-total">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: 예상 운임 비용 ===== -->
+    <div class="modal-overlay" id="modal-logistics" role="dialog" aria-modal="true">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-tag">운송 비용 상세</span>
+                    <h2 class="modal-title">예상 운임 비용</h2>
+                </div>
+                <button class="modal-close" onclick="closeModal('logistics')" aria-label="닫기">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-total-row">
+                    <span class="modal-total-label">운송 비용 소계</span>
+                    <span class="modal-total-value" id="md-logistics-total">-</span>
+                </div>
+
+                <div>
+                    <p class="modal-section-label">01 · 해상 운임</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">운송 구간</span>
+                            <span class="modal-row-val" id="md-route">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">운송 수단</span>
+                            <span class="modal-row-val" id="md-transport">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">예상 소요일</span>
+                            <span class="modal-row-val" id="md-eta">(TODO)</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">운임 기준</span>
+                            <span class="modal-row-val" id="md-basis">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">적용 규모</span>
+                            <span class="modal-row-val" id="md-size-type">-</span>
+                        </div>
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">표준 해상 운임비</span>
+                            <span class="modal-row-val" id="md-shipping-fee">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                <div>
+                    <p class="modal-section-label">02 · 항만 비용 및 통관</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">항만 처리 수수료</span>
+                            <span class="modal-row-val" id="md-port-fee">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">통관 수수료</span>
+                            <span class="modal-row-val" id="md-customs-fee">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">HS Code 신고료</span>
+                            <span class="modal-row-val" id="md-hscode-fee">-</span>
+                        </div>
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">항만/통관 소계</span>
+                            <span class="modal-row-val" id="md-port-customs-total">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                <div>
+                    <p class="modal-section-label">03 · 보험료</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">보험 기준</span>
+                            <span class="modal-row-val">상품가의 0.5%</span>
+                        </div>
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">보험료</span>
+                            <span class="modal-row-val" id="md-insurance-fee">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                <div>
+                    <p class="modal-section-label">04 · CIF 및 관세/부가세</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">CIF (상품가+운임+보험)</span>
+                            <span class="modal-row-val" id="md-cif">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">관세율</span>
+                            <span class="modal-row-val" id="md-duty-rate">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">관세액</span>
+                            <span class="modal-row-val" id="md-duty">-</span>
+                        </div>
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">부가세액 ((CIF+관세)×10%)</span>
+                            <span class="modal-row-val" id="md-vat">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-note">
+                    <span class="modal-note-icon">&#9888;</span>
+                    <p>운임 금액은 현재 선사 고시 요율 기준이며 출항 시점의 시황에 따라 ±5% 내외로 변동될 수 있습니다. 최종 금액은 선하증권(B/L) 발행 시 확정됩니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: 구매 대행 수수료 ===== -->
+    <div class="modal-overlay" id="modal-procurement" role="dialog" aria-modal="true">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-tag">대행 서비스 상세</span>
+                    <h2 class="modal-title">구매 대행 수수료</h2>
+                </div>
+                <button class="modal-close" onclick="closeModal('procurement')" aria-label="닫기">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-total-row">
+                    <span class="modal-total-label">대행 서비스 소계</span>
+                    <span class="modal-total-value" id="md-procurement-total">-</span>
+                </div>
+
+                <div>
+                    <p class="modal-section-label">01 · 서비스 수수료</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">적용 등급</span>
+                            <span class="modal-row-val" id="md-buyer-grade">-</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">적용 공급가 (한화)</span>
+                            <span class="modal-row-val" id="md-item-total-krw">-</span>
+                        </div>
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">서비스 수수료 소계</span>
+                            <span class="modal-row-val" id="md-service-fee">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                <div>
+                    <p class="modal-section-label">02 · 서류 발급 및 인허가</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">서류·인허가 소계</span>
+                            <span class="modal-row-val" id="md-doc-fee">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-divider"></div>
+
+                <div>
+                    <p class="modal-section-label">03 · 1차 품질 검사</p>
+                    <div class="modal-detail-rows">
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">검사 항목</span>
+                            <span class="modal-row-val">외관·치수·소재</span>
+                        </div>
+                        <div class="modal-detail-row">
+                            <span class="modal-row-key">검사 기관</span>
+                            <span class="modal-row-val">Goodee 현지 파트너</span>
+                        </div>
+                        <div class="modal-detail-row row-subtotal">
+                            <span class="modal-row-key">품질 검사 비용</span>
+                            <span class="modal-row-val" style="color: var(--color-gold-dark);">₩0 (포함)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-note">
+                    <span class="modal-note-icon">&#8505;</span>
+                    <p>서비스 수수료는 최종 인보이스 기준 공급가에 재산출되어 청구됩니다. 품질 검사 결과 불량률이 5%를 초과할 경우 추가 검수 비용이 발생할 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal JS -->
+    <script th:inline="none">
+        function openModal(type) {
+            var overlay = document.getElementById('modal-' + type);
+            if (overlay) { overlay.classList.add('is-open'); document.body.style.overflow = 'hidden'; }
+        }
+        function closeModal(type) {
+            var overlay = document.getElementById('modal-' + type);
+            if (overlay) { overlay.classList.remove('is-open'); document.body.style.overflow = ''; }
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.is-open').forEach(function(el) { el.classList.remove('is-open'); });
+                document.body.style.overflow = '';
+            }
+        });
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay') && e.target.classList.contains('is-open')) {
+                e.target.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+
+</div>
+
+</body>
+</html>

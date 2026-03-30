@@ -1,6 +1,17 @@
 package com.goodee.beedan.devUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,18 +27,57 @@ import java.util.Map;
 public class DevController {
 
     private final Map<String, Runnable> schedulerMap;
+    private final AuthenticationManager authenticationManager;
 
     public DevController(
-
-    ){
+            AuthenticationConfiguration authenticationConfiguration
+    ) throws Exception {
+        this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
         this.schedulerMap = new LinkedHashMap<>();
 //        schedulerMap.put("schedulerA", schedluerA::run);
+    }
+
+    @PostMapping("/quick-login")
+    @ResponseBody
+    public Map<String, String> quickLogin(@RequestBody Map<String, String> body,
+                                          HttpServletRequest request) {
+        String username = body.get("username");
+
+        // 기존 세션 무효화 (로그아웃)
+        SecurityContextHolder.clearContext();
+        HttpSession oldSession = request.getSession(false);
+        if (oldSession != null) oldSession.invalidate();
+
+        // 인증
+        UsernamePasswordAuthenticationToken token =
+                new UsernamePasswordAuthenticationToken(username, "1234");
+        Authentication auth = authenticationManager.authenticate(token);
+
+        // 새 SecurityContext 설정
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(auth);
+        SecurityContextHolder.setContext(context);
+
+        HttpSession newSession = request.getSession(true);
+        newSession.setAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+
+        return Map.of("status", "ok", "username", username);
     }
 
     @GetMapping
     public String devPage(Model model) {
         model.addAttribute("schedulerNames", schedulerMap.keySet());
         model.addAttribute("currentTime", AppDateTime.now());
+
+        // 현재 로그인 사용자
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String loggedInUser = null;
+        if (auth != null && auth.getPrincipal() instanceof UserDetails) {
+            loggedInUser = ((UserDetails) auth.getPrincipal()).getUsername();
+        }
+        model.addAttribute("loggedInUser", loggedInUser);
+
         return "devPage/devPage";
     }
 

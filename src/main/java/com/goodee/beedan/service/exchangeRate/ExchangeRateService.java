@@ -74,6 +74,16 @@ public class ExchangeRateService {
     }
 
     /**
+     * 전체 통화 최신 환율 조회
+     * DB에 등록된 모든 통화의 최신 환율 1건씩 반환
+     */
+    public List<ExchangeRate> findAllLatest() {
+        return exchangeRateRepository.findAllLatest();
+    }
+
+
+
+    /**
      * 통화 기호 → 통화 코드 변환
      * ¥ → JPY, $ → USD, € → EUR, CNY → CNY
      */

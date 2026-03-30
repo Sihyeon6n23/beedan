@@ -78,7 +78,7 @@ DROP TABLE IF EXISTS BUYER_GRADE_POLICY;
 
 CREATE TABLE BUYER_GRADE_POLICY (
                                     bgp_id          BIGINT          NOT NULL AUTO_INCREMENT,
-                                    bgp_gr          VARCHAR(20)     NOT NULL,
+                                    bgp_gr          VARCHAR(20)     NULL,
                                     bgp_min_ord_cnt INT             NULL,
                                     bgp_min_tt_am   DECIMAL(18, 0)  NULL,
                                     bgp_ef_fr_dt    DATETIME        NULL,
@@ -94,8 +94,8 @@ DROP TABLE IF EXISTS BUYER;
 
 CREATE TABLE BUYER (
                        by_id       BIGINT          NOT NULL AUTO_INCREMENT,
-                       mem_biz_no  VARCHAR(50)     NOT NULL,
-                       bgp_gr      VARCHAR(20)     NOT NULL,
+                       mem_biz_no  VARCHAR(50)     NULL,
+                       bgp_gr      VARCHAR(20)     NULL,
                        mem_biz_ttl VARCHAR(50)     NULL,
                        by_ord_cnt  INT             NOT NULL DEFAULT 0,
                        by_ttl_am   DECIMAL(18, 0)  NOT NULL DEFAULT 0,
@@ -263,8 +263,8 @@ DROP TABLE IF EXISTS QU_INFO;
 
 CREATE TABLE QU_INFO (
                          qu_info_id          BIGINT          NOT NULL AUTO_INCREMENT,
-                         qu_id               BIGINT          NOT NULL,
-                         ng_id               BIGINT          NOT NULL,
+                         qu_id               BIGINT          NULL,
+                         ng_id               BIGINT          NULL,
                          qu_info_exc_rt      DECIMAL(18, 6)  NULL,
                          qu_info_cur_cd      VARCHAR(10)     NULL,
                          bgp_id              BIGINT          NULL,
@@ -290,9 +290,9 @@ DROP TABLE IF EXISTS QU_DETAIL;
 
 CREATE TABLE QU_DETAIL (
                            qu_dt_id        BIGINT          NOT NULL AUTO_INCREMENT,
-                           qu_info_id      BIGINT          NOT NULL,
-                           qu_id           BIGINT          NOT NULL,
-                           ng_id           BIGINT          NOT NULL,
+                           qu_info_id      BIGINT          NULL,
+                           qu_id           BIGINT          NULL,
+                           ng_id           BIGINT          NULL,
                            st_id           BIGINT          NULL,
                            st_nm           VARCHAR(50)     NULL,
                            qu_dt_qn        INT             NULL,
@@ -341,6 +341,16 @@ CREATE TABLE QU_SHIP_FEE (
 
                              PRIMARY KEY (qsf_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS hs_code (
+                                       hs_id    BIGINT       AUTO_INCREMENT PRIMARY KEY,
+                                       cat_id   BIGINT       NOT NULL UNIQUE,
+                                       hs_cd    VARCHAR(20)  NOT NULL,
+    hs_nm    VARCHAR(100) NOT NULL,
+    hs_du_ra DECIMAL(5,4) NOT NULL DEFAULT 0.1300,
+    hs_des   VARCHAR(255)
+    );
 
 -- =====================
 -- 백시현 END
