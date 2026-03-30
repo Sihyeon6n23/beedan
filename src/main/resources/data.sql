@@ -334,16 +334,27 @@ ALTER TABLE chatbot_response ALTER COLUMN cb_res_id RESTART WITH 100;
 -- =====================
 -- 임 욱 START
 -- =====================
-INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_st)
-VALUES ('주문자와 동일', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 1, '1234', 'PREPARING');
+INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt, ord_base_cre_dt)
+VALUES
+('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 2, '1234', 'PREPARING', CURRENT_TIMESTAMP),
+('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
+('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
+('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 2, '1234', 'DELIVERED', CURRENT_TIMESTAMP),
+('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 2, '1234', 'CANCELLED', CURRENT_TIMESTAMP);
 
 INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_upd_mem_id, mem_id)
 VALUES
-    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE,  NULL, 1),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NULL, 1),
-    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE,  NULL, 1),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 1),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 1);
+    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE,  NULL, 2),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NULL, 2),
+    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE,  NULL, 2),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 2),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 2);
+
+INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_cre_dt, rc_upd_dt, rc_del_yn, mem_id)
+VALUES
+    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2),
+    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2),
+    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2);
 -- =====================
 -- 임 욱 END
 -- =====================

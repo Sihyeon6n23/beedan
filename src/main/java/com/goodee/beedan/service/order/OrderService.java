@@ -30,27 +30,56 @@ public class OrderService {
         return orderList;
     }
 
-    public OrderDto getOrderDetail(Long ordId){
-        Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("Order not found"));
+    public OrderDto getOrderDetail(Long ordId, Long memId){
+        Order order = orderRepository.findById(ordId)
+                .orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if(!order.getMember().getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
+        }
+
         return mapToOrderDto(order);
     }
 
     @Transactional
-    public void updateOrder(Long ordId, OrderDto dto){
+    public void updateOrder(Long ordId, Long memId, OrderDto dto){
         Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("Order not found"));
 
+        if(!order.getMember().getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 주문만 수정할 수 있습니다.");
+        }
+
+        if (order.getOrdBaseStt() != OrderStatus.PREPARING) {
+            throw new IllegalStateException("배송 준비 중일 때만 주소를 수정할 수 있습니다.");
+        }
         if(dto == null) return;
 
         if(dto.getOrdBaseAdr() != null) order.setOrdBaseAdr(dto.getOrdBaseAdr());
         if(dto.getOrdBaseAdrDt() != null) order.setOrdBaseAdrDt(dto.getOrdBaseAdrDt());
         if(dto.getOrdBaseRcvNm() != null) order.setOrdBaseRcvNm(dto.getOrdBaseRcvNm());
         if(dto.getOrdBaseMsg() != null) order.setOrdBaseMsg(dto.getOrdBaseMsg());
-        if(dto.getOrdBaseStt() != null) order.setOrdBaseStt(dto.getOrdBaseStt());
     }
 
     @Transactional
-    public void cancelOrder(Long ordId){
-        Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("Order not found"));
+    public void updateOrderStatus(Long ordId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if(order.getOrdBaseStt() == OrderStatus.CANCELLED) {
+            throw new IllegalStateException("취소된 주문의 상태는 변경할 수 없습니다.");
+        }
+
+        order.setOrdBaseStt(newStatus);
+    }
+
+    @Transactional
+    public void cancelOrder(Long ordId, Long memId) {
+        if(!memberRepository.existsById(memId)) throw new IllegalArgumentException("회원이 존재하지 않습니다.");
+
+        Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
+        }
 
         order.setOrdBaseStt(OrderStatus.CANCELLED);
     }
@@ -80,6 +109,7 @@ public class OrderService {
                 .ordBaseMsg(order.getOrdBaseMsg())
                 .ordBaseStt(order.getOrdBaseStt())
                 .ordBaseNo(order.getOrdBaseNo())
+                .ordBaseCreDt(order.getOrdBaseCreDt())
                 .build();
 
         return orderDto;

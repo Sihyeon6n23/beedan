@@ -2,66 +2,68 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          null,
+          ~{fragments/sidebar :: frame('알림 목록', 'notification', ~{::sidebar})},
           ~{::content}
       )}">
-<title th:fragment="title">BEEDAN | Notification</title>
+
+<title th:fragment="title">BEEDAN | 알림 센터</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notification', 'notification-list')}"></div>
+</th:block>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/notification/notification-list.css}">
-    <div class="notification-list-page">
-        <header class="notification-page-header">
-            <div class="notification-page-title">
-                <span class="notification-sub-label">Communication Ledger</span>
-                <h1>NOTIFICATIONS</h1>
-                <p class="notification-item-desc">Centralized hub for all architectural and logistics updates.</p>
+    <main class="noti-page-container">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-extrabold text-[var(--pub-text-main)] tracking-tight">알림 목록</h1>
+                <p class="text-sm text-[var(--pub-text-sub)] mt-2 font-medium">실시간으로 전달된 주요 소식들을 확인하세요.</p>
             </div>
-            <a class="btn-secondary py-3 px-6" th:href="@{/notification/readAll}">Mark all as read</a>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="handleAction('readAll')" class="btn-noti-all">모두 읽음</button>
+                <button type="button" onclick="handleAction('deleteAll')" class="btn-noti-delete">전체 삭제</button>
+            </div>
         </header>
 
-        <nav class="notification-filter-bar">
-            <button class="filter-btn active">All</button>
-            <a class="filter-btn" th:href="@{/notification/unreadList}">Unread</a>
-            <button class="filter-btn">System</button>
-            <button class="filter-btn">Shipping</button>
-            <button class="filter-btn">Inquiry</button>
-        </nav>
+        <section class="bg-[var(--pub-bg-card)] rounded-2xl border border-[var(--pub-border)] shadow-sm overflow-hidden">
+            <div id="notiPageContent">
+                <ul class="data-list-container !border-0">
+                    <li th:each="noti : ${notifications}"
+                        th:id="'noti-item-' + ${noti.notiId}"
+                        th:style="${noti.notiReaYn == false ? 'border-left: 4px solid var(--pub-primary);' : 'border-left: 4px solid transparent;'}"
+                        class="noti-row data-list-item flex items-center p-6 border-b border-[var(--pub-border)] last:border-0 hover:bg-[var(--pub-bg-main)] transition-all cursor-pointer group"
+                        th:onclick="|handleAction('read', ${noti.notiId}, this)|">
 
-        <div class="notification-list-container">
-            <th:block th:if="${not #lists.isEmpty(notificationDtoList)}">
-                <article class="notification-full-item unread" th:each="notification : ${notificationDtoList}">
-                    <div class="notification-icon-square">
-                        <span class="material-symbols-outlined text-primary">request_quote</span>
-                    </div>
-                    <div class="notification-info-box">
-                        <div class="notification-top-row">
-                            <h3 class="notification-item-title" th:text="${notification.notiTtl}">알림 제목</h3>
-                            <span class="notification-item-time">2 hours ago</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <strong class="noti-title text-base text-[var(--pub-text-main)] truncate"
+                                        th:style="${noti.notiReaYn == false ? 'font-weight:700' : 'font-weight:500; opacity:0.6;'}">
+                                    [[${noti.notiTtl}]]
+                                </strong>
+                                <span th:id="'noti-badge-' + ${noti.notiId}"
+                                      th:if="${noti.notiReaYn == false}"
+                                      class="noti-badge status-badge !m-0"
+                                      style="background:var(--pub-primary); color:var(--pub-text-main);">NEW</span>
+                            </div>
+                            <p class="text-sm text-[var(--pub-text-sub)] line-clamp-1 mb-2" th:text="${noti.notiCon}">내용</p>
+                            <span class="text-[11px] text-[var(--pub-text-muted)] font-medium"
+                                  th:text="${#temporals.format(noti.notiCreDt, 'yyyy-MM-dd HH:mm')}">날짜</span>
                         </div>
-                        <p class="notification-item-desc" th:text="${notification.notiCon}">알림 내용</p>
-                    </div>
-                    <button class="text-primary font-bold text-xs underline uppercase">View</button>
-                </article>
-            </th:block>
 
-            <th:block th:unless="${not #lists.isEmpty(notificationDtoList)}">
-                <div class="flex flex-col items-center justify-center py-20 text-stone-400">
-                    <span class="material-symbols-outlined text-6xl mb-4 opacity-50">notifications_off</span>
-                    <h3 class="text-lg font-bold text-stone-700 mb-2">수신된 알림이 없습니다</h3>
-                    <p class="text-sm">현재 확인할 수 있는 새로운 알림 내역이 없거나, 데이터를 불러오지 못했습니다.</p>
-                </div>
-            </th:block>
-        </div>
-
-        <div class="notification-pagination" th:if="${not #lists.isEmpty(notificationDtoList)}">
-            <span class="notification-item-time">Page 1-5 of 1,280</span>
-            <div class="flex gap-1">
-                <button class="w-10 h-10 bg-stone-200">◀</button>
-                <button class="w-10 h-10 bg-primary-container text-primary font-bold">1</button>
-                <button class="w-10 h-10 bg-white border border-stone-200">2</button>
-                <button class="w-10 h-10 bg-stone-200">▶</button>
+                        <button type="button" class="close-btn ml-6 p-2 opacity-30 group-hover:opacity-100 hover:text-red-500 transition-all"
+                                th:onclick="|event.stopPropagation(); handleAction('delete', ${noti.notiId}, this)|">
+                            <span class="material-symbols-outlined text-[20px]">close</span>
+                        </button>
+                    </li>
+                </ul>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
+
+    <script>
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    </script>
+
 </th:block>
 </html>

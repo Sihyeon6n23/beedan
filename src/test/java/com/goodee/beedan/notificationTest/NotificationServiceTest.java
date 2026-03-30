@@ -80,7 +80,7 @@ public class NotificationServiceTest {
 
         given(notificationRepository.findById(notiId)).willReturn(Optional.of(noti1));
 
-        notificationService.readNotification(notiId);
+        notificationService.readNotification(notiId, member.getMemId());
 
         assertTrue(noti1.getNotiReaYn(), "알림 상태가 true로 변경되어야 합니다.");
     }
@@ -100,7 +100,7 @@ public class NotificationServiceTest {
         Notification noti2 = Notification.builder().notiTtl("test title2").notiReaYn(false).member(member).build();
 
         given(memberRepository.findById(memId)).willReturn(Optional.of(member));
-        given(notificationRepository.findUnReadAndNotDeleteListByMemId(memId))
+        given(notificationRepository.findAllNotDeletedByMemId(memId))
                 .willReturn(List.of(noti1, noti2));
 
         // when
