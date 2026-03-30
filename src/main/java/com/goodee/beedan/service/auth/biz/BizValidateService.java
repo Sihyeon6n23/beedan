@@ -1,7 +1,7 @@
 package com.goodee.beedan.service.auth.biz;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goodee.beedan.dto.biz.BizDto;
+import com.goodee.beedan.dto.member.biz.BizDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;

@@ -64,6 +64,10 @@ public class AuthController {
         // 휴대폰 번호 API 검증(백엔드검증)
         //= portOneService.verify(memberForm.getImpUid());
         // CI값 DB 조회 중복 가입여부 확인
+        Mono<Map<String, Object>> verify = portOneService.verify(memberForm.getImpUid());
+        
+
+
 
 
         // 사업자등록번호 재인증(백엔드검증)
