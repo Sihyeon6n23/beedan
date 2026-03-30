@@ -1,0 +1,129 @@
+/* ============================================================
+   Exchange Rate Fragment — 셀렉트 박스 전환
+   ============================================================ */
+
+.exchange-rate-section {
+    background-color: var(--color-surface, #f3f3f3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 40px;
+    position: relative;
+}
+
+/* ---- 슬라이드 (한 번에 하나만 표시) ---- */
+.er-slide {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.er-slide--active {
+    display: flex;
+}
+
+/* ---- 왼쪽: 환율 값 ---- */
+.er-slide-left {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+}
+
+.er-slide-value {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 400;
+    font-size: 36px;
+    letter-spacing: -0.9px;
+    color: var(--color-text-primary, #1a1c1c);
+    white-space: nowrap;
+}
+
+/* ---- 오른쪽: 기준 시간 ---- */
+.er-slide-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.er-fetched-label {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #78716c);
+}
+
+.er-fetched-value {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.35px;
+    color: var(--color-text-primary, #1a1c1c);
+    text-align: right;
+}
+
+/* ---- 셀렉트 박스 ---- */
+.er-select {
+    margin-left: 24px;
+    padding: 8px 32px 8px 12px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    color: var(--color-text-primary, #1a1c1c);
+    background: var(--color-white, #ffffff);
+    border: 1px solid var(--color-border, #e7e5e4);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2378716c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color 0.15s ease;
+}
+
+.er-select:hover {
+    border-color: var(--color-gold, #ffd700);
+}
+
+.er-select:focus {
+    outline: none;
+    border-color: var(--color-gold, #ffd700);
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.15);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+    .exchange-rate-section {
+        padding: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .er-slide-value {
+        font-size: 24px;
+    }
+    .er-select {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .exchange-rate-section {
+        padding: 24px 20px;
+    }
+    .er-slide {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .er-slide-right {
+        align-items: flex-start;
+    }
+    .er-slide-value {
+        font-size: 20px;
+    }
+}

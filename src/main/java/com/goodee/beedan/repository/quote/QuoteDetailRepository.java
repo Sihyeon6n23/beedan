@@ -15,4 +15,7 @@ public interface QuoteDetailRepository extends JpaRepository<QuoteDetail, Long> 
 
     // 공장별 품목 조회 (QU_SHIP_FEE 그룹핑 기준)
     List<QuoteDetail> findAllByQuInfoIdAndFaId(Long quInfoId, Long faId);
+
+    // 견적 아이디로 전체 삭제 (임시저장 재저장 시)
+    void deleteAllByQuId(Long quId);
 }

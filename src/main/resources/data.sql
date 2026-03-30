@@ -169,10 +169,10 @@ INSERT INTO EXCHANGE_RATE (er_cr, er_ra, er_ba, er_f_dt, er_cr_dt) VALUES
 INSERT INTO SHIPPING_RATE
 (sr_c_cd, sr_trsp_ty, sr_sm_qn, sr_sm_am, sr_md_qn, sr_md_am, sr_lg_qn, sr_lg_am, sr_yn, sr_cr_dt, sr_up_dt)
 VALUES
-    ('JP', 'SEA', 1, 50000,  5, 80000,  10, 120000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('JP', 'AIR', 1, 100000, 5, 150000, 10, 200000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CN', 'SEA', 1, 40000,  5, 70000,  10, 100000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CN', 'AIR', 1, 80000,  5, 120000, 10, 160000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+    ('JP', 'SEA', 1, 50000,  50, 80000,  200, 120000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('JP', 'AIR', 1, 100000, 50, 150000, 200, 200000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CN', 'SEA', 1, 40000,  50, 70000,  200, 100000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('CN', 'AIR', 1, 80000,  50, 120000, 200, 160000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 INSERT INTO PORT_CUSTOMS_RATE
 (pcr_ty, pcr_sm_am, pcr_md_am, pcr_lg_am, pcr_yn, pcr_cr_dt, pcr_up_dt)
@@ -215,6 +215,19 @@ VALUES
 
 
 
+INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
+                                                                        (1,  1,  '6201.90-0000', 'Coat',             0.1300, '코트류 (우븐/아우터) - 세번 확인 필요'),
+                                                                        (2,  2,  '6203.33-0000', 'Jacket',           0.1300, '남성 재킷류 (우븐) - 세번 확인 필요'),
+                                                                        (3,  3,  '6110.20-0000', 'Hoodie',           0.1300, '후드/집업 (면 편물) - 세번 확인 필요'),
+                                                                        (4,  4,  '6110.30-0000', 'Knitwear',         0.1300, '니트/스웨터 (합성섬유 편물) - 세번 확인 필요'),
+                                                                        (5,  5,  '6205.20-0000', 'Shirt',            0.1300, '셔츠/블라우스 (면 우븐) - 세번 확인 필요'),
+                                                                        (6,  7,  '6109.10-0000', 'T-Shirt',          0.1300, '티셔츠/민소매 (면 편물) - 세번 확인 필요'),
+                                                                        (7,  8,  '6203.42-0000', 'Bottoms',          0.1300, '바지/스커트 (면 우븐) - 세번 확인 필요'),
+                                                                        (8,  9,  '6505.00-0000', 'Headwears',        0.1300, '모자류 - 세번 확인 필요'),
+                                                                        (9,  10, '6403.99-0000', 'Shoes',            0.1300, '신발류 - 세번 확인 필요'),
+                                                                        (10, 11, '4202.22-0000', 'Bags/Accessories', 0.1300, '가방/액세서리 - 세번 확인 필요');
+
+
 -- =====================
 -- 백시현 END
 -- =====================
@@ -228,7 +241,7 @@ VALUES
 INSERT INTO member (
     mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
 ) VALUES (
-             'admin',
+             'root',
              '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
              'ROOT',
              '최고관리자',
@@ -241,9 +254,9 @@ INSERT INTO member (
 INSERT INTO member (
     mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
 ) VALUES (
-             'user01',
+             'admin',
              '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'USER',
+             'ADMIN',
              '홍길동',
              '010-1234-5678',
              'user01@example.com',
@@ -255,9 +268,9 @@ INSERT INTO member (
 INSERT INTO member (
     mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
 ) VALUES (
-             'biz_user',
+             'user',
              '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ADMIN',
+             'USER',
              '김철수',
              '123-45-67890',
              '(주)테스트컴퍼니',

@@ -107,11 +107,41 @@
         .log-ok { color: #a8dadc; }
         .log-err { color: #e94560; }
         .log-info { color: #888; }
+
+        /* 빠른 로그인 버튼 */
+        .login-btn {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            border: 1px solid #a8dadc;
+            background: #0f3460;
+            color: #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .login-btn:hover { background: #1a4a8a; border-color: #e94560; }
+        .login-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
     </style>
 </head>
 <body>
 
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+
 <h1>🛠 Dev Control Panel</h1>
+
+<!-- ⓪ 빠른 로그인 -->
+<div class="card">
+    <div class="card-title">🔑 빠른 로그인</div>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <button class="login-btn" th:classappend="${loggedInUser == 'root'} ? ' active' : ''" onclick="quickLogin('root')">root 로그인</button>
+        <button class="login-btn" th:classappend="${loggedInUser == 'admin'} ? ' active' : ''" onclick="quickLogin('admin')">admin 로그인</button>
+        <button class="login-btn" th:classappend="${loggedInUser == 'user'} ? ' active' : ''" onclick="quickLogin('user')">user 로그인</button>
+        <span id="loginStatus" style="margin-left: 0.5rem; font-size: 0.85rem; color: #a8dadc;"
+              th:text="${loggedInUser != null} ? '✅ ' + ${loggedInUser} + ' 로그인 중' : '로그인 안 됨'"></span>
+    </div>
+</div>
 
 <!-- ① 시계 -->
 <div class="clock-card">
@@ -342,6 +372,39 @@
         addLog(msg, res.ok ? 'ok' : 'err');
     }
 
+
+    // ── 빠른 로그인 ─────────────────────────────────────
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    async function quickLogin(username) {
+        const statusEl = document.getElementById('loginStatus');
+        statusEl.textContent = username + ' 로그인 중...';
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            const res = await fetch('/dev/quick-login', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ username: username })
+            });
+
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+
+            statusEl.textContent = '✅ ' + data.username + ' 로그인 완료 — 새로고침 중...';
+            statusEl.style.color = '#a8dadc';
+
+            // 세션이 바뀌어 CSRF 토큰이 갱신되므로 페이지 새로고침
+            setTimeout(function () { location.reload(); }, 500);
+        } catch (e) {
+            statusEl.textContent = '❌ 로그인 실패: ' + e.message;
+            statusEl.style.color = '#e94560';
+            addLog(username + ' 로그인 실패: ' + e.message, 'err');
+        }
+    }
 
     // ── 로그 ──────────────────────────────────────────
     function formatTime(date) {

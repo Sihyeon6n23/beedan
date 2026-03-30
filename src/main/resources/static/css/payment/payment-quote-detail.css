@@ -162,88 +162,7 @@ html, body {
     background: var(--color-border);
 }
 
-/* ============================================================
-   ② 진행 타임라인
-   ============================================================ */
-.timeline {
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 0;
-    position: relative;
-    max-width: 640px;
-}
-
-.timeline-track {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    background: var(--color-border);
-    z-index: 0;
-}
-
-.timeline-step {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: relative;
-    z-index: 1;
-    flex: 1;
-}
-
-.timeline-step:first-child { padding-right: 16px; }
-.timeline-step:not(:first-child):not(:last-child) { padding: 0 16px; }
-.timeline-step:last-child { padding-left: 16px; }
-
-.step-badge {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 14px;
-    flex-shrink: 0;
-    background: var(--color-bg);
-}
-
-.step-badge--active {
-    background: var(--color-gold);
-    color: var(--color-gold-border);
-}
-
-.step-badge--pending {
-    background: var(--color-border);
-    color: var(--color-text-light);
-}
-
-.step-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.step-title {
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: uppercase;
-    color: var(--color-text-primary);
-    line-height: 20px;
-}
-
-.step-title.pending { color: var(--color-text-light); }
-
-.step-date {
-    font-size: 12px;
-    line-height: 16px;
-}
-
-.step-date.done    { color: var(--color-text-warm); }
-.step-date.pending { color: var(--color-text-light); }
+/* ② 진행 타임라인 → fragments/quoteAndPayment/roadToPayment.html + roadToPayment.css 참조 */
 
 /* ============================================================
    ③ 본문
@@ -628,9 +547,6 @@ html, body {
     .success-hero { flex-direction: column; align-items: flex-start; }
     .btn-receipt-save { width: 100%; justify-content: center; }
     .timeline { flex-direction: column; gap: 24px; }
-    .timeline-track { display: none; }
-    .timeline-step { flex-direction: row; gap: 16px; padding: 0 !important; }
-    .step-info { gap: 2px; }
 }
 
 @media (max-width: 480px) {

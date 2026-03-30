@@ -84,143 +84,9 @@ html, body {
     text-transform: uppercase;
 }
 
-/* ============================================================
-   Status Timeline
-   ============================================================ */
-.status-timeline {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    background-color: var(--color-surface);
-    padding: 4px;
-}
+/* Status Timeline → fragments/quoteAndPayment/roadToPayment.html + roadToPayment.css 참조 */
 
-.timeline-step {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 24px 24px 24px 28px;
-    border-left: 4px solid transparent;
-    background-color: var(--color-white);
-}
-
-/* Done steps */
-.step-done {
-    background-color: var(--color-white);
-    border-left-color: var(--color-gold-dark);
-}
-
-.step-done .step-label {
-    color: var(--color-gold-dark);
-}
-
-.step-done .step-desc {
-    color: var(--color-text-primary);
-    font-weight: 600;
-}
-
-/* Active step */
-.step-active {
-    background-color: var(--color-gold);
-    border-left-color: var(--color-gold-border);
-}
-
-.step-active .step-label {
-    color: var(--color-gold-border);
-}
-
-.step-active .step-desc--bold {
-    color: var(--color-text-primary);
-    font-weight: 700;
-}
-
-/* Pending steps */
-.step-pending {
-    background-color: var(--color-surface);
-    border-left-color: #d4d4d4;
-}
-
-.step-pending .step-label {
-    color: var(--color-text-light);
-}
-
-.step-pending .step-desc--muted {
-    color: var(--color-text-light);
-    font-weight: 600;
-}
-
-.step-label {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    line-height: 1.5;
-}
-
-.step-desc {
-    font-family: var(--font-body);
-    font-size: 14px;
-    line-height: 20px;
-}
-
-/* ============================================================
-   Exchange Rate Section
-   ============================================================ */
-.exchange-rate-section {
-    background-color: var(--color-surface);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 40px;
-}
-
-.exchange-rate-left {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-}
-
-.exchange-rate-value {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 36px;
-    letter-spacing: -0.9px;
-    color: var(--color-text-primary);
-    white-space: nowrap;
-}
-
-.exchange-rate-change {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--color-gold-dark);
-}
-
-.exchange-rate-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-}
-
-.last-updated-label {
-    font-family: var(--font-body);
-    font-weight: 400;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-}
-
-.last-updated-value {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: -0.35px;
-    color: var(--color-text-primary);
-    text-align: right;
-}
+/* Exchange Rate → fragments/quoteAndPayment/exchangeRate.html + exchangeRate.css 참조 */
 
 /* ============================================================
    Quote Manifest Section
@@ -274,12 +140,560 @@ html, body {
 .col-no        { width: 65px; }
 .col-product   { width: 292px; }
 .col-id        { width: 99px; }
-.col-qty       { width: 72px; }
-.col-spec      { width: 72px; }
+.col-qty       { width: 120px; }
+.col-spec      { width: 95px; }
 .col-price-unit{ width: 126px; }
 .col-price-total{width: 126px; }
-.col-tax       { width: 126px; }
-.col-subtotal  { width: 145px; }
+.col-tax       { width: 140px; }
+.col-subtotal  { width: 170px; }
+.col-shipping  { width: 140px; }
+
+/* 세액 셀 — HS CODE + 세율(금액) 두 줄 */
+.col-tax .tax-hs,
+.col-tax .tax-rate {
+    display: block;
+}
+.col-tax .tax-hs {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.5px;
+}
+.col-tax .tax-rate {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+.col-tax .tax-amount {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-gold-dark, #705d00);
+}
+
+/* ---- 수량 컨트롤 ---- */
+.quote-table tbody td.col-qty {
+    padding: 12px 8px;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: var(--color-white, #ffffff);
+    max-width: 104px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: var(--color-surface, #f3f3f3);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-muted, #78716c);
+    transition: background 0.15s ease, color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.qty-btn:hover {
+    background: var(--color-gold, #ffd700);
+    color: var(--color-gold-dark, #705d00);
+}
+
+.qty-input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    border: none;
+    border-left: 1px solid var(--color-border, #e7e5e4);
+    border-right: 1px solid var(--color-border, #e7e5e4);
+    text-align: center;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+    background: var(--color-white, #ffffff);
+    -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.qty-input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--color-gold, #ffd700);
+}
+
+/* ---- 규격 컨트롤 ---- */
+.quote-table tbody td.col-spec {
+    padding: 12px 8px;
+}
+
+.spec-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.spec-value {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+    flex-shrink: 0;
+}
+
+.spec-select {
+    width: auto;
+    flex: 0 0 auto;
+    height: 24px;
+    padding: 0 18px 0 6px;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: var(--color-white, #ffffff);
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--color-text-muted, #78716c);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%2378716c' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 5px center;
+}
+
+.spec-select:focus {
+    outline: none;
+    border-color: var(--color-gold, #ffd700);
+}
+
+.quote-table tbody td.col-subtotal {
+    padding: 12px 8px;
+}
+
+.subtotal-krw-total {
+    display: block;
+    font-size: 11px;
+    color: var(--color-text-light, #a8a29e);
+    text-align: right;
+    margin-bottom: 4px;
+}
+
+/* ---- Subtotal 컨트롤 ---- */
+.subtotal-control {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: var(--color-white, #ffffff);
+    transition: border-color 0.15s ease;
+}
+
+.subtotal-control:hover {
+    border-color: var(--color-border-mid, #d6d3d1);
+}
+
+.subtotal-control:focus-within {
+    border-color: var(--color-gold, #ffd700);
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.12);
+}
+
+.subtotal-currency {
+    padding: 0 0 0 10px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--color-text-light, #a8a29e);
+    flex-shrink: 0;
+}
+
+.subtotal-input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    border: none;
+    background: transparent;
+    text-align: right;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-muted, #78716c);
+    padding: 0 4px;
+}
+
+.subtotal-input::placeholder {
+    color: var(--color-text-light, #a8a29e);
+    font-weight: 400;
+    font-style: italic;
+}
+
+.subtotal-input:focus {
+    outline: none;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.subtotal-edit-icon {
+    flex-shrink: 0;
+    margin-right: 8px;
+    color: var(--color-text-light, #a8a29e);
+    transition: color 0.15s ease;
+}
+
+.subtotal-control:hover .subtotal-edit-icon,
+.subtotal-control:focus-within .subtotal-edit-icon {
+    color: var(--color-gold-dark, #705d00);
+}
+
+/* ---- 배송지 버튼 ---- */
+.shipping-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--color-surface, #f3f3f3);
+    border: 1px solid var(--color-border, #e7e5e4);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.shipping-btn:hover {
+    border-color: var(--color-gold, #ffd700);
+    background: var(--color-gold-bg, #fffdf0);
+}
+
+.shipping-addr {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-primary, #1a1c1c);
+    line-height: 16px;
+}
+
+.shipping-meta {
+    font-size: 10px;
+    color: var(--color-text-muted, #78716c);
+    letter-spacing: 0.5px;
+}
+
+.quote-table tbody td.col-shipping {
+    padding: 12px 8px;
+}
+
+/* ---- 배송지 모달 ---- */
+.shipping-modal {
+    max-width: 520px;
+}
+
+.ship-type-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ship-type-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--color-border, #e7e5e4);
+}
+
+.ship-type-btn {
+    flex: 1;
+    padding: 12px 16px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    background: var(--color-surface, #f3f3f3);
+    color: var(--color-text-muted, #78716c);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ship-type-btn:first-child {
+    border-right: 1px solid var(--color-border, #e7e5e4);
+}
+
+.ship-type-btn--active {
+    background: var(--color-gold, #ffd700);
+    color: var(--color-gold-dark, #705d00);
+}
+
+.ship-type-desc {
+    font-size: 12px;
+    color: var(--color-text-muted, #78716c);
+    line-height: 18px;
+}
+
+/* 수령지 정보 */
+.ship-addr-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ship-addr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 수령인 카드 */
+.ship-addr-card {
+    background: var(--color-surface, #f3f3f3);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid var(--color-border, #e7e5e4);
+}
+
+.ship-addr-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ship-addr-card-no {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-gold, #ffd700);
+    color: var(--color-gold-dark, #705d00);
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.ship-addr-card-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.ship-addr-card-qty label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted, #78716c);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ship-qty-input {
+    width: 60px;
+    height: 28px;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: var(--color-white, #ffffff);
+    text-align: center;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+    -moz-appearance: textfield;
+}
+
+.ship-qty-input::-webkit-outer-spin-button,
+.ship-qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.ship-qty-input:focus {
+    outline: none;
+    border-color: var(--color-gold, #ffd700);
+}
+
+.ship-addr-remove {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid var(--color-border, #e7e5e4);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--color-text-light, #a8a29e);
+    transition: color 0.15s ease, border-color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.ship-addr-remove:hover {
+    color: #e94560;
+    border-color: #e94560;
+}
+
+.ship-addr-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ship-addr-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.ship-addr-detail {
+    font-size: 13px;
+    color: var(--color-text-warm, #4d4732);
+    line-height: 20px;
+}
+
+.ship-addr-phone {
+    font-size: 12px;
+    color: var(--color-text-muted, #78716c);
+}
+
+.ship-addr-memo {
+    width: 100%;
+    min-height: 48px;
+    max-height: 120px;
+    resize: vertical;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: var(--color-white, #ffffff);
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 12px;
+    color: var(--color-text-primary, #1a1c1c);
+    line-height: 18px;
+}
+
+.ship-addr-memo::placeholder {
+    color: var(--color-text-light, #a8a29e);
+}
+
+.ship-addr-memo:focus {
+    outline: none;
+    border-color: var(--color-gold, #ffd700);
+}
+
+/* + 배송지 추가 버튼 */
+.ship-addr-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--color-border-mid, #d6d3d1);
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-muted, #78716c);
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.ship-addr-add-btn:hover {
+    border-color: var(--color-gold, #ffd700);
+    color: var(--color-gold-dark, #705d00);
+    background: var(--color-gold-bg, #fffdf0);
+}
+
+/* 예상 배달비 */
+.ship-fee-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.ship-fee-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ship-fee-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ship-fee-label {
+    font-size: 13px;
+    color: var(--color-text-muted, #78716c);
+}
+
+.ship-fee-value {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.ship-fee-total {
+    padding-top: 10px;
+    border-top: 1px dashed var(--color-border, #e7e5e4);
+    margin-top: 4px;
+}
+
+.ship-fee-total .ship-fee-label {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.ship-fee-total .ship-fee-value {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-gold-dark, #705d00);
+}
+
+/* 모달 하단 버튼 */
+.shipping-modal-footer {
+    display: flex;
+    gap: 8px;
+    padding: 20px 36px 28px;
+    border-top: 1px solid var(--color-border, #e7e5e4);
+}
+
+.btn-shipping-cancel,
+.btn-shipping-confirm {
+    flex: 1;
+    padding: 14px 16px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: filter 0.15s ease;
+}
+
+.btn-shipping-cancel {
+    background: var(--color-surface, #f3f3f3);
+    color: var(--color-text-muted, #78716c);
+    border: 1px solid var(--color-border, #e7e5e4);
+}
+
+.btn-shipping-cancel:hover {
+    background: var(--color-white, #ffffff);
+}
+
+.btn-shipping-confirm {
+    background: var(--color-gold, #ffd700);
+    color: var(--color-gold-dark, #705d00);
+}
+
+.btn-shipping-confirm:hover {
+    filter: brightness(1.05);
+}
 
 /* Header row */
 .quote-table thead tr {
@@ -372,106 +786,7 @@ html, body {
     font-weight: 700;
 }
 
-/* ============================================================
-   Fees Grid (Logistics & Procurement)
-   ============================================================ */
-.fees-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
-    background-color: #e8e8e8;
-}
-
-.fee-card {
-    background-color: var(--color-white);
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-}
-
-.fee-card-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.fee-card-title {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 18px;
-    letter-spacing: -0.45px;
-    text-transform: uppercase;
-    color: var(--color-text-primary);
-    line-height: 28px;
-}
-
-.fee-items {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.fee-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.fee-label {
-    font-family: var(--font-body);
-    font-weight: 400;
-    font-size: 14px;
-    color: var(--color-text-muted);
-    line-height: 20px;
-}
-
-.fee-value {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--color-text-primary);
-    line-height: 20px;
-    white-space: nowrap;
-}
-
-.included-badge {
-    font-style: normal;
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--color-gold-dark);
-    margin-left: 8px;
-}
-
-.fee-subtotal {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 16px;
-    border-top: 1px dashed var(--color-border-subtle);
-    margin-top: 4px;
-}
-
-.fee-subtotal-label {
-    font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--color-text-primary);
-    line-height: 16px;
-}
-
-.fee-subtotal-value {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--color-gold-dark);
-    line-height: 24px;
-}
+/* Fees Grid → fragments/quoteAndPayment/feeCards.html + feeCards.css 참조 */
 
 /* ============================================================
    Memo Section
@@ -715,20 +1030,15 @@ html, body {
 }
 
 @media (max-width: 900px) {
-    .status-timeline {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .fees-grid {
-        grid-template-columns: 1fr;
-    }
+    /* fees-grid responsive → feeCards.css */
     .page-title {
         font-size: 40px;
     }
     .header-section {
         padding: 0;
     }
-    .exchange-rate-value {
-        font-size: 24px;
+    .er-rate-value {
+        font-size: 22px;
     }
     .manifest-id {
         font-size: 20px;
@@ -738,9 +1048,6 @@ html, body {
 @media (max-width: 600px) {
     .main {
         padding: 48px 20px;
-    }
-    .status-timeline {
-        grid-template-columns: 1fr 1fr;
     }
     .page-title {
         font-size: 32px;

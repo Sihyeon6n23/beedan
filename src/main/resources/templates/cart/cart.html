@@ -16,6 +16,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -309,6 +311,10 @@
 
 <script>
 (function() {
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    axios.defaults.headers.common[csrfHeader] = csrfToken;
+
     let deleteTargetCaId = null;
 
     // ===== 수량 +/- =====
@@ -421,31 +427,27 @@
 
     // ===== REQUEST QUOTE (체크된 상품만) =====
     document.getElementById('btn-request-quote').addEventListener('click', () => {
-        const stIds = [];
-        const qtys = [];
+        const items = [];
         document.querySelectorAll('.cart-row').forEach(row => {
             const cb = row.querySelector('.cart-check');
             if (cb && cb.checked) {
                 const input = row.querySelector('.qty-input');
-                stIds.push(row.dataset.stId);
-                qtys.push(input ? parseInt(input.value) || 1 : 1);
+                items.push({
+                    stId: parseInt(row.dataset.stId),
+                    qty: input ? parseInt(input.value) || 1 : 1
+                });
             }
         });
-        if (stIds.length === 0) {
+        if (items.length === 0) {
             alert('견적 요청할 상품을 선택해주세요.');
             return;
         }
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/quote/request';
-        stIds.forEach(id => {
-            form.innerHTML += `<input type="hidden" name="stIds" value="${id}">`;
-        });
-        qtys.forEach(qty => {
-            form.innerHTML += `<input type="hidden" name="qns" value="${qty}">`;
-        });
-        document.body.appendChild(form);
-        form.submit();
+        axios.post('/quote/request', { items })
+            .then(res => { window.location.href = res.data.redirectUrl; })
+            .catch(err => {
+                console.error('견적 요청 실패:', err);
+                alert('견적 요청에 실패했습니다.');
+            });
     });
 })();
 </script>
