@@ -28,14 +28,14 @@ public class OrderController {
         List<OrderDto> orders = orderService.getOrderList(memId);
         model.addAttribute("orders", orders);
 
-        return "member/order/order-list";
+        return "order/order-list";
     }
 
     @GetMapping("/detail")
     public String orderDetail(@RequestParam("id") Long ordId, Model model, @AuthenticationPrincipal MemberUserDetails userDetails) {
         OrderDto order = orderService.getOrderDetail(ordId, userDetails.getMemberId());
         model.addAttribute("order", order);
-        return "member/order/order-detail";
+        return "order/order-detail";
     }
 
     @PostMapping("/cancel/{id}")

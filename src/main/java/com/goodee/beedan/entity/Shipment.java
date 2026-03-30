@@ -19,16 +19,16 @@ import java.time.LocalDateTime;
 public class Shipment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shi_id")
-    private Long shi_id;
-    private Long shi_tra_no;
-	private String shi_ca_cd;
+    @Column(name = "sh_id")
+    private Long shId;
+    private Long shTraNo;
+	private String shCarCd;
     @Enumerated
-    private ShipmentStatus shi_stt;
+    private ShipmentStatus shStt;
     @CreatedDate
-    private LocalDateTime shi_base_cre_dt;
+    private LocalDateTime shCreDt;
     @LastModifiedDate
-    private LocalDateTime shi_div_dt;
+    private LocalDateTime shUpdDt;
     @ManyToOne
     @JoinColumn(name="ord_base_id")
     private Order order;

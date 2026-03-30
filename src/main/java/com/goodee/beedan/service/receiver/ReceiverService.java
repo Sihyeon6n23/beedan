@@ -16,11 +16,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class RecieverService {
+public class ReceiverService {
     private final ReceiverRepository receiverRepository;
     private final MemberRepository memberRepository;
 
-    public void createReciver(Long memId){
+    public void createReceiver(Long memId){
         Member member = memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
         if(!receiverRepository.existsByMember_memId(memId)) {
@@ -37,7 +37,7 @@ public class RecieverService {
 
     }
 
-    public void addReciverAddr(ReceiverDto receiverDto) {
+    public void addReceiverAddr(ReceiverDto receiverDto) {
         Member member = memberRepository.findById(receiverDto.getMem_id()).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
         Receiver receiver = Receiver.builder()
@@ -46,21 +46,30 @@ public class RecieverService {
                 .rcPhn(receiverDto.getRcPhn())
                 .rcAdr(receiverDto.getRcAdr())
                 .rcAdrDt(receiverDto.getRcAdrDt())
+                .rcMsg(receiverDto.getRcMsg())
                 .build();
 
         receiverRepository.save(receiver);
     }
 
-    public List<ReceiverDto> getRecieverList(Long memId){
-        Member member = memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+    public List<ReceiverDto> getReceiverList(Long memId){
+        memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
-        List<ReceiverDto> receiverDtoList = receiverRepository.findByMember_memIdOrderByRcCreDtDesc(memId).stream()
+        List<ReceiverDto> receiverDtoList = receiverRepository.findByMember_memIdOrderByRcIdAsc(memId).stream()
                 .map(receiver -> mapToRecieverDto(receiver)).toList();
 
         return receiverDtoList;
     }
 
-    public void updateReciever(ReceiverDto receiverDto){
+    public ReceiverDto getReceiver(Long memId, Long rcId){
+        memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+
+        Receiver receiver = receiverRepository.findById(rcId).orElseThrow(()-> new IllegalArgumentException("해당하는 배송지 내역이 없습니다."));
+
+        return mapToRecieverDto(receiver);
+    }
+
+    public void updateReceiver(ReceiverDto receiverDto){
         Receiver receiver = receiverRepository.findById(receiverDto.getRcId())
                 .orElseThrow(()->new IllegalArgumentException("해당하는 배송지 내역이 없습니다."));
 
@@ -70,17 +79,19 @@ public class RecieverService {
         if(receiverDto.getRcPhn() != null) receiver.setRcPhn(receiver.getRcPhn());
     }
 
-    public void deleteReciver(Long rcId){
+    public void deleteReceiver(Long rcId){
         Receiver receiver = receiverRepository.findById(rcId).orElseThrow(()->new IllegalArgumentException("해당하는 배송지 내역이 없습니다."));
         receiver.setRcDelYn(true);
     }
 
     public ReceiverDto mapToRecieverDto(Receiver receiver){
         return ReceiverDto.builder()
+                .rcId(receiver.getRcId())
                 .rcNm(receiver.getRcNm())
                 .rcPhn(receiver.getRcPhn())
                 .rcAdr(receiver.getRcAdr())
                 .rcAdrDt(receiver.getRcAdrDt())
+                .rcMsg(receiver.getRcMsg())
                 .build();
     }
 
