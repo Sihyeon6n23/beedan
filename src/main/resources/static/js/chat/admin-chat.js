@@ -8,6 +8,7 @@
   var assignConfirmButton = document.querySelector("[data-assign-confirm]");
   var closeConfirmButton = document.querySelector("[data-modal-confirm-close]");
   var pendingDetailUrl = "";
+  var pendingRoomId = "";
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -22,6 +23,20 @@
       button.classList.add("is-active");
     });
   });
+
+  // CSRF 헤더 조회
+  function getCsrfHeaders() {
+    var tokenMeta = document.querySelector('meta[name="_csrf"]');
+    var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+
+    if (!tokenMeta || !headerMeta) {
+      return {};
+    }
+
+    var headers = {};
+    headers[headerMeta.getAttribute("content")] = tokenMeta.getAttribute("content");
+    return headers;
+  }
 
   function setChatState(nextState) {
     if (!detailPage) {
@@ -59,6 +74,7 @@
     });
   });
 
+  // 모달 열기/닫기
   function toggleModal(name, isOpen) {
     var modal = document.querySelector('[data-modal="' + name + '"]');
     if (!modal) {
@@ -72,6 +88,7 @@
   modalTriggers.forEach(function (trigger) {
     trigger.addEventListener("click", function () {
       pendingDetailUrl = trigger.dataset.detailUrl || "";
+      pendingRoomId = trigger.dataset.roomId || "";
       toggleModal(trigger.dataset.modalOpen, true);
     });
   });
@@ -85,12 +102,33 @@
     });
   });
 
-  if (assignConfirmButton) {
-    assignConfirmButton.addEventListener("click", function () {
+  // 관리자 상담 시작 비동기 요청
+  function startAdminChatRoom() {
+    if (!pendingRoomId) {
+      return;
+    }
+
+    fetch("/api/admin/chat/rooms/" + pendingRoomId + "/start", {
+      method: "PATCH",
+      headers: getCsrfHeaders()
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error("상담 시작 요청에 실패했습니다.");
+      }
+
       toggleModal("assign", false);
+
       if (listPage && pendingDetailUrl) {
         window.location.href = pendingDetailUrl;
       }
+    }).catch(function (error) {
+      console.error(error);
+    });
+  }
+
+  if (assignConfirmButton) {
+    assignConfirmButton.addEventListener("click", function () {
+      startAdminChatRoom();
     });
   }
 
