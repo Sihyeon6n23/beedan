@@ -26,7 +26,7 @@ public class NotificationService {
     public List<NotificationDto> getUnReadNotificationList(Long memId){
         memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
         List<NotificationDto> notificationDtoList = notificationRepository
-                .findUnReadAndNotDeleteListByMemId(memId)
+                .findAllNotDeletedByMemId(memId)
                 .stream()
                 .map(notification -> mapToNotificationDto(notification))
                 .toList();
@@ -53,14 +53,18 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    public void deleteNotification(Long notiId) { //
+    public void deleteNotification(Long notiId, Long memId) {
+        memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+
         Notification notification = notificationRepository.findById(notiId).orElseThrow(() -> new IllegalArgumentException("Can't find notice"));
         notification.setNotiDelYn(true);
     }
 
     public void deleteAll(Long memId){ notificationRepository.updateAllDelYnByMemId(memId); }
 
-    public void readNotification(Long notiId){
+    public void readNotification(Long notiId, Long memId){
+        memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+
         Notification notification = notificationRepository.findById(notiId).orElseThrow(()->new IllegalArgumentException("Can't find notice"));
         notification.setNotiReaYn(true);
     }
@@ -88,7 +92,7 @@ public class NotificationService {
                 .notiTtl(notification.getNotiTtl())
                 .notiCon(notification.getNotiCon())
                 .notiReaYn(notification.getNotiReaYn())
-                .notiCreAt(notification.getNotiCreDt())
+                .notiCreDt(notification.getNotiCreDt())
                 .notiUptDt(notification.getNotiUpdDt())
                 .build();
     }

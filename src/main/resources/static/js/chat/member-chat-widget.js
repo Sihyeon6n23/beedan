@@ -6,6 +6,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var panel = widget.querySelector(".member-chat-panel");
   var launcher = widget.querySelector("[data-widget-toggle]");
+  var launcherBadge = widget.querySelector(".member-chat-launcher__badge");
+  var chatbotContext = widget.querySelector("[data-chatbot-context]");
+  var chatbotTopics = widget.querySelector("[data-chatbot-topics]");
+  var chatbotResponse = widget.querySelector("[data-chatbot-response]");
+  var chatbotActions = widget.querySelector("[data-chatbot-actions]");
+  var chatListContent = widget.querySelector(".member-chat-content--list");
+  var chatListEnd = widget.querySelector(".member-chat-list-end");
+  var chatbotContent = widget.querySelector(".member-chat-content--chatbot");
+  var chatRoomTitle = widget.querySelector("[data-chat-room-title]");
+  var chatRoomMessages = widget.querySelector("[data-chat-room-messages]");
+  var chatRoomCloseButton = widget.querySelector("[data-chat-room-close]");
+  var chatRoomMessageInput = widget.querySelector(".member-chat-room-footer input");
+  var chatRoomSendButton = widget.querySelector(".member-chat-send-button");
   var closeButtons = widget.querySelectorAll("[data-widget-close]");
   var viewButtons = widget.querySelectorAll("[data-view-target]");
   var navButtons = widget.querySelectorAll(".member-chat-bottom-nav__item");
@@ -13,8 +26,856 @@ document.addEventListener("DOMContentLoaded", function () {
   var modal = widget.querySelector("[data-chat-modal]");
   var modalCloseButtons = widget.querySelectorAll("[data-chat-modal-close]");
   var modalConfirmButton = widget.querySelector("[data-chat-modal-confirm]");
+  var modalTitle = widget.querySelector("[data-chat-modal-title]");
+  var modalDescription = widget.querySelector("[data-chat-modal-description]");
+  var loginModal = widget.querySelector("[data-login-modal]");
+  var loginModalCloseButtons = widget.querySelectorAll("[data-login-modal-close]");
+  var loginModalConfirmButton = widget.querySelector("[data-login-modal-confirm]");
   var newChatButton = widget.querySelector("[data-new-chat-trigger]");
 
+  var isFirstTopicsLoaded = false;
+  var chatbotStepStack = [];
+  var currentTopicId = null;
+  var currentTopicName = null;
+  var currentChatRoomId = null;
+  var currentChatRoomStatus = null;
+  var pendingChatRoom = null;
+  var isAuthenticated = widget.dataset.authenticated === "true";
+  var loginUrl = widget.dataset.loginUrl || "/auth/signin";
+  var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
+  var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
+
+  // 위젯 런처 미읽음 배지 표시 상태 반영
+  function setLauncherUnreadBadgeVisible(isVisible) {
+    if (!launcherBadge) {
+      return;
+    }
+
+    launcherBadge.classList.toggle("is-hidden", !isVisible);
+    launcherBadge.setAttribute("aria-hidden", isVisible ? "false" : "true");
+  }
+
+  // 챗봇 영역 하단 자동 스크롤
+  function scrollChatbotToBottom() {
+    if (!chatbotContent) {
+      return;
+    }
+
+    requestAnimationFrame(function () {
+      chatbotContent.scrollTo({
+        top: chatbotContent.scrollHeight,
+        behavior: "smooth"
+      });
+    });
+  }
+
+  // 챗봇 영역 상단 이동
+  function scrollChatbotToTop() {
+    if (!chatbotContent) {
+      return;
+    }
+
+    requestAnimationFrame(function () {
+      chatbotContent.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
+  }
+
+  // 챗봇 현재 단계 스냅샷 저장
+  function pushChatbotSnapshot() {
+    chatbotStepStack.push({
+      contextHtml: chatbotContext ? chatbotContext.innerHTML : "",
+      contextActive: chatbotContext ? chatbotContext.classList.contains("is-active") : false,
+      topicsHtml: chatbotTopics ? chatbotTopics.innerHTML : "",
+      responseHtml: chatbotResponse ? chatbotResponse.innerHTML : "",
+      actionsHtml: chatbotActions ? chatbotActions.innerHTML : "",
+      topicId: currentTopicId,
+      topicName: currentTopicName
+    });
+  }
+
+  // 챗봇 이전 단계 복원
+  function restorePreviousChatbotStep() {
+    var snapshot = chatbotStepStack.pop();
+    if (!snapshot) {
+      resetToFirstTopics();
+      return;
+    }
+
+    if (chatbotContext) {
+      chatbotContext.innerHTML = snapshot.contextHtml;
+      chatbotContext.classList.toggle("is-active", snapshot.contextActive);
+    }
+
+    if (chatbotTopics) {
+      chatbotTopics.innerHTML = snapshot.topicsHtml;
+    }
+
+    if (chatbotResponse) {
+      chatbotResponse.innerHTML = snapshot.responseHtml;
+    }
+
+    if (chatbotActions) {
+      chatbotActions.innerHTML = snapshot.actionsHtml;
+      bindChatbotActionEvents();
+    }
+
+    currentTopicId = snapshot.topicId;
+    currentTopicName = snapshot.topicName;
+    scrollChatbotToBottom();
+  }
+
+  // 챗봇 하단 액션 버튼 이벤트 연결
+  function bindChatbotActionEvents() {
+    if (!chatbotActions) {
+      return;
+    }
+
+    var restartButton = chatbotActions.querySelector("[data-chatbot-restart]");
+    var consultButton = chatbotActions.querySelector("[data-chatbot-consult]");
+    var backButton = chatbotActions.querySelector("[data-chatbot-back]");
+
+    if (restartButton) {
+      restartButton.onclick = function () {
+        resetToFirstTopics();
+      };
+    }
+
+    if (consultButton) {
+      consultButton.onclick = function () {
+        if (!currentTopicId) {
+          return;
+        }
+
+        openChatRoomFromChatbot(currentTopicId).then(function (chatRoom) {
+          handleChatRoomOpenResult(chatRoom);
+        });
+      };
+    }
+
+    if (backButton) {
+      backButton.onclick = function () {
+        restorePreviousChatbotStep();
+      };
+    }
+  }
+
+  // 챗봇 단계 이동용 뒤로 버튼 출력
+  function renderTopicActions() {
+    if (!chatbotActions) {
+      return;
+    }
+
+    chatbotActions.innerHTML = "";
+
+    if (chatbotStepStack.length === 0) {
+      return;
+    }
+
+    var backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "member-chat-secondary-button";
+    backButton.classList.add("member-chat-animate-in");
+    backButton.dataset.chatbotBack = "true";
+    backButton.textContent = "이전 단계";
+    chatbotActions.appendChild(backButton);
+    bindChatbotActionEvents();
+    scrollChatbotToBottom();
+  }
+
+  // 챗봇 상단 문맥 출력
+  function renderChatbotContext(title, description) {
+    if (!chatbotContext) {
+      return;
+    }
+
+    if (!title && !description) {
+      chatbotContext.innerHTML = "";
+      chatbotContext.classList.remove("is-active");
+      return;
+    }
+
+    chatbotContext.innerHTML = "";
+    chatbotContext.classList.add("is-active");
+
+    if (title) {
+      var heading = document.createElement("strong");
+      heading.textContent = title;
+      chatbotContext.appendChild(heading);
+    }
+
+    if (description) {
+      var guide = document.createElement("p");
+      guide.textContent = description;
+      chatbotContext.appendChild(guide);
+    }
+
+    scrollChatbotToBottom();
+  }
+
+  // 기존 활성방 모달 문구 출력
+  function renderExistingRoomModalCopy(title, description) {
+    if (modalTitle) {
+      modalTitle.textContent = title;
+    }
+
+    if (modalDescription) {
+      modalDescription.textContent = description;
+    }
+  }
+
+  // 챗봇 질의 버튼 목록 출력
+  function renderTopicButtons(topics) {
+    if (!chatbotTopics) {
+      return;
+    }
+
+    chatbotTopics.innerHTML = "";
+
+    topics.forEach(function (topic, index) {
+      var button = document.createElement("button");
+      var title = document.createElement("span");
+      var icon = document.createElement("span");
+
+      button.type = "button";
+      button.className = "member-chat-topic-button";
+      button.classList.add("member-chat-animate-in");
+      button.dataset.topicId = String(topic.cbTpId);
+
+      title.textContent = topic.cbTpNm;
+      icon.className = "material-symbols-outlined";
+      icon.textContent = "arrow_forward";
+      button.style.animationDelay = (index * 45) + "ms";
+
+      button.appendChild(title);
+      button.appendChild(icon);
+      chatbotTopics.appendChild(button);
+    });
+
+    renderTopicActions();
+    scrollChatbotToBottom();
+  }
+
+  // 선택한 질의 말풍선 누적 출력
+  function appendSelectedTopic(topicName) {
+    if (!chatbotResponse || !topicName) {
+      return;
+    }
+
+    var article = document.createElement("article");
+    var bubble = document.createElement("div");
+    var text = document.createElement("p");
+
+    article.className = "member-chat-bot-stack member-chat-bot-stack--user";
+    article.classList.add("member-chat-animate-in");
+    bubble.className = "member-chat-bubble member-chat-bubble--user";
+    text.textContent = topicName;
+
+    bubble.appendChild(text);
+    article.appendChild(bubble);
+    chatbotResponse.appendChild(article);
+    scrollChatbotToBottom();
+  }
+
+  // 챗봇 안내 말풍선 누적 출력
+  function appendBotGuideMessage(message) {
+    if (!chatbotResponse || !message) {
+      return;
+    }
+
+    var article = document.createElement("article");
+    var label = document.createElement("div");
+    var icon = document.createElement("span");
+    var brand = document.createElement("strong");
+    var bubble = document.createElement("div");
+    var text = document.createElement("p");
+
+    article.className = "member-chat-bot-stack";
+    article.classList.add("member-chat-animate-in");
+    label.className = "member-chat-bubble__label";
+    icon.className = "member-chat-bubble__icon material-symbols-outlined";
+    icon.textContent = "smart_toy";
+    brand.textContent = "BEEDAN";
+    bubble.className = "member-chat-bubble member-chat-bubble--bot";
+    text.textContent = message;
+
+    label.appendChild(icon);
+    label.appendChild(brand);
+    bubble.appendChild(text);
+    article.appendChild(label);
+    article.appendChild(bubble);
+    chatbotResponse.appendChild(article);
+    scrollChatbotToBottom();
+  }
+
+  // 최종 응답 제목과 본문 출력
+  function renderResponse(response) {
+    if (!chatbotResponse) {
+      return;
+    }
+
+    if (chatbotTopics) {
+      chatbotTopics.innerHTML = "";
+    }
+    renderChatbotContext(null, null);
+
+    var article = document.createElement("article");
+    var title = document.createElement("h4");
+    var content = document.createElement("p");
+    var guide = document.createElement("small");
+
+    article.className = "member-chat-response-card";
+    article.classList.add("member-chat-animate-in");
+    title.textContent = response.cbResTtl;
+    content.textContent = response.cbResCon;
+    guide.textContent = "추가 문의가 필요하면 상담원 연결을 이용해 주세요.";
+
+    article.appendChild(title);
+    article.appendChild(content);
+    article.appendChild(guide);
+    chatbotResponse.appendChild(article);
+    scrollChatbotToBottom();
+  }
+
+  // 최종 응답 화면 액션 버튼 출력
+  function renderResponseActions(response) {
+    if (!chatbotActions) {
+      return;
+    }
+
+    chatbotActions.innerHTML = "";
+
+    if (response.cbResLnkBtnNm && response.cbResLnkUrl) {
+      var linkButton = document.createElement("button");
+      var linkIcon = document.createElement("span");
+      var linkLabel = document.createElement("span");
+      linkButton.type = "button";
+      linkButton.className = "member-chat-secondary-button member-chat-action-button";
+      linkButton.dataset.chatbotLink = "true";
+      linkIcon.className = "material-symbols-outlined member-chat-action-button__icon";
+      linkIcon.textContent = "open_in_new";
+      linkLabel.textContent = response.cbResLnkBtnNm;
+      linkButton.appendChild(linkIcon);
+      linkButton.appendChild(linkLabel);
+      linkButton.addEventListener("click", function () {
+        window.location.href = response.cbResLnkUrl;
+      });
+      chatbotActions.appendChild(linkButton);
+    }
+
+    var consultButton = document.createElement("button");
+    var consultIcon = document.createElement("span");
+    var consultLabel = document.createElement("span");
+    consultButton.type = "button";
+    consultButton.className = "member-chat-primary-button member-chat-primary-button--accent member-chat-action-button";
+    consultButton.dataset.chatbotConsult = "true";
+    consultIcon.className = "material-symbols-outlined member-chat-action-button__icon";
+    consultIcon.textContent = "support_agent";
+    consultLabel.textContent = "상담원 연결";
+    consultButton.appendChild(consultIcon);
+    consultButton.appendChild(consultLabel);
+    chatbotActions.appendChild(consultButton);
+
+    var restartButton = document.createElement("button");
+    var restartIcon = document.createElement("span");
+    var restartLabel = document.createElement("span");
+    restartButton.type = "button";
+    restartButton.className = "member-chat-secondary-button member-chat-action-button";
+    restartButton.dataset.chatbotRestart = "true";
+    restartIcon.className = "material-symbols-outlined member-chat-action-button__icon";
+    restartIcon.textContent = "refresh";
+    restartLabel.textContent = "처음으로";
+    restartButton.appendChild(restartIcon);
+    restartButton.appendChild(restartLabel);
+    chatbotActions.appendChild(restartButton);
+    bindChatbotActionEvents();
+    scrollChatbotToBottom();
+  }
+
+  // 채팅방 상태 배지 정보 출력
+  function getChatRoomStateMeta(status) {
+    if (status === "CLOSED") {
+      return { label: "종료", badgeClass: "member-chat-state member-chat-state--closed" };
+    }
+
+    if (status === "OPEN") {
+      return { label: "접수", badgeClass: "member-chat-state member-chat-state--ongoing" };
+    }
+
+    return { label: "상담중", badgeClass: "member-chat-state member-chat-state--ongoing" };
+  }
+
+  // 목록 시간 형식 변환
+  function formatChatRoomTime(dateTime) {
+    if (!dateTime) {
+      return "방금";
+    }
+
+    var date = new Date(dateTime);
+    if (Number.isNaN(date.getTime())) {
+      return "방금";
+    }
+
+    var now = new Date();
+    var isSameDay = now.toDateString() === date.toDateString();
+    if (isSameDay) {
+      return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+
+    return date.toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" });
+  }
+
+  // 회원 채팅방 목록 출력
+  function renderMemberChatRooms(chatRooms) {
+    if (!chatListContent) {
+      return;
+    }
+
+    chatListContent.querySelectorAll(".member-chat-room-item").forEach(function (item) {
+      item.remove();
+    });
+
+    chatRooms.forEach(function (chatRoom) {
+      var roomButton = document.createElement("button");
+      var iconWrap = document.createElement("div");
+      var icon = document.createElement("span");
+      var body = document.createElement("div");
+      var head = document.createElement("div");
+      var titleWrap = document.createElement("div");
+      var title = document.createElement("strong");
+      var state = document.createElement("span");
+      var time = document.createElement("span");
+      var summary = document.createElement("div");
+      var summaryText = document.createElement("p");
+      var blade = document.createElement("span");
+      var stateMeta = getChatRoomStateMeta(chatRoom.chRoStt);
+      var summaryMessage = chatRoom.lastMessageContent;
+      var unreadDot = null;
+
+      if (!summaryMessage) {
+        summaryMessage = chatRoom.chRoStt === "CLOSED"
+          ? "상담이 종료되었습니다."
+          : "상담 대기 중입니다.";
+      }
+
+      roomButton.type = "button";
+      roomButton.className = "member-chat-room-item" + (chatRoom.unread ? " is-active" : "");
+      roomButton.classList.add("member-chat-animate-in");
+      roomButton.dataset.chatRoomId = String(chatRoom.chRoId);
+
+      iconWrap.className = "member-chat-room-item__icon";
+      icon.className = "material-symbols-outlined";
+      icon.textContent = chatRoom.chRoStt === "CLOSED" ? "chat_bubble" : "support_agent";
+      iconWrap.appendChild(icon);
+
+      body.className = "member-chat-room-item__body";
+      head.className = "member-chat-room-item__head";
+      titleWrap.className = "member-chat-room-item__title";
+      title.textContent = chatRoom.chRoTtl;
+      state.className = stateMeta.badgeClass;
+      state.textContent = stateMeta.label;
+      time.className = "member-chat-room-item__time";
+      time.textContent = formatChatRoomTime(chatRoom.lastMessageCreatedAt || chatRoom.chRoCreDt);
+
+      titleWrap.appendChild(title);
+      titleWrap.appendChild(state);
+      head.appendChild(titleWrap);
+      head.appendChild(time);
+
+      summary.className = "member-chat-room-item__summary";
+      summaryText.textContent = summaryMessage;
+      summary.appendChild(summaryText);
+
+      if (chatRoom.unread) {
+        unreadDot = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        unreadDot.setAttribute("class", "member-chat-room-item__unread");
+        unreadDot.setAttribute("aria-hidden", "true");
+        unreadDot.setAttribute("viewBox", "0 0 10 10");
+        unreadDot.setAttribute("focusable", "false");
+
+        var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", "5");
+        circle.setAttribute("cy", "5");
+        circle.setAttribute("r", "5");
+        unreadDot.appendChild(circle);
+        summary.appendChild(unreadDot);
+      }
+
+      body.appendChild(head);
+      body.appendChild(summary);
+
+      blade.className = "member-chat-room-item__blade";
+      blade.setAttribute("aria-hidden", "true");
+
+      roomButton.appendChild(iconWrap);
+      roomButton.appendChild(body);
+      roomButton.appendChild(blade);
+
+      if (chatListEnd) {
+        chatListContent.insertBefore(roomButton, chatListEnd);
+      } else {
+        chatListContent.appendChild(roomButton);
+      }
+    });
+  }
+
+  // 상세 메시지 시간 형식 변환
+  function formatChatMessageTime(dateTime) {
+    if (!dateTime) {
+      return "";
+    }
+
+    var date = new Date(dateTime);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+
+  // 메시지 없는 상세 화면 안내 출력
+  function renderEmptyChatRoomDetail() {
+    if (!chatRoomMessages) {
+      return;
+    }
+
+    var emptyText = document.createElement("p");
+    emptyText.className = "member-chat-room-empty";
+    emptyText.textContent = "아직 등록된 메시지가 없습니다.";
+    chatRoomMessages.appendChild(emptyText);
+  }
+
+  // 채팅 입력 영역 상태 반영
+  function updateChatRoomComposerState(status) {
+    var isClosed = status === "CLOSED";
+    currentChatRoomStatus = status;
+
+    if (chatRoomMessageInput) {
+      chatRoomMessageInput.disabled = isClosed;
+      chatRoomMessageInput.placeholder = isClosed
+        ? "종료된 채팅방입니다."
+        : "메시지를 입력해 주세요..";
+    }
+
+    if (chatRoomSendButton) {
+      chatRoomSendButton.disabled = isClosed;
+    }
+
+    if (chatRoomCloseButton) {
+      chatRoomCloseButton.disabled = isClosed;
+    }
+  }
+
+  // 채팅방 상세 화면 출력
+  function renderMemberChatRoomDetail(chatRoomDetail) {
+    if (!chatRoomMessages || !chatRoomTitle) {
+      return;
+    }
+
+    currentChatRoomId = chatRoomDetail.chRoId;
+    updateChatRoomComposerState(chatRoomDetail.chRoStt);
+    chatRoomTitle.textContent = chatRoomDetail.chRoTtl;
+    chatRoomMessages.innerHTML = "";
+
+    if (!chatRoomDetail.messages || chatRoomDetail.messages.length === 0) {
+      renderEmptyChatRoomDetail();
+      return;
+    }
+
+    chatRoomDetail.messages.forEach(function (message) {
+      var article = document.createElement("article");
+      var body = document.createElement("div");
+      var bubble = document.createElement("div");
+      var time = document.createElement("span");
+      var isUserMessage = message.chMsSenTy === "USER";
+
+      article.className = "member-chat-message " + (isUserMessage ? "member-chat-message--right" : "member-chat-message--left");
+      article.classList.add("member-chat-animate-in");
+
+      if (!isUserMessage) {
+        var avatar = document.createElement("div");
+        avatar.className = "member-chat-message__avatar";
+        avatar.textContent = "B";
+        article.appendChild(avatar);
+      }
+
+      body.className = "member-chat-message__body";
+      bubble.className = "member-chat-message__bubble" + (isUserMessage ? " member-chat-message__bubble--accent" : "");
+      bubble.textContent = message.chMsCon;
+      time.textContent = formatChatMessageTime(message.chMsCreDt);
+
+      body.appendChild(bubble);
+      body.appendChild(time);
+      article.appendChild(body);
+      chatRoomMessages.appendChild(article);
+    });
+
+    requestAnimationFrame(function () {
+      chatRoomMessages.scrollTo({
+        top: chatRoomMessages.scrollHeight,
+        behavior: "smooth"
+      });
+    });
+  }
+
+  // 회원 채팅방 목록 비동기 조회
+  function loadMemberChatRooms() {
+    return fetch("/api/chat/rooms")
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load member chat rooms.");
+        }
+
+        return response.json();
+      })
+      .then(function (chatRooms) {
+        var memberChatRooms = chatRooms || [];
+        renderMemberChatRooms(memberChatRooms);
+        setLauncherUnreadBadgeVisible(memberChatRooms.some(function (chatRoom) {
+          return chatRoom.unread;
+        }));
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 챗봇 첫 화면 복귀
+  function resetToFirstTopics() {
+    chatbotStepStack = [];
+    currentTopicId = null;
+    currentTopicName = null;
+    renderChatbotContext(null, null);
+    if (chatbotResponse) {
+      chatbotResponse.innerHTML = "";
+    }
+    if (chatbotActions) {
+      chatbotActions.innerHTML = "";
+    }
+    return loadFirstLevelTopics().then(function () {
+      scrollChatbotToTop();
+    });
+  }
+
+  // 1차 질의 목록 비동기 조회
+  function loadFirstLevelTopics() {
+    return fetch("/api/chatbot/topics/first")
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load first-level topics.");
+        }
+
+        return response.json();
+      })
+      .then(function (topics) {
+        chatbotStepStack = [];
+        renderChatbotContext(null, null);
+        if (chatbotResponse) {
+          chatbotResponse.innerHTML = "";
+        }
+        if (chatbotActions) {
+          chatbotActions.innerHTML = "";
+        }
+        renderTopicButtons(topics);
+        isFirstTopicsLoaded = true;
+        scrollChatbotToTop();
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 다음 단계 비동기 조회
+  function loadNextStep(topicId) {
+    currentTopicId = topicId;
+
+    return fetch("/api/chatbot/topics/" + topicId + "/next")
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load next chatbot step.");
+        }
+
+        return response.json();
+      })
+      .then(function (nextStep) {
+        appendSelectedTopic(currentTopicName);
+
+        if (nextStep.stepType === "TOPIC") {
+          renderTopicButtons(nextStep.topics || []);
+          renderChatbotContext(currentTopicName, "아래 세부 항목에서 원하는 내용을 선택해 주세요.");
+          return;
+        }
+
+        if (nextStep.stepType === "RESPONSE" && nextStep.response) {
+          renderResponse(nextStep.response);
+          renderResponseActions(nextStep.response);
+        }
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 채팅방 상세 비동기 조회
+  function loadMemberChatRoomDetail(chRoId) {
+    return fetch("/api/chat/rooms/" + chRoId)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to load member chat room detail.");
+        }
+
+        return response.json();
+      })
+      .then(function (chatRoomDetail) {
+        renderMemberChatRoomDetail(chatRoomDetail);
+        loadMemberChatRooms();
+        setPanelOpen(true);
+        setView("chat-room");
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 회원 메시지 비동기 전송
+  function sendMemberChatMessage() {
+    if (!currentChatRoomId || !chatRoomMessageInput) {
+      return;
+    }
+
+    var messageContent = chatRoomMessageInput.value;
+    if (!messageContent || !messageContent.trim()) {
+      return;
+    }
+
+    var headers = {
+      "Content-Type": "application/json"
+    };
+
+    if (csrfToken) {
+      headers[csrfHeader] = csrfToken;
+    }
+
+    return fetch("/api/chat/rooms/" + currentChatRoomId + "/messages", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({
+        chMsCon: messageContent
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to send member chat message.");
+        }
+
+        return response.json();
+      })
+      .then(function () {
+        chatRoomMessageInput.value = "";
+        return loadMemberChatRoomDetail(currentChatRoomId);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 회원 채팅방 종료 비동기 요청
+  function closeMemberChatRoom() {
+    if (!currentChatRoomId) {
+      return;
+    }
+
+    var headers = {};
+    if (csrfToken) {
+      headers[csrfHeader] = csrfToken;
+    }
+
+    return fetch("/api/chat/rooms/" + currentChatRoomId + "/close", {
+      method: "PATCH",
+      headers: headers
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to close member chat room.");
+        }
+
+        currentChatRoomId = null;
+        currentChatRoomStatus = null;
+        return loadMemberChatRooms();
+      })
+      .then(function () {
+        setView("chat-list");
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 챗봇 상담 연결 채팅방 비동기 생성 또는 기존방 반환
+  function openChatRoomFromChatbot(topicId) {
+    var headers = {};
+    if (csrfToken) {
+      headers[csrfHeader] = csrfToken;
+    }
+
+    return fetch("/api/chat/rooms/from-chatbot/" + topicId, {
+      method: "POST",
+      headers: headers
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to open chat room from chatbot.");
+        }
+
+        return response.json();
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 새 문의하기 채팅방 비동기 생성 또는 기존방 반환
+  function openNewInquiryChatRoom() {
+    var headers = {};
+    if (csrfToken) {
+      headers[csrfHeader] = csrfToken;
+    }
+
+    return fetch("/api/chat/rooms", {
+      method: "POST",
+      headers: headers
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Failed to open new inquiry chat room.");
+        }
+
+        return response.json();
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+  }
+
+  // 채팅방 오픈 결과 분기 처리
+  function handleChatRoomOpenResult(chatRoom) {
+    if (!chatRoom) {
+      return;
+    }
+
+    if (chatRoom.existingRoom) {
+      pendingChatRoom = chatRoom;
+      renderExistingRoomModalCopy("이미 진행 중인 채팅이 있습니다.", "현재 진행 중인 상담방으로 이동하시겠습니까?");
+      setModalOpen(true);
+      return;
+    }
+
+    loadMemberChatRoomDetail(chatRoom.chRoId);
+  }
+
+  // 위젯 패널 열기 또는 닫기
   function setPanelOpen(isOpen) {
     panel.classList.toggle("is-hidden", !isOpen);
     panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
@@ -24,6 +885,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // 위젯 화면 전환
   function setView(viewName) {
     var navViewName = viewName === "chat-room" ? "chat-list" : viewName;
 
@@ -34,22 +896,65 @@ document.addEventListener("DOMContentLoaded", function () {
     navButtons.forEach(function (button) {
       button.classList.toggle("is-active", button.dataset.viewTarget === navViewName);
     });
+
+    if (viewName === "chat-list" && isAuthenticated) {
+      loadMemberChatRooms();
+    }
+
+    if (viewName === "chat-room" && chatRoomMessageInput && !chatRoomMessageInput.disabled) {
+      requestAnimationFrame(function () {
+        chatRoomMessageInput.focus();
+      });
+    }
   }
 
+  // 기존 활성 채팅방 안내 모달 열기 또는 닫기
   function setModalOpen(isOpen) {
     if (!modal) {
       return;
+    }
+
+    if (!isOpen && modal.contains(document.activeElement)) {
+      document.activeElement.blur();
+      if (launcher) {
+        launcher.focus();
+      }
     }
 
     modal.classList.toggle("is-hidden", !isOpen);
     modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
   }
 
+  // 로그인 안내 모달 열기 또는 닫기
+  function setLoginModalOpen(isOpen) {
+    if (!loginModal) {
+      return;
+    }
+
+    if (!isOpen && loginModal.contains(document.activeElement)) {
+      document.activeElement.blur();
+      if (launcher) {
+        launcher.focus();
+      }
+    }
+
+    loginModal.classList.toggle("is-hidden", !isOpen);
+    loginModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  }
+
   launcher.addEventListener("click", function () {
+    if (!isAuthenticated) {
+      setLoginModalOpen(true);
+      return;
+    }
+
     var willOpen = panel.classList.contains("is-hidden");
     setPanelOpen(willOpen);
     if (willOpen) {
       setView("chatbot");
+      if (!isFirstTopicsLoaded) {
+        loadFirstLevelTopics();
+      }
     }
   });
 
@@ -69,25 +974,99 @@ document.addEventListener("DOMContentLoaded", function () {
   if (newChatButton) {
     newChatButton.addEventListener("click", function () {
       setPanelOpen(true);
-      setModalOpen(true);
+      openNewInquiryChatRoom().then(function (chatRoom) {
+        handleChatRoomOpenResult(chatRoom);
+      });
     });
   }
 
   modalCloseButtons.forEach(function (button) {
     button.addEventListener("click", function () {
+      pendingChatRoom = null;
       setModalOpen(false);
+    });
+  });
+
+  loginModalCloseButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setLoginModalOpen(false);
     });
   });
 
   if (modalConfirmButton) {
     modalConfirmButton.addEventListener("click", function () {
+      if (!pendingChatRoom) {
+        setModalOpen(false);
+        return;
+      }
+
+      var targetRoomId = pendingChatRoom.chRoId;
+      pendingChatRoom = null;
       setModalOpen(false);
-      setPanelOpen(true);
-      setView("chat-room");
+      loadMemberChatRoomDetail(targetRoomId);
+    });
+  }
+
+  if (loginModalConfirmButton) {
+    loginModalConfirmButton.addEventListener("click", function () {
+      window.location.href = loginUrl;
+    });
+  }
+
+  if (chatbotTopics) {
+    chatbotTopics.addEventListener("click", function (event) {
+      var topicButton = event.target.closest(".member-chat-topic-button");
+      if (!topicButton) {
+        return;
+      }
+
+      pushChatbotSnapshot();
+      currentTopicName = topicButton.querySelector("span") ? topicButton.querySelector("span").textContent : null;
+      loadNextStep(topicButton.dataset.topicId);
+    });
+  }
+
+  if (chatListContent) {
+    chatListContent.addEventListener("click", function (event) {
+      var roomButton = event.target.closest(".member-chat-room-item");
+      if (!roomButton || !roomButton.dataset.chatRoomId) {
+        return;
+      }
+
+      loadMemberChatRoomDetail(roomButton.dataset.chatRoomId);
+    });
+  }
+
+  if (chatRoomSendButton) {
+    chatRoomSendButton.addEventListener("click", function () {
+      sendMemberChatMessage();
+    });
+  }
+
+  if (chatRoomMessageInput) {
+    chatRoomMessageInput.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" || event.shiftKey) {
+        return;
+      }
+
+      event.preventDefault();
+      sendMemberChatMessage();
+    });
+  }
+
+  if (chatRoomCloseButton) {
+    chatRoomCloseButton.addEventListener("click", function () {
+      closeMemberChatRoom();
     });
   }
 
   setPanelOpen(false);
   setView("chatbot");
   setModalOpen(false);
+  setLoginModalOpen(false);
+  setLauncherUnreadBadgeVisible(false);
+
+  if (isAuthenticated) {
+    loadMemberChatRooms();
+  }
 });

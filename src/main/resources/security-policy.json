@@ -1,6 +1,6 @@
 {
   "is_login_failure_limit_enabled" : true,
-  "max_login_failure_count" : 1,
+  "max_login_failure_count" : 10,
   "is_account_lock_enabled" : true,
   "account_lock_duration_minutes" : 20,
   "is_session_timeout_enabled" : true,

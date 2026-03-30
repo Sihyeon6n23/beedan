@@ -28,22 +28,23 @@ public class Member {
     @Column(nullable = false)
     private String memLgnPw;
 
+    private String memEml;
+
     @Enumerated(EnumType.STRING)
     private MemberAuthority memAut;
 
     private String memNm;
     private String memMbPhn;
     private String memCi;
-    private String memEml;
+
     private String memBizNo;
     private LocalDateTime memBizCreDt;
     private String memBizTtl;
+    private String memCeoNm;
 
     private String memPosCd;
-
     private String memBizAdr;
     private String memBizDtAdr;
-    private String memCeoNm;
     private String memCeoPhn;
     private String memCmpTel;
 

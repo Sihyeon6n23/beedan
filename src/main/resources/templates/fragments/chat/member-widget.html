@@ -3,7 +3,9 @@
 <th:block th:fragment="memberChatWidget">
     <link rel="stylesheet" th:href="@{/css/chat/member-chat-widget.css}">
 
-    <section class="member-chat-widget" data-member-chat>
+    <section class="member-chat-widget"
+             data-member-chat
+             th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')}, data-login-url=@{/auth/signin}">
         <button type="button" class="member-chat-launcher" data-widget-toggle aria-expanded="false" aria-controls="member-chat-panel">
             <span class="material-symbols-outlined">chat</span>
             <svg class="member-chat-launcher__badge" aria-hidden="true" viewBox="0 0 10 10" focusable="false">
@@ -37,35 +39,12 @@
                         </div>
                     </article>
 
-                    <div class="member-chat-topics">
-                        <button type="button" class="member-chat-topic-button">
-                            <span>배송 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button type="button" class="member-chat-topic-button">
-                            <span>견적 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button type="button" class="member-chat-topic-button">
-                            <span>결제 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button type="button" class="member-chat-topic-button">
-                            <span>회원 / 계정 문의</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                    </div>
+                    <div class="member-chat-context" data-chatbot-context></div>
+                    <div class="member-chat-topics" data-chatbot-topics></div>
 
-                    <div class="member-chat-divider">
-                        <span></span>
-                        <em>또는</em>
-                        <span></span>
-                    </div>
-
-                    <button type="button" class="member-chat-primary-button" data-view-target="chat-list">
-                        <span class="material-symbols-outlined">support_agent</span>
-                        <span>상담원 연결</span>
-                    </button>
+                    <div class="member-chat-response" data-chatbot-response></div>
+                    <div class="member-chat-actions" data-chatbot-actions></div>
+                    
                 </div>
             </section>
 
@@ -86,7 +65,7 @@
                             <div class="member-chat-room-item__head">
                                 <div class="member-chat-room-item__title">
                                     <strong>견적 문의</strong>
-                                    <span class="member-chat-state member-chat-state--ongoing">상담 중</span>
+                                    <span class="member-chat-state member-chat-state--ongoing">상담중</span>
                                 </div>
                                 <span class="member-chat-room-item__time">14:02 PM</span>
                             </div>
@@ -155,62 +134,15 @@
                         <span class="material-symbols-outlined">arrow_back</span>
                     </button>
                     <div class="member-chat-room-topbar__title">
-                        <strong>BEEDAN</strong>
+                        <!-- 채팅방 제목 출력 -->
+                        <strong data-chat-room-title>BEEDAN</strong>
                     </div>
-                    <button type="button" class="member-chat-room-close-button">상담 종료</button>
+                    <!-- 상담 종료 버튼 -->
+                    <button type="button" class="member-chat-room-close-button" data-chat-room-close>상담 종료</button>
                 </header>
 
-                <div class="member-chat-content member-chat-content--room">
-                    <div class="member-chat-date-divider">2026.03.23</div>
-
-                    <article class="member-chat-message member-chat-message--left">
-                        <div class="member-chat-message__avatar">B</div>
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble">
-                                안녕하세요. 주문 예정 수량과 납기 일정을 확인해 주시면 견적 구성과 진행 가능 범위를 안내드리겠습니다.
-                            </div>
-                            <span>오후 2:30</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--right">
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble member-chat-message__bubble--accent">
-                                네, 지츠 주문건 기준으로 500개 수량 이상으로 검토 중이며 일정도 함께 확인하고 싶습니다.
-                            </div>
-                            <span>오후 2:32</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--left">
-                        <div class="member-chat-message__avatar">B</div>
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble">
-                                확인 중입니다. 오늘 오후 안으로 예상 단가와 납기 기준을 정리해서 다시 안내드리겠습니다.
-                            </div>
-                            <span>오후 2:35</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--left">
-                        <div class="member-chat-message__avatar member-chat-message__avatar--ghost"></div>
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble">
-                                필요하시면 관련 서류 준비 일정도 함께 정리해 드릴 수 있습니다.
-                            </div>
-                            <span>오후 2:35</span>
-                        </div>
-                    </article>
-
-                    <article class="member-chat-message member-chat-message--right">
-                        <div class="member-chat-message__body">
-                            <div class="member-chat-message__bubble member-chat-message__bubble--accent">
-                                네, 부탁드립니다. 준비해야 하는 자료가 있으면 같이 안내해 주세요.
-                            </div>
-                            <span>오후 2:38</span>
-                        </div>
-                    </article>
-                </div>
+                <!-- 실제 메시지 출력 부분 -->
+                <div class="member-chat-content member-chat-content--room" data-chat-room-messages></div>
 
                 <footer class="member-chat-room-footer">
                     <input type="text" placeholder="메시지를 입력해 주세요..">
@@ -233,8 +165,8 @@
                 <div class="member-chat-modal__backdrop" data-chat-modal-close></div>
                 <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-chat-modal-title">
                     <div class="member-chat-modal__accent"></div>
-                    <h3 id="member-chat-modal-title">진행 중인 채팅방이 있습니다</h3>
-                    <p>새 문의를 시작하기 전에 현재 진행 중인 상담방으로 이동하시겠습니까?</p>
+                    <h3 id="member-chat-modal-title" data-chat-modal-title>이미 진행 중인 채팅방이 있습니다</h3>
+                    <p data-chat-modal-description>현재 진행 중인 상담방으로 이동하시겠습니까?</p>
                     <div class="member-chat-modal__actions">
                         <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-chat-modal-confirm>
                             채팅방으로 이동
@@ -243,6 +175,24 @@
                             취소
                         </button>
                     </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="member-chat-modal is-hidden" data-login-modal aria-hidden="true">
+            <div class="member-chat-modal__backdrop" data-login-modal-close></div>
+            <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-login-modal-title">
+                <div class="member-chat-modal__accent"></div>
+                <h3 id="member-login-modal-title">로그인이 필요합니다</h3>
+                <p>로그인해야 위젯을 사용하실 수 있습니다.</p>
+                <div class="member-chat-modal__actions">
+                    <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-login-modal-confirm>
+                        로그인 페이지로 이동
+                    </button>
+                    <button type="button" class="member-chat-modal__button" data-login-modal-close>
+                        취소
+                    </button>
                 </div>
             </div>
         </div>

@@ -82,6 +82,13 @@
         },
     }
 </script>
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+<script>
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    if (csrfToken) axios.defaults.headers.common[csrfHeader] = csrfToken;
+</script>
 <style>
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -109,25 +116,26 @@
 
             <!-- Product Table -->
             <div class="w-full overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full table-fixed text-left border-collapse">
                     <thead>
                     <tr class="bg-surface-container-low border-none">
-                        <th class="py-6 px-4 w-10">
+                        <th class="py-6 px-4 w-[3%]">
                             <input type="checkbox" id="check-all" class="w-4 h-4 accent-primary cursor-pointer" />
                         </th>
-                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant">Product</th>
-                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant">SKU</th>
-                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Price</th>
-                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-center">Quantity</th>
-                        <th class="py-6 px-4 font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Total</th>
-                        <th class="py-6 px-4"></th>
+                        <th class="py-6 px-4 w-[30%] font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant">Product</th>
+                        <th class="py-6 px-4 w-[12%] font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant">SKU</th>
+                        <th class="py-6 px-4 w-[14%] font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Price</th>
+                        <th class="py-6 px-4 w-[12%] font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-center">Quantity</th>
+                        <th class="py-6 px-4 w-[14%] font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">Total</th>
+                        <th class="py-6 px-4 w-[12%] font-headline text-xs tracking-widest uppercase font-bold text-on-surface-variant text-right">KRW</th>
+                        <th class="py-6 px-4 w-[3%]"></th>
                     </tr>
                     </thead>
                     <tbody class="divide-y-0">
 
                     <!-- 장바구니 목록 없을 때 -->
                     <tr th:if="${page.isEmpty()}">
-                        <td colspan="7" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td>
+                        <td colspan="8" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td>
                     </tr>
 
                     <!-- 장바구니 아이템 반복 -->
@@ -138,6 +146,7 @@
                         th:data-price="${item.stPr}"
                         th:data-cur="${item.stCur}"
                         th:data-use-yn="${item.stUseYn}"
+                        th:data-krw-price="${item.stKrwPr}"
                         th:classappend="${stat.even} ? 'bg-surface-container-lowest hover:bg-surface-container transition-colors' : 'bg-surface-container-low hover:bg-surface-container transition-colors'">
                         <!-- 체크박스 -->
                         <td class="py-8 px-4" th:classappend="${!item.stUseYn} ? 'opacity-50' : ''">
@@ -147,7 +156,7 @@
                         </td>
                         <!-- 상품 정보 -->
                         <td class="py-8 px-4" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''">
-                            <div class="flex items-center gap-6">
+                            <a th:href="@{'/stock/detail/' + ${item.stId}}" class="flex items-center gap-6 hover:opacity-80 transition-opacity">
                                 <div class="w-24 h-24 bg-surface-container flex-shrink-0">
                                     <img th:if="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
                                          th:src="${item.stImgUrl}"
@@ -165,13 +174,13 @@
                                     </div>
                                     <p class="text-xs text-secondary tracking-wide mt-1" th:text="${item.stBrNm}"></p>
                                 </div>
-                            </div>
+                            </a>
                         </td>
                         <!-- SKU -->
                         <td class="py-8 px-4 font-mono text-sm text-secondary" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''" th:text="${item.stCd}"></td>
                         <!-- 단가 -->
-                        <td class="py-8 px-4 font-bold text-right" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
-                            th:text="${item.stCur + ' ' + #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="py-8 px-4 font-bold text-sm text-right" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
+                            th:text="${item.stCur == '₩' ? item.stCur + ' ' + #numbers.formatInteger(item.stPr, 1, 'COMMA') : item.stCur + ' ' + #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT')}"></td>
                         <!-- 수량 -->
                         <td class="py-8 px-4" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''">
                             <div class="flex items-center justify-center">
@@ -190,8 +199,11 @@
                             </div>
                         </td>
                         <!-- 합계 -->
-                        <td class="py-8 px-4 font-extrabold text-right cart-total" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
-                            th:text="${item.stCur + ' ' + #numbers.formatDecimal(item.stPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="py-8 px-4 font-extrabold text-sm text-right cart-total" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
+                            th:text="${item.stCur == '₩' ? item.stCur + ' ' + #numbers.formatInteger(item.stPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA') : item.stCur + ' ' + #numbers.formatDecimal(item.stPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA', 2, 'POINT')}"></td>
+                        <!-- KRW 환산 -->
+                        <td class="py-8 px-4 font-extrabold text-sm text-right cart-krw-total" th:classappend="${!item.stUseYn} ? 'opacity-50 grayscale' : ''"
+                            th:text="${'₩ ' + #numbers.formatInteger(item.stKrwPr.multiply(new java.math.BigDecimal(item.caStQn)), 1, 'COMMA')}"></td>
                         <!-- 삭제 (항상 활성) -->
                         <td class="py-8 px-4 text-right">
                             <button type="button" class="btn-delete text-error hover:opacity-70 transition-opacity">
@@ -202,6 +214,31 @@
 
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-12 flex justify-center items-center gap-4">
+                <th:block th:if="${page.totalPages > 1}"
+                           th:with="startPage=${T(java.lang.Math).max(0, page.number - 4)},
+                                    endPage=${T(java.lang.Math).min(page.totalPages - 1, startPage + 9)}">
+                    <a th:href="${'/cart?page=' + (page.number - 1)}"
+                       th:classappend="${page.first} ? 'pointer-events-none opacity-30' : ''"
+                       class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </a>
+                    <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                       th:href="${'/cart?page=' + i}"
+                       th:text="${i + 1}"
+                       th:classappend="${i == page.number} ? 'text-on-surface border-b-4 border-primary-container' : 'text-neutral-400 hover:text-on-surface'"
+                       class="w-12 h-12 flex items-center justify-center font-headline font-extrabold text-xs transition-colors">
+                    </a>
+                    <a th:href="${'/cart?page=' + (page.number + 1)}"
+                       th:classappend="${page.last} ? 'pointer-events-none opacity-30' : ''"
+                       class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4">
+                        Next
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </a>
+                </th:block>
             </div>
 
             <div class="mt-12 flex items-start">
@@ -310,6 +347,7 @@
 
     function updateRowTotal(row) {
         const price = parseFloat(row.dataset.price);
+        const krwPrice = parseFloat(row.dataset.krwPrice);
         const cur = row.dataset.cur;
         const qty = parseInt(row.querySelector('.qty-input').value) || 1;
         const total = price * qty;
@@ -318,6 +356,11 @@
             totalTd.textContent = cur + ' ' + Math.floor(total).toLocaleString();
         } else {
             totalTd.textContent = cur + ' ' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        const krwTotalTd = row.querySelector('.cart-krw-total');
+        if (krwTotalTd) {
+            const krwTotal = Math.round(krwPrice * qty / 100) * 100;
+            krwTotalTd.textContent = '₩ ' + krwTotal.toLocaleString();
         }
     }
 
@@ -350,12 +393,9 @@
 
     document.getElementById('delete-confirm').addEventListener('click', () => {
         if (!deleteTargetCaId) return;
-        axios.delete('/api/cart' + deleteTargetCaId)
+        axios.delete('/api/cart/' + deleteTargetCaId)
             .then(() => {
-                const row = document.querySelector('.cart-row[data-ca-id="' + deleteTargetCaId + '"]');
-                if (row) row.remove();
-                modal.classList.add('hidden');
-                deleteTargetCaId = null;
+                location.reload();
             })
             .catch(err => {
                 console.error('삭제 실패:', err);

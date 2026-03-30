@@ -21,6 +21,7 @@ public class CartDto {
     private String stBrNm; // 브랜드명
     private String stNm; // 상품명
     private BigDecimal stPr; // 상품 가격
+    private BigDecimal stKrwPr; // 원화 환산 가격
     private String stCur; // 상품 통화
     private String stImgUrl; // 상품 이미지 url
     private boolean stUseYn; // 상품 사용 여부

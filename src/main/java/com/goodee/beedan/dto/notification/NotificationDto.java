@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.notification;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,9 @@ public class NotificationDto {
     private Long notiId;
     private String notiCon;
     private String notiTtl;
-    private LocalDateTime notiCreAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime notiCreDt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime notiUptDt;
     private Boolean notiReaYn;
     private Long memberId;

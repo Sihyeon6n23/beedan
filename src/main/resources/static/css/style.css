@@ -427,6 +427,9 @@
   .h-12 {
     height: 3rem;
   }
+  .h-14 {
+    height: 3.4375rem;
+  }
   .h-16 {
     height: 4rem;
   }
@@ -1159,6 +1162,17 @@
   /* [5] 추가: 요약 카드 내부의 보더 투명도 (border-white/10) */
   .border-white\/10 {
     border-color: rgba(255, 255, 255, 0.1);
+  }
+  @layer utilities {
+    /* 왼쪽 마진을 자동으로 채워 요소를 오른쪽 끝으로 보냄 */
+    .ml-auto {
+      margin-left: auto !important;
+    }
+
+    /* (참고) 반대로 오른쪽 마진을 채워 왼쪽으로 밀 때는 mr-auto */
+    .mr-auto {
+      margin-right: auto !important;
+    }
   }
 }
 @layer base {
