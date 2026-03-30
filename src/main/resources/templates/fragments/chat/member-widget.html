@@ -39,21 +39,12 @@
                         </div>
                     </article>
 
+                    <div class="member-chat-context" data-chatbot-context></div>
                     <div class="member-chat-topics" data-chatbot-topics></div>
 
                     <div class="member-chat-response" data-chatbot-response></div>
                     <div class="member-chat-actions" data-chatbot-actions></div>
                     
-                    <div class="member-chat-divider">
-                        <span></span>
-                        <em>또는</em>
-                        <span></span>
-                    </div>
-
-                    <button type="button" class="member-chat-primary-button" data-view-target="chat-list">
-                        <span class="material-symbols-outlined">support_agent</span>
-                        <span>상담원 연결</span>
-                    </button>
                 </div>
             </section>
 
@@ -174,8 +165,8 @@
                 <div class="member-chat-modal__backdrop" data-chat-modal-close></div>
                 <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-chat-modal-title">
                     <div class="member-chat-modal__accent"></div>
-                    <h3 id="member-chat-modal-title">이미 진행 중인 채팅방이 있습니다</h3>
-                    <p>현재 진행 중인 상담방으로 이동하시겠습니까?</p>
+                    <h3 id="member-chat-modal-title" data-chat-modal-title>이미 진행 중인 채팅방이 있습니다</h3>
+                    <p data-chat-modal-description>현재 진행 중인 상담방으로 이동하시겠습니까?</p>
                     <div class="member-chat-modal__actions">
                         <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-chat-modal-confirm>
                             채팅방으로 이동

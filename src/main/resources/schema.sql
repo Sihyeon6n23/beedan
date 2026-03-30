@@ -446,9 +446,11 @@ CREATE TABLE chat_room (
       (ch_ro_stt = 'CLOSED' AND ch_ro_cls_dt IS NOT NULL AND ch_ro_cls_rsn IS NOT NULL)
    ),
    CHECK (
-      (ch_ro_stt = 'OPEN' AND mem_ad_id IS NULL)
-      OR
-      (ch_ro_stt IN ('ONGOING', 'CLOSED') AND mem_ad_id IS NOT NULL)
+       (ch_ro_stt = 'OPEN' AND mem_ad_id IS NULL)
+           OR
+       (ch_ro_stt = 'ONGOING' AND mem_ad_id IS NOT NULL)
+           OR
+       (ch_ro_stt = 'CLOSED')
    )
 );
 

@@ -1,3 +1,4 @@
+
 -- =====================
 -- 최준희 START
 -- =====================
@@ -308,22 +309,168 @@ VALUES
     (6, '통관/입고 일정', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
     (7, '견적 요청 방법', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
     (8, '최소 발주 수량', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
-    (9, '로그인/비밀번호', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4),
+    (9, '비밀번호 변경', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4),
     (10, '사업자 정보 변경', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4);
 
 INSERT INTO chatbot_response
 (cb_res_id, cb_res_ttl, cb_res_con, cb_res_lnk_btn_nm, cb_res_lnk_url, cb_res_use_yn, cb_res_cre_dt, cb_res_upd_dt, cb_tp_id)
 VALUES
-    (1, '배송 조회 안내', '마이페이지의 주문/배송 내역에서 진행 상태를 확인하실 수 있습니다. 국내 배송 시작 이후에는 송장 정보가 순차적으로 반영되며, 현지 출고 직후에는 상태 반영까지 다소 시간이 걸릴 수 있습니다.', '주문 내역 보기', '/member/order/list', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5),
+    (1, '배송 조회 안내', '마이페이지의 주문/배송 내역에서 진행 상태를 확인하실 수 있습니다. 국내 배송 시작 이후에는 송장 정보가 순차적으로 반영되며, 현지 출고 직후에는 상태 반영까지 다소 시간이 걸릴 수 있습니다.', '주문 내역 보기', '/order/list', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5),
     (2, '통관 및 입고 일정 안내', '통관과 입고 일정은 상품 종류, 현지 출고 시점, 세관 상황에 따라 달라질 수 있습니다. 급한 일정이 있는 경우 상담사 연결을 통해 주문번호와 희망 납기일을 함께 남겨주시면 확인 후 안내드립니다.', NULL, NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6),
     (3, '견적 요청 방법 안내', '원하시는 상품명, 브랜드, 수량, 옵션 정보를 준비하신 뒤 견적 요청 페이지에서 접수해 주세요. 요청 내용이 구체적일수록 상담과 산출이 더 빠르게 진행됩니다.', '견적 요청하기', '/quote/write', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7),
     (4, '최소 발주 수량 안내', '최소 발주 수량은 브랜드와 상품마다 다를 수 있습니다. 대량 구매나 정기 발주를 검토 중이신 경우 상담사 연결을 통해 예상 수량을 알려주시면 확인 후 안내드립니다.', NULL, NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8),
     (5, '결제 안내', '결제 가능 수단과 결제 진행 상태는 결제 안내 화면에서 확인하실 수 있습니다. 카드 결제 오류나 입금 확인 지연이 있는 경우 상담사 연결을 통해 주문 정보와 함께 문의해 주세요.', '결제 내역 보기', '/payment/check', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3),
-    (6, '로그인/비밀번호 안내', '로그인이 되지 않거나 비밀번호를 분실하신 경우 로그인 화면의 찾기 기능을 이용해 주세요. 반복 로그인 실패로 계정이 잠긴 경우에는 상담사 연결을 통해 본인 확인 후 안내받으실 수 있습니다.', '로그인 페이지로 이동', '/auth/signin', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9),
-    (7, '사업자 정보 변경 안내', '상호, 대표자명, 사업장 주소 등 사업자 정보 변경이 필요한 경우 마이페이지에서 수정 가능한 항목을 먼저 확인해 주세요. 증빙서류 확인이 필요한 변경 건은 상담사 연결 후 처리됩니다.', '마이페이지로 이동', '/mypage/main', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10);
+    (6, '비밀번호 변경 안내', '비밀번호를 변경하려면 마이페이지의 비밀번호 변경 메뉴를 이용해 주세요. 현재 비밀번호 확인 후 새 비밀번호를 등록할 수 있으며, 계정 접근에 문제가 있는 경우에는 상담사 연결을 통해 추가 안내를 받을 수 있습니다.', '비밀번호 변경으로 이동', '/mypage/changepw', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9),
+    (7, '사업자 정보 변경 안내', '상호, 대표자명, 사업장 주소 등 사업자 정보 변경이 필요한 경우 마이페이지에서 수정 가능한 항목을 먼저 확인해 주세요. 증빙서류 확인이 필요한 변경 건은 상담사 연결 후 처리됩니다.', '사업자 정보 변경으로 이동', '/mypage/changebiz', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10);
 
 ALTER TABLE chatbot_topic ALTER COLUMN cb_tp_id RESTART WITH 100;
 ALTER TABLE chatbot_response ALTER COLUMN cb_res_id RESTART WITH 100;
+
+-- 채팅 읽음 처리 테스트 데이터
+INSERT INTO chat_room (
+    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
+) VALUES (
+             '미읽음 테스트 문의',
+             'OPEN',
+             CURRENT_TIMESTAMP,
+             CURRENT_TIMESTAMP,
+             (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01'),
+             NULL
+         );
+
+INSERT INTO chat_message (
+    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
+) VALUES (
+             'USER',
+             '미읽음 상태 확인용 테스트 메시지입니다.',
+             CURRENT_TIMESTAMP,
+             (
+                 SELECT ch_ro_id
+                 FROM chat_room
+                 WHERE ch_ro_ttl = '미읽음 테스트 문의'
+                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
+             ),
+             (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
+         );
+
+INSERT INTO chat_room_read_status (
+    ch_ro_re_st_last_dt, ch_ro_re_st_unr_yn, ch_ro_id, mem_id, ch_ms_last_id
+) VALUES (
+             NULL,
+             TRUE,
+             (
+                 SELECT ch_ro_id
+                 FROM chat_room
+                 WHERE ch_ro_ttl = '미읽음 테스트 문의'
+                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
+             ),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01'),
+    NULL
+);
+
+INSERT INTO chat_room (
+    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
+) VALUES
+    ('관리자 상호명 테스트 문의', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
+    ('관리자 목록 테스트 문의 2', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
+    ('관리자 목록 테스트 문의 3', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
+    ('관리자 목록 테스트 문의 4', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
+    ('관리자 목록 테스트 문의 5', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL);
+
+INSERT INTO chat_message (
+    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
+) VALUES
+    ('USER', '관리자 목록에서 상호명 표시 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 상호명 테스트 문의' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
+    ('USER', '관리자 목록 두 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 2' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
+    ('USER', '관리자 목록 세 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 3' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
+    ('USER', '관리자 목록 네 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 4' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
+    ('USER', '관리자 목록 다섯 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 5' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'));
+
+INSERT INTO chat_room (
+    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
+)
+SELECT
+    '관리자 목록 OPEN 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
+    'OPEN',
+    DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
+    DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
+    NULL
+FROM SYSTEM_RANGE(6, 13);
+
+INSERT INTO chat_message (
+    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
+)
+SELECT
+    'USER',
+    'OPEN 상태 필터 확인용 메시지 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
+    DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
+    (
+        SELECT ch_ro_id
+        FROM chat_room
+        WHERE ch_ro_ttl = '관리자 목록 OPEN 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
+          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    ),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+FROM SYSTEM_RANGE(6, 13);
+
+INSERT INTO chat_room (
+    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
+)
+SELECT
+    '관리자 목록 ONGOING 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
+    'ONGOING',
+    DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
+    DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+FROM SYSTEM_RANGE(1, 13);
+
+INSERT INTO chat_message (
+    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
+)
+SELECT
+    'USER',
+    'ONGOING 상태 필터 확인용 메시지 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
+    DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
+    (
+        SELECT ch_ro_id
+        FROM chat_room
+        WHERE ch_ro_ttl = '관리자 목록 ONGOING 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
+          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    ),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+FROM SYSTEM_RANGE(1, 13);
+
+INSERT INTO chat_room (
+    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, ch_ro_cls_dt, ch_ro_cls_rsn, mem_id, mem_ad_id
+)
+SELECT
+    '관리자 목록 CLOSED 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
+    'CLOSED',
+    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
+    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
+    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
+    'ADMIN',
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+FROM SYSTEM_RANGE(1, 13);
+
+INSERT INTO chat_message (
+    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
+)
+SELECT
+    'USER',
+    'CLOSED 상태 필터 확인용 메시지 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
+    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
+    (
+        SELECT ch_ro_id
+        FROM chat_room
+        WHERE ch_ro_ttl = '관리자 목록 CLOSED 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
+          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+    ),
+    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
+FROM SYSTEM_RANGE(1, 13);
 -- =====================
 -- 장 준 END
 -- =====================
