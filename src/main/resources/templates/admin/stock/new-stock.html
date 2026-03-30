@@ -117,6 +117,7 @@
         <div class="admin-crawling-shell">
             <h2 class="admin-crawling-section-title">URL 등록</h2>
             <form th:object="${url}" th:action="@{/admin/newstock/url}" method="post" class="admin-crawling-form" onsubmit="return validateUrlForm(this)">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">크롤링 URL</label>
                     <input type="url" th:field="*{urlUrl}" placeholder="https://example.com/collections/outerwear"
@@ -261,9 +262,9 @@
                        class="admin-crawling-input"/>
                 <datalist id="currency-list">
                     <option value="¥">JPY</option>
-                    <option value="€">EUR</option>
                     <option value="$">USD</option>
-                    <option value="£">GBP</option>
+                    <option value="€">EUR</option>
+                    <option value="CNY">CNY</option>
                     <option value="₩">KRW</option>
                 </datalist>
             </div>

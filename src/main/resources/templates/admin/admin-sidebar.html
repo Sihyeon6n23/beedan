@@ -25,7 +25,12 @@
                 <a th:href="@{/admin/newstock}"
                    class="sidebar-menu__child-link"
                    th:classappend="${activeSub == 'stock-new'} ? ' sidebar-menu__child-link--current' : ''">
-                    신규 상품 등록
+                    상품 요청 목록
+                </a>
+                <a th:href="@{/admin/newstock}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-new'} ? ' sidebar-menu__child-link--current' : ''">
+                    상품 등록
                 </a>
             </div>
         </div>

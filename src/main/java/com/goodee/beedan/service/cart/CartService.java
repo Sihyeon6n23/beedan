@@ -5,6 +5,7 @@ import com.goodee.beedan.dto.cart.CartDto;
 import com.goodee.beedan.dto.cart.CartUpdateDto;
 import com.goodee.beedan.entity.Cart;
 import com.goodee.beedan.repository.cart.CartRepository;
+import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.service.exchangeRate.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,11 +24,27 @@ import java.util.List;
 public class CartService {
     private final CartRepository cartRepository;
     private final ExchangeRateService exchangeRateService;
+    private final StockRepository stockRepository;
 
     // 장바구니 목록 (페이징 포함)
     public Page<CartDto> findByMemId(Long memId, Pageable pageable) {
         return cartRepository.findByMemId(memId, pageable)
                 .map(this::mapToCartDto);
+    }
+
+    // 장바구니에 추가
+    public boolean addItem(Long memId, Long stId, Long qn) {
+        Optional<Cart> itemExists = cartRepository.findByMemIdAndStock_StId(memId, stId);
+        if (itemExists.isPresent()){
+            return true;
+        }
+        Cart cart = Cart.builder()
+                .memId(memId)
+                .caStQn(qn)
+                .stock(stockRepository.findById(stId).orElseThrow())
+                .build();
+        cartRepository.save(cart);
+        return false;
     }
 
     // 장바구니에서 상품 삭제
@@ -47,7 +65,11 @@ public class CartService {
     }
     // 상품 가격 -> 원화 환산
     public BigDecimal getRate(String symbol) {
-        return exchangeRateService.findLatestByCurrencySymbol(symbol).getErRa();
+        if(symbol.equals("₩")) {
+            return BigDecimal.valueOf(1);
+        } else {
+            return exchangeRateService.findLatestByCurrencySymbol(symbol).getErRa();
+        }
     }
     // 장바구니 엔티티 객체를 DTO 객체로 변환
     public CartDto mapToCartDto(Cart cart) {
