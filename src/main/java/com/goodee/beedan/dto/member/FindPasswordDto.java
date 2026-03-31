@@ -7,10 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class PhoneVerificationDto {
-    private String name;
-    private String phoneNumber;
-    private String ci;
+@AllArgsConstructor
+public class FindPasswordDto {
+    private String memEml;
+    private String memNm;
 }
