@@ -45,7 +45,7 @@ public class MemberChatService {
         return openChatRoom(memId, DEFAULT_CHAT_ROOM_TITLE);
     }
 
-    // 제목만 받아 기존 활성방 반환 또는 새 OPEN 채팅방 생성 처리
+    // 제목만 받아 기존 활성방 반환 또는 새 OPEN 채팅방 생성
     private ChatRoomOpenResultDto openChatRoom(Long memId, String roomTitle) {
         List<ChatRoomStatus> activeStatuses = List.of(ChatRoomStatus.OPEN, ChatRoomStatus.ONGOING);
 
@@ -65,6 +65,16 @@ public class MemberChatService {
                 .build();
 
         ChatRoom savedRoom = chatRoomRepository.save(newRoom);
+
+        ChatRoomReadStatus roomReadStatus = ChatRoomReadStatus.builder()
+                .memId(memId)
+                .chRoId(savedRoom.getChRoId())
+                .chRoReStUnrYn(false)
+                .chMsLastId(null)
+                .build();
+
+        chatRoomReadStatusRepository.save(roomReadStatus);
+
         return mapToChatRoomOpenResultDto(savedRoom, false);
     }
 
@@ -78,9 +88,9 @@ public class MemberChatService {
                 .build();
     }
 
-    // 회원 본인의 채팅방 목록을 조회하고 마지막 메시지와 미읽음 여부를 함께 반환
+    // 회원 본인의 채팅방 목록을 조회, 마지막 메시지와 미읽음 여부를 함께 반환
     public List<MemberChatRoomListDto> getMemberChatRooms(Long memId) {
-        return chatRoomRepository.findByMemIdOrderByChRoLastMsDtDescChRoCreDtDesc(memId)
+        return chatRoomRepository.findMemberChatRoomsByMemIdOrderByActiveFirst(memId)
                 .stream()
                 .map(chatRoom -> mapToMemberChatRoomListDto(chatRoom, memId))
                 .toList();
@@ -93,7 +103,7 @@ public class MemberChatService {
                 .findFirstByChRoIdOrderByChMsCreDtDesc(chatRoom.getChRoId());
 
         // 사용자 기준 읽음 상태 조회
-        Optional<ChatRoomReadStatus> readStatus = chatRoomReadStatusRepository
+        Optional<ChatRoomReadStatus> roomReadStatus = chatRoomReadStatusRepository
                 .findByMemIdAndChRoId(memId, chatRoom.getChRoId());
 
         return MemberChatRoomListDto.builder()
@@ -103,7 +113,7 @@ public class MemberChatService {
                 .lastMessageContent(lastMessage.map(chatMessage -> chatMessage.getChMsCon()).orElse(null))
                 .lastMessageCreatedAt(lastMessage.map(chatMessage -> chatMessage.getChMsCreDt()).orElse(null))
                 .chRoCreDt(chatRoom.getChRoCreDt())
-                .unread(readStatus.map(chatRoomReadStatus -> chatRoomReadStatus.getChRoReStUnrYn()).orElse(false))
+                .unread(roomReadStatus.map(chatRoomReadStatus -> chatRoomReadStatus.getChRoReStUnrYn()).orElse(false))
                 .build();
     }
 
@@ -132,17 +142,17 @@ public class MemberChatService {
         // 마지막 메시지 조회
         ChatMessage lastMessage = messages.get(messages.size() - 1);
         // 읽음 상태 조회 또는 생성
-        ChatRoomReadStatus readStatus = chatRoomReadStatusRepository
+        ChatRoomReadStatus roomReadStatus = chatRoomReadStatusRepository
                 .findByMemIdAndChRoId(memId, chRoId)
                 .orElseGet(() -> ChatRoomReadStatus.builder()
                                                 .memId(memId)
                                                 .chRoId(chRoId)
                                                 .build());
 
-        readStatus.setChMsLastId(lastMessage.getChMsId()); // 마지막 메시지 갱신
-        readStatus.setChRoReStUnrYn(false); // 읽음 상태 처리
+        roomReadStatus.setChMsLastId(lastMessage.getChMsId()); // 마지막 메시지 갱신
+        roomReadStatus.setChRoReStUnrYn(false); // 미읽음 여부 FALSE -> 읽음
 
-        chatRoomReadStatusRepository.save(readStatus);
+        chatRoomReadStatusRepository.save(roomReadStatus);
     }
 
     // 채팅 메시지 엔티티를 상세 화면용 메시지 DTO로 변환
@@ -165,7 +175,7 @@ public class MemberChatService {
                 .build();
     }
 
-    // 회원 본인 채팅방에 메시지를 저장하고 저장 결과를 DTO로 반환
+    // 회원이 메시지를 전송하고 읽음 상태 갱신
     public MemberChatMessageDto sendMemberChatMessage(Long chRoId, Long memId, String content) {
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository
@@ -182,7 +192,7 @@ public class MemberChatService {
             throw new IllegalArgumentException("메시지 내용을 입력해 주세요.");
         }
 
-        // 메시지 객체 생성
+        // 메시지 엔티티 객체 생성
         ChatMessage chatMessage = ChatMessage.builder()
                 .chMsSenTy(ChatMessageSenderType.USER)
                 .chMsCon(content.trim())
@@ -196,6 +206,33 @@ public class MemberChatService {
         // 채팅방 마지막 메시지 시각 갱신
         chatRoom.setChRoLastMsDt(savedMessage.getChMsCreDt());
         chatRoomRepository.save(chatRoom);
+
+        // 사용자 읽음 상태 갱신
+        ChatRoomReadStatus memberReadStatus = chatRoomReadStatusRepository
+                .findByMemIdAndChRoId(memId, chRoId)
+                .orElseGet(() -> ChatRoomReadStatus.builder()
+                        .memId(memId)
+                        .chRoId(chRoId)
+                        .build());
+
+        memberReadStatus.setChRoReStUnrYn(false); // 미읽음 여부 FALSE -> 읽음
+        memberReadStatus.setChMsLastId(savedMessage.getChMsId()); // 마지막 메시지 갱신
+        chatRoomReadStatusRepository.save(memberReadStatus);
+
+        // ONGOING 방이면 담당자 미읽음 상태 갱신 (OPEN 방이면 담당자X, 읽음 상태X 이므로)
+        if (chatRoom.getChRoStt() == ChatRoomStatus.ONGOING && chatRoom.getMemAdId() != null) {
+            // 관리자 읽음 상태 갱신
+            ChatRoomReadStatus adminReadStatus = chatRoomReadStatusRepository
+                    .findByMemIdAndChRoId(chatRoom.getMemAdId(), chRoId)
+                    .orElseGet(() -> ChatRoomReadStatus.builder()
+                            .memId(chatRoom.getMemAdId())
+                            .chRoId(chRoId)
+                            .build());
+
+            adminReadStatus.setChRoReStUnrYn(true); // 미읽음 여부 TRUE -> 안읽음
+            adminReadStatus.setChMsLastId(savedMessage.getChMsId()); // 마지막 메시지 갱신
+            chatRoomReadStatusRepository.save(adminReadStatus);
+        }
 
         return mapToMemberChatMessageDto(savedMessage);
     }

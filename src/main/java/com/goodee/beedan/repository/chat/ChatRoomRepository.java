@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -14,9 +15,30 @@ import java.util.Optional;
 
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
+    // 사용자
     Optional<ChatRoom> findFirstByMemIdAndChRoSttInOrderByChRoIdDesc(Long memId, Collection<ChatRoomStatus> statuses);
+
     List<ChatRoom> findByMemIdOrderByChRoLastMsDtDescChRoCreDtDesc(Long memId);
+    @Query("""
+      SELECT cr
+      FROM ChatRoom cr
+      WHERE cr.memId = :memId
+      ORDER BY
+          CASE
+              WHEN cr.chRoStt IN ('OPEN', 'ONGOING') THEN 0
+              ELSE 1
+          END,
+          CASE
+              WHEN cr.chRoStt = 'CLOSED' THEN cr.chRoClsDt
+              ELSE cr.chRoLastMsDt
+          END DESC,
+          cr.chRoCreDt DESC
+  """)
+    List<ChatRoom> findMemberChatRoomsByMemIdOrderByActiveFirst(@Param("memId") Long memId);
+
     Optional<ChatRoom> findByChRoIdAndMemId(Long chRoId, Long memId);
+
+    // 관리자
 
     // 전체 목록
     List<ChatRoom> findAllByOrderByChRoLastMsDtDescChRoCreDtDesc();

@@ -146,6 +146,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (consultButton) {
       consultButton.onclick = function () {
         if (!currentTopicId) {
+          openNewInquiryChatRoom().then(function (chatRoom) {
+            handleChatRoomOpenResult(chatRoom);
+          });
           return;
         }
 
@@ -162,6 +165,31 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // 챗봇 첫 화면 하단 액션 버튼 출력
+  function renderChatbotHomeActions() {
+    if (!chatbotActions) {
+      return;
+    }
+
+    chatbotActions.innerHTML = "";
+
+    var consultButton = document.createElement("button");
+    var consultIcon = document.createElement("span");
+    var consultLabel = document.createElement("span");
+
+    consultButton.type = "button";
+    consultButton.className = "member-chat-primary-button member-chat-primary-button--accent member-chat-action-button";
+    consultButton.dataset.chatbotConsult = "true";
+    consultIcon.className = "material-symbols-outlined member-chat-action-button__icon";
+    consultIcon.textContent = "support_agent";
+    consultLabel.textContent = "상담원 연결";
+
+    consultButton.appendChild(consultIcon);
+    consultButton.appendChild(consultLabel);
+    chatbotActions.appendChild(consultButton);
+    bindChatbotActionEvents();
+  }
+
   // 챗봇 단계 이동용 뒤로 버튼 출력
   function renderTopicActions() {
     if (!chatbotActions) {
@@ -171,6 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
     chatbotActions.innerHTML = "";
 
     if (chatbotStepStack.length === 0) {
+      renderChatbotHomeActions();
       return;
     }
 
@@ -330,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function () {
     article.classList.add("member-chat-animate-in");
     title.textContent = response.cbResTtl;
     content.textContent = response.cbResCon;
-    guide.textContent = "추가 문의가 필요하면 상담원 연결을 이용해 주세요.";
+    guide.textContent = "추가 문의가 필요하시면 상담원 연결을 이용해 주세요.";
 
     article.appendChild(title);
     article.appendChild(content);
@@ -541,10 +570,25 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    var emptyText = document.createElement("p");
-    emptyText.className = "member-chat-room-empty";
-    emptyText.textContent = "아직 등록된 메시지가 없습니다.";
-    chatRoomMessages.appendChild(emptyText);
+    var emptyState = document.createElement("div");
+    var icon = document.createElement("span");
+    var title = document.createElement("strong");
+    var description = document.createElement("p");
+
+    emptyState.className = "member-chat-room-empty";
+    icon.className = "material-symbols-outlined member-chat-room-empty__icon";
+    icon.textContent = currentChatRoomStatus === "CLOSED" ? "chat_bubble" : "edit_square";
+    title.textContent = currentChatRoomStatus === "CLOSED"
+      ? "아직 대화 내역이 없습니다."
+      : "문의 내용을 남겨주세요.";
+    description.textContent = currentChatRoomStatus === "CLOSED"
+      ? "상담이 시작되기 전에 종료된 채팅방입니다."
+      : "메시지를 남기면 상담원이 내용을 확인한 뒤 순차적으로 답변드립니다.";
+
+    emptyState.appendChild(icon);
+    emptyState.appendChild(title);
+    emptyState.appendChild(description);
+    chatRoomMessages.appendChild(emptyState);
   }
 
   // 채팅 입력 영역 상태 반영
@@ -622,7 +666,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 회원 채팅방 목록 비동기 조회
   function loadMemberChatRooms() {
-    return fetch("/api/chat/rooms")
+    return fetch("/api/chat/rooms", {
+      cache: "no-store"
+    })
       .then(function (response) {
         if (!response.ok) {
           throw new Error("Failed to load member chat rooms.");
@@ -654,6 +700,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (chatbotActions) {
       chatbotActions.innerHTML = "";
     }
+    renderChatbotHomeActions();
     return loadFirstLevelTopics().then(function () {
       scrollChatbotToTop();
     });
@@ -679,6 +726,7 @@ document.addEventListener("DOMContentLoaded", function () {
           chatbotActions.innerHTML = "";
         }
         renderTopicButtons(topics);
+        renderChatbotHomeActions();
         isFirstTopicsLoaded = true;
         scrollChatbotToTop();
       })
@@ -720,7 +768,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 채팅방 상세 비동기 조회
   function loadMemberChatRoomDetail(chRoId) {
-    return fetch("/api/chat/rooms/" + chRoId)
+    return fetch("/api/chat/rooms/" + chRoId, {
+      cache: "no-store"
+    })
       .then(function (response) {
         if (!response.ok) {
           throw new Error("Failed to load member chat room detail.");
@@ -730,9 +780,10 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then(function (chatRoomDetail) {
         renderMemberChatRoomDetail(chatRoomDetail);
-        loadMemberChatRooms();
-        setPanelOpen(true);
-        setView("chat-room");
+        return loadMemberChatRooms().then(function () {
+          setPanelOpen(true);
+          setView("chat-room");
+        });
       })
       .catch(function (error) {
         console.error(error);
