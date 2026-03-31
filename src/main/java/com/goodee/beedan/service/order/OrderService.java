@@ -30,7 +30,6 @@ public class OrderService {
     private final MemberRepository memberRepository;
 
     private final QuoteDetailRepository quoteDetailRepository;
-    private final QuoteInfoRepository quoteInfoRepository;
     private final NegotiationRepository negotiationRepository;
 
     private final ShipmentRepository shipmentRepository;
@@ -139,7 +138,7 @@ public class OrderService {
         // 주문 상품 생성
         OrderItem orderItem = OrderItem.builder()
                 .order(order)
-                .ordItemQn(totalQuantity) // 총 주문
+                .ordItemQn(totalQuantity) // 총 주문 수량
                 .build();
         orderItemRepository.save(orderItem);
 
