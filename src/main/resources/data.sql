@@ -227,6 +227,13 @@ INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
                                                                         (9,  10, '6403.99-0000', 'Shoes',            0.1300, '신발류 - 세번 확인 필요'),
                                                                         (10, 11, '4202.22-0000', 'Bags/Accessories', 0.1300, '가방/액세서리 - 세번 확인 필요');
 
+INSERT INTO SHIPPING_INSURANCE (si_nm, si_am, si_des, si_yn, si_cr_dt, si_up_dt) VALUES
+    ('적하보험 (기본)', 0.0100, '해상·항공 운송 중 발생하는 파손, 분실, 침수 등의 사고에 대해 상품가 기준으로 보상합니다. CIF 조건에 포함되는 기본 보험이며, 통관 후 국내 배송 구간은 별도입니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('적하보험 (확장)', 0.0300, '기본 보험 보장 범위에 더해 통관 후 국내 배송 구간, 보관 중 사고, 자연재해로 인한 손상까지 보장합니다. 고가 상품이나 파손 위험이 높은 품목에 권장됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+INSERT INTO STOCK_INSPECTION (sti_nm, sti_am, sti_des, sti_yn, sti_cr_dt, sti_up_dt) VALUES
+    ('1차 품질 검사 (외관·치수·소재)', 100000, '출고 전 현지 파트너가 외관 상태, 치수 오차, 소재 일치 여부를 육안 검수합니다. 전수 또는 샘플링 방식으로 진행되며, 불량률 5% 초과 시 리포트가 발송됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('2차 정밀 검사 (원단·봉제·내구성)', 300000, '원단 조직·밀도 측정, 봉제 강도, 세탁 후 수축률 등 정밀 항목을 검사합니다. 검사 기관 인증 리포트가 제공되며, 품질 기준 미달 시 반품·교환 협의가 가능합니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- =====================
 -- 백시현 END

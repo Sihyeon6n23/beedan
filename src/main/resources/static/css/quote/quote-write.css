@@ -33,15 +33,9 @@
 }
 
 /* --- Reset & Base --- */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html, body {
+/* Global * / html,body reset 제거: Tailwind @layer 스타일을 덮어쓰는 문제 방지 */
+.page-wrapper {
     font-family: var(--font-body);
-    background-color: var(--color-bg);
     color: var(--color-text-primary);
     font-size: 14px;
     line-height: 1.5;
@@ -433,6 +427,52 @@ html, body {
     line-height: 18px;
 }
 
+/* 지역 선택 */
+.ship-addr-region {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.ship-addr-region-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted, #78716c);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.ship-region-select {
+    flex: 1;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: var(--color-white, #ffffff);
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-primary, #1a1c1c);
+    cursor: pointer;
+}
+
+.ship-region-select:focus {
+    outline: none;
+    border-color: var(--color-gold, #ffd700);
+}
+
+/* 지역별 그룹 (모달 요약) */
+.ship-fee-region-group {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.ship-fee-region-group:last-child {
+    border-bottom: none;
+    margin-bottom: 8px;
+}
+
 /* 수령지 정보 */
 .ship-addr-section {
     display: flex;
@@ -700,6 +740,63 @@ html, body {
     background-color: var(--color-border-light);
 }
 
+/* ---- Header Info Tooltip ---- */
+.th-info-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-light, #a3a3a3);
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 2px;
+    transition: color 0.15s ease;
+}
+
+.th-info-btn:hover {
+    color: var(--color-gold-dark, #705d00);
+}
+
+.th-tooltip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 200px;
+    padding: 8px 12px;
+    background: var(--color-text-primary, #1a1c1c);
+    color: #fff;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    white-space: normal;
+    z-index: 100;
+}
+
+.th-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-text-primary, #1a1c1c);
+}
+
+.th-info-btn.is-active .th-tooltip {
+    display: block;
+}
+
 .quote-table thead th {
     border: 1px solid var(--color-border);
     padding: 22px 24px;
@@ -784,6 +881,231 @@ html, body {
 
 .quote-table tbody td.col-subtotal.text-right {
     font-weight: 700;
+}
+
+/* ============================================================
+   Quote Options & Subtotal
+   ============================================================ */
+.quote-options-section {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.quote-options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--color-border-light, #e2e2e2);
+}
+
+.quote-options-card {
+    background: var(--color-white, #ffffff);
+    display: flex;
+    flex-direction: column;
+}
+
+.quote-options-card-header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.quote-options-card-title {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.quote-options-card-body {
+    padding: 20px 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.quote-options-subtotal {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 40px;
+    background: var(--color-white, #ffffff);
+    border: 1px solid var(--color-border-light, #e2e2e2);
+}
+
+.quote-options-subtotal-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quote-options-subtotal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quote-options-subtotal-row-label {
+    font-size: 14px;
+    color: var(--color-text-muted, #5f5e5e);
+}
+
+.quote-options-subtotal-row-value {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.quote-options-subtotal-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 2px solid var(--color-text-primary, #1a1c1c);
+}
+
+.quote-options-subtotal-label {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #5f5e5e);
+}
+
+.quote-options-subtotal-value {
+    font-family: var(--font-serif, 'Noto Serif KR', serif);
+    font-weight: 400;
+    font-size: 28px;
+    letter-spacing: -1px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.quote-options-empty {
+    font-size: 13px;
+    color: var(--color-text-light, #a3a3a3);
+    padding: 20px 0;
+    text-align: center;
+}
+
+.quote-options-heading {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-text-light, #a3a3a3);
+    margin-bottom: 4px;
+}
+
+.quote-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quote-option-item {
+    border-bottom: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.quote-option-item:last-child {
+    border-bottom: none;
+}
+
+.quote-option-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.quote-option-check {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-gold-dark, #705d00);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.quote-option-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.quote-option-name {
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.quote-option-desc {
+    font-size: 11px;
+    color: var(--color-text-muted, #5f5e5e);
+    line-height: 16px;
+}
+
+.quote-option-value {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a1c1c);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.quote-option-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-light, #a3a3a3);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s ease, transform 0.2s ease;
+}
+
+.quote-option-toggle:hover {
+    color: var(--color-gold-dark, #705d00);
+}
+
+.quote-option-toggle.is-open {
+    transform: rotate(180deg);
+}
+
+.quote-option-detail {
+    display: none;
+    padding: 0 0 16px 30px;
+}
+
+.quote-option-detail.is-open {
+    display: block;
+}
+
+.quote-option-detail p {
+    font-size: 12px;
+    color: var(--color-text-muted, #5f5e5e);
+    line-height: 1.7;
+}
+
+.quote-option-item:has(.quote-option-check:not(:checked)) {
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .quote-options-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Fees Grid → fragments/quoteAndPayment/feeCards.html + feeCards.css 참조 */
