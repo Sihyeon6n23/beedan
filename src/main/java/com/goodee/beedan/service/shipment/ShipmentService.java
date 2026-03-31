@@ -80,7 +80,7 @@ public class ShipmentService {
 
         switch (shipment.getShStt()) {
             case SHIPPING -> {shipment.setShStt(ShipmentStatus.SHIPPING); break;}
-            case CUSTOMS -> {shipment.setShStt(ShipmentStatus.CUSTOMS);break;}
+            case CUSTOMS -> {shipment.setShStt(ShipmentStatus.CUSTOMS); break;}
             case DELIVERING -> {
                 shipment.setShStt(ShipmentStatus.DELIVERING);
                 order.setOrdBaseStt(OrderStatus.DELIVERING);

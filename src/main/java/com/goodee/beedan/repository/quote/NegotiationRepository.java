@@ -13,6 +13,7 @@ public interface NegotiationRepository extends JpaRepository<Negotiation, Long> 
     // 회원별 진행 중인 협상 조회 (종료일 없음)
     List<Negotiation> findAllByMemIdAndNgEndDtIsNull(Long memId);
 
+    Negotiation findFirstByMemIdOrderByNgCreDtDesc(Long memId);
     Negotiation findByNgId(Long ngId);
 
 

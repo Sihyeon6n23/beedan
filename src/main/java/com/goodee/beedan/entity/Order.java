@@ -41,7 +41,6 @@ public class Order {
     @Column(name = "ord_base_upd_dt")
     @LastModifiedDate
     private LocalDateTime ordBaseUpdDt;
-
     @ManyToOne
     @JoinColumn(name = "mem_id")
     private Member member;

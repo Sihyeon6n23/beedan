@@ -21,14 +21,13 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             String title = "[Beedan 서비스 안내] " + notificationType.getDefaultTitle();
-            String content = notificationType.generateContent(detail);
             String fullUrl = SITE_URL + notificationType.generateUrl(targetId);
 
             String htmlContent = String.format(
                     "<h3>%s 안내</h3>" +
                             "<p>%s</p>" +
                             "<p><a href='%s'>상세 페이지로 이동하기</a></p>",
-                    notificationType.getDefaultTitle(), content, fullUrl
+                    notificationType.getDefaultTitle(), fullUrl
             );
 
             helper.setFrom("Beedan");

@@ -34,16 +34,15 @@ public class NotificationService {
         return notificationDtoList;
     }
 
-    public void createNotification(Long memId, NotificationType notiTp, String detail, Long targetId){
+    public void createNotification(Long memId, NotificationType notiTp, Long targetId){
         Member member = memberRepositroy.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
-        String content = notiTp.generateContent(detail);
         String refUrl = notiTp.generateUrl(targetId);
 
         Notification notification = Notification.builder()
                 .member(member)
                 .notiTtl(notiTp.getDefaultTitle())
-                .notiCon(content)
+                .notiCon(notiTp.getContentTemplate())
                 .notiRef(refUrl)
                 .notiReaYn(false)
                 .notiDelYn(false)
