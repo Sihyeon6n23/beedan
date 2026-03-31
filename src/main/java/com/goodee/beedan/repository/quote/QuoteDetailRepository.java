@@ -18,4 +18,6 @@ public interface QuoteDetailRepository extends JpaRepository<QuoteDetail, Long> 
 
     // 견적 아이디로 전체 삭제 (임시저장 재저장 시)
     void deleteAllByQuId(Long quId);
+
+    List<QuoteDetail> findAllByNgId(Long ngId);
 }

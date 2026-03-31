@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_fp_gr_ty_yn",
-                        columnNames = {"bgp_gr", "fp_fee_ty", "fp_ac_ym", "fp_ef_fr_dt"}
+                        columnNames = {"bgp_gr", "fp_fee_ty", "fp_ac_yn", "fp_ef_fr_dt"}
                 )
         }
 )

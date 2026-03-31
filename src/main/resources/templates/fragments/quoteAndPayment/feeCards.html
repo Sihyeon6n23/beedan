@@ -17,21 +17,12 @@
                 <h3 class="fee-card-title">예상 운임 비용</h3>
             </div>
             <div class="fee-items">
+                <!-- 공장별 그룹 — JS가 동적 렌더링 -->
+                <div id="fc-factory-groups"></div>
+                <!-- 국내 운임 (도착지 기준, 공장 무관) -->
                 <div class="fee-item">
-                    <span class="fee-label">해외 운임</span>
-                    <span class="fee-value" id="fc-shipping">-</span>
-                </div>
-                <div class="fee-item">
-                    <span class="fee-label">항만/통관/HS Code</span>
-                    <span class="fee-value" id="fc-port-customs">-</span>
-                </div>
-                <div class="fee-item">
-                    <span class="fee-label">보험료</span>
-                    <span class="fee-value" id="fc-insurance">-</span>
-                </div>
-                <div class="fee-item">
-                    <span class="fee-label">관세 + 부가세</span>
-                    <span class="fee-value" id="fc-duty-vat">-</span>
+                    <span class="fee-label">국내 운임</span>
+                    <span class="fee-value" id="fc-domestic">없음</span>
                 </div>
                 <div class="fee-subtotal">
                     <span class="fee-subtotal-label">운송 비용 소계</span>
@@ -52,16 +43,25 @@
             </div>
             <div class="fee-items">
                 <div class="fee-item">
-                    <span class="fee-label">서비스 수수료</span>
+                    <span class="fee-label">서비스 수수료 <button type="button" class="fee-info-btn" onclick="event.stopPropagation()">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                        <span class="fee-tooltip" th:text="#{tooltip.fee.service}"></span>
+                    </button></span>
                     <span class="fee-value" id="fc-service">-</span>
                 </div>
                 <div class="fee-item">
-                    <span class="fee-label">서류 발급 및 인허가비</span>
+                    <span class="fee-label">서류 발급 및 인허가비 <button type="button" class="fee-info-btn" onclick="event.stopPropagation()">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                        <span class="fee-tooltip" th:text="#{tooltip.fee.doc}"></span>
+                    </button></span>
                     <span class="fee-value" id="fc-doc">-</span>
                 </div>
                 <div class="fee-item">
-                    <span class="fee-label">1차 품질 검사</span>
-                    <span class="fee-value">₩0 <em class="included-badge">INCLUDED</em></span>
+                    <span class="fee-label">부가 서비스 <button type="button" class="fee-info-btn" onclick="event.stopPropagation()">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                        <span class="fee-tooltip" th:text="#{tooltip.fee.inspection}"></span>
+                    </button></span>
+                    <span class="fee-value" id="fc-inspection">-</span>
                 </div>
                 <div class="fee-subtotal">
                     <span class="fee-subtotal-label">대행 서비스 소계</span>
@@ -87,99 +87,7 @@
                     <span class="modal-total-value" id="md-logistics-total">-</span>
                 </div>
 
-                <div>
-                    <p class="modal-section-label">01 · 해상 운임</p>
-                    <div class="modal-detail-rows">
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">운송 구간</span>
-                            <span class="modal-row-val" id="md-route">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">운송 수단</span>
-                            <span class="modal-row-val" id="md-transport">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">예상 소요일</span>
-                            <span class="modal-row-val" id="md-eta">(TODO)</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">운임 기준</span>
-                            <span class="modal-row-val" id="md-basis">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">적용 규모</span>
-                            <span class="modal-row-val" id="md-size-type">-</span>
-                        </div>
-                        <div class="modal-detail-row row-subtotal">
-                            <span class="modal-row-key">표준 해상 운임비</span>
-                            <span class="modal-row-val" id="md-shipping-fee">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-divider"></div>
-
-                <div>
-                    <p class="modal-section-label">02 · 항만 비용 및 통관</p>
-                    <div class="modal-detail-rows">
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">항만 처리 수수료</span>
-                            <span class="modal-row-val" id="md-port-fee">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">통관 수수료</span>
-                            <span class="modal-row-val" id="md-customs-fee">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">HS Code 신고료</span>
-                            <span class="modal-row-val" id="md-hscode-fee">-</span>
-                        </div>
-                        <div class="modal-detail-row row-subtotal">
-                            <span class="modal-row-key">항만/통관 소계</span>
-                            <span class="modal-row-val" id="md-port-customs-total">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-divider"></div>
-
-                <div>
-                    <p class="modal-section-label">03 · 보험료</p>
-                    <div class="modal-detail-rows">
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">보험 기준</span>
-                            <span class="modal-row-val">상품가의 0.5%</span>
-                        </div>
-                        <div class="modal-detail-row row-subtotal">
-                            <span class="modal-row-key">보험료</span>
-                            <span class="modal-row-val" id="md-insurance-fee">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-divider"></div>
-
-                <div>
-                    <p class="modal-section-label">04 · CIF 및 관세/부가세</p>
-                    <div class="modal-detail-rows">
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">CIF (상품가+운임+보험)</span>
-                            <span class="modal-row-val" id="md-cif">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">관세율</span>
-                            <span class="modal-row-val" id="md-duty-rate">-</span>
-                        </div>
-                        <div class="modal-detail-row">
-                            <span class="modal-row-key">관세액</span>
-                            <span class="modal-row-val" id="md-duty">-</span>
-                        </div>
-                        <div class="modal-detail-row row-subtotal">
-                            <span class="modal-row-key">부가세액 ((CIF+관세)×10%)</span>
-                            <span class="modal-row-val" id="md-vat">-</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- 공장별 섹션 — feeCard.js가 동적 렌더링 -->
 
                 <div class="modal-note">
                     <span class="modal-note-icon">&#9888;</span>
@@ -206,14 +114,14 @@
                 </div>
 
                 <div>
-                    <p class="modal-section-label">01 · 서비스 수수료</p>
+                    <p class="modal-section-label">01 · 서비스 수수료 <span class="modal-policy-date" id="md-service-date"></span></p>
                     <div class="modal-detail-rows">
                         <div class="modal-detail-row">
-                            <span class="modal-row-key">적용 등급</span>
+                            <span class="modal-row-key">적용 등급 <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.buyerGrade}"></span></button></span>
                             <span class="modal-row-val" id="md-buyer-grade">-</span>
                         </div>
                         <div class="modal-detail-row">
-                            <span class="modal-row-key">적용 공급가 (한화)</span>
+                            <span class="modal-row-key">적용 공급가 (한화) <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.itemTotalKrw}"></span></button></span>
                             <span class="modal-row-val" id="md-item-total-krw">-</span>
                         </div>
                         <div class="modal-detail-row row-subtotal">
@@ -226,7 +134,7 @@
                 <div class="modal-divider"></div>
 
                 <div>
-                    <p class="modal-section-label">02 · 서류 발급 및 인허가</p>
+                    <p class="modal-section-label">02 · 서류 발급 및 인허가 <span class="modal-policy-date" id="md-doc-date"></span></p>
                     <div class="modal-detail-rows">
                         <div class="modal-detail-row row-subtotal">
                             <span class="modal-row-key">서류·인허가 소계</span>
@@ -241,15 +149,15 @@
                     <p class="modal-section-label">03 · 1차 품질 검사</p>
                     <div class="modal-detail-rows">
                         <div class="modal-detail-row">
-                            <span class="modal-row-key">검사 항목</span>
+                            <span class="modal-row-key">검사 항목 <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.inspectionItem}"></span></button></span>
                             <span class="modal-row-val">외관·치수·소재</span>
                         </div>
                         <div class="modal-detail-row">
-                            <span class="modal-row-key">검사 기관</span>
+                            <span class="modal-row-key">검사 기관 <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.inspectionOrg}"></span></button></span>
                             <span class="modal-row-val">Goodee 현지 파트너</span>
                         </div>
                         <div class="modal-detail-row row-subtotal">
-                            <span class="modal-row-key">품질 검사 비용</span>
+                            <span class="modal-row-key">품질 검사 비용 <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.inspectionFee}"></span></button></span>
                             <span class="modal-row-val" style="color: var(--color-gold-dark);">₩0 (포함)</span>
                         </div>
                     </div>
@@ -263,29 +171,8 @@
         </div>
     </div>
 
-    <!-- Modal JS -->
-    <script th:inline="none">
-        function openModal(type) {
-            var overlay = document.getElementById('modal-' + type);
-            if (overlay) { overlay.classList.add('is-open'); document.body.style.overflow = 'hidden'; }
-        }
-        function closeModal(type) {
-            var overlay = document.getElementById('modal-' + type);
-            if (overlay) { overlay.classList.remove('is-open'); document.body.style.overflow = ''; }
-        }
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.is-open').forEach(function(el) { el.classList.remove('is-open'); });
-                document.body.style.overflow = '';
-            }
-        });
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal-overlay') && e.target.classList.contains('is-open')) {
-                e.target.classList.remove('is-open');
-                document.body.style.overflow = '';
-            }
-        });
-    </script>
+    <!-- feeCard.js에서 모달/툴팁 로직 로드 -->
+    <script th:src="@{/js/quote/feeCard.js}"></script>
 
 </div>
 

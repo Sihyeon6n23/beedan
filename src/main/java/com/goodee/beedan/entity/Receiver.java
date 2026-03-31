@@ -29,6 +29,7 @@ public class Receiver {
     @LastModifiedDate
     private LocalDateTime rcUpdDt;
     private Boolean rcDelYn;
+    private Boolean rcAdrDfYn;
 
     @ManyToOne
     @JoinColumn(name = "mem_id")

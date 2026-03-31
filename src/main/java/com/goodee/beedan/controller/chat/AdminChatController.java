@@ -1,6 +1,7 @@
 package com.goodee.beedan.controller.chat;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
+import com.goodee.beedan.dto.chat.AdminChatRoomDetailDto;
 import com.goodee.beedan.dto.chat.AdminChatRoomListDto;
 import com.goodee.beedan.dto.chat.AdminChatRoomSearchDto;
 import com.goodee.beedan.service.chat.AdminChatService;
@@ -13,14 +14,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
-
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/chat")
 public class AdminChatController {
     private final AdminChatService adminChatService;
 
+    // 관리자 채팅 목록
     @GetMapping("/list")
     public String getAdminChatList(Model model,
         @RequestParam(defaultValue = "ALL") String status,
@@ -62,8 +62,16 @@ public class AdminChatController {
         return "/admin/chat/chat-list";
     }
 
+    // 관리자 채팅 상세 (채팅방)
     @GetMapping("/detail")
-    public String getAdminChatDetail() {
+    public String getAdminChatDetail(Model model,
+                                     @RequestParam("id") Long chRoId,
+                                     @AuthenticationPrincipal MemberUserDetails userDetails) {
+        AdminChatRoomDetailDto chatRoomDetail = adminChatService
+                .getAdminChatRoomDetail(chRoId, userDetails.getMemberId());
+
+        model.addAttribute("chatRoomDetail", chatRoomDetail);
+
         return "/admin/chat/chat-detail";
     }
 }

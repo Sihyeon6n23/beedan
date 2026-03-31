@@ -714,6 +714,44 @@
   text-align: right;
 }
 
+.member-chat-room-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: auto 0;
+  padding: 1.4rem 1.15rem;
+  border: 1px dashed rgba(230, 191, 48, 0.4);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #fffdf6 0%, #fffaf0 100%);
+  text-align: center;
+}
+
+.member-chat-room-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 999px;
+  background: rgba(255, 210, 31, 0.16);
+  color: #9b7300;
+  font-size: 1.2rem;
+}
+
+.member-chat-room-empty strong {
+  color: #473400;
+  font-size: 0.84rem;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.member-chat-room-empty p {
+  color: #7f7b70;
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
 .member-chat-room-footer {
   display: flex;
   gap: 0.45rem;
