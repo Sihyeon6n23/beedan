@@ -21,7 +21,7 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sh_id")
     private Long shId;
-    private Long shTraNo;
+    private String shTraNo;
 	private String shCarCd;
     @Enumerated
     private ShipmentStatus shStt;

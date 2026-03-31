@@ -533,18 +533,37 @@ CREATE TABLE `RECEIVER` (
     `rc_adr_dt`	VARCHAR(20)	NULL,
     `rc_cre_dt`	DATETIME	NULL,
     `rc_upd_dt`	DATETIME	NULL,
+    `rc_adr_df_yn` BOOLEAN DEFAULT FALSE NULL,
     `rc_del_yn`	BOOLEAN NULL,
     `mem_id`	BIGINT	NOT NULL
 );
 
 CREATE TABLE `SHIPMENT` (
-     `sh_id`	BIGINT	NOT NULL,
-     `sh_tra_no`	BIGINT	NULL,
+     `sh_id`	BIGINT AUTO_INCREMENT PRIMARY KEY,
+     `sh_tra_no`	VARCHAR(12)	NULL,
      `sh_car_cd`	VARCHAR(6)	NULL,
      `sh_stt`	ENUM('DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED')  NOT NULL,
      `sh_cre_dt`	DATETIME	NULL,
      `sh_upd_dt`	DATETIME	NULL,
      `ord_base_id`	BIGINT	NOT NULL
+);
+
+CREATE TABLE `ORDER_ITEM` (
+                              `ord_item_id`     BIGINT AUTO_INCREMENT PRIMARY KEY,
+                              `ord_base_id`     BIGINT NOT NULL,
+                              `st_nm`           BIGINT NULL,
+                              `ord_item_qn`     BIGINT NULL, -- 총 주문 수량
+                              `ord_item_am`     DECIMAL NULL,  -- 총 결제금액
+                              `ord_item_cre_dt` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                              `ord_item_upd_dt` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `SHIPMENT_ITEM` (
+                                 `sh_item_id`      BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                 `sh_id`           BIGINT NOT NULL,
+                                 `ord_item_id`     BIGINT NOT NULL,
+                                 `sh_qn`           BIGINT NOT NULL,  -- 해당 배송지로 가는 수량 ( 분할 수량 )
+                                 `sh_item_stt`     ENUM('PREPARING', 'DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED') NOT NULL
 );
 -- =====================
 -- 임 욱 END

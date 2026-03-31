@@ -51,5 +51,4 @@ public class ShipmentApiController {
         return ResponseEntity.ok(shipmentDto);
     }
 
-
 }

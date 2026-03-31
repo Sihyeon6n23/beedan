@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ReceiverRepository extends JpaRepository<Receiver, Long> {
     public List<Receiver> findByMember_memIdOrderByRcIdAsc(Long memId);
+    public Receiver findFirstByMember_memIdOrderByRcIdAsc(Long memId);
     public Boolean existsByMember_memId(Long memID);
 }

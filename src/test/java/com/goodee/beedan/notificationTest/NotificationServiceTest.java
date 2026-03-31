@@ -49,7 +49,7 @@ public class NotificationServiceTest {
         given(memberRepository.findById(memId)).willReturn(Optional.of(member));
 
         // when
-        notificationService.createNotification(memId, type, detail, targetId);
+        notificationService.createNotification(memId, type, targetId);
 
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notificationRepository, times(1)).save(captor.capture());
