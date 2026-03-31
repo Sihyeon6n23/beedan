@@ -10,6 +10,13 @@
             <span>보안 정책 설정</span>
         </a>
 
+        <a th:href="@{/root/schedular}"
+           class="admin-sidebar-menu__link"
+           th:classappend="${activeMain == 'schedular'} ? ' admin-sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+            <span>스케쥴러 설정</span>
+        </a>
+
         <a th:href="@{/root/sales}"
            class="admin-sidebar-menu__link"
            th:classappend="${activeMain == 'sales'} ? ' admin-sidebar-menu__link--current' : ''">
