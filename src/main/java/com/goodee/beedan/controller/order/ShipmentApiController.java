@@ -46,9 +46,13 @@ public class ShipmentApiController {
                                                       @RequestParam(name="ordId") Long ordId,
                                                       @AuthenticationPrincipal MemberUserDetails userDetails,
                                                       @RequestBody ShipmentDto dto){
+
         ShipmentDto shipmentDto = shipmentService.updateStatusFromAdmin(shId, ordId, userDetails.getMemberId(), dto);
 
         return ResponseEntity.ok(shipmentDto);
     }
+
+    @DeleteMapping("/{id}/admin")
+    public ResponseEntity<S>
 
 }

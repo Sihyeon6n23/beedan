@@ -554,11 +554,11 @@ CREATE TABLE `ORDER_BASE`
     `ord_base_stt`    ENUM('PREPARING', 'DELIVERING', 'DELIVERED', 'CANCELLED'),
     `ord_base_no`     VARCHAR(10) NULL,
     `ord_base_msg`    TEXT NULL,
-    `qu_dt_id`        BIGINT NULL,
-    `qu_info_id`      BIGINT NULL,
-    `qu_id`           BIGINT NULL,
-    `ng_id`           BIGINT NULL,
     `mem_id`          BIGINT NOT NULL
+    --`qu_dt_id`        BIGINT NULL,
+    --`qu_info_id`      BIGINT NULL,
+    --`qu_id`           BIGINT NULL,
+    --`ng_id`           BIGINT NULL,
 );
 
 CREATE TABLE `RECEIVER` (
@@ -580,7 +580,7 @@ CREATE TABLE `SHIPMENT` (
      `sh_id`	BIGINT AUTO_INCREMENT PRIMARY KEY,
      `sh_tra_no`	VARCHAR(12)	NULL,
      `sh_car_cd`	VARCHAR(6)	NULL,
-     `sh_stt`	ENUM('DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED')  NOT NULL,
+     `sh_stt`	ENUM('PREPARING', 'DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED')  NOT NULL,
      `sh_cre_dt`	DATETIME	NULL,
      `sh_upd_dt`	DATETIME	NULL,
      `ord_base_id`	BIGINT	NOT NULL

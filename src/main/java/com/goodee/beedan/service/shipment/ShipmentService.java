@@ -7,6 +7,7 @@ import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
+import com.goodee.beedan.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.util.List;
 public class ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     public List<ShipmentDto> getShipmentList(Long shId, Long memId, Long ordId){
         orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("주문의 배송 내역을 찾을 수 없습니다."));
@@ -57,13 +59,16 @@ public class ShipmentService {
             throw new IllegalArgumentException("본인의 주문 배송 내역만 조회할 수 있습니다.");
         }
 
-        if(!order.getOrdBaseStt().equals(OrderStatus.DELIVERING) || !order.getOrdBaseStt().equals(OrderStatus.PREPARING)) return;
+        // 주문 상태가 DELIVERING도 아니고, PREPARING도 아닐 때만 return
+        if (!order.getOrdBaseStt().equals(OrderStatus.DELIVERING) && !order.getOrdBaseStt().equals(OrderStatus.PREPARING)) {
+            return;
+        }
         if(dto.getShStt() == null) return;
 
         switch (shipment.getShStt()){
             case SHIPPING -> {shipment.setShStt(ShipmentStatus.CUSTOMS); break;}
             case CUSTOMS -> {shipment.setShStt(ShipmentStatus.DELIVERING);break;}
-            case DELIVERING -> {shipment.setShStt(ShipmentStatus.DELIVERING);break;}
+            case DELIVERING -> {shipment.setShStt(ShipmentStatus.DELIVERED);break;}
             default -> throw new IllegalStateException("배송 상태를 업데이트할 수 없습니다.");
         }
         shipmentRepository.save(shipment);
@@ -78,7 +83,7 @@ public class ShipmentService {
 
         Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        switch (shipment.getShStt()) {
+        switch (dto.getShStt()) {
             case SHIPPING -> {shipment.setShStt(ShipmentStatus.SHIPPING); break;}
             case CUSTOMS -> {shipment.setShStt(ShipmentStatus.CUSTOMS); break;}
             case DELIVERING -> {
