@@ -352,6 +352,26 @@ CREATE TABLE IF NOT EXISTS hs_code (
     hs_des   VARCHAR(255)
     );
 
+CREATE TABLE IF NOT EXISTS SHIPPING_INSURANCE (
+    si_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    si_nm    VARCHAR(50),
+    si_am    DECIMAL(10, 4),
+    si_des   TEXT,
+    si_yn    BOOLEAN,
+    si_cr_dt DATETIME,
+    si_up_dt DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS STOCK_INSPECTION (
+    sti_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sti_nm    VARCHAR(50),
+    sti_am    DECIMAL(18, 0),
+    sti_des   TEXT,
+    sti_yn    BOOLEAN,
+    sti_cr_dt DATETIME,
+    sti_up_dt DATETIME
+);
+
 -- =====================
 -- 백시현 END
 -- =====================
