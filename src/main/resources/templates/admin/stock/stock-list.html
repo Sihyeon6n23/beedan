@@ -2,27 +2,30 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'STOCK LIST', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'STOCK REQUIREMENTS', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 상품 관리</title>
+<title th:fragment="title">BEEDAN | Stock management</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}"/>
 <link rel="stylesheet" th:href="@{/css/admin/admin-stock-list.css}"/>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-<section class="admin-stock-container">
+<section class="admin-chat-page admin-chat-list-page" style="max-width:1280px;">
     <!-- 헤더 -->
-    <header class="hero-header">
-        <div class="header-title">
-            <p class="text-gold-sub">Stock Management</p>
-            <h1>상품 목록</h1>
-            <p class="text-description">상품을 조회하고 수정할 수 있습니다.</p>
+    <header class="admin-chat-shell admin-chat-shell--header">
+        <div class="admin-chat-shell__heading">
+            <span class="admin-chat-kicker">Stock Management</span>
+            <h2 class="admin-chat-title">상품 목록</h2>
+        </div>
+        <div class="admin-chat-shell__rule">
+            <span></span>
         </div>
     </header>
 
@@ -67,7 +70,7 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <footer class="pagination-wrapper">
+    <footer class="admin-chat-shell admin-chat-shell--pagination">
         <p class="page-info" id="page-info"></p>
         <div class="page-numbers" id="page-numbers"></div>
     </footer>

@@ -1,3 +1,74 @@
+-- =====================
+-- 고희권 START
+-- =====================
+-- 1. 관리자 계정 (ROOT)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'root',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 2. 일반 사용자 계정 (USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ADMIN',
+             '홍길동',
+             '010-1234-5678',
+             'user01@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 3. 비즈니스/기업 사용자 계정 (ADMIN 혹은 USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'user',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '김철수',
+             '123-45-67890',
+             '(주)테스트컴퍼니',
+             '서울시 강남구 역삼동',
+             'ACTIVE',
+             NOW()
+         );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin1',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'INACTIVE',
+             NOW()
+         );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin2',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'PENDING',
+             NOW()
+         );
+-- =====================
+-- 고희권 END
+-- =====================
 
 -- =====================
 -- 최준희 START
@@ -95,6 +166,18 @@ ALTER TABLE category ALTER COLUMN cat_id RESTART WITH 100;
 ALTER TABLE stock    ALTER COLUMN st_id  RESTART WITH 100;
 ALTER TABLE cart     ALTER COLUMN ca_id  RESTART WITH 100;
 
+-- =====================
+-- REQUIREMENT
+-- =====================
+INSERT INTO requirement (req_ttl, req_con, req_ref, req_pr, req_stt, req_rep_yn, req_per_yn, req_cre_dt, req_upd_dt, req_del_yn, mem_id) VALUES
+('Kapital Boro Jacket 입고 요청', '카피탈 보로 자켓 시즌 신상 입고 요청합니다. 사이즈 M, L 둘 다 가능합니다.', 'https://kapital.jp/boro-jacket', 2100, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica GORE-TEX 코트 문의', '나나미카 고어텍스 코트 재입고 가능한지 확인 부탁드립니다.', 'https://nanamica.com/goretex-coat', 3600, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kenzo 타이거 스웨터 요청', '겐조 타이거 자수 스웨터 XL 사이즈 입고 요청합니다.', 'https://kenzo.com/tiger-sweater', 1500, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kapital 인디고 데님 팬츠', '카피탈 인디고 데님 팬츠 32인치 입고 가능한지 문의합니다.', NULL, 980, 'SUBMITTED', TRUE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica 러그비 셔츠 입고 요청', '나나미카 쿨맥스 러그비 셔츠 L 사이즈 입고 부탁드립니다.', 'https://nanamica.com/rugby-shirt', 640, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kapital 사시코 니트 조끼', '사시코 니트 조끼 프리사이즈 입고 요청합니다.', NULL, 620, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kenzo 플라워 프린트 셔츠', '겐조 플라워 프린트 셔츠 M 사이즈 요청합니다. 참고 링크 첨부합니다.', 'https://kenzo.com/flower-shirt', 890, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica 와이드 치노 팬츠', '쿨맥스 와이드 치노 30인치 입고 가능할까요?', 'https://nanamica.com/wide-chino', 1100, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3);
 
 -- =====================
 -- 최준희 END
@@ -234,77 +317,7 @@ INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
 
 
 
--- =====================
--- 고희권 START
--- =====================
--- 1. 관리자 계정 (ROOT)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'root',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'ACTIVE',
-             NOW()
-         );
 
--- 2. 일반 사용자 계정 (USER)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ADMIN',
-             '홍길동',
-             '010-1234-5678',
-             'user01@example.com',
-             'ACTIVE',
-             NOW()
-         );
-
--- 3. 비즈니스/기업 사용자 계정 (ADMIN 혹은 USER)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
-) VALUES (
-             'user',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'USER',
-             '김철수',
-             '123-45-67890',
-             '(주)테스트컴퍼니',
-             '서울시 강남구 역삼동',
-             'ACTIVE',
-             NOW()
-         );
-
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin1',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'INACTIVE',
-             NOW()
-         );
-
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin2',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'PENDING',
-             NOW()
-         );
--- =====================
--- 고희권 END
--- =====================
 
 
 
@@ -518,3 +531,4 @@ VALUES
 -- =====================
 -- 임 욱 END
 -- =====================
+
