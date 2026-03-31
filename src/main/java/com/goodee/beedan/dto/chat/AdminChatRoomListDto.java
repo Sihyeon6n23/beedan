@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class AdminChatRoomListDto {
     private Long chRoId;
     private String memBizTtl;                       // 회사 상호명
+    private String memNm;                           // 회원 이름
     private String lastMessageContent;              // 최근 메시지 내용
     private LocalDateTime lastMessageCreatedAt;     // 최근 메시지 시간
     private LocalDateTime chRoCreDt;                // 메시지 없을때 보조 시간

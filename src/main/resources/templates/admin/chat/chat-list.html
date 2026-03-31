@@ -78,8 +78,11 @@
                             <span th:if="${chatRoom.unread}" class="admin-chat-row__unread"></span>
                             <span th:unless="${chatRoom.unread}" class="admin-chat-row__unread admin-chat-row__unread--empty"></span>
                             <div class="admin-chat-row__text">
-                                <h2 th:text="${chatRoom.memBizTtl != null ? chatRoom.memBizTtl : '상호명 미등록'}">상호명</h2>
-                                <p th:text="${chatRoom.lastMessageContent != null ? chatRoom.lastMessageContent : '상담 대기 중입니다.'}">최근 메시지</p>
+                                <h2>
+                                    <span th:text="${chatRoom.memBizTtl != null ? chatRoom.memBizTtl : '상호명 미등록'}">상호명</span>
+                                    <small th:text="${chatRoom.memNm != null ? chatRoom.memNm : '이름 미등록'}">회원 이름</small>
+                                </h2>
+                                <p th:text="${chatRoom.lastMessageContent != null ? chatRoom.lastMessageContent : '아직 사용자가 메시지를 보내지 않았습니다.'}">최근 메시지</p>
                             </div>
                         </div>
                         <div class="admin-chat-row__status">
@@ -103,8 +106,11 @@
                             <span th:if="${chatRoom.unread}" class="admin-chat-row__unread"></span>
                             <span th:unless="${chatRoom.unread}" class="admin-chat-row__unread admin-chat-row__unread--empty"></span>
                             <div class="admin-chat-row__text">
-                                <h2 th:text="${chatRoom.memBizTtl != null ? chatRoom.memBizTtl : '상호명 미등록'}">상호명</h2>
-                                <p th:text="${chatRoom.lastMessageContent != null ? chatRoom.lastMessageContent : '상담 대기 중입니다.'}">최근 메시지</p>
+                                <h2>
+                                    <span th:text="${chatRoom.memBizTtl != null ? chatRoom.memBizTtl : '상호명 미등록'}">상호명</span>
+                                    <small th:text="${chatRoom.memNm != null ? chatRoom.memNm : '이름 미등록'}">회원 이름</small>
+                                </h2>
+                                <p th:text="${chatRoom.lastMessageContent != null ? chatRoom.lastMessageContent : '아직 사용자가 메시지를 보내지 않았습니다.'}">최근 메시지</p>
                             </div>
                         </div>
                         <div class="admin-chat-row__status">
@@ -121,10 +127,18 @@
                         </div>
                     </a>
                 </th:block>
+
+                <div class="admin-chat-empty-state"
+                     th:if="${#lists.isEmpty(chatRooms)}">
+                    <strong>표시할 채팅방이 없습니다.</strong>
+                    <p>선택한 조건에 맞는 채팅방이 없습니다.</p>
+                </div>
             </div>
         </section>
 
-        <footer class="admin-chat-shell admin-chat-shell--pagination">
+        <!-- 페이지네이션 -->
+        <footer class="admin-chat-shell admin-chat-shell--pagination"
+                th:if="${chatRoomPage.totalPages > 0}">
             <div class="admin-chat-pagination">
                 <a th:if="${chatRoomPage.hasPrevious()}"
                    class="admin-chat-page-button admin-chat-page-button--wide"
