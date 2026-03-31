@@ -1,12 +1,10 @@
 package com.goodee.beedan.controller.cart;
 
-import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.cart.CartUpdateDto;
 import com.goodee.beedan.repository.cart.CartRepository;
 import com.goodee.beedan.service.cart.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,14 +26,5 @@ public class CartApiController {
     public ResponseEntity<Void> updateCart(@RequestBody List<CartUpdateDto> updates){
         cartService.updateCart(updates);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/{stId}")
-    public ResponseEntity<Boolean> addToCart(
-                                        @PathVariable Long stId,
-                                        @RequestParam Long qn,
-                                        @AuthenticationPrincipal MemberUserDetails userDetails) {
-        boolean exists = cartService.addItem(userDetails.getMemberId(), stId, qn);
-        return ResponseEntity.ok(exists);
     }
 }

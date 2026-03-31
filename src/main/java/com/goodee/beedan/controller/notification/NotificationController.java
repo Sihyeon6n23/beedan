@@ -23,14 +23,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/list")
-    public String getNotiList(Model model, @AuthenticationPrincipal MemberUserDetails userDetails){
-        if(userDetails == null){
-            return "redirect:/auth/signin";
-        }
-
-        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
-        model.addAttribute("notifications", notificationDtoList);
-
+    public String getNotiList(){
         return "notification/notification-list";
     }
 }

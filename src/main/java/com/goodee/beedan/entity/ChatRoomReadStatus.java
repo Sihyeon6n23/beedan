@@ -33,7 +33,7 @@ public class ChatRoomReadStatus {
     private LocalDateTime chRoReStLastDt;
 
     @Column(name = "ch_ro_re_st_unr_yn", nullable = false)
-    private Boolean chRoReStUnrYn;
+    private boolean chRoReStUnrYn;
 
     @Column(name = "ch_ro_id", nullable = false)
     private Long chRoId;

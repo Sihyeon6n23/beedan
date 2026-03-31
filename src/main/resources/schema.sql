@@ -78,7 +78,7 @@ DROP TABLE IF EXISTS BUYER_GRADE_POLICY;
 
 CREATE TABLE BUYER_GRADE_POLICY (
                                     bgp_id          BIGINT          NOT NULL AUTO_INCREMENT,
-                                    bgp_gr          VARCHAR(20)     NULL,
+                                    bgp_gr          VARCHAR(20)     NOT NULL,
                                     bgp_min_ord_cnt INT             NULL,
                                     bgp_min_tt_am   DECIMAL(18, 0)  NULL,
                                     bgp_ef_fr_dt    DATETIME        NULL,
@@ -94,8 +94,8 @@ DROP TABLE IF EXISTS BUYER;
 
 CREATE TABLE BUYER (
                        by_id       BIGINT          NOT NULL AUTO_INCREMENT,
-                       mem_biz_no  VARCHAR(50)     NULL,
-                       bgp_gr      VARCHAR(20)     NULL,
+                       mem_biz_no  VARCHAR(50)     NOT NULL,
+                       bgp_gr      VARCHAR(20)     NOT NULL,
                        mem_biz_ttl VARCHAR(50)     NULL,
                        by_ord_cnt  INT             NOT NULL DEFAULT 0,
                        by_ttl_am   DECIMAL(18, 0)  NOT NULL DEFAULT 0,
@@ -164,193 +164,9 @@ CREATE TABLE UNIT_DISCOUNT (
 
                                PRIMARY KEY (un_d_id)
 );
-DROP TABLE IF EXISTS FACTORY;
-
-CREATE TABLE FACTORY (
-                         fa_id       BIGINT          NOT NULL AUTO_INCREMENT,
-                         br_id       BIGINT          NULL,
-                         fa_nm       VARCHAR(100)    NULL,
-                         fa_ad       VARCHAR(255)    NULL,
-                         fa_cty      VARCHAR(50)     NULL,
-                         fa_c_cd     VARCHAR(10)     NULL,
-                         fa_yn       BOOLEAN         NULL,
-                         fa_cr_dt    DATETIME        NULL,
-                         fa_up_dt    DATETIME        NULL,
-
-                         PRIMARY KEY (fa_id)
-);
-DROP TABLE IF EXISTS EXCHANGE_RATE;
-
-CREATE TABLE EXCHANGE_RATE (
-                               er_id       BIGINT          NOT NULL AUTO_INCREMENT,
-                               er_cr       VARCHAR(10)     NULL,
-                               er_ra       DECIMAL(18, 6)  NULL,
-                               er_ba       VARCHAR(10)     NULL,
-                               er_f_dt     DATETIME        NULL,
-                               er_cr_dt    DATETIME        NULL,
-
-                               PRIMARY KEY (er_id)
-);
-DROP TABLE IF EXISTS SHIPPING_RATE;
-
-CREATE TABLE SHIPPING_RATE (
-                               sr_id       BIGINT          NOT NULL AUTO_INCREMENT,
-                               sr_c_cd     VARCHAR(10)     NULL,
-                               sr_trsp_ty  VARCHAR(10)     NULL,
-                               sr_sm_qn    INT             NULL,
-                               sr_sm_am    DECIMAL(18, 0)  NULL,
-                               sr_md_qn    INT             NULL,
-                               sr_md_am    DECIMAL(18, 0)  NULL,
-                               sr_lg_qn    INT             NULL,
-                               sr_lg_am    DECIMAL(18, 0)  NULL,
-                               sr_yn       BOOLEAN         NULL,
-                               sr_des      TEXT            NULL,
-                               sr_cr_dt    DATETIME        NULL,
-                               sr_up_dt    DATETIME        NULL,
-
-                               PRIMARY KEY (sr_id)
-);
-
-DROP TABLE IF EXISTS PORT_CUSTOMS_RATE;
-
-CREATE TABLE PORT_CUSTOMS_RATE (
-                                   pcr_id      BIGINT          NOT NULL AUTO_INCREMENT,
-                                   pcr_ty      VARCHAR(20)     NULL,
-                                   pcr_sm_am   DECIMAL(18, 0)  NULL,
-                                   pcr_md_am   DECIMAL(18, 0)  NULL,
-                                   pcr_lg_am   DECIMAL(18, 0)  NULL,
-                                   pcr_yn      BOOLEAN         NULL,
-                                   pcr_des     TEXT            NULL,
-                                   pcr_cr_dt   DATETIME        NULL,
-                                   pcr_up_dt   DATETIME        NULL,
-
-                                   PRIMARY KEY (pcr_id)
-);
-
-DROP TABLE IF EXISTS DOMESTIC_DELIVERY_RATE;
-
-CREATE TABLE DOMESTIC_DELIVERY_RATE (
-                                        ddr_id      BIGINT          NOT NULL AUTO_INCREMENT,
-                                        ddr_rgn     VARCHAR(20)     NULL,
-                                        ddr_am      DECIMAL(18, 0)  NULL,
-                                        ddr_e_am    DECIMAL(18, 0)  NULL,
-                                        ddr_des     TEXT            NULL,
-                                        ddr_yn      BOOLEAN         NULL,
-                                        ddr_cr_dt   DATETIME        NULL,
-                                        ddr_up_dt   DATETIME        NULL,
-
-                                        PRIMARY KEY (ddr_id)
-);
-
-DROP TABLE IF EXISTS QU_BASE;
-
-CREATE TABLE QU_BASE (
-                         qu_id       BIGINT          NOT NULL AUTO_INCREMENT,
-                         ng_id       BIGINT          NULL,
-                         qu_sid      BIGINT          NULL,
-                         qu_rid      BIGINT          NULL,
-                         qu_stt      VARCHAR(20)     NULL,
-                         qu_exp_dt   DATETIME        NULL,
-                         qu_op_yn    BOOLEAN         NULL,
-                         qu_con      TEXT            NULL,
-                         qu_cre_dt   DATETIME        NULL,
-                         qu_upd_dt   DATETIME        NULL,
-
-                         PRIMARY KEY (qu_id)
-);
-
-DROP TABLE IF EXISTS QU_INFO;
-
-CREATE TABLE QU_INFO (
-                         qu_info_id          BIGINT          NOT NULL AUTO_INCREMENT,
-                         qu_id               BIGINT          NULL,
-                         ng_id               BIGINT          NULL,
-                         qu_info_exc_rt      DECIMAL(18, 6)  NULL,
-                         qu_info_cur_cd      VARCHAR(10)     NULL,
-                         bgp_id              BIGINT          NULL,
-                         fp_id               BIGINT          NULL,
-                         qu_info_srv_fe      DECIMAL(18, 0)  NULL,
-                         qu_info_srv_fe_r    DECIMAL(10, 4)  NULL,
-                         qu_info_srv_fe_am   DECIMAL(18, 0)  NULL,
-                         qu_info_dd_am       DECIMAL(18, 0)  NULL,
-                         qu_info_dd_ex_am    DECIMAL(18, 0)  NULL,
-                         qu_info_dom_shi_fe  DECIMAL(18, 0)  NULL,
-                         qu_info_int_shi_fe  DECIMAL(18, 0)  NULL,
-                         qu_info_ttl_shi_fe  DECIMAL(18, 0)  NULL,
-                         qu_info_tax         DECIMAL(18, 0)  NULL,
-                         qu_info_tp          DECIMAL(18, 0)  NULL,
-                         qu_info_dis_tp      DECIMAL(18, 0)  NULL,
-                         qu_info_ps          TEXT            NULL,
-                         qu_info_dsr_dt      DATETIME        NULL,
-
-                         PRIMARY KEY (qu_info_id)
-);
-
-DROP TABLE IF EXISTS QU_DETAIL;
-
-CREATE TABLE QU_DETAIL (
-                           qu_dt_id        BIGINT          NOT NULL AUTO_INCREMENT,
-                           qu_info_id      BIGINT          NULL,
-                           qu_id           BIGINT          NULL,
-                           ng_id           BIGINT          NULL,
-                           st_id           BIGINT          NULL,
-                           st_nm           VARCHAR(50)     NULL,
-                           qu_dt_qn        INT             NULL,
-                           fa_id           BIGINT          NULL,
-                           fa_nm           VARCHAR(100)    NULL,
-                           un_g_id         BIGINT          NULL,
-                           un_g_nm         VARCHAR(20)     NULL,
-                           qu_u_qn         INT             NULL,
-                           qu_dt_fg_pr     DECIMAL(18, 4)  NULL,
-                           qu_dt_kr_pr     DECIMAL(18, 0)  NULL,
-                           qu_dt_pr        DECIMAL(18, 0)  NULL,
-                           qu_dt_re        TEXT            NULL,
-
-                           PRIMARY KEY (qu_dt_id)
-);
-
-DROP TABLE IF EXISTS QU_SHIP_FEE;
-
-CREATE TABLE QU_SHIP_FEE (
-                             qsf_id      BIGINT          NOT NULL AUTO_INCREMENT,
-                             qu_info_id  BIGINT          NULL,
-                             qu_id       BIGINT          NULL,
-                             ng_id       BIGINT          NULL,
-                             fa_id       BIGINT          NULL,
-                             qsf_fa_nm   VARCHAR(100)    NULL,
-                             qsf_fa_c_cd VARCHAR(10)     NULL,
-                             qsf_trsp_ty VARCHAR(10)     NULL,
-                             qsf_un_qn   INT             NULL,
-                             qsf_sr_am   DECIMAL(18, 0)  NULL,
-                             qsf_sr_yn   BOOLEAN         NULL,
-                             qsf_sr_des  TEXT            NULL,
-                             qsf_prt_am  DECIMAL(18, 0)  NULL,
-                             qsf_cst_am  DECIMAL(18, 0)  NULL,
-                             qsf_hs_cd   DECIMAL(18, 0)  NULL,
-                             qsf_ins_yn  BOOLEAN         NULL,
-                             qsf_ins_am  DECIMAL(18, 0)  NULL,
-                             qsf_cif_am  DECIMAL(18, 0)  NULL,
-                             qsf_dty_r   DECIMAL(10, 4)  NULL,
-                             qsf_dty     DECIMAL(18, 0)  NULL,
-                             qsf_vat     DECIMAL(18, 0)  NULL,
-                             qsf_dsc_r   DECIMAL(10, 4)  NULL,
-                             qsf_dsc_am  DECIMAL(18, 0)  NULL,
-                             qsf_ttl     DECIMAL(18, 0)  NULL,
-                             qsf_cr_dt   DATETIME        NULL,
-                             qsf_up_dt   DATETIME        NULL,
-
-                             PRIMARY KEY (qsf_id)
-);
 
 
-CREATE TABLE IF NOT EXISTS hs_code (
-                                       hs_id    BIGINT       AUTO_INCREMENT PRIMARY KEY,
-                                       cat_id   BIGINT       NOT NULL UNIQUE,
-                                       hs_cd    VARCHAR(20)  NOT NULL,
-    hs_nm    VARCHAR(100) NOT NULL,
-    hs_du_ra DECIMAL(5,4) NOT NULL DEFAULT 0.1300,
-    hs_des   VARCHAR(255)
-    );
+
 
 -- =====================
 -- 백시현 END
@@ -456,11 +272,9 @@ CREATE TABLE chat_room (
       (ch_ro_stt = 'CLOSED' AND ch_ro_cls_dt IS NOT NULL AND ch_ro_cls_rsn IS NOT NULL)
    ),
    CHECK (
-       (ch_ro_stt = 'OPEN' AND mem_ad_id IS NULL)
-           OR
-       (ch_ro_stt = 'ONGOING' AND mem_ad_id IS NOT NULL)
-           OR
-       (ch_ro_stt = 'CLOSED')
+      (ch_ro_stt = 'OPEN' AND mem_ad_id IS NULL)
+      OR
+      (ch_ro_stt IN ('ONGOING', 'CLOSED') AND mem_ad_id IS NOT NULL)
    )
 );
 
@@ -500,35 +314,31 @@ CREATE TABLE `NOTIFICATION`
     `noti_ref`        VARCHAR(30) NULL,
     `noti_rea_yn`     BOOLEAN NULL,
     `noti_del_yn`     BOOLEAN NULL,
-    `noti_cre_dt`     DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
-    `noti_upd_dt`     DATETIME NULL ,
+    `noti_cre_dt`     DATETIME NULL,
+    `noti_upd_dt`     DATETIME NULL,
     `noti_upd_mem_id` VARCHAR(4) NULL,
     `mem_id`          BIGINT NULL
 );
+
 CREATE TABLE `ORDER_BASE`
 (
     `ord_base_id`     BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    `ord_base_nm`     VARCHAR(10) NULL,
     `ord_base_rcv_nm` VARCHAR(10) NULL,
-    `ord_base_adr` VARCHAR(20) NULL,
+    `ord_base_adr_da` VARCHAR(20) NULL,
     `ord_base_adr_dt` VARCHAR(20) NULL,
-    `ord_base_cre_dt` DATETIME NULL,
-    `ord_base_upd_dt` DATETIME NULL,
-    `ord_base_stt`    ENUM('PREPARING', 'DELIVERING', 'DELIVERED', 'CANCELLED'),
-    `ord_base_no`     VARCHAR(10) NULL,
     `ord_base_msg`    TEXT NULL,
-    `qu_dt_id`        BIGINT NULL,
-    `qu_info_id`      BIGINT NULL,
-    `qu_id`           BIGINT NULL,
-    `ng_id`           BIGINT NULL,
-    `mem_id`          BIGINT NOT NULL
+    `qu_dt_id`        BIGINT NOT NULL,
+    `qu_info_id`      BIGINT NOT NULL,
+    `qu_id`           BIGINT NOT NULL,
+    `ng_id`           BIGINT NOT NULL
 );
 
-CREATE TABLE `RECEIVER` (
+CREATE TABLE `RECIEVER` (
     `rc_id`	BIGINT	GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
     `rc_nm`	VARCHAR(50)	NULL,
     `rc_phn`	VARCHAR(20)	NULL,
     `rc_msg`	TEXT	NULL,
-    `rc_pos_cd` VARCHAR(20)	NULL,
     `rc_adr`	VARCHAR(20)	NULL,
     `rc_adr_dt`	VARCHAR(20)	NULL,
     `rc_cre_dt`	DATETIME	NULL,
@@ -537,15 +347,6 @@ CREATE TABLE `RECEIVER` (
     `mem_id`	BIGINT	NOT NULL
 );
 
-CREATE TABLE `SHIPMENT` (
-     `sh_id`	BIGINT	NOT NULL,
-     `sh_tra_no`	BIGINT	NULL,
-     `sh_car_cd`	VARCHAR(6)	NULL,
-     `sh_stt`	ENUM('DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED')  NOT NULL,
-     `sh_cre_dt`	DATETIME	NULL,
-     `sh_upd_dt`	DATETIME	NULL,
-     `ord_base_id`	BIGINT	NOT NULL
-);
 -- =====================
 -- 임 욱 END
 -- =====================

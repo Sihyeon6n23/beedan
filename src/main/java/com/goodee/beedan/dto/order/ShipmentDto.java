@@ -13,11 +13,10 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class ShipmentDto {
-    private Long shId;
-    private Long shTraNo;
-    private String shCarCd;
-    private ShipmentStatus shStt;
-    private LocalDateTime shCreDt;
-    private LocalDateTime shUpdDt;
-    private Order order;
+    private Long shi_id;
+    private Long shi_tra_no;
+    private String shi_ca_cd;
+    private ShipmentStatus shi_stt;
+    private LocalDateTime shi_base_cre_dt;
+    private LocalDateTime shi_div_dt;
 }

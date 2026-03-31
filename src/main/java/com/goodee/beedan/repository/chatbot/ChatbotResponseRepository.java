@@ -11,7 +11,8 @@ public interface ChatbotResponseRepository extends JpaRepository<ChatbotResponse
     // ===== 조회용 메서드 =====
 
     // 특정 질의에 연결된 활성 최종 응답 1건 조회
-    // - cbTpId = 질의 id, cbResUseYn = true
+    // - cbTpId = 질의 id
+    // - cbResUseYn = true
     Optional<ChatbotResponse> findByCbTpIdAndCbResUseYn(Long cbTpId, boolean cbResUseYn);
 
     // 특정 질의에 활성 응답이 존재하는지 확인

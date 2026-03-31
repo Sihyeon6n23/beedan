@@ -178,15 +178,15 @@ public class NewStockController {
     }
 
     // 자동 포함 토글 (urlUseYn)
-//    @PostMapping("/toggle-use/{id}")
-//    @ResponseBody
-//    public Map<String, String> toggleUseYn(@PathVariable Long id,
-//                                           @RequestBody Map<String, Boolean> body) {
-//        CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow();
-//        url.setUrlUseYn(body.get("useYn"));
-//        crawlingUrlRepository.save(url);
-//        Map<String, String> result = new HashMap<>();
-//        result.put("status", "ok");
-//        return result;
-//    }
+    @PostMapping("/toggle-use/{id}")
+    @ResponseBody
+    public Map<String, String> toggleUseYn(@PathVariable Long id,
+                                           @RequestBody Map<String, Boolean> body) {
+        CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow();
+        url.setUrlUseYn(body.get("useYn"));
+        crawlingUrlRepository.save(url);
+        Map<String, String> result = new HashMap<>();
+        result.put("status", "ok");
+        return result;
+    }
 }

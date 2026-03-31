@@ -173,7 +173,7 @@ public class CrawlingService {
                         .stPr(raw.price())
                         .stCur(currency)
                         .stImgUrl(raw.imgUrl())
-                        .stExpYn(false)
+                        .stExpYn(true)
                         .stUseYn(true)
                         .stDelYn(false)
                         .stReqYn(false)

@@ -28,10 +28,9 @@ public class QuoteShipFee {
     private Long ngId;  //Negotiation
     private Long faId;  //Factory
     private String qsfFaNm; //공장 이름
-    @Column(name = "qsf_fa_c_cd")
     private String qsfFaCCd;// 공장 국가 코드
     private String qsfTrspTy;   // 운송 수단 SEA AIR EXPRESS
-    private Integer qsfUnQn; // 총 다스 수량
+    private Integer qsfTtDz; // 총 다스 수량
     @Column(precision = 18, scale = 0)
     private BigDecimal qsfSrAm; // 해외 운임비
     private Boolean qsfSrYn;    // 수동 운임비 조정 여부
@@ -47,13 +46,13 @@ public class QuoteShipFee {
     private BigDecimal qsfInsAm;    // 보험료
     @Column(precision = 18, scale = 0)
     private BigDecimal qsfCifAm;    // CIF 금액(상품+운임+보험)
-    @Column(name = "qsf_dty_r", precision = 10, scale = 4)
+    @Column(precision = 10, scale = 4)
     private BigDecimal qsfDtyR;     // 관세율
     @Column(precision = 18, scale = 0)
     private BigDecimal qsfDty;      // 관세액
     @Column(precision = 18, scale = 0)
     private BigDecimal qsfVat;      // 부가세액
-    @Column(name = "qsf_dsc_r", precision = 10, scale = 4)
+    @Column(precision = 10, scale = 4)
     private BigDecimal qsfDscR;     // 배송비 할인율
     @Column(precision = 18, scale = 0)
     private BigDecimal qsfDscAm;    // 배송비 할인 금액
@@ -82,7 +81,7 @@ public class QuoteShipFee {
         this.qsfFaNm = factoryName;
         this.qsfFaCCd = factoryCountryCode;
         this.qsfTrspTy = transportType;
-        this.qsfUnQn = totalDozen;
+        this.qsfTtDz = totalDozen;
         this.qsfSrYn = false;
         this.qsfInsYn = false;
     }
@@ -113,14 +112,13 @@ public class QuoteShipFee {
         this.qsfInsAm = insuranceFee;
     }
 
-    // 상품가 + 해외운임 + 보험료
     public void calculateCif(BigDecimal itemTotal){
         BigDecimal insurance = this.qsfInsAm != null
                 ? this.qsfInsAm
                 : BigDecimal.ZERO;
         this.qsfCifAm = itemTotal
                 .add(this.qsfSrAm != null
-                        ? this.qsfSrAm
+                        ? this.qsfInsAm
                         : BigDecimal.ZERO)
                 .add(insurance);
     }
@@ -156,9 +154,5 @@ public class QuoteShipFee {
                 .add(this.qsfVat    != null ? this.qsfVat : BigDecimal.ZERO);
 
         applyDiscount(this.qsfDscR != null ? this.qsfDscR : BigDecimal.ZERO);;
-
-        this.qsfTtl = subtotal.subtract(
-                this.qsfDscAm != null ? this.qsfDscAm : BigDecimal.ZERO
-        );
     }
 }

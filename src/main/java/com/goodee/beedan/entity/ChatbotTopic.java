@@ -34,7 +34,7 @@ public class ChatbotTopic {
     private Integer cbTpOrd;
 
     @Column(name = "cb_tp_use_yn", nullable = false)
-    private Boolean cbTpUseYn;
+    private boolean cbTpUseYn;
 
     @CreatedDate
     @Column(name = "cb_tp_cre_dt", nullable = false, updatable = false)

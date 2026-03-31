@@ -1,4 +1,4 @@
-const PizNumberValidation = {
+const BizNumberValidation = {
     async validate(bizDto) {
         try {
             const response = await axios.post("/api/auth/biz-validation", bizDto)

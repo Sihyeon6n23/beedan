@@ -14,10 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.goodee.beedan.entity.Stock;
 
 import java.util.List;
 
@@ -50,19 +47,5 @@ public class StockController {
         model.addAttribute("brands", brands);
         model.addAttribute("categories", categories);
         return "stock/stock-list";
-    }
-
-    // 상품 상세
-    @GetMapping("/detail/{stId}")
-    public String getStockDetail(@PathVariable Long stId, Model model,
-                                 @AuthenticationPrincipal MemberUserDetails userDetails) {
-        Long memId = userDetails != null ? userDetails.getMemberId() : null;
-        Stock stock = stockService.findById(stId);
-        boolean wished = stockService.isWished(stId, memId);
-
-        model.addAttribute("stock", stock);
-        model.addAttribute("wished", wished);
-        model.addAttribute("memberId", memId);
-        return "stock/stock-detail";
     }
 }

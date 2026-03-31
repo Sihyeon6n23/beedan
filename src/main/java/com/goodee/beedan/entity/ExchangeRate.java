@@ -24,11 +24,9 @@ public class ExchangeRate {
     private String erCr;    //통화 "JPY"
 
     @Column(nullable = false, precision = 18, scale =6)
-    private BigDecimal erRa;    // 환율
+    private BigDecimal erRa;
 
-    private String erBa;    // 기본 통화 (항상 KRW)
-
-    @Column(name = "er_f_dt", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime erFDt;    // 환율 기준 시간
 
     @CreatedDate
@@ -39,7 +37,6 @@ public class ExchangeRate {
     public ExchangeRate(String currency, BigDecimal rate, LocalDateTime fetchedAt){
         this.erCr = currency;
         this.erRa = rate;
-        this.erBa = "KRW";
         this.erFDt = fetchedAt;
     }
 
@@ -50,11 +47,6 @@ public class ExchangeRate {
                 .setScale(0, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal toForeign(BigDecimal krwAmount) {
-        if (krwAmount == null || this.erRa.compareTo(BigDecimal.ZERO) == 0)
-            return BigDecimal.ZERO;
-        return krwAmount.divide(this.erRa, 4, RoundingMode.HALF_UP);
-    }
 
 }
 

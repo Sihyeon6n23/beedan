@@ -1,4 +1,3 @@
-
 -- =====================
 -- 최준희 START
 -- =====================
@@ -31,35 +30,35 @@ INSERT INTO category VALUES
 INSERT INTO stock (st_cd, br_id, st_br_nm, cat_id, st_cat_nm, st_nm, st_pr, st_cur, st_img_url, st_exp_yn, st_use_yn, st_del_yn, st_req_yn, st_req_mem_id, st_cra_dt, st_cre_dt, st_upd_dt, st_wis_cnt, st_pur_cnt) VALUES
 
 -- Kapital (¥)
-('KAP-001', 1, 'Kapital', '2', 'Jacket',      '25FW Mens Coach Jacket',   1749.99, '¥', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 10),
-('KAP-002', 1, 'Kapital', '2', 'Jacket',      'Boro Padded Jacket',       2100.00, '¥', 'https://images.unsplash.com/photo-1548126032-079a0fb0099d?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  5),
-('KAP-003', 1, 'Kapital', '2', 'Jacket',      'Teru Teru Parka',          1980.00, '¥', 'https://images.unsplash.com/photo-1539109136-da888-59a3bc9f3a10?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6,  3),
-('KAP-004', 1, 'Kapital', '4', 'Knitwear',     'Boro Mix Sweater',          890.00, '¥', 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
-('KAP-005', 1, 'Kapital', '4', 'Knitwear',     'Sashiko Knit Vest',         620.00, '¥', 'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7,  4),
-('KAP-006', 1, 'Kapital', '7', 'T-Shirt',         'Gauze Boro Shirt',          540.00, '¥', 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5,  2),
-('KAP-007', 1, 'Kapital', '7', 'T-Shirt',         'Remake Flannel Shirt',      760.00, '¥', 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  6),
-('KAP-008', 1, 'Kapital', '8', 'Bottoms',      'Kendo Pants',               980.00, '¥', 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 7),
-('KAP-009', 1, 'Kapital', '8', 'Bottoms',      'Boro Remake Jeans',        1200.00, '¥', 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 13, 8),
+('KAP-001', 1, 'Kapital', '1', 'Outwear',      '25FW Mens Coach Jacket',   1749.99, '¥', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 10),
+('KAP-002', 1, 'Kapital', '1', 'Outwear',      'Boro Padded Jacket',       2100.00, '¥', 'https://images.unsplash.com/photo-1548126032-079a0fb0099d?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  5),
+('KAP-003', 1, 'Kapital', '1', 'Outwear',      'Teru Teru Parka',          1980.00, '¥', 'https://images.unsplash.com/photo-1539109136-da888-59a3bc9f3a10?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6,  3),
+('KAP-004', 1, 'Kapital', '2', 'Knitwear',     'Boro Mix Sweater',          890.00, '¥', 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80', FALSE, FALSE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
+('KAP-005', 1, 'Kapital', '2', 'Knitwear',     'Sashiko Knit Vest',         620.00, '¥', 'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7,  4),
+('KAP-006', 1, 'Kapital', '3', 'Tops',         'Gauze Boro Shirt',          540.00, '¥', 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5,  2),
+('KAP-007', 1, 'Kapital', '3', 'Tops',         'Remake Flannel Shirt',      760.00, '¥', 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  6),
+('KAP-008', 1, 'Kapital', '4', 'Bottoms',      'Kendo Pants',               980.00, '¥', 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 7),
+('KAP-009', 1, 'Kapital', '4', 'Bottoms',      'Boro Remake Jeans',        1200.00, '¥', 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 13, 8),
 
 -- Nanamica (¥)
-('NAN-001', 2, 'Nanamica', '2', 'Jacket',     'GORE-TEX Cruiser Jacket',  3200.00, '¥', 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 20, 12),
-('NAN-002', 2, 'Nanamica', '2', 'Jacket',     'Mountain Parka',           2800.00, '¥', 'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 18, 10),
-('NAN-003', 2, 'Nanamica', '2', 'Coat',     'Club Coat',                3600.00, '¥', 'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 15, 8),
-('NAN-004', 2, 'Nanamica', '7', 'T-Shirt',        'COOLMAX Rugby Shirt',       640.00, '¥', 'https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  5),
-('NAN-005', 2, 'Nanamica', '7', 'T-Shirt',        'SUVIN Jersey Tee',          320.00, '¥', 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 12, 7),
-('NAN-006', 2, 'Nanamica', '8', 'Bottoms',     'COOLMAX Wide Chino',       1100.00, '¥', 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6),
-('NAN-007', 2, 'Nanamica', '8', 'Bottoms',     'Straight Tapered Chino',    980.00, '¥', 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  4),
-('NAN-008', 2, 'Nanamica', '11', 'Bags / Accessories', 'Ruck Sack',                1400.00, '¥', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 9),
-('NAN-009', 2, 'Nanamica', '11', 'Bags / Accessories', 'Briefcase M',              1800.00, '¥', 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 6),
+('NAN-001', 2, 'Nanamica', '1', 'Outwear',     'GORE-TEX Cruiser Jacket',  3200.00, '¥', 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 20, 12),
+('NAN-002', 2, 'Nanamica', '1', 'Outwear',     'Mountain Parka',           2800.00, '¥', 'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 18, 10),
+('NAN-003', 2, 'Nanamica', '1', 'Outwear',     'Club Coat',                3600.00, '¥', 'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 15, 8),
+('NAN-004', 2, 'Nanamica', '3', 'Tops',        'COOLMAX Rugby Shirt',       640.00, '¥', 'https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9,  5),
+('NAN-005', 2, 'Nanamica', '3', 'Tops',        'SUVIN Jersey Tee',          320.00, '¥', 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 12, 7),
+('NAN-006', 2, 'Nanamica', '4', 'Bottoms',     'COOLMAX Wide Chino',       1100.00, '¥', 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6),
+('NAN-007', 2, 'Nanamica', '4', 'Bottoms',     'Straight Tapered Chino',    980.00, '¥', 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8,  4),
+('NAN-008', 2, 'Nanamica', '5', 'Accessories', 'Ruck Sack',                1400.00, '¥', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 9),
+('NAN-009', 2, 'Nanamica', '5', 'Accessories', 'Briefcase M',              1800.00, '¥', 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 11, 6),
 
 -- Kenzo (€)
-('KNZ-001', 3, 'Kenzo', '2', 'Jacket',        'Boke Flower Peacoat',       890.00, '€', 'https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 22, 14),
-('KNZ-002', 3, 'Kenzo', '2', 'Jacket',        'Tiger Mountain Parka',      720.00, '€', 'https://images.unsplash.com/photo-1467043237213-65f2da53396f?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 17, 11),
-('KNZ-003', 3, 'Kenzo', '7', 'T-Shirt',           'Tiger Print Tee',           180.00, '€', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 30, 20),
-('KNZ-004', 3, 'Kenzo', '7', 'T-Shirt',           'Boke Flower Shirt',         260.00, '€', 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 19, 13),
-('KNZ-005', 3, 'Kenzo', '4', 'Knitwear',       'Tiger Embroidery Sweater',  420.00, '€', 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
-('KNZ-006', 3, 'Kenzo', '11', 'Bags / Accessories',    'Tiger Cap',                 120.00, '€', 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 25, 18),
-('KNZ-007', 3, 'Kenzo', '11', 'Bags / Accessories',    'Boke Flower Scarf',         150.00, '€', 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=600&q=80', FALSE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6);
+('KNZ-001', 3, 'Kenzo', '1', 'Outwear',        'Boke Flower Peacoat',       890.00, '€', 'https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 22, 14),
+('KNZ-002', 3, 'Kenzo', '1', 'Outwear',        'Tiger Mountain Parka',      720.00, '€', 'https://images.unsplash.com/photo-1467043237213-65f2da53396f?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 17, 11),
+('KNZ-003', 3, 'Kenzo', '3', 'Tops',           'Tiger Print Tee',           180.00, '€', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 30, 20),
+('KNZ-004', 3, 'Kenzo', '3', 'Tops',           'Boke Flower Shirt',         260.00, '€', 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 19, 13),
+('KNZ-005', 3, 'Kenzo', '2', 'Knitwear',       'Tiger Embroidery Sweater',  420.00, '€', 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 9),
+('KNZ-006', 3, 'Kenzo', '5', 'Accessories',    'Tiger Cap',                 120.00, '€', 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 25, 18),
+('KNZ-007', 3, 'Kenzo', '5', 'Accessories',    'Boke Flower Scarf',         150.00, '€', 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=600&q=80', TRUE, TRUE, FALSE, FALSE, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 6);
 
 -- =====================
 -- CART (샘플)
@@ -142,7 +141,7 @@ INSERT INTO NEGOTIATION (ng_nm, ng_cre_dt, mem_id) VALUES
                                                        ('협상 3호', CURRENT_TIMESTAMP(), 2);
 
 INSERT INTO UNIT_GROUP (un_g_nm, un_g_qn, un_g_yn, un_g_cr_dt, un_g_up_dt) VALUES
-    ('다스', 12, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+                                                                               ('다스', 12, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- 다스(un_g_id=2 가정) 기준 할인 정책
 INSERT INTO UNIT_DISCOUNT
@@ -152,80 +151,18 @@ VALUES
     (1, 10, NULL,    0.0500, 0.0000, 'HIGHER', '10다스 이상 수량 5% 할인',  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
     (1, NULL, 500000, 0.0000, 0.0300, 'HIGHER', '50만원 이상 금액 3% 할인', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
-INSERT INTO FACTORY (br_id, fa_nm, fa_ad, fa_cty, fa_c_cd, fa_yn, fa_cr_dt, fa_up_dt) VALUES
-                                                                                          (1, '도쿄 1공장', '도쿄 시부야구 1-1', '도쿄',   'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                          (1, '오사카 1공장', '오사카 난바 2-2', '오사카', 'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                          (2, '상하이 1공장', '상하이 푸동 3-3', '상하이', 'CN', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO EXCHANGE_RATE (er_cr, er_ra, er_ba, er_f_dt, er_cr_dt) VALUES
-                                                                       ('JPY', 9.012345, 'KRW', '2026-03-24 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('JPY', 9.123456, 'KRW', '2026-03-25 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('JPY', 9.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('USD', 1380.123456, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('EUR', 1500.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('CNY', 190.345678, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP());
-
-
-INSERT INTO SHIPPING_RATE
-(sr_c_cd, sr_trsp_ty, sr_sm_qn, sr_sm_am, sr_md_qn, sr_md_am, sr_lg_qn, sr_lg_am, sr_yn, sr_cr_dt, sr_up_dt)
-VALUES
-    ('JP', 'SEA', 1, 50000,  50, 80000,  200, 120000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('JP', 'AIR', 1, 100000, 50, 150000, 200, 200000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CN', 'SEA', 1, 40000,  50, 70000,  200, 100000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CN', 'AIR', 1, 80000,  50, 120000, 200, 160000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO PORT_CUSTOMS_RATE
-(pcr_ty, pcr_sm_am, pcr_md_am, pcr_lg_am, pcr_yn, pcr_cr_dt, pcr_up_dt)
-VALUES
-    ('PORT',    30000, 50000, 70000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CUSTOMS', 40000, 60000, 80000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('HS_CODE', 10000, 10000, 10000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO DOMESTIC_DELIVERY_RATE
-(ddr_rgn, ddr_am, ddr_e_am, ddr_yn, ddr_cr_dt, ddr_up_dt)
-VALUES
-    ('SEOUL',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('GYEONGGI', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('METRO',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('PROVINCE', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('JEJU',     3000, 3000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('ISLAND',   3000, 5000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO QU_BASE (ng_id, qu_sid, qu_rid, qu_stt, qu_op_yn, qu_cre_dt, qu_upd_dt) VALUES
-                                                                                        (1, 1, 2, 'TEMP_SAVE',  FALSE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                        (1, 1, 2, 'SUBMITTED',  TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                        (2, 2, 1, 'APPROVED',   TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-
-INSERT INTO QU_INFO
-(qu_id, ng_id, qu_info_exc_rt, qu_info_cur_cd, bgp_id, fp_id)
-VALUES
-    (1, 1, 9.234567, 'JPY', 1, 1),
-    (2, 1, 1380.123456, 'USD', 2, 2);
 
 
 
-INSERT INTO QU_DETAIL
-(qu_info_id, qu_id, ng_id, st_id, st_nm, qu_dt_qn,
- fa_id, fa_nm, un_g_id, un_g_nm, qu_u_qn, qu_dt_fg_pr)
-VALUES
-    (1, 1, 1, 1, '면 티셔츠',  100, 1, '도쿄 1공장',  2, '다스', 5, 1200.0000),
-    (1, 1, 1, 2, '청바지',     50,  1, '도쿄 1공장',  2, '다스', 3, 2500.0000),
-    (1, 1, 1, 3, '후드티',     30,  3, '상하이 1공장',2, '다스', 2, 1800.0000);
 
 
 
-INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
-                                                                        (1,  1,  '6201.90-0000', 'Coat',             0.1300, '코트류 (우븐/아우터) - 세번 확인 필요'),
-                                                                        (2,  2,  '6203.33-0000', 'Jacket',           0.1300, '남성 재킷류 (우븐) - 세번 확인 필요'),
-                                                                        (3,  3,  '6110.20-0000', 'Hoodie',           0.1300, '후드/집업 (면 편물) - 세번 확인 필요'),
-                                                                        (4,  4,  '6110.30-0000', 'Knitwear',         0.1300, '니트/스웨터 (합성섬유 편물) - 세번 확인 필요'),
-                                                                        (5,  5,  '6205.20-0000', 'Shirt',            0.1300, '셔츠/블라우스 (면 우븐) - 세번 확인 필요'),
-                                                                        (6,  7,  '6109.10-0000', 'T-Shirt',          0.1300, '티셔츠/민소매 (면 편물) - 세번 확인 필요'),
-                                                                        (7,  8,  '6203.42-0000', 'Bottoms',          0.1300, '바지/스커트 (면 우븐) - 세번 확인 필요'),
-                                                                        (8,  9,  '6505.00-0000', 'Headwears',        0.1300, '모자류 - 세번 확인 필요'),
-                                                                        (9,  10, '6403.99-0000', 'Shoes',            0.1300, '신발류 - 세번 확인 필요'),
-                                                                        (10, 11, '4202.22-0000', 'Bags/Accessories', 0.1300, '가방/액세서리 - 세번 확인 필요');
+
+
+
+
+
+
 
 
 -- =====================
@@ -311,179 +248,6 @@ INSERT INTO member (
 -- =====================
 -- 장 준 START
 -- =====================
-INSERT INTO chatbot_topic
-(cb_tp_id, cb_tp_nm, cb_tp_lvl, cb_tp_ord, cb_tp_use_yn, cb_tp_cre_dt, cb_tp_upd_dt, cb_tp_prn_id)
-VALUES
-    (1, '배송 문의', 1, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (2, '견적 문의', 1, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (3, '결제 문의', 1, 3, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (4, '회원정보 문의', 1, 4, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),
-    (5, '배송 조회', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-    (6, '통관/입고 일정', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-    (7, '견적 요청 방법', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
-    (8, '최소 발주 수량', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
-    (9, '비밀번호 변경', 2, 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4),
-    (10, '사업자 정보 변경', 2, 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4);
-
-INSERT INTO chatbot_response
-(cb_res_id, cb_res_ttl, cb_res_con, cb_res_lnk_btn_nm, cb_res_lnk_url, cb_res_use_yn, cb_res_cre_dt, cb_res_upd_dt, cb_tp_id)
-VALUES
-    (1, '배송 조회 안내', '마이페이지의 주문/배송 내역에서 진행 상태를 확인하실 수 있습니다. 국내 배송 시작 이후에는 송장 정보가 순차적으로 반영되며, 현지 출고 직후에는 상태 반영까지 다소 시간이 걸릴 수 있습니다.', '주문 내역 보기', '/order/list', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5),
-    (2, '통관 및 입고 일정 안내', '통관과 입고 일정은 상품 종류, 현지 출고 시점, 세관 상황에 따라 달라질 수 있습니다. 급한 일정이 있는 경우 상담사 연결을 통해 주문번호와 희망 납기일을 함께 남겨주시면 확인 후 안내드립니다.', NULL, NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6),
-    (3, '견적 요청 방법 안내', '원하시는 상품명, 브랜드, 수량, 옵션 정보를 준비하신 뒤 견적 요청 페이지에서 접수해 주세요. 요청 내용이 구체적일수록 상담과 산출이 더 빠르게 진행됩니다.', '견적 요청하기', '/quote/write', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 7),
-    (4, '최소 발주 수량 안내', '최소 발주 수량은 브랜드와 상품마다 다를 수 있습니다. 대량 구매나 정기 발주를 검토 중이신 경우 상담사 연결을 통해 예상 수량을 알려주시면 확인 후 안내드립니다.', NULL, NULL, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 8),
-    (5, '결제 안내', '결제 가능 수단과 결제 진행 상태는 결제 안내 화면에서 확인하실 수 있습니다. 카드 결제 오류나 입금 확인 지연이 있는 경우 상담사 연결을 통해 주문 정보와 함께 문의해 주세요.', '결제 내역 보기', '/payment/check', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3),
-    (6, '비밀번호 변경 안내', '비밀번호를 변경하려면 마이페이지의 비밀번호 변경 메뉴를 이용해 주세요. 현재 비밀번호 확인 후 새 비밀번호를 등록할 수 있으며, 계정 접근에 문제가 있는 경우에는 상담사 연결을 통해 추가 안내를 받을 수 있습니다.', '비밀번호 변경으로 이동', '/mypage/changepw', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9),
-    (7, '사업자 정보 변경 안내', '상호, 대표자명, 사업장 주소 등 사업자 정보 변경이 필요한 경우 마이페이지에서 수정 가능한 항목을 먼저 확인해 주세요. 증빙서류 확인이 필요한 변경 건은 상담사 연결 후 처리됩니다.', '사업자 정보 변경으로 이동', '/mypage/changebiz', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10);
-
-ALTER TABLE chatbot_topic ALTER COLUMN cb_tp_id RESTART WITH 100;
-ALTER TABLE chatbot_response ALTER COLUMN cb_res_id RESTART WITH 100;
-
--- 채팅 읽음 처리 테스트 데이터
-INSERT INTO chat_room (
-    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
-) VALUES (
-             '미읽음 테스트 문의',
-             'OPEN',
-             CURRENT_TIMESTAMP,
-             CURRENT_TIMESTAMP,
-             (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01'),
-             NULL
-         );
-
-INSERT INTO chat_message (
-    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
-) VALUES (
-             'USER',
-             '미읽음 상태 확인용 테스트 메시지입니다.',
-             CURRENT_TIMESTAMP,
-             (
-                 SELECT ch_ro_id
-                 FROM chat_room
-                 WHERE ch_ro_ttl = '미읽음 테스트 문의'
-                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
-             ),
-             (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
-         );
-
-INSERT INTO chat_room_read_status (
-    ch_ro_re_st_last_dt, ch_ro_re_st_unr_yn, ch_ro_id, mem_id, ch_ms_last_id
-) VALUES (
-             NULL,
-             TRUE,
-             (
-                 SELECT ch_ro_id
-                 FROM chat_room
-                 WHERE ch_ro_ttl = '미읽음 테스트 문의'
-                   AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01')
-             ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'user01'),
-    NULL
-);
-
-INSERT INTO chat_room (
-    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
-) VALUES
-    ('관리자 상호명 테스트 문의', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 2', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 3', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 4', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL),
-    ('관리자 목록 테스트 문의 5', 'OPEN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'), NULL);
-
-INSERT INTO chat_message (
-    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
-) VALUES
-    ('USER', '관리자 목록에서 상호명 표시 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 상호명 테스트 문의' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 두 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 2' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 세 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 3' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 네 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 4' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')),
-    ('USER', '관리자 목록 다섯 번째 행 확인용 메시지입니다.', CURRENT_TIMESTAMP, (SELECT ch_ro_id FROM chat_room WHERE ch_ro_ttl = '관리자 목록 테스트 문의 5' AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')), (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'));
-
-INSERT INTO chat_room (
-    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
-)
-SELECT
-    '관리자 목록 OPEN 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
-    'OPEN',
-    DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
-    DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
-    NULL
-FROM SYSTEM_RANGE(6, 13);
-
-INSERT INTO chat_message (
-    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
-)
-SELECT
-    'USER',
-    'OPEN 상태 필터 확인용 메시지 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
-    DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
-    (
-        SELECT ch_ro_id
-        FROM chat_room
-        WHERE ch_ro_ttl = '관리자 목록 OPEN 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
-          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-    ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-FROM SYSTEM_RANGE(6, 13);
-
-INSERT INTO chat_room (
-    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
-)
-SELECT
-    '관리자 목록 ONGOING 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
-    'ONGOING',
-    DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
-    DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-FROM SYSTEM_RANGE(1, 13);
-
-INSERT INTO chat_message (
-    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
-)
-SELECT
-    'USER',
-    'ONGOING 상태 필터 확인용 메시지 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
-    DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
-    (
-        SELECT ch_ro_id
-        FROM chat_room
-        WHERE ch_ro_ttl = '관리자 목록 ONGOING 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
-          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-    ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-FROM SYSTEM_RANGE(1, 13);
-
-INSERT INTO chat_room (
-    ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, ch_ro_cls_dt, ch_ro_cls_rsn, mem_id, mem_ad_id
-)
-SELECT
-    '관리자 목록 CLOSED 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
-    'CLOSED',
-    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
-    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
-    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
-    'ADMIN',
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user'),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-FROM SYSTEM_RANGE(1, 13);
-
-INSERT INTO chat_message (
-    ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
-)
-SELECT
-    'USER',
-    'CLOSED 상태 필터 확인용 메시지 ' || RIGHT('00' || CAST(X AS VARCHAR), 2),
-    DATEADD('DAY', -X, CURRENT_TIMESTAMP),
-    (
-        SELECT ch_ro_id
-        FROM chat_room
-        WHERE ch_ro_ttl = '관리자 목록 CLOSED 테스트 문의 ' || RIGHT('00' || CAST(X AS VARCHAR), 2)
-          AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-    ),
-    (SELECT mem_id FROM member WHERE mem_lgn_id = 'biz_user')
-FROM SYSTEM_RANGE(1, 13);
 -- =====================
 -- 장 준 END
 -- =====================
@@ -494,27 +258,17 @@ FROM SYSTEM_RANGE(1, 13);
 -- =====================
 -- 임 욱 START
 -- =====================
-INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt, ord_base_cre_dt)
-VALUES
-('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 2, '1234', 'PREPARING', CURRENT_TIMESTAMP),
-('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
-('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
-('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 2, '1234', 'DELIVERED', CURRENT_TIMESTAMP),
-('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 2, '1234', 'CANCELLED', CURRENT_TIMESTAMP);
+INSERT INTO ORDER_BASE (ord_base_nm, ord_base_rcv_nm, ord_base_adr_da, ord_base_adr_dt, qu_dt_id, qu_info_id, qu_id, ng_id)
+VALUES ('홍길동', '주문자와 동일', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 1, 1, 1, 1);
 
-INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_upd_mem_id, mem_id)
-VALUES
-    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE,  NULL, 2),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NULL, 2),
-    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE,  NULL, 2),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 2),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 2);
 
-INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_cre_dt, rc_upd_dt, rc_del_yn, mem_id)
+INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_cre_dt, noti_upd_mem_id, mem_id)
 VALUES
-    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2),
-    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2),
-    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2);
+    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NOW(), NULL, 1),
+    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NOW(), NULL, 1),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NOW(), NULL, 1);
 -- =====================
 -- 임 욱 END
 -- =====================
