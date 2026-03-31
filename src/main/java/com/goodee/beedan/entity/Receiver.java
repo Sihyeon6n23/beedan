@@ -24,6 +24,7 @@ public class Receiver {
     private String rcMsg;
     private String rcAdr;
     private String rcAdrDt;
+    private String rcRgn;
     @CreatedDate
     private LocalDateTime rcCreDt;
     @LastModifiedDate

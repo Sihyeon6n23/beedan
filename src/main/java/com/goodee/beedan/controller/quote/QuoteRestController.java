@@ -45,6 +45,7 @@ public class QuoteRestController {
     private final MemberRepository memberRepository;
     private final BuyerService buyerService;
     private final FeePolicyService feePolicyService;
+    private final com.goodee.beedan.repository.receiver.ReceiverRepository receiverRepository;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -373,6 +374,55 @@ public class QuoteRestController {
 
             BigDecimal procurementTotal = serviceFee.add(docFee);
 
+            // ── 4. 국내 배달비 계산 ─────────────────
+            List<String> shipRegions = request.getShipRegions();
+            // shipRegions가 없으면 사용자 기본 수령지로 상품 수만큼 세팅
+            if (shipRegions == null || shipRegions.isEmpty()) {
+                String fallbackRegion = "SEOUL";
+                if (userDetails != null) {
+                    try {
+                        com.goodee.beedan.entity.Member member = memberRepository.findByMemLgnId(userDetails.getUsername()).orElse(null);
+                        if (member != null) {
+                            com.goodee.beedan.entity.Receiver defaultRcv = receiverRepository.findFirstByMember_memIdAndRcAdrDfYnTrueAndRcDelYnFalse(member.getMemId());
+                            if (defaultRcv != null && defaultRcv.getRcRgn() != null) {
+                                fallbackRegion = defaultRcv.getRcRgn();
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+                // 공장 그룹 수 = 국내 배송 건수 (출발지가 다르면 별도 배송)
+                int shipCount = Math.max(factoryGroups.size(), items.isEmpty() ? 0 : 1);
+                shipRegions = new ArrayList<>();
+                for (int i = 0; i < shipCount; i++) shipRegions.add(fallbackRegion);
+            }
+
+            // 지역별 그룹핑
+            List<DeliveryFeeResponse.RegionGroup> domesticRegions = new ArrayList<>();
+            BigDecimal domesticFee = BigDecimal.ZERO;
+            int domesticCount = 0;
+            Map<String, Integer> regionCounts = new LinkedHashMap<>();
+            for (String rgn : shipRegions) {
+                if (rgn != null && !rgn.isEmpty()) regionCounts.merge(rgn, 1, Integer::sum);
+            }
+            for (Map.Entry<String, Integer> rc : regionCounts.entrySet()) {
+                try {
+                    DomesticDeliveryRate ddr = domesticDeliveryRateService.findActiveByRegion(rc.getKey());
+                    BigDecimal base = ddr.getDdrAm();
+                    BigDecimal extra = ddr.getDdrEAm() != null ? ddr.getDdrEAm() : BigDecimal.ZERO;
+                    BigDecimal sub = base.add(extra).multiply(BigDecimal.valueOf(rc.getValue()));
+                    domesticRegions.add(DeliveryFeeResponse.RegionGroup.builder()
+                            .regionCode(rc.getKey())
+                            .regionName(REGION_NAMES.getOrDefault(rc.getKey(), rc.getKey()))
+                            .count(rc.getValue())
+                            .baseFeeUnit(base)
+                            .extraFeeUnit(extra)
+                            .subtotal(sub)
+                            .build());
+                    domesticFee = domesticFee.add(sub);
+                    domesticCount += rc.getValue();
+                } catch (Exception ignored) {}
+            }
+
             return ResponseEntity.ok(EstimateFeeResponse.builder()
                     .factories(factoryGroups)
                     .shippingFee(totalShipping)
@@ -392,6 +442,9 @@ public class QuoteRestController {
                     .serviceFeeEffTo(fmtDate(svcEffTo))
                     .docFeeEffFrom(fmtDate(docEffFrom))
                     .docFeeEffTo(fmtDate(docEffTo))
+                    .domesticRegions(domesticRegions)
+                    .domesticFee(domesticFee)
+                    .domesticCount(domesticCount)
                     .build());
 
         } catch (Exception e) {
@@ -473,6 +526,7 @@ public class QuoteRestController {
         private BigDecimal itemTotalKrw;      // 사용자 조정 소계 합산 (수수료용)
         private Boolean insuranceYn;
         private BigDecimal insuranceRate;     // 선택한 보험 요율
+        private List<String> shipRegions;     // 배송지 지역 코드 (없으면 기본 수령지 사용)
     }
 
     @Getter
@@ -543,6 +597,10 @@ public class QuoteRestController {
         private String serviceFeeEffTo;
         private String docFeeEffFrom;
         private String docFeeEffTo;
+        // 국내 배달비
+        private List<DeliveryFeeResponse.RegionGroup> domesticRegions;
+        private BigDecimal domesticFee;
+        private int domesticCount;
 
         public static EstimateFeeResponse empty() {
             return EstimateFeeResponse.builder()
@@ -553,7 +611,10 @@ public class QuoteRestController {
                     .dutyAmount(BigDecimal.ZERO).vatAmount(BigDecimal.ZERO)
                     .logisticsTotal(BigDecimal.ZERO)
                     .serviceFee(BigDecimal.ZERO).docFee(BigDecimal.ZERO)
-                    .procurementTotal(BigDecimal.ZERO).build();
+                    .procurementTotal(BigDecimal.ZERO)
+                    .domesticRegions(Collections.emptyList())
+                    .domesticFee(BigDecimal.ZERO).domesticCount(0)
+                    .build();
         }
     }
 }

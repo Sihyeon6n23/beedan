@@ -123,11 +123,11 @@
                                 <span class="tax-rate" th:text="${item.hsDuRa != null ? #numbers.formatDecimal(item.hsDuRa * 100, 1, 'COMMA', 1, 'POINT') + '%' : '-'}">13.0%</span>
                                 <span class="tax-amount">-</span>
                             </td>
-                            <!-- 배송지: 나중에 fragment로 교체 예정 -->
                             <td class="col-shipping">
-                                <button type="button" class="shipping-btn" data-region="SEOUL"
+                                <button type="button" class="shipping-btn"
+                                        th:data-region="${defaultReceiver != null ? defaultReceiver.rcRgn : 'SEOUL'}"
                                         onclick="openShippingModal(this)">
-                                    <span class="shipping-addr">서울특별시 강남구</span>
+                                    <span class="shipping-addr" th:text="${defaultReceiver != null ? defaultReceiver.rcAdr : '배송지를 선택하세요'}">배송지를 선택하세요</span>
                                     <span class="shipping-meta">단일배송</span>
                                 </button>
                             </td>
@@ -351,10 +351,15 @@
     </div>
 </div>
 
-<!-- 국내 배송 지역 옵션 (JS용) -->
-<script th:inline="javascript">
-    var DOMESTIC_REGIONS = /*[[${domesticRates}]]*/ [];
-</script>
+<!-- 국내 배송·수령지 데이터 (JS용) -->
+<!-- 국내 배송·수령지 데이터 (JS용, 엔티티 직렬화 회피) -->
+<span id="js-default-region"
+      th:data-region="${defaultReceiver != null && defaultReceiver.rcRgn != null ? defaultReceiver.rcRgn : 'SEOUL'}"
+      th:data-name="${defaultReceiver != null ? defaultReceiver.rcNm : ''}"
+      th:data-addr="${defaultReceiver != null ? defaultReceiver.rcAdr : ''}" style="display:none"></span>
+<select id="js-domestic-regions" style="display:none">
+    <option th:each="dr : ${domesticRates}" th:value="${dr.ddrRgn}" th:data-am="${dr.ddrAm}" th:data-eam="${dr.ddrEAm != null ? dr.ddrEAm : 0}">지역</option>
+</select>
 <script th:src="@{/js/quote/quote-write.js}"></script>
 </body>
 </html>
