@@ -1,10 +1,7 @@
 package com.goodee.beedan.service.member;
 
 import com.goodee.beedan.common.constant.MemberStatus;
-import com.goodee.beedan.dto.member.AccountStatusDto;
-import com.goodee.beedan.dto.member.EditMemberDto;
-import com.goodee.beedan.dto.member.PasswordChangeDto;
-import com.goodee.beedan.dto.member.PasswordResetDto;
+import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.entity.Token;
@@ -15,13 +12,17 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -121,6 +122,45 @@ public class MemberService {
     public void resetPassword(String token, PasswordResetDto resetDto) {
         Member member = findMemberByToken(token);
         member.setMemLgnPw(passwordEncoder.encode(resetDto.getPassword()));
+    }
+
+    public void resetPasswordRequest(String loginId, String email) {
+        Member member = memberRepository.findByMemLgnIdAndMemEml(loginId, email).orElseThrow(()
+                 -> new EntityNotFoundException("일치하는 계정을 찾을 수 없습니다."));
+        String tkVl = UUID.randomUUID().toString();
+
+        PasswordResetTokenDto tokenDto = PasswordResetTokenDto.builder()
+                .tkVl(tkVl)
+                .build();
+
+        createToken(tokenDto);
+
+        // member.getMemEml();
+        // 메일전송
+    }
+
+    public String findLoginId(String username, String email) {
+        Member member = memberRepository.findByMemNmAndMemEml(username, email).orElseThrow(() -> new EntityNotFoundException(""));
+        String memberLoginId = member.getMemLgnId();
+        if (memberLoginId == null || memberLoginId.length() < 4) {
+            return "****";
+        }
+        return memberLoginId.substring(0,memberLoginId.length()-4) + "****";
+    }
+
+    private void createToken(PasswordResetTokenDto tokenDto) {
+        LocalDateTime nowTime = LocalDateTime.now();
+
+        Token token = Token.builder()
+                .tkVl(tokenDto.getTkVl())
+                .tkTy(tokenDto.getTkTy())
+                .tkUseYn(false)
+                .tkCreDt(nowTime)
+                .tkExpDt(nowTime.plusMinutes(15))
+                .member(memberRepository.findById(tokenDto.getMemId()).orElseThrow(() -> new EntityNotFoundException("사용자 ID를 찾을 수 없습니다.")))
+                .build();
+
+        tokenRepository.save(token);
     }
 
     private Member findMemberByToken(String token) {

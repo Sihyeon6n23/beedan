@@ -32,6 +32,25 @@ CREATE TABLE member (
                         PRIMARY KEY (mem_id),
                         CONSTRAINT uk_mem_lgn_id UNIQUE (mem_lgn_id) -- H2와 MySQL 모두 호환되는 문법
 );
+
+CREATE TABLE `file_upload` (
+                               `file_id`         BIGINT          NOT NULL AUTO_INCREMENT, -- 자동 증가 추가
+                               `brd_ref_ty`      VARCHAR(50)     NULL,
+                               `brd_ref_no`      BIGINT          NULL,
+                               `file_nm`         VARCHAR(100)    NULL,
+                               `file_uuid`       VARCHAR(100)    NULL,
+                               `file_ext`        VARCHAR(50)     NULL,
+                               `mem_id`          BIGINT          NULL,
+                               `file_cre_dt`     DATETIME        DEFAULT CURRENT_TIMESTAMP, -- 기본값 설정
+                               `file_upd_mem_id` BIGINT          NULL,
+                               `file_upd_dt`     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                               `file_del_yn`     BOOLEAN         DEFAULT FALSE, -- 기본값 FALSE(0)
+                               `file_or`         INT             NULL,
+                               `file_sz`         BIGINT          NULL,
+                               `file_ctp`        VARCHAR(100)    NULL,
+                               `file_pat`        VARCHAR(255)    NULL,
+                               CONSTRAINT `PK_FILE_UPLOAD` PRIMARY KEY (`file_id`)
+);
 -- =====================
 -- 고희권 END
 -- =====================

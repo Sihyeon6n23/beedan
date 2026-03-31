@@ -3,6 +3,7 @@ package com.goodee.beedan.service.root;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.io.IOException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Getter
 public class SecurityService {
     private final ObjectMapper objectMapper;
     private SecurityPolicyDto cachedPolicy;
