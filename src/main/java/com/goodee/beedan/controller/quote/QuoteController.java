@@ -41,6 +41,8 @@ public class QuoteController {
     private final ShippingInsuranceRepository shippingInsuranceRepository;
     private final StockInspectionRepository stockInspectionRepository;
     private final com.goodee.beedan.service.quote.DomesticDeliveryRateService domesticDeliveryRateService;
+    private final com.goodee.beedan.repository.receiver.ReceiverRepository receiverRepository;
+    private final com.goodee.beedan.repository.member.MemberRepository memberRepository;
 
     @PostMapping("/request")
     @ResponseBody
@@ -85,7 +87,8 @@ public class QuoteController {
     @SuppressWarnings("unchecked")
     @GetMapping("/write")
     public String getWrite(@RequestParam(required = false) Long quId,
-                           Model model, HttpSession session) {
+                           Model model, HttpSession session,
+                           @AuthenticationPrincipal MemberUserDetails userDetails) {
         model.addAttribute("activeStep", 1);
 
         // 환율 데이터 로딩
@@ -133,6 +136,20 @@ public class QuoteController {
 
         // 국내 배송 지역 목록
         model.addAttribute("domesticRates", domesticDeliveryRateService.findAllActive());
+
+        // 로그인 사용자의 배송지 목록 + 기본 배송지
+        if (userDetails != null) {
+            try {
+                Member member = memberRepository.findByMemLgnId(userDetails.getUsername()).orElse(null);
+                if (member != null) {
+                    List<Receiver> receivers = receiverRepository.findByMember_memIdAndRcDelYnFalseOrderByRcAdrDfYnDescRcIdAsc(member.getMemId());
+                    model.addAttribute("receivers", receivers);
+                    Receiver defaultReceiver = receiverRepository.findFirstByMember_memIdAndRcAdrDfYnTrueAndRcDelYnFalse(member.getMemId());
+                    if (defaultReceiver == null && !receivers.isEmpty()) defaultReceiver = receivers.get(0);
+                    model.addAttribute("defaultReceiver", defaultReceiver);
+                }
+            } catch (Exception ignored) {}
+        }
 
         return "/quote/quote-write";
     }

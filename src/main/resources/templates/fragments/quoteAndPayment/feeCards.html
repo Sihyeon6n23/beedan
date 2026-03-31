@@ -50,13 +50,6 @@
                     <span class="fee-value" id="fc-service">-</span>
                 </div>
                 <div class="fee-item">
-                    <span class="fee-label">서류 발급 및 인허가비 <button type="button" class="fee-info-btn" onclick="event.stopPropagation()">
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                        <span class="fee-tooltip" th:text="#{tooltip.fee.doc}"></span>
-                    </button></span>
-                    <span class="fee-value" id="fc-doc">-</span>
-                </div>
-                <div class="fee-item">
                     <span class="fee-label">부가 서비스 <button type="button" class="fee-info-btn" onclick="event.stopPropagation()">
                         <svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
                         <span class="fee-tooltip" th:text="#{tooltip.fee.inspection}"></span>
@@ -89,6 +82,21 @@
 
                 <!-- 공장별 섹션 — feeCard.js가 동적 렌더링 -->
 
+                <!-- 툴팁 텍스트 (JS용, Thymeleaf → hidden) -->
+                <div id="md-tooltip-data" style="display:none"
+                     th:data-transport="#{tooltip.modal.transport}"
+                     th:data-size-type="#{tooltip.modal.sizeType}"
+                     th:data-shipping-fee="#{tooltip.modal.shippingFee}"
+                     th:data-port-fee="#{tooltip.modal.portFee}"
+                     th:data-customs-fee="#{tooltip.modal.customsFee}"
+                     th:data-hs-code-fee="#{tooltip.modal.hsCodeFee}"
+                     th:data-insurance="#{tooltip.modal.insuranceFee}"
+                     th:data-cif="#{tooltip.modal.cif}"
+                     th:data-duty-rate="#{tooltip.modal.dutyRate}"
+                     th:data-duty="#{tooltip.modal.duty}"
+                     th:data-vat="#{tooltip.modal.vat}"
+                     th:data-basis="#{tooltip.modal.basis}"></div>
+
                 <div class="modal-note">
                     <span class="modal-note-icon">&#9888;</span>
                     <p>운임 금액은 현재 선사 고시 요율 기준이며 출항 시점의 시황에 따라 ±5% 내외로 변동될 수 있습니다. 최종 금액은 선하증권(B/L) 발행 시 확정됩니다.</p>
@@ -117,7 +125,7 @@
                     <p class="modal-section-label">01 · 서비스 수수료 <span class="modal-policy-date" id="md-service-date"></span></p>
                     <div class="modal-detail-rows">
                         <div class="modal-detail-row">
-                            <span class="modal-row-key">적용 등급 <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.buyerGrade}"></span></button></span>
+                            <span class="modal-row-key">적용 등급</span>
                             <span class="modal-row-val" id="md-buyer-grade">-</span>
                         </div>
                         <div class="modal-detail-row">
@@ -134,19 +142,7 @@
                 <div class="modal-divider"></div>
 
                 <div>
-                    <p class="modal-section-label">02 · 서류 발급 및 인허가 <span class="modal-policy-date" id="md-doc-date"></span></p>
-                    <div class="modal-detail-rows">
-                        <div class="modal-detail-row row-subtotal">
-                            <span class="modal-row-key">서류·인허가 소계</span>
-                            <span class="modal-row-val" id="md-doc-fee">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal-divider"></div>
-
-                <div>
-                    <p class="modal-section-label">03 · 1차 품질 검사</p>
+                    <p class="modal-section-label">02 · 부가 서비스</p>
                     <div class="modal-detail-rows">
                         <div class="modal-detail-row">
                             <span class="modal-row-key">검사 항목 <button type="button" class="modal-info-btn"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="modal-tooltip" th:text="#{tooltip.modal.inspectionItem}"></span></button></span>

@@ -530,11 +530,11 @@ VALUES
     ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 3),
     ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 3);
 
-INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_cre_dt, rc_upd_dt, rc_del_yn, mem_id)
+INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_rgn, rc_cre_dt, rc_upd_dt, rc_adr_df_yn, rc_del_yn, mem_id)
 VALUES
-    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 3),
-    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 3),
-    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 3);
+    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 'SEOUL', CURRENT_TIMESTAMP, null, TRUE, FALSE, 3),
+    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 'SEOUL', CURRENT_TIMESTAMP, null, FALSE, FALSE, 3),
+    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 'SEOUL', CURRENT_TIMESTAMP, null, FALSE, FALSE, 3);
 -- =====================
 -- 임 욱 END
 -- =====================

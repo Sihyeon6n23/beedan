@@ -108,9 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 국내 배달비 (배송지 모달에서 조회된 값 저장)
-    var lastDomesticFee = 0;
-    var lastDomesticData = null;
+    // (국내 배달비는 estimate-fees 응답에 포함)
 
     // 선택된 보험 금액 합산 (공급가 × rate)
     function getSelectedInsuranceAmount(supplyTotal) {
@@ -250,6 +248,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ── 배송지 변수 (doFetchEstimateFees에서 사용하므로 먼저 선언) ──
+    var currentShippingBtn = null;
+    var currentShipType = 'single';
+    var shipCards = [];
+    var totalItemQty = 0;
+    var rcEl = document.getElementById('js-default-region');
+    var defaultRegion = rcEl ? (rcEl.dataset.region || 'SEOUL') : 'SEOUL';
+    var defaultReceiverName = rcEl ? (rcEl.dataset.name || '') : '';
+    var defaultReceiverAddr = rcEl ? (rcEl.dataset.addr || '') : '';
+
     // ── 예상 운임 비용 조회 ─────────────────────────────
     var feeDebounceTimer = null;
 
@@ -301,6 +309,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
 
+        // 배송지 지역 코드 수집 (shipCards가 세팅되어 있으면 사용, 아니면 백엔드가 기본 수령지 사용)
+        var shipRegions = [];
+        if (shipCards.length > 0) {
+            shipCards.forEach(function (c) { shipRegions.push(c.region || defaultRegion); });
+        }
+
         fetch('/api/quote/estimate-fees', {
             method: 'POST',
             headers: headers,
@@ -308,11 +322,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 items: estimateItems,
                 itemTotalKrw: itemTotalKrw,
                 insuranceYn: isAnyInsuranceChecked(),
-                insuranceRate: insuranceInfo.rate || 0
+                insuranceRate: insuranceInfo.rate || 0,
+                shipRegions: shipRegions.length > 0 ? shipRegions : null
             })
         })
-        .then(function (res) { return res.json(); })
+        .then(function (res) {
+            if (!res.ok) { console.error('estimate-fees HTTP', res.status); return Promise.reject('HTTP ' + res.status); }
+            return res.json();
+        })
         .then(function (data) {
+            console.log('estimate-fees response:', JSON.stringify(data).substring(0, 500));
             var el = function (id) { return document.getElementById(id); };
             var fmt = function (v) { return v ? '₩' + formatNumber(v) : '-'; };
 
@@ -335,6 +354,10 @@ document.addEventListener('DOMContentLoaded', function () {
             el('qo-subtotal').textContent = subtotal > 0
                 ? '₩' + formatNumber(subtotal) : '-';
 
+            // 국내 배달비를 응답에서 직접 사용
+            var domesticFee = data.domesticFee || 0;
+            var domesticData = { totalFee: domesticFee, totalCount: data.domesticCount || 0, regions: data.domesticRegions || [] };
+
             // feeCard.js 의 공통 렌더링 함수 호출
             var selectedInsurance = getSelectedInsuranceAmount(supplyTotalKrw);
             var selectedInspection = getSelectedInspectionAmount();
@@ -342,12 +365,12 @@ document.addEventListener('DOMContentLoaded', function () {
             var shipBtn = document.querySelector('.shipping-btn');
             var dest = shipBtn ? shipBtn.querySelector('.shipping-addr').textContent : '수령지';
             if (typeof updateFeeCards === 'function') {
-                updateFeeCards(data, itemTotalKrw, dest, selectedInsurance, selectedInspection, lastDomesticFee, insuranceInfo, lastDomesticData);
+                updateFeeCards(data, itemTotalKrw, dest, selectedInsurance, selectedInspection, domesticFee, insuranceInfo, domesticData);
             }
 
             // 총 주문 명세 (부가 서비스 포함)
             var totalTax = (data.dutyAmount || 0) + (data.vatAmount || 0);
-            var logisticsVal = (data.logisticsTotal || 0) + selectedInsurance + lastDomesticFee;
+            var logisticsVal = (data.logisticsTotal || 0) + selectedInsurance + domesticFee;
             var procurementVal = (data.procurementTotal || 0) + selectedInspection;
             var grandTotal = itemTotalKrw + logisticsVal + procurementVal;
 
@@ -357,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
             el('os-tax').textContent = totalTax > 0 ? '₩' + formatNumber(totalTax) : '-';
             el('os-grand-total').textContent = grandTotal > 0 ? '₩' + formatNumber(grandTotal) : '-';
         })
-        .catch(function () {});
+        .catch(function (err) { console.error('estimate-fees error:', err); });
     }
 
     // 부가 서비스 체크박스 — 같은 카드 내 하나만 선택 + 재조회
@@ -390,16 +413,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 초기 로딩 시 — 운임 계산 즉시 실행 + 배달비 병렬 조회
+    // 초기 로딩 — estimate-fees 한 번으로 모든 값 채움 (국내 배달비 포함)
     doFetchEstimateFees();
-
-    // 기본 배송 데이터 세팅 후 배달비 조회 (결과가 오면 운임 재계산)
-    rows.forEach(function (row) {
-        var btn = row.querySelector('.shipping-btn');
-        if (btn && !btn.dataset.region) btn.dataset.region = defaultRegion;
-        shipCards.push({ qty: parseInt(row.querySelector('.qty-input').value) || 1, region: defaultRegion, name: '', addr: '', phone: '', memo: '' });
-    });
-    if (shipCards.length > 0) fetchShippingFee();
 
     // ── 임시저장 ─────────────────────────────────────
     var saveDraftBtn = document.getElementById('btnSaveDraft');
@@ -460,25 +475,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ── 배송지 모달 ──────────────────────────────────
-    var currentShippingBtn = null;
-    var currentShipType = 'single';
-    var shipCards = [];
-    var totalItemQty = 0;
-    var defaultRegion = 'SEOUL';
 
-    // 지역 옵션 생성 (Thymeleaf에서 주입된 DOMESTIC_REGIONS 사용)
+    // 지역 옵션 생성 (hidden select에서 데이터 읽기)
     function buildRegionOptions(selectedRegion) {
-        var regions = (typeof DOMESTIC_REGIONS !== 'undefined' && Array.isArray(DOMESTIC_REGIONS))
-            ? DOMESTIC_REGIONS : [];
         var regionNames = { SEOUL: '서울특별시', GYEONGGI: '경기도', METRO: '수도권', PROVINCE: '지방', JEJU: '제주', ISLAND: '도서산간' };
+        var source = document.getElementById('js-domestic-regions');
         var html = '';
-        regions.forEach(function (r) {
-            var code = r.ddrRgn;
-            var name = regionNames[code] || code;
-            var extra = (r.ddrEAm && r.ddrEAm > 0) ? ' (+₩' + formatNumber(r.ddrEAm) + ')' : '';
-            var sel = (code === selectedRegion) ? ' selected' : '';
-            html += '<option value="' + code + '"' + sel + '>' + name + extra + '</option>';
-        });
+        if (source) {
+            Array.prototype.forEach.call(source.options, function (opt) {
+                var code = opt.value;
+                var eam = parseInt(opt.dataset.eam) || 0;
+                var name = regionNames[code] || code;
+                var extra = eam > 0 ? ' (+₩' + formatNumber(eam) + ')' : '';
+                var sel = (code === selectedRegion) ? ' selected' : '';
+                html += '<option value="' + code + '"' + sel + '>' + name + extra + '</option>';
+            });
+        }
         return html || '<option value="SEOUL">서울특별시</option>';
     }
 
@@ -495,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function () {
         currentShipType = (meta && meta.textContent.indexOf('분할') >= 0) ? 'split' : 'single';
 
         if (currentShipType === 'single' || shipCards.length === 0) {
-            shipCards = [{ qty: totalItemQty, region: defaultRegion, name: '홍길동', addr: '서울특별시 강남구 테헤란로 88, 402호', phone: '010-1234-5678', memo: '' }];
+            shipCards = [{ qty: totalItemQty, region: defaultRegion, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
         }
 
         updateShipTypeUI();
@@ -532,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
         b.addEventListener('click', function () {
             currentShipType = b.dataset.type;
             if (currentShipType === 'single') {
-                shipCards = [{ qty: totalItemQty, region: defaultRegion, name: '홍길동', addr: '서울특별시 강남구 테헤란로 88, 402호', phone: '010-1234-5678', memo: '' }];
+                shipCards = [{ qty: totalItemQty, region: defaultRegion, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
             }
             updateShipTypeUI();
             renderAddrCards();
@@ -706,14 +718,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             document.getElementById('smCount').textContent = data.totalCount || 0;
             document.getElementById('smTotal').textContent = data.totalFee ? '₩' + formatNumber(data.totalFee) : '-';
-            lastDomesticFee = data.totalFee || 0;
-            lastDomesticData = data;
-            fetchEstimateFees();
         })
         .catch(function () {
             document.getElementById('smTotal').textContent = '조회 실패';
-            // 실패해도 운임 계산은 진행
-            fetchEstimateFees();
         });
     }
 

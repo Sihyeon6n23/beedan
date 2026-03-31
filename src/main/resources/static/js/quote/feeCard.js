@@ -56,6 +56,18 @@ document.addEventListener('DOMContentLoaded', function () {
     var transportNames = { SEA: '해상 운송 (FCL)', AIR: '항공 운송', EXPRESS: '특급 배송' };
     var sizeNames = { SMALL: '소형', MEDIUM: '중형', LARGE: '대형' };
 
+    // 툴팁 텍스트 (hidden element에서 로드)
+    var tipEl = document.getElementById('md-tooltip-data');
+    var tips = tipEl ? tipEl.dataset : {};
+
+    // info 아이콘 SVG
+    var infoSvg = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+
+    function tipBtn(text) {
+        if (!text) return '';
+        return ' <button type="button" class="modal-info-btn">' + infoSvg + '<span class="modal-tooltip">' + text + '</span></button>';
+    }
+
     // ── 공장별 카드 그룹 렌더링 ─────────────────────
     function renderFactoryGroups(factories) {
         var container = document.getElementById('fc-factory-groups');
@@ -127,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // ── 대행 카드 ──
         el('fc-service').textContent = fmt(data.serviceFee);
-        el('fc-doc').textContent = fmt(data.docFee);
         el('fc-inspection').textContent = inspectionExtra > 0 ? fmt(inspectionExtra) : '없음';
 
         var procurementWithExtras = (data.procurementTotal || 0) + inspectionExtra;
@@ -179,14 +190,16 @@ document.addEventListener('DOMContentLoaded', function () {
                             (f.shippingRateUpdatedAt ? ' <span class="modal-policy-date">갱신: ' + f.shippingRateUpdatedAt + '</span>' : '') +
                         '</p>' +
                         '<div class="modal-detail-rows">' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">운송 수단</span><span class="modal-row-val">' + (transportNames[f.transportType] || f.transportType || '-') + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">적용 규모</span><span class="modal-row-val">' + (sizeNames[f.sizeType] || '-') + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">해외 운임</span><span class="modal-row-val">' + fmt(f.shippingFee) + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">항만/통관/HS</span><span class="modal-row-val">' + fmt(portCustoms) + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">보험</span><span class="modal-row-val">' + fmt(f.insuranceFee) + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">CIF</span><span class="modal-row-val">' + fmt(f.cifAmount) + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">관세율</span><span class="modal-row-val">' + (f.dutyRate ? (f.dutyRate * 100).toFixed(1) + '%' : '-') + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">관세 + 부가세</span><span class="modal-row-val">' + fmt(dutyVat) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">운송 수단' + tipBtn(tips.transport) + '</span><span class="modal-row-val">' + (transportNames[f.transportType] || f.transportType || '-') + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">운임 기준' + tipBtn(tips.basis) + '</span><span class="modal-row-val">CIF 부산항</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">적용 규모' + tipBtn(tips.sizeType) + '</span><span class="modal-row-val">' + (sizeNames[f.sizeType] || '-') + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">해외 운임' + tipBtn(tips.shippingFee) + '</span><span class="modal-row-val">' + fmt(f.shippingFee) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">항만/통관/HS' + tipBtn(tips.portFee) + '</span><span class="modal-row-val">' + fmt(portCustoms) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">보험' + tipBtn(tips.insurance) + '</span><span class="modal-row-val">' + fmt(f.insuranceFee) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">CIF' + tipBtn(tips.cif) + '</span><span class="modal-row-val">' + fmt(f.cifAmount) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">관세율' + tipBtn(tips.dutyRate) + '</span><span class="modal-row-val">' + (f.dutyRate ? (f.dutyRate * 100).toFixed(1) + '%' : '-') + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">관세' + tipBtn(tips.duty) + '</span><span class="modal-row-val">' + fmt(f.dutyAmount) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">부가세' + tipBtn(tips.vat) + '</span><span class="modal-row-val">' + fmt(f.vatAmount) + '</span></div>' +
                             '<div class="modal-detail-row row-subtotal"><span class="modal-row-key">출발지 소계</span><span class="modal-row-val">' + fmt(f.subtotal) + '</span></div>' +
                         '</div>' +
                         rateTableHtml +
@@ -194,32 +207,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 modalBody.insertBefore(section, insertBefore);
             });
+
+            // 동적 생성된 tooltip 버튼에 이벤트 바인딩
+            modalBody.querySelectorAll('.md-factory-section .modal-info-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var wasActive = btn.classList.contains('is-active');
+                    document.querySelectorAll('.modal-info-btn.is-active').forEach(function (b) { b.classList.remove('is-active'); });
+                    if (!wasActive) btn.classList.add('is-active');
+                });
+            });
         }
 
         // ── 대행 수수료 모달 상세 ──
         el('md-buyer-grade').textContent = data.buyerGrade || '-';
         el('md-item-total-krw').textContent = '₩' + fmtNum(itemTotalKrw);
         el('md-service-fee').textContent = fmt(data.serviceFee);
-        el('md-doc-fee').textContent = fmt(data.docFee);
         el('md-procurement-total').textContent = fmt(procurementWithExtras);
-
-        // ── 보험 모달 상세 ──
-        if (el('md-insurance-name')) {
-            el('md-insurance-name').textContent = insuranceInfo.name || '없음';
-            el('md-insurance-rate').textContent = insuranceInfo.rate > 0
-                ? '공급가의 ' + (insuranceInfo.rate * 100).toFixed(1) + '%' : '-';
-            var totalIns = (data.insuranceFee || 0) + insuranceExtra;
-            el('md-insurance-fee').textContent = totalIns > 0 ? fmt(totalIns) : '없음';
-        }
 
         // ── 정책 기간 ──
         if (el('md-service-date')) {
             el('md-service-date').textContent = data.serviceFeeEffFrom
                 ? '적용: ' + fmtPeriod(data.serviceFeeEffFrom, data.serviceFeeEffTo) : '';
-        }
-        if (el('md-doc-date')) {
-            el('md-doc-date').textContent = data.docFeeEffFrom
-                ? '적용: ' + fmtPeriod(data.docFeeEffFrom, data.docFeeEffTo) : '';
         }
     };
 });
