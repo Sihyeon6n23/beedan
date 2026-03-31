@@ -1,4 +1,4 @@
-package com.goodee.beedan.dto.member.biz;
+package com.goodee.beedan.dto.member;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -9,6 +9,8 @@ import lombok.ToString;
 @Builder
 @ToString
 public class BizDto {
+    @JsonProperty("valid")
+    private String valid;
     @JsonProperty("b_no")
     private String bNo;
     @JsonProperty("p_nm")

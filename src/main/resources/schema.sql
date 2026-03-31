@@ -1,4 +1,42 @@
 -- =====================
+-- 고희권 START
+-- =====================
+DROP TABLE IF EXISTS member;
+
+CREATE TABLE member (
+                        mem_id         BIGINT         NOT NULL AUTO_INCREMENT,
+                        mem_lgn_id     VARCHAR(50)    NOT NULL,
+                        mem_lgn_pw     VARCHAR(100)   NOT NULL,
+                        mem_aut        ENUM('USER', 'ADMIN', 'ROOT') NOT NULL,
+                        mem_nm         VARCHAR(50)    NULL,
+                        mem_mb_phn     VARCHAR(50)    NULL,
+                        mem_ci         VARCHAR(100)   NULL,
+                        mem_eml        VARCHAR(50)    NULL,
+                        mem_biz_no     VARCHAR(50)    NULL,
+                        mem_biz_cre_dt DATETIME       NULL,
+                        mem_biz_ttl    VARCHAR(50)    NULL,
+                        mem_pos_cd     VARCHAR(100)   NULL,
+                        mem_biz_adr    VARCHAR(100)   NULL,
+                        mem_biz_dt_adr VARCHAR(100)   NULL,
+                        mem_ceo_nm     VARCHAR(50)    NULL,
+                        mem_ceo_phn    VARCHAR(50)    NULL,
+                        mem_cmp_tel    VARCHAR(50)    NULL,
+                        mem_lgn_tr     BIGINT         NOT NULL DEFAULT 0,
+                        mem_loc_dt     DATETIME       NULL,
+                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK', 'PENDING') NOT NULL DEFAULT 'PENDING',
+                        mem_upd_id     BIGINT         NULL,
+                        mem_upd_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
+                        mem_cre_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
+                        mem_upd_pw_dt  DATETIME       NULL,
+
+                        PRIMARY KEY (mem_id),
+                        CONSTRAINT uk_mem_lgn_id UNIQUE (mem_lgn_id) -- H2와 MySQL 모두 호환되는 문법
+);
+-- =====================
+-- 고희권 END
+-- =====================
+
+-- =====================
 -- 최준희 START
 -- =====================
 CREATE TABLE IF NOT EXISTS stock (
@@ -60,11 +98,28 @@ CREATE TABLE IF NOT EXISTS crawling_url (
 );
 
 CREATE TABLE IF NOT EXISTS wishlist (
-                                        wi_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                        st_id        BIGINT,
-                                        mem_id       BIGINT,
-                                        wi_cre_dt    DATETIME
+    wi_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    st_id        BIGINT,
+    mem_id       BIGINT,
+    wi_cre_dt    DATETIME
 );
+
+CREATE TABLE IF NOT EXISTS requirement (
+    req_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    req_ttl      VARCHAR(50),
+    req_con      LONGTEXT,
+    req_ref      LONGTEXT,
+    req_pr       VARCHAR(30),
+    req_stt      VARCHAR(30),
+    req_rep_yn   BOOLEAN,
+    req_per_yn   BOOLEAN,
+    req_cre_dt   DATETIME,
+    req_upd_dt   DATETIME,
+    req_del_yn   BOOLEAN,
+    mem_id       BIGINT,
+    FOREIGN KEY (mem_id) REFERENCES member(mem_id)
+);
+
 -- =====================
 -- 최준희 END
 -- =====================
@@ -352,49 +407,32 @@ CREATE TABLE IF NOT EXISTS hs_code (
     hs_des   VARCHAR(255)
     );
 
+CREATE TABLE IF NOT EXISTS SHIPPING_INSURANCE (
+    si_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    si_nm    VARCHAR(50),
+    si_am    DECIMAL(10, 4),
+    si_des   TEXT,
+    si_yn    BOOLEAN,
+    si_cr_dt DATETIME,
+    si_up_dt DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS STOCK_INSPECTION (
+    sti_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sti_nm    VARCHAR(50),
+    sti_am    DECIMAL(18, 0),
+    sti_des   TEXT,
+    sti_yn    BOOLEAN,
+    sti_cr_dt DATETIME,
+    sti_up_dt DATETIME
+);
+
 -- =====================
 -- 백시현 END
 -- =====================
 
 
 
--- =====================
--- 고희권 START
--- =====================
-DROP TABLE IF EXISTS member;
-
-CREATE TABLE member (
-                        mem_id         BIGINT         NOT NULL AUTO_INCREMENT,
-                        mem_lgn_id     VARCHAR(50)    NOT NULL,
-                        mem_lgn_pw     VARCHAR(100)   NOT NULL,
-                        mem_aut        ENUM('USER', 'ADMIN', 'ROOT') NOT NULL,
-                        mem_nm         VARCHAR(50)    NULL,
-                        mem_mb_phn     VARCHAR(50)    NULL,
-                        mem_ci         VARCHAR(100)   NULL,
-                        mem_eml        VARCHAR(50)    NULL,
-                        mem_biz_no     VARCHAR(50)    NULL,
-                        mem_biz_cre_dt DATETIME       NULL,
-                        mem_biz_ttl    VARCHAR(50)    NULL,
-                        mem_pos_cd     VARCHAR(100)   NULL,
-                        mem_biz_adr    VARCHAR(100)   NULL,
-                        mem_biz_dt_adr VARCHAR(100)   NULL,
-                        mem_ceo_nm     VARCHAR(50)    NULL,
-                        mem_ceo_phn    VARCHAR(50)    NULL,
-                        mem_cmp_tel    VARCHAR(50)    NULL,
-                        mem_lgn_tr     BIGINT         NOT NULL DEFAULT 0,
-                        mem_loc_dt     DATETIME       NULL,
-                        mem_stt        ENUM('ACTIVE', 'INACTIVE', 'LOCK', 'PENDING') NOT NULL DEFAULT 'PENDING',
-                        mem_upd_id     BIGINT         NULL,
-                        mem_upd_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
-                        mem_cre_dt     DATETIME       DEFAULT CURRENT_TIMESTAMP,
-                        mem_upd_pw_dt  DATETIME       NULL,
-
-                        PRIMARY KEY (mem_id),
-                        CONSTRAINT uk_mem_lgn_id UNIQUE (mem_lgn_id) -- H2와 MySQL 모두 호환되는 문법
-);
--- =====================
--- 고희권 END
--- =====================
 
 
 
@@ -533,18 +571,37 @@ CREATE TABLE `RECEIVER` (
     `rc_adr_dt`	VARCHAR(20)	NULL,
     `rc_cre_dt`	DATETIME	NULL,
     `rc_upd_dt`	DATETIME	NULL,
+    `rc_adr_df_yn` BOOLEAN DEFAULT FALSE NULL,
     `rc_del_yn`	BOOLEAN NULL,
     `mem_id`	BIGINT	NOT NULL
 );
 
 CREATE TABLE `SHIPMENT` (
-     `sh_id`	BIGINT	NOT NULL,
-     `sh_tra_no`	BIGINT	NULL,
+     `sh_id`	BIGINT AUTO_INCREMENT PRIMARY KEY,
+     `sh_tra_no`	VARCHAR(12)	NULL,
      `sh_car_cd`	VARCHAR(6)	NULL,
      `sh_stt`	ENUM('DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED')  NOT NULL,
      `sh_cre_dt`	DATETIME	NULL,
      `sh_upd_dt`	DATETIME	NULL,
      `ord_base_id`	BIGINT	NOT NULL
+);
+
+CREATE TABLE `ORDER_ITEM` (
+                              `ord_item_id`     BIGINT AUTO_INCREMENT PRIMARY KEY,
+                              `ord_base_id`     BIGINT NOT NULL,
+                              `st_nm`           BIGINT NULL,
+                              `ord_item_qn`     BIGINT NULL, -- 총 주문 수량
+                              `ord_item_am`     DECIMAL NULL,  -- 총 결제금액
+                              `ord_item_cre_dt` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                              `ord_item_upd_dt` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `SHIPMENT_ITEM` (
+                                 `sh_item_id`      BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                 `sh_id`           BIGINT NOT NULL,
+                                 `ord_item_id`     BIGINT NOT NULL,
+                                 `sh_qn`           BIGINT NOT NULL,  -- 해당 배송지로 가는 수량 ( 분할 수량 )
+                                 `sh_item_stt`     ENUM('PREPARING', 'DELIVERED', 'DELIVERING', 'SHIPPING', 'CUSTOMS', 'DELAYED', 'RETURED') NOT NULL
 );
 -- =====================
 -- 임 욱 END

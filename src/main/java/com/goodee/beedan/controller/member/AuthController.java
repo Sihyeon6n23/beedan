@@ -2,8 +2,9 @@ package com.goodee.beedan.controller.member;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
-import com.goodee.beedan.config.web.annotation.Sidebar;
 import com.goodee.beedan.dto.member.MemberFormDto;
+import com.goodee.beedan.dto.member.PhoneVerificationDto;
+import com.goodee.beedan.dto.member.BizDto;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
@@ -22,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Controller
@@ -50,7 +53,6 @@ public class AuthController {
             // 에러 메시지 중 첫 번째를 가져와서 전달 (예시)
             String defaultMessage = bindingResult.getFieldError().getDefaultMessage();
             redirectAttributes.addFlashAttribute("errorMessage", defaultMessage);
-
             return "/member/auth/signup";
         }
 
@@ -59,20 +61,33 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        // 아이디 중복확인 재요청
-
+        if (!memberForm.getIdCheckedInput()) {
+            bindingResult.rejectValue("duplicateCheckLoginId", "idDuplicateCheck", "아이디 중복확인 버튼을 눌러주세요.");
+            return "/member/auth/signup";
+        }
         // 휴대폰 번호 API 검증(백엔드검증)
-        //= portOneService.verify(memberForm.getImpUid());
-        // CI값 DB 조회 중복 가입여부 확인
-        Mono<Map<String, Object>> verify = portOneService.verify(memberForm.getImpUid());
-        
-
-
-
+        Mono<Map<String, Object>> verifyMono = portOneService.verify(memberForm.getImpUid());
+        PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
 
         // 사업자등록번호 재인증(백엔드검증)
-        // bizValidateService.validate();
+        BizDto bizDto = BizDto.builder()
+                .bNo(memberForm.getBusinessRegNum())
+                .bNm(memberForm.getCompanyName())
+                .pNm(memberForm.getCeoName())
+                .startDt(memberForm.getEstablishmentDate())
+                .build();
 
+        Mono<Map<String, Object>> bizValidateMono = bizValidateService.validate(bizDto);
+        BizDto validateBizDto = bizValidateService.monoToBizDto(bizValidateMono);
+
+        if (validateBizDto.getValid().equals("02")) {
+            log.info("사업자 정보 입력값이 올바르지 않습니다. Valid: {}", validateBizDto.getValid());
+            // 예외처리
+        }
+
+        // 아이디, 비밀번호, 이메일, 우편번호, 주소, 상세주소 입력 - 완료
+        // 이름, 휴대폰번호, CI값 입력
+        // 재인증 후 사업자등록번호, 상호명, 대표자명, 설립연월일 입력
         Member member = Member.builder()
                 .memLgnId(memberForm.getUserLoginId())
                 .memLgnPw(passwordEncoder.encode(memberForm.getPassword()))
@@ -83,13 +98,23 @@ public class AuthController {
                 .memStt(MemberStatus.PENDING.toString()) // 가입요청상태로 회원가입 요청
                 .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
                 .memLgnTr(0L)
+                .memMbPhn(phoneVerificationDto.getPhoneNumber())
+                .memCi(phoneVerificationDto.getCi())
+                .memNm(phoneVerificationDto.getName())
+                .memBizNo(validateBizDto.getBNo())
+                .memBizTtl(validateBizDto.getBNm())
+                .memCeoNm(validateBizDto.getPNm())
+                .memBizCreDt(LocalDate.parse(
+                        validateBizDto.getStartDt(),
+                        DateTimeFormatter.ofPattern("yyyyMMdd")
+                ).atStartOfDay())
                 .build();
-        // 아이디, 비밀번호, 이메일, 우편번호, 주소, 상세주소 입력 - 완료
-        // 이름, 휴대폰번호, CI값 입력
-        // 재인증 후 사업자등록번호, 상호명, 대표자명, 설립연월일 입력
 
-
-        memberService.insertMember(member);
+        try {
+            memberService.insertMember(member);
+        } catch (Exception e) {
+            return "/member/auth/signup";
+        }
 
         return "redirect:/auth/signin";
     }

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'Stock Requirements', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 상품 요청 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-require')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <section class="admin-chat-page admin-chat-list-page">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Stock Requirements</span>
+                <h2 class="admin-chat-title">상품 요청 목록</h2>
+            </div>
+            <div class="admin-chat-shell__rule">
+                <span></span>
+            </div>
+        </header>
+
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="요청 목록 필터">
+            <div class="admin-chat-toolbar">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                        <a class="admin-chat-filter" href="#" data-status="SUBMITTED">답변 대기</a>
+                        <a class="admin-chat-filter" href="#" data-status="ANSWERED">답변 완료</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>제목 및 요청 고객사</div>
+                <div>작성자</div>
+                <div>작성일자</div>
+                <div>승인여부</div>
+            </div>
+
+            <div class="admin-chat-list-body" id="require-list-body">
+            </div>
+        </section>
+
+        <footer class="admin-chat-shell admin-chat-shell--pagination">
+            <div class="admin-chat-pagination" id="require-pagination">
+            </div>
+        </footer>
+    </section>
+
+    <script>
+    (function() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+        if (csrfToken) axios.defaults.headers.common[csrfHeader] = csrfToken;
+
+        const apiUrl = '/api/admin/require/list';
+
+        let currentPage = 0;
+        let currentStatus = 'ALL';
+
+        // 필터 클릭
+        document.querySelectorAll('[data-status]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('is-active'));
+                this.classList.add('is-active');
+                currentStatus = this.dataset.status;
+                currentPage = 0;
+                loadList(0);
+            });
+        });
+
+        function loadList(page) {
+            currentPage = page;
+            let params = 'page=' + page;
+            if (currentStatus !== 'ALL') {
+                params += '&status=' + currentStatus;
+            }
+
+            axios.get(apiUrl + '?' + params)
+                .then(res => {
+                    renderList(res.data.content);
+                    renderPagination(res.data);
+                })
+                .catch(err => console.error('목록 로드 실패:', err));
+        }
+
+        function renderList(items) {
+            const body = document.getElementById('require-list-body');
+
+            if (!items || items.length === 0) {
+                body.innerHTML =
+                    '<div class="admin-chat-row" style="justify-content:center;cursor:default;">' +
+                        '<div class="admin-chat-row__primary" style="justify-content:center;">' +
+                            '<div class="admin-chat-row__text" style="text-align:center;">' +
+                                '<p style="color:var(--color-secondary);">요청된 상품이 없습니다.</p>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                return;
+            }
+
+            body.innerHTML = items.map(function(req) {
+                var perLabel, perStyle;
+                if (req.reqPerYn === true) {
+                    perLabel = '승인'; perStyle = 'color:var(--color-primary);font-weight:800;';
+                } else if (req.reqPerYn === false) {
+                    perLabel = '미승인'; perStyle = 'color:var(--color-secondary);';
+                } else {
+                    perLabel = '미처리'; perStyle = 'color:var(--color-secondary);';
+                }
+
+                var detailUrl = '/admin/require/detail?id=' + req.reqId;
+
+                return '<a href="' + detailUrl + '" class="admin-chat-row">' +
+                    '<div class="admin-chat-row__primary">' +
+                        '<span class="admin-chat-row__unread admin-chat-row__unread--empty"></span>' +
+                        '<div class="admin-chat-row__text">' +
+                            '<h2>' + (req.reqTtl || '제목 없음') + '</h2>' +
+                            '<p>' + (req.memBizTtl || '-') + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="admin-chat-row__owner">' +
+                        '<span>' + (req.memNm || '알 수 없음') + '</span>' +
+                    '</div>' +
+                    '<div class="admin-chat-row__status">' +
+                        '<span>' + (req.memNm ? req.reqCreDt.substring(0, 10) : '-') + '</span>' +
+                    '</div>' +
+                    '<div class="admin-chat-row__time">' +
+                        '<span style="' + perStyle + '">' + perLabel + '</span>' +
+                    '</div>' +
+                '</a>';
+            }).join('');
+        }
+
+        function renderPagination(data) {
+            const container = document.getElementById('require-pagination');
+
+            if (data.totalElements === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            if (data.first) {
+                html += '<span class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>';
+            } else {
+                html += '<a href="#" class="admin-chat-page-button admin-chat-page-button--wide" onclick="loadRequirePage(' + (data.number - 1) + ');return false;">Prev</a>';
+            }
+
+            var maxPages = 10;
+            var startPage = Math.max(0, data.number - 4);
+            var endPage = Math.min(data.totalPages - 1, startPage + maxPages - 1);
+            if (endPage - startPage < maxPages - 1) {
+                startPage = Math.max(0, endPage - maxPages + 1);
+            }
+
+            for (var i = startPage; i <= endPage; i++) {
+                var cls = (i === data.number) ? ' is-current' : '';
+                var label = ('0' + (i + 1)).slice(-2);
+                html += '<a href="#" class="admin-chat-page-button' + cls + '" onclick="loadRequirePage(' + i + ');return false;">' + label + '</a>';
+            }
+
+            if (data.last) {
+                html += '<span class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>';
+            } else {
+                html += '<a href="#" class="admin-chat-page-button admin-chat-page-button--wide" onclick="loadRequirePage(' + (data.number + 1) + ');return false;">Next</a>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.loadRequirePage = function(page) {
+            loadList(page);
+        };
+
+        loadList(0);
+    })();
+    </script>
+</th:block>
+</html>

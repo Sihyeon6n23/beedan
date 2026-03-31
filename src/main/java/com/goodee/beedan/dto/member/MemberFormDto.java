@@ -29,12 +29,18 @@ public class MemberFormDto {
     private String businessRegNum;
     @NotBlank(message = "상호명을 입력해주세요.")
     private String companyName;
+
+    @NotBlank(message = "개업연월일을 입력해주세요.")
+    private String establishmentDate;
+
     @NotBlank(message = "대표자 이름을 입력해주세요.")
     private String ceoName;
     @NotBlank(message = "대표자 연락처를 입력해주세요.")
     private String ceoPhone;
     @NotBlank(message = "회사 대표 연락처를 입력해주세요.")
     private String cmpPhone;
+
+    @NotBlank(message = "주소를 입력해주세요.")
     private String postCode;
     private String companyAddress;
     private String companyAddressDetail;
@@ -46,6 +52,10 @@ public class MemberFormDto {
 
     // 아이디 중복확인 여부 체크
     private Boolean idCheckedInput;
+    // 사업자 인증 여부 체크
+    private Boolean bizCheckedInput;
+    // 본인인증 체크 여부
+    private Boolean phoneCheckedInput;
 
     public boolean isPasswordMatching() {
         if (this.password == null || this.confirmPassword == null) {

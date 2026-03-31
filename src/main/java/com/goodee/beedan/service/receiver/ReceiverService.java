@@ -64,7 +64,7 @@ public class ReceiverService {
     public ReceiverDto getReceiver(Long memId, Long rcId){
         memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 
-        Receiver receiver = receiverRepository.findById(rcId).orElseThrow(()-> new IllegalArgumentException("해당하는 배송지 내역이 없습니다."));
+        Receiver receiver = receiverRepository.findFirstByMember_memIdOrderByRcIdAsc(rcId);
 
         return mapToRecieverDto(receiver);
     }

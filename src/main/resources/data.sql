@@ -1,3 +1,105 @@
+-- =====================
+-- 고희권 START
+-- =====================
+-- 1. 최고 관리자 계정 (ROOT)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'root',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 2. 일반 관리자 계정 (ADMIN)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ADMIN',
+             '홍만수',
+             '010-1234-5678',
+             'user01@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 3. 비즈니스/기업 사용자 계정 (USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'user',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '김철수',
+             '123-45-67890',
+             '(주)테스트컴퍼니',
+             '서울시 강남구 테헤란로',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 4
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin1',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'INACTIVE',
+             NOW()
+         );
+-- 5
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin2',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'PENDING',
+             NOW()
+         );
+
+-- 6
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'user01',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '정우석',
+             '634-84-65672',
+             '(주)유저컴퍼니',
+             '서울시 강남구 테헤란로2',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 7
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'user02',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '정아현',
+             '723-03-32892',
+             '(주)유정컴퍼니',
+             '서울시 강남구 테헤란로3',
+             'ACTIVE',
+             NOW()
+         );
+-- =====================
+-- 고희권 END
+-- =====================
 
 -- =====================
 -- 최준희 START
@@ -95,10 +197,24 @@ ALTER TABLE category ALTER COLUMN cat_id RESTART WITH 100;
 ALTER TABLE stock    ALTER COLUMN st_id  RESTART WITH 100;
 ALTER TABLE cart     ALTER COLUMN ca_id  RESTART WITH 100;
 
+-- =====================
+-- REQUIREMENT
+-- =====================
+INSERT INTO requirement (req_ttl, req_con, req_ref, req_pr, req_stt, req_rep_yn, req_per_yn, req_cre_dt, req_upd_dt, req_del_yn, mem_id) VALUES
+('Kapital Boro Jacket 입고 요청', '카피탈 보로 자켓 시즌 신상 입고 요청합니다. 사이즈 M, L 둘 다 가능합니다.', 'https://kapital.jp/boro-jacket', 2100, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica GORE-TEX 코트 문의', '나나미카 고어텍스 코트 재입고 가능한지 확인 부탁드립니다.', 'https://nanamica.com/goretex-coat', 3600, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kenzo 타이거 스웨터 요청', '겐조 타이거 자수 스웨터 XL 사이즈 입고 요청합니다.', 'https://kenzo.com/tiger-sweater', 1500, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kapital 인디고 데님 팬츠', '카피탈 인디고 데님 팬츠 32인치 입고 가능한지 문의합니다.', NULL, 980, 'SUBMITTED', TRUE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica 러그비 셔츠 입고 요청', '나나미카 쿨맥스 러그비 셔츠 L 사이즈 입고 부탁드립니다.', 'https://nanamica.com/rugby-shirt', 640, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kapital 사시코 니트 조끼', '사시코 니트 조끼 프리사이즈 입고 요청합니다.', NULL, 620, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kenzo 플라워 프린트 셔츠', '겐조 플라워 프린트 셔츠 M 사이즈 요청합니다. 참고 링크 첨부합니다.', 'https://kenzo.com/flower-shirt', 890, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica 와이드 치노 팬츠', '쿨맥스 와이드 치노 30인치 입고 가능할까요?', 'https://nanamica.com/wide-chino', 1100, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3);
 
 -- =====================
 -- 최준희 END
 -- =====================
+
+
 
 -- =====================
 -- 백시현 START
@@ -227,114 +343,16 @@ INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
                                                                         (9,  10, '6403.99-0000', 'Shoes',            0.1300, '신발류 - 세번 확인 필요'),
                                                                         (10, 11, '4202.22-0000', 'Bags/Accessories', 0.1300, '가방/액세서리 - 세번 확인 필요');
 
+INSERT INTO SHIPPING_INSURANCE (si_nm, si_am, si_des, si_yn, si_cr_dt, si_up_dt) VALUES
+    ('적하보험 (기본)', 0.0100, '해상·항공 운송 중 발생하는 파손, 분실, 침수 등의 사고에 대해 상품가 기준으로 보상합니다. CIF 조건에 포함되는 기본 보험이며, 통관 후 국내 배송 구간은 별도입니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('적하보험 (확장)', 0.0300, '기본 보험 보장 범위에 더해 통관 후 국내 배송 구간, 보관 중 사고, 자연재해로 인한 손상까지 보장합니다. 고가 상품이나 파손 위험이 높은 품목에 권장됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+INSERT INTO STOCK_INSPECTION (sti_nm, sti_am, sti_des, sti_yn, sti_cr_dt, sti_up_dt) VALUES
+    ('1차 품질 검사 (외관·치수·소재)', 100000, '출고 전 현지 파트너가 외관 상태, 치수 오차, 소재 일치 여부를 육안 검수합니다. 전수 또는 샘플링 방식으로 진행되며, 불량률 5% 초과 시 리포트가 발송됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('2차 정밀 검사 (원단·봉제·내구성)', 300000, '원단 조직·밀도 측정, 봉제 강도, 세탁 후 수축률 등 정밀 항목을 검사합니다. 검사 기관 인증 리포트가 제공되며, 품질 기준 미달 시 반품·교환 협의가 가능합니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- =====================
 -- 백시현 END
--- =====================
-
-
-
--- =====================
--- 고희권 START
--- =====================
--- 1. 최고 관리자 계정 (ROOT)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'root',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'ACTIVE',
-             NOW()
-         );
-
--- 2. 일반 관리자 계정 (ADMIN)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ADMIN',
-             '홍만수',
-             '010-1234-5678',
-             'user01@example.com',
-             'ACTIVE',
-             NOW()
-         );
-
--- 3. 비즈니스/기업 사용자 계정 (USER)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
-) VALUES (
-             'user',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'USER',
-             '김철수',
-             '123-45-67890',
-             '(주)테스트컴퍼니',
-             '서울시 강남구 테헤란로',
-             'ACTIVE',
-             NOW()
-         );
-
--- 4
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin1',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'INACTIVE',
-             NOW()
-         );
--- 5
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin2',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'PENDING',
-             NOW()
-         );
-
--- 6
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
-) VALUES (
-             'user01',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'USER',
-             '정우석',
-             '634-84-65672',
-             '(주)유저컴퍼니',
-             '서울시 강남구 테헤란로2',
-             'ACTIVE',
-             NOW()
-         );
-
--- 7
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
-) VALUES (
-             'user02',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'USER',
-             '정아현',
-             '723-03-32892',
-             '(주)유정컴퍼니',
-             '서울시 강남구 테헤란로3',
-             'ACTIVE',
-             NOW()
-         );
--- =====================
--- 고희권 END
 -- =====================
 
 
@@ -656,25 +674,26 @@ INSERT INTO chat_message (
 -- =====================
 INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt, ord_base_cre_dt)
 VALUES
-('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 2, '1234', 'PREPARING', CURRENT_TIMESTAMP),
-('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
-('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 2, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
-('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 2, '1234', 'DELIVERED', CURRENT_TIMESTAMP),
-('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 2, '1234', 'CANCELLED', CURRENT_TIMESTAMP);
+('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 3, '1234', 'PREPARING', CURRENT_TIMESTAMP),
+('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 3, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
+('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 3, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
+('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 3, '1234', 'DELIVERED', CURRENT_TIMESTAMP),
+('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 3, '1234', 'CANCELLED', CURRENT_TIMESTAMP);
 
 INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_upd_mem_id, mem_id)
 VALUES
-    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE,  NULL, 2),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NULL, 2),
-    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE,  NULL, 2),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 2),
-    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 2);
+    ('주문이 승인 되었습니다.', '요청하신 주문이 승인 처리 되었습니다.', FALSE, FALSE,  NULL, 3),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, FALSE, NULL, 3),
+    ('견적 요청이 반려되었습니다.', '견적 상세를 통해 견적을 수정해주세요.', FALSE, FALSE,  NULL, 3),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 3),
+    ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 3);
 
 INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_cre_dt, rc_upd_dt, rc_del_yn, mem_id)
 VALUES
-    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2),
-    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2),
-    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 2);
+    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 3),
+    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 3),
+    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', CURRENT_TIMESTAMP, null, FALSE, 3);
 -- =====================
 -- 임 욱 END
 -- =====================
+

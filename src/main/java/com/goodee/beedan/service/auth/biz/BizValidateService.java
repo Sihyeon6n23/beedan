@@ -1,7 +1,7 @@
 package com.goodee.beedan.service.auth.biz;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goodee.beedan.dto.member.biz.BizDto;
+import com.goodee.beedan.dto.member.BizDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class BizValidateService {
     @Qualifier("bizValidationWebClient")
     private final WebClient bizValidationWebClient;
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Value("${biz.validation.api.key}")
     private String apiKey;
@@ -41,5 +41,21 @@ public class BizValidateService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>(){});
         return mono;
+    }
+
+    public BizDto monoToBizDto(Mono<Map<String, Object>> validateMono) {
+        return validateMono.map(map -> {
+            String bNo = (String) map.get("b_no");
+            String bNm = (String) map.get("b_nm");
+            String pNm = (String) map.get("p_no");
+            String startDt = (String) map.get("start_dt");
+
+            return BizDto.builder()
+                    .bNo(bNo)
+                    .bNm(bNm)
+                    .pNm(pNm)
+                    .startDt(startDt)
+                    .build();
+        }).block();
     }
 }

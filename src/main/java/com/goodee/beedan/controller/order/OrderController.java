@@ -1,7 +1,9 @@
 package com.goodee.beedan.controller.order;
 
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+    private final NotificationService notificationService;
 
     @GetMapping("/list")
     public String orderList(@AuthenticationPrincipal MemberUserDetails userDetails, Model model) {
@@ -42,6 +45,9 @@ public class OrderController {
     public String cancelOrder(@PathVariable("id") Long ordId, RedirectAttributes rttr, @AuthenticationPrincipal MemberUserDetails userDetails) {
         try {
             orderService.cancelOrder(ordId, userDetails.getMemberId());
+            notificationService.createNotification(userDetails.getMemberId(),
+                    NotificationType.ORDER_CANCEL, ordId);
+
             rttr.addFlashAttribute("message", "주문이 성공적으로 취소되었습니다.");
         } catch (IllegalStateException e) {
             rttr.addFlashAttribute("error", e.getMessage());

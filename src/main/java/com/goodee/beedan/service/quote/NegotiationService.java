@@ -53,4 +53,8 @@ public class NegotiationService {
         negotiation.close();
         log.info("협상 종료 완료. ID: {}, 종료시간: {}", ngId, negotiation.getNgEndDt());
     }
+
+    public Long getMemId(Long ngId){
+        return negotiationRepository.findByNgId(ngId).getMemId();
+    }
 }

@@ -141,6 +141,9 @@
             </div>
 
             <script>
+                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
                 function loadShipmentDetail(url) {
                 const modal = document.getElementById('orderTrackingModal');
                 const contentArea = modal.querySelector('.modal-body');

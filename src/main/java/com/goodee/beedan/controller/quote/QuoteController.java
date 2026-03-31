@@ -7,6 +7,8 @@ import com.goodee.beedan.dto.quote.QuoteBaseRequest;
 import com.goodee.beedan.dto.quote.QuoteRequestDto;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.quote.HsCodeRepository;
+import com.goodee.beedan.repository.quote.ShippingInsuranceRepository;
+import com.goodee.beedan.repository.quote.StockInspectionRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.service.exchangeRate.ExchangeRateService;
 import com.goodee.beedan.service.quote.NegotiationService;
@@ -36,6 +38,9 @@ public class QuoteController {
     private final HsCodeRepository hsCodeRepository;
     private final UnitGroupService unitGroupService;
     private final ExchangeRateService exchangeRateService;
+    private final ShippingInsuranceRepository shippingInsuranceRepository;
+    private final StockInspectionRepository stockInspectionRepository;
+    private final com.goodee.beedan.service.quote.DomesticDeliveryRateService domesticDeliveryRateService;
 
     @PostMapping("/request")
     @ResponseBody
@@ -63,7 +68,6 @@ public class QuoteController {
                 QuoteBaseRequest.builder()
                         .ngId(negotiation.getNgId())
                         .quRid(memId)
-                        .quSid(memId)
                         .build()
         );
 
@@ -89,19 +93,22 @@ public class QuoteController {
         model.addAttribute("exchangeRates", exchangeRates);
 
         if (quId != null) {
+            // 상품 목록 가져오고
             List<QuoteRequestDto.QuoteRequestItemDto> items =
                     (List<QuoteRequestDto.QuoteRequestItemDto>) session.getAttribute("quoteItems_" + quId);
 
             if (items != null && !items.isEmpty()) {
+                // 묶음 찾기 (다스)
                 List<UnitGroup> unitGroups = unitGroupService.findAllActive();
                 UnitGroup defaultUnit = unitGroups.isEmpty() ? null : unitGroups.get(0);
 
+                //상품 목록 상세 정보 가져오고
                 List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
                 for (int i = 0; i < items.size(); i++) {
                     QuoteRequestDto.QuoteRequestItemDto item = items.get(i);
                     Stock stock = stockRepository.findById(item.getStId()).orElse(null);
                     if (stock == null) continue;
-
+                    // 각 상품의 카테고리 별 HsCode 가져오고
                     HsCode hsCode = stock.getCatId() != null
                             ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null)
                             : null;
@@ -119,6 +126,13 @@ public class QuoteController {
                 model.addAttribute("ngNm", negotiation.getNgNm());
             }
         }
+
+        // 부가 서비스 옵션
+        model.addAttribute("insurances", shippingInsuranceRepository.findAllBySiYnTrue());
+        model.addAttribute("inspections", stockInspectionRepository.findAllByStiYnTrue());
+
+        // 국내 배송 지역 목록
+        model.addAttribute("domesticRates", domesticDeliveryRateService.findAllActive());
 
         return "/quote/quote-write";
     }

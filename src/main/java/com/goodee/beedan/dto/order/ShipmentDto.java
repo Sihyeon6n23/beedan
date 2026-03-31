@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ShipmentDto {
     private Long shId;
-    private Long shTraNo;
+    private String shTraNo;
     private String shCarCd;
     private ShipmentStatus shStt;
     private LocalDateTime shCreDt;

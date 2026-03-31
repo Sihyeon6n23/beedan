@@ -33,7 +33,9 @@
           휴대전화 인증
         </button>
       </div>
+      <input type="hidden" th:field="*{phoneCheckedInput}">
       <p th:if="${#fields.hasErrors('impUid')}" th:errors="*{impUid}" class="text-error text-[11px] font-bold mt-1"></p>
+      <p id="phoneAvailable" class="text-[10px] text-stone-400" th:hidden="!${memberForm.phoneCheckedInput}" >본인인증을 완료했습니다.</p>
     </section>
 
     <section class="space-y-6">
@@ -46,13 +48,18 @@
         <div class="space-y-2">
           <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">로그인 아이디 <span class="text-error">*</span></label>
           <div class="flex gap-2">
-            <input type="text" th:field="*{userLoginId}" class="bd-input flex-grow" placeholder="Preferred Username">
+            <input type="text"
+                   th:field="*{userLoginId}"
+                   class="bd-input flex-grow"
+                   placeholder="Preferred Username"
+                   th:readonly="${memberForm.idCheckedInput}"
+                   th:classappend="${memberForm.idCheckedInput} ? 'bg-surface-container-low text-stone-500 cursor-not-allowed' : ''">
             <input th:value="${idCheckedInput}" type="hidden" th:field="*{idCheckedInput}" value="false">
             <button type="button" id="idCheckedBtn" class="btn-secondary px-2 whitespace-nowrap"
-                    th:disabled="${idChekcedInput}">중복 확인</button>
+                    th:disabled="${memberForm.idCheckedInput}">중복 확인</button>
           </div>
           <p th:if="${#fields.hasErrors('userLoginId')}" th:errors="*{userLoginId}" class="text-error text-[11px] font-bold mt-1"></p>
-          <p id="available" class="hidden text-[10px] text-stone-400">이용 가능한 계정입니다.</p>
+          <p id="available" class="text-[10px] text-stone-400" th:hidden="!${memberForm.idCheckedInput}" >이용 가능한 계정입니다.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -83,29 +90,42 @@
       </div>
 
       <div class="space-y-6">
+        <input type="hidden" th:field="*{bizCheckedInput}">
         <div class="space-y-2">
           <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">사업자 등록 번호 <span class="text-error">*</span></label>
           <div class="flex gap-2">
-            <input type="text" th:field="*{businessRegNum}" id="b_no" class="bd-input flex-grow" placeholder="- 제외 10자리를 입력하세요">
+            <input type="text" th:field="*{businessRegNum}"
+                   id="b_no" class="bd-input flex-grow" placeholder="- 제외 10자리를 입력하세요"
+                   th:readonly="${memberForm.bizCheckedInput}"
+                   th:classappend="${memberForm.bizCheckedInput} ? 'bg-surface-container-low text-stone-500 cursor-not-allowed' : ''">
           </div>
           <p th:if="${#fields.hasErrors('businessRegNum')}" th:errors="*{businessRegNum}" class="text-error text-[11px] font-bold mt-1"></p>
         </div>
 
         <div class="space-y-2">
           <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">상호<span class="text-error">*</span></label>
-          <input type="text" th:field="*{companyName}" id="b_nm" class="bd-input" placeholder="사업자등록증 상호명">
+          <input type="text" th:field="*{companyName}"
+                 id="b_nm" class="bd-input" placeholder="사업자등록증 상호명"
+                 th:readonly="${memberForm.bizCheckedInput}"
+                 th:classappend="${memberForm.bizCheckedInput} ? 'bg-surface-container-low text-stone-500 cursor-not-allowed' : ''">
           <p th:if="${#fields.hasErrors('companyName')}" th:errors="*{companyName}" class="text-error text-[11px] font-bold mt-1"></p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">대표자명<span class="text-error">*</span></label>
-            <input type="text" th:field="*{ceoName}" id="p_nm" class="bd-input">
+            <input type="text" th:field="*{ceoName}"
+                   id="p_nm" class="bd-input"
+                   th:readonly="${memberForm.bizCheckedInput}"
+                   th:classappend="${memberForm.bizCheckedInput} ? 'bg-surface-container-low text-stone-500 cursor-not-allowed' : ''">
             <p th:if="${#fields.hasErrors('ceoName')}" th:errors="*{ceoName}" class="text-error text-[11px] font-bold mt-1"></p>
           </div>
           <div class="space-y-2">
             <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">개업연월일 <span class="text-error">*</span></label>
-            <input type="date" name="establishmentDate" id="start_dt" class="bd-input">
+            <input type="date" th:field="*{establishmentDate}"
+                   name="establishmentDate" id="start_dt" class="bd-input"
+                   th:readonly="${memberForm.bizCheckedInput}"
+                   th:classappend="${memberForm.bizCheckedInput} ? 'bg-surface-container-low text-stone-500 cursor-not-allowed' : ''">
           </div>
         </div>
 
@@ -133,12 +153,12 @@
         <div class="space-y-2">
           <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">회사 주소 <span class="text-error">*</span></label>
           <div class="flex gap-2">
-            <input type="text" id="postcode" th:field="*{postCode}" class="bd-input flex-grow" placeholder="우편번호">
+            <input type="text" id="postcode" th:field="*{postCode}" class="bd-input flex-grow" placeholder="우편번호" readonly>
             <button type="button" id="searchPostCode" class="btn-secondary px-4 whitespace-nowrap">우편번호 찾기</button>
           </div>
         </div>
         <div class="space-y-2">
-          <input type="text" id="baseAddress" th:field="*{companyAddress}" class="bd-input" placeholder="회사주소">
+          <input type="text" id="baseAddress" th:field="*{companyAddress}" class="bd-input" placeholder="회사주소" readonly>
           <input type="text" id="detailAddress" th:field="*{companyAddressDetail}" class="bd-input" placeholder="상세주소">
         </div>
       </div>
@@ -184,6 +204,9 @@
     axios.defaults.headers.common[csrfHeader] = csrfToken;
     // 포트원 본인인증API 연결
     let certifyPhoneBtn = document.getElementById("certify_phone");
+    let phoneAvailable = document.getElementById("phoneAvailable");
+    let phoneCheckedInput = document.getElementById("phoneCheckedInput")
+    let certify_phone = document.getElementById("certify_phone")
     certifyPhoneBtn.addEventListener('click',async () => {
       const response = await PortOne.requestIdentityVerification({
         storeId: "store-6e274706-e18d-4cc0-95b4-f9da97355da2",
@@ -196,6 +219,10 @@
       }
 
       document.getElementById("imp_uid").value = response.identityVerificationId;
+      phoneAvailable.classList.remove("hidden");
+      certify_phone.disabled = true;
+      phoneCheckedInput.value = true;
+
     })
 
     // 우편번호 찾기 API연결
@@ -219,7 +246,6 @@
         start_dt: sDtEl.value.replace(/-/g, "")
       }
 
-      let isFormValue = true;
       let emptyField;
       const filedNames = {b_no: "사업자번호", b_nm: "상호명", p_nm: "대표자명", start_dt: "개업연원일"};
       for (const [key, value] of Object.entries(bizDto)) {
@@ -235,36 +261,48 @@
       let data = result.data[0];
       console.log("html script result:" + result);
 
+      let validationStatus = document.getElementById("validation-status");
+      let statusIcon = document.getElementById("status-icon");
+      let statusText = document.getElementById("status-text");
+      let bizValidationBtn = document.getElementById("bizValidationBtn");
+      let bizCheckedInput = document.getElementById("bizCheckedInput")
       if (data.valid === "01") {
-        let validationStatus = document.getElementById("validation-status");
-        let statusIcon = document.getElementById("status-icon");
-        let statusText = document.getElementById("status-text");
 
         statusIcon.innerText = "verified";
         statusText.innerText = "사업자정보 인증을 완료했습니다.";
         const elements = [bNoEl, bNmEl, pNmEl, sDtEl];
         lockInputFields(elements);
+        bizValidationBtn.disabled = true;
+        bizCheckedInput.value = true;
       } else if (data.valid === "02") {
-        alert(data.valid);
+        alert("사업자 정보가 일치하지 않습니다.");
       }
     })
 
     // 아이디 중복체크 버튼
     let idCheckedBtn = document.getElementById("idCheckedBtn");
     let userLoginId = document.getElementById("userLoginId");
-    idCheckedBtn.addEventListener('click', async () => {
-      // 중복확인 비동기요청
-      let checked = await axios.post("/api/auth/idChecked", {
-        username: userLoginId.value
+    let idCheckedInput = document.getElementById("idCheckedInput");
+
+      idCheckedBtn.addEventListener('click', async () => {
+        // 중복확인 비동기요청
+        if (userLoginId.value.length < 6) {
+          alert("아이디는 6글자 이상 입력해주세요.")
+        } else {
+
+          let checked = await axios.post("/api/auth/idChecked", {
+            username: userLoginId.value
+          })
+          if (checked.data === true) {
+            const elements = [userLoginId];
+            lockInputFields(elements);
+            const available = document.getElementById("available");
+            available.classList.remove("hidden");
+            idCheckedBtn.disabled = true;
+            idCheckedInput.value = true;
+          }
+        }
       })
-      if (checked.data === true) {
-        const elements = [userLoginId];
-        lockInputFields(elements);
-        const available = document.getElementById("available");
-        available.classList.remove("hidden");
-        idCheckedBtn.disable();
-      }
-    })
 
   </script>
 </th:block>

@@ -1,6 +1,76 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── 부가 서비스 아코디언 토글 ──────────────────
+    document.querySelectorAll('.quote-option-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var item = btn.closest('.quote-option-item');
+            var detail = item.querySelector('.quote-option-detail');
+            if (!detail) return;
+            var isOpen = detail.classList.toggle('is-open');
+            btn.classList.toggle('is-open', isOpen);
+        });
+    });
+
+    // ── 헤더 info 툴팁 토글 ─────────────────────────
+    document.querySelectorAll('.th-info-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var wasActive = btn.classList.contains('is-active');
+            document.querySelectorAll('.th-info-btn.is-active').forEach(function (b) {
+                b.classList.remove('is-active');
+            });
+            if (!wasActive) btn.classList.add('is-active');
+        });
+    });
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.th-info-btn.is-active').forEach(function (b) {
+            b.classList.remove('is-active');
+        });
+    });
+
     // ── 유틸 ──────────────────────────────────────────
+
+    // 통화 기호 → 통화 코드 매핑
+    var currencySymbolToCode = { '¥': 'JPY', '$': 'USD', '€': 'EUR', '₩': 'KRW' };
+
+    function normalizeCurrency(cur) {
+        if (!cur) return '';
+        var trimmed = cur.trim();
+        return (currencySymbolToCode[trimmed] || trimmed).toUpperCase();
+    }
+
+    // 모든 환율 슬라이드에서 통화별 환율 맵 구축
+    function buildRateMap() {
+        var map = {};
+        var slides = document.querySelectorAll('.er-slide');
+        slides.forEach(function (slide) {
+            // 슬라이드 텍스트에서 통화 코드 추출: "1 JPY = 9.14 KRW"
+            var valueEl = slide.querySelector('.er-slide-value');
+            if (!valueEl) return;
+            var text = valueEl.textContent.trim();
+            // "1 JPY = 9.14 KRW" 형태에서 통화 코드 파싱
+            var match = text.match(/1\s+(\w+)\s*=/);
+            if (!match) return;
+            var code = match[1].toUpperCase();
+
+            var numEl = slide.querySelector('.er-rate-number');
+            if (!numEl) return;
+            var rate = parseFloat(numEl.textContent.replace(/,/g, '')) || 0;
+            if (rate > 0) map[code] = rate;
+        });
+        return map;
+    }
+
+    // 특정 통화에 대한 환율 반환 (KRW면 1, 없으면 0)
+    function getRateForCurrency(stCur) {
+        var code = normalizeCurrency(stCur);
+        if (code === 'KRW') return 1;
+        var map = buildRateMap();
+        return map[code] || 0;
+    }
+
     function getActiveRate() {
         var slide = document.querySelector('.er-slide--active');
         if (!slide) return 0;
@@ -15,6 +85,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
     var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    // ── 부가 서비스 체크 유틸 ─────────────────────────
+    function isAnyInsuranceChecked() {
+        var checked = false;
+        document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+            if (item.querySelector('.qo-service-check').checked) checked = true;
+        });
+        return checked;
+    }
+
+    function updateServiceValues(supplyTotal) {
+        document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+            var rate = parseFloat(item.dataset.rate) || 0;
+            var valueEl = item.querySelector('.quote-option-value');
+            var check = item.querySelector('.qo-service-check');
+            if (check.checked && supplyTotal > 0) {
+                valueEl.textContent = '₩' + formatNumber(supplyTotal * rate);
+            } else {
+                valueEl.textContent = '없음';
+            }
+        });
+    }
+
+    // 국내 배달비 (배송지 모달에서 조회된 값 저장)
+    var lastDomesticFee = 0;
+    var lastDomesticData = null;
+
+    // 선택된 보험 금액 합산 (공급가 × rate)
+    function getSelectedInsuranceAmount(supplyTotal) {
+        var total = 0;
+        document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+            if (item.querySelector('.qo-service-check').checked) {
+                total += supplyTotal * (parseFloat(item.dataset.rate) || 0);
+            }
+        });
+        return Math.round(total);
+    }
+
+    // 선택된 보험 상세 정보 (이름, 요율)
+    function getSelectedInsuranceInfo() {
+        var info = { name: null, rate: 0 };
+        document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+            if (item.querySelector('.qo-service-check').checked) {
+                info.name = item.querySelector('.quote-option-name').textContent;
+                info.rate = parseFloat(item.dataset.rate) || 0;
+            }
+        });
+        return info;
+    }
+
+    // 선택된 검사 금액 합산 (고정금액)
+    function getSelectedInspectionAmount() {
+        var total = 0;
+        document.querySelectorAll('.quote-option-item[data-type="inspection"]').forEach(function (item) {
+            if (item.querySelector('.qo-service-check').checked) {
+                total += parseFloat(item.dataset.amount) || 0;
+            }
+        });
+        return Math.round(total);
+    }
 
     // ── 테이블 행 재계산 ──────────────────────────────
     function recalcRow(row) {
@@ -38,8 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var totalPr = stPr * qty;
         row.querySelector('.total-pr-value').textContent = curSymbol + formatNumber(totalPr);
 
-        // 환율 기반 계산
-        var rate = getActiveRate();
+        // 환율 기반 계산 — 상품 자체 통화 기준으로 환율 조회
+        var rate = getRateForCurrency(stCur);
         var krwTotal = totalPr * rate;
 
         // 한화 기준 공급가 총액
@@ -60,8 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var subtotalInput = row.querySelector('.subtotal-input');
         if (!subtotalInput.dataset.userEdited) {
             if (rate > 0) {
-                var subtotalKrw = totalPr * rate;
-                subtotalInput.value = formatNumber(subtotalKrw);
+                subtotalInput.value = formatNumber(krwTotal);
                 subtotalInput.placeholder = '자동 계산';
             } else {
                 subtotalInput.value = '';
@@ -103,6 +232,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 delete subtotalInput.dataset.userEdited;
                 recalcRow(row);
             }
+            // 소계 변경 시 총 주문 명세·운임 재계산
+            fetchEstimateFees();
         });
     });
 
@@ -128,41 +259,44 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function doFetchEstimateFees() {
-        var rate = getActiveRate();
-        var stIds = [];
-        var totalDozen = 0;
-        var itemTotalForeign = 0;
-        var dutyRateSum = 0;
-        var dutyRateCount = 0;
+        var estimateItems = [];
+        var itemTotalKrw = 0;
+        var supplyTotalKrw = 0;
 
         rows.forEach(function (row) {
             var stId = row.dataset.stId;
-            if (stId) stIds.push(parseInt(stId));
+            if (!stId) return;
 
             var qty = parseInt(row.querySelector('.qty-input').value) || 1;
             var specSelect = row.querySelector('.spec-select');
             var unGQn = specSelect ? parseInt(specSelect.value) || 1 : 1;
-            totalDozen += Math.ceil(qty / unGQn);
+            var dozen = Math.ceil(qty / unGQn);
 
+            // 사용자 조정 소계
+            var subtotalInput = row.querySelector('.subtotal-input');
+            var subtotalVal = parseFloat((subtotalInput.value || '').replace(/,/g, '')) || 0;
+            itemTotalKrw += Math.round(subtotalVal);
+
+            // 공급가
             var stPr = parseFloat(row.dataset.stPr) || 0;
-            itemTotalForeign += stPr * qty;
+            var stCur = row.dataset.stCur || '';
+            var rowRate = getRateForCurrency(stCur);
+            var supplyKrw = rowRate > 0 ? Math.round(stPr * qty * rowRate) : 0;
+            supplyTotalKrw += supplyKrw;
 
             var hsDuRa = parseFloat(row.dataset.hsDuRa) || 0;
-            if (hsDuRa > 0) { dutyRateSum += hsDuRa; dutyRateCount++; }
+
+            estimateItems.push({
+                stId: parseInt(stId),
+                qty: qty,
+                dozen: dozen,
+                supplyKrw: supplyKrw,
+                dutyRate: hsDuRa
+            });
         });
 
-        var itemTotalKrw = rate > 0 ? Math.round(itemTotalForeign * rate) : 0;
-        var avgDutyRate = dutyRateCount > 0 ? dutyRateSum / dutyRateCount : 0;
-
-        // 배송지 정보
-        var firstShipBtn = document.querySelector('.shipping-btn');
-        var region = firstShipBtn ? firstShipBtn.dataset.region : null;
-        var shipMeta = firstShipBtn ? firstShipBtn.querySelector('.shipping-meta') : null;
-        var shipCount = 1;
-        if (shipMeta) {
-            var match = shipMeta.textContent.match(/(\d+)건/);
-            if (match) shipCount = parseInt(match[1]);
-        }
+        // 선택된 보험 요율
+        var insuranceInfo = getSelectedInsuranceInfo();
 
         var headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
@@ -171,12 +305,10 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                stIds: stIds,
-                totalDozen: totalDozen,
-                region: region,
-                shipmentCount: shipCount,
+                items: estimateItems,
                 itemTotalKrw: itemTotalKrw,
-                avgDutyRate: avgDutyRate
+                insuranceYn: isAnyInsuranceChecked(),
+                insuranceRate: insuranceInfo.rate || 0
             })
         })
         .then(function (res) { return res.json(); })
@@ -184,65 +316,62 @@ document.addEventListener('DOMContentLoaded', function () {
             var el = function (id) { return document.getElementById(id); };
             var fmt = function (v) { return v ? '₩' + formatNumber(v) : '-'; };
 
-            // 카드 요약
-            el('fc-shipping').textContent = fmt(data.shippingFee);
-            el('fc-port-customs').textContent = fmt(
-                (data.portFee || 0) + (data.customsFee || 0) + (data.hsCodeFee || 0));
-            el('fc-insurance').textContent = fmt(data.insuranceFee);
-            el('fc-duty-vat').textContent = fmt(
-                (data.dutyAmount || 0) + (data.vatAmount || 0));
-            el('fc-logistics-total').textContent = fmt(data.logisticsTotal);
-            el('fc-service').textContent = fmt(data.serviceFee);
-            el('fc-doc').textContent = fmt(data.docFee);
-            el('fc-procurement-total').textContent = fmt(data.procurementTotal);
+            // 부가 서비스 금액 갱신
+            updateServiceValues(supplyTotalKrw);
 
-            // 운임 모달 상세
-            var transportNames = { SEA: '해상 운송 (FCL)', AIR: '항공 운송', EXPRESS: '특급 배송' };
-            var sizeNames = { SMALL: '소형', MEDIUM: '중형', LARGE: '대형' };
-            var origin = data.factoryCity || data.countryCode || '-';
+            // 상품가 소계 (물품 대금 + 행별 관세 합산)
+            var rowDutyTotal = 0;
+            rows.forEach(function (row) {
+                var taxEl = row.querySelector('.tax-amount');
+                if (taxEl && taxEl.textContent !== '-') {
+                    rowDutyTotal += parseFloat(taxEl.textContent.replace(/[₩,]/g, '')) || 0;
+                }
+            });
+            var subtotal = itemTotalKrw + Math.round(rowDutyTotal);
+            el('qo-item-total').textContent = itemTotalKrw > 0
+                ? '₩' + formatNumber(itemTotalKrw) : '-';
+            el('qo-duty-total').textContent = rowDutyTotal > 0
+                ? '₩' + formatNumber(rowDutyTotal) : '-';
+            el('qo-subtotal').textContent = subtotal > 0
+                ? '₩' + formatNumber(subtotal) : '-';
+
+            // feeCard.js 의 공통 렌더링 함수 호출
+            var selectedInsurance = getSelectedInsuranceAmount(supplyTotalKrw);
+            var selectedInspection = getSelectedInspectionAmount();
+            var insuranceInfo = getSelectedInsuranceInfo();
             var shipBtn = document.querySelector('.shipping-btn');
             var dest = shipBtn ? shipBtn.querySelector('.shipping-addr').textContent : '수령지';
+            if (typeof updateFeeCards === 'function') {
+                updateFeeCards(data, itemTotalKrw, dest, selectedInsurance, selectedInspection, lastDomesticFee, insuranceInfo, lastDomesticData);
+            }
 
-            el('md-route').textContent = origin + ' → ' + dest;
-            el('md-transport').textContent = transportNames[data.transportType] || data.transportType || '-';
-            el('md-basis').textContent = data.countryCode ? 'CIF 부산항' : '-';
-            el('md-size-type').textContent = sizeNames[data.sizeType] || data.sizeType || '-';
-            el('md-shipping-fee').textContent = fmt(data.shippingFee);
-            el('md-port-fee').textContent = fmt(data.portFee);
-            el('md-customs-fee').textContent = fmt(data.customsFee);
-            el('md-hscode-fee').textContent = fmt(data.hsCodeFee);
-            el('md-port-customs-total').textContent = fmt(
-                (data.portFee || 0) + (data.customsFee || 0) + (data.hsCodeFee || 0));
-            el('md-insurance-fee').textContent = fmt(data.insuranceFee);
-            el('md-cif').textContent = fmt(data.cifAmount);
-            el('md-duty-rate').textContent = data.dutyRate
-                ? (data.dutyRate * 100).toFixed(1) + '%' : '-';
-            el('md-duty').textContent = fmt(data.dutyAmount);
-            el('md-vat').textContent = fmt(data.vatAmount);
-            el('md-logistics-total').textContent = fmt(data.logisticsTotal);
-
-            // 대행 수수료 모달 상세
-            el('md-buyer-grade').textContent = data.buyerGrade || '-';
-            el('md-item-total-krw').textContent = '₩' + formatNumber(itemTotalKrw);
-            el('md-service-fee').textContent = fmt(data.serviceFee);
-            el('md-doc-fee').textContent = fmt(data.docFee);
-            el('md-procurement-total').textContent = fmt(data.procurementTotal);
-
-            // 총 주문 명세
+            // 총 주문 명세 (부가 서비스 포함)
             var totalTax = (data.dutyAmount || 0) + (data.vatAmount || 0);
-            var logisticsVal = data.logisticsTotal || 0;
-            var procurementVal = data.procurementTotal || 0;
-            // 최종 합계 = 물품대금 + 운임(세금 포함) + 대행수수료
+            var logisticsVal = (data.logisticsTotal || 0) + selectedInsurance + lastDomesticFee;
+            var procurementVal = (data.procurementTotal || 0) + selectedInspection;
             var grandTotal = itemTotalKrw + logisticsVal + procurementVal;
 
             el('os-item-total').textContent = '₩' + formatNumber(itemTotalKrw);
-            el('os-logistics').textContent = fmt(data.logisticsTotal);
-            el('os-procurement').textContent = fmt(data.procurementTotal);
+            el('os-logistics').textContent = fmt(logisticsVal);
+            el('os-procurement').textContent = fmt(procurementVal);
             el('os-tax').textContent = totalTax > 0 ? '₩' + formatNumber(totalTax) : '-';
             el('os-grand-total').textContent = grandTotal > 0 ? '₩' + formatNumber(grandTotal) : '-';
         })
         .catch(function () {});
     }
+
+    // 부가 서비스 체크박스 — 같은 카드 내 하나만 선택 + 재조회
+    document.querySelectorAll('.qo-service-check').forEach(function (check) {
+        check.addEventListener('change', function () {
+            if (check.checked) {
+                var card = check.closest('.quote-options-card');
+                card.querySelectorAll('.qo-service-check').forEach(function (other) {
+                    if (other !== check) other.checked = false;
+                });
+            }
+            fetchEstimateFees();
+        });
+    });
 
     // 수량/규격 변경 시 운임도 재조회
     rows.forEach(function (row) {
@@ -261,8 +390,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 초기 로딩 시 조회
-    fetchEstimateFees();
+    // 초기 로딩 시 — 운임 계산 즉시 실행 + 배달비 병렬 조회
+    doFetchEstimateFees();
+
+    // 기본 배송 데이터 세팅 후 배달비 조회 (결과가 오면 운임 재계산)
+    rows.forEach(function (row) {
+        var btn = row.querySelector('.shipping-btn');
+        if (btn && !btn.dataset.region) btn.dataset.region = defaultRegion;
+        shipCards.push({ qty: parseInt(row.querySelector('.qty-input').value) || 1, region: defaultRegion, name: '', addr: '', phone: '', memo: '' });
+    });
+    if (shipCards.length > 0) fetchShippingFee();
 
     // ── 임시저장 ─────────────────────────────────────
     var saveDraftBtn = document.getElementById('btnSaveDraft');
@@ -327,6 +464,23 @@ document.addEventListener('DOMContentLoaded', function () {
     var currentShipType = 'single';
     var shipCards = [];
     var totalItemQty = 0;
+    var defaultRegion = 'SEOUL';
+
+    // 지역 옵션 생성 (Thymeleaf에서 주입된 DOMESTIC_REGIONS 사용)
+    function buildRegionOptions(selectedRegion) {
+        var regions = (typeof DOMESTIC_REGIONS !== 'undefined' && Array.isArray(DOMESTIC_REGIONS))
+            ? DOMESTIC_REGIONS : [];
+        var regionNames = { SEOUL: '서울특별시', GYEONGGI: '경기도', METRO: '수도권', PROVINCE: '지방', JEJU: '제주', ISLAND: '도서산간' };
+        var html = '';
+        regions.forEach(function (r) {
+            var code = r.ddrRgn;
+            var name = regionNames[code] || code;
+            var extra = (r.ddrEAm && r.ddrEAm > 0) ? ' (+₩' + formatNumber(r.ddrEAm) + ')' : '';
+            var sel = (code === selectedRegion) ? ' selected' : '';
+            html += '<option value="' + code + '"' + sel + '>' + name + extra + '</option>';
+        });
+        return html || '<option value="SEOUL">서울특별시</option>';
+    }
 
     window.openShippingModal = function (btn) {
         currentShippingBtn = btn;
@@ -341,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function () {
         currentShipType = (meta && meta.textContent.indexOf('분할') >= 0) ? 'split' : 'single';
 
         if (currentShipType === 'single' || shipCards.length === 0) {
-            shipCards = [{ qty: totalItemQty, name: '홍길동', addr: '서울특별시 강남구 테헤란로 88, 402호', phone: '010-1234-5678', memo: '' }];
+            shipCards = [{ qty: totalItemQty, region: defaultRegion, name: '홍길동', addr: '서울특별시 강남구 테헤란로 88, 402호', phone: '010-1234-5678', memo: '' }];
         }
 
         updateShipTypeUI();
@@ -378,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
         b.addEventListener('click', function () {
             currentShipType = b.dataset.type;
             if (currentShipType === 'single') {
-                shipCards = [{ qty: totalItemQty, name: '홍길동', addr: '서울특별시 강남구 테헤란로 88, 402호', phone: '010-1234-5678', memo: '' }];
+                shipCards = [{ qty: totalItemQty, region: defaultRegion, name: '홍길동', addr: '서울특별시 강남구 테헤란로 88, 402호', phone: '010-1234-5678', memo: '' }];
             }
             updateShipTypeUI();
             renderAddrCards();
@@ -403,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var base = Math.floor(totalItemQty / count);
         var remainder = totalItemQty % count;
 
-        shipCards.push({ qty: 0, name: '수령인 ' + count, addr: '주소를 입력하세요', phone: '-', memo: '' });
+        shipCards.push({ qty: 0, region: defaultRegion, name: '수령인 ' + count, addr: '주소를 입력하세요', phone: '-', memo: '' });
 
         for (var i = 0; i < shipCards.length; i++) {
             shipCards[i].qty = base + (i < remainder ? 1 : 0);
@@ -429,7 +583,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</div>' +
                     (shipCards.length > 1 ? '<button type="button" class="ship-addr-remove" data-idx="' + idx + '" aria-label="삭제">&#10005;</button>' : '') +
                 '</div>' +
-                '<!-- TODO: 배송지 입력 fragment 자리 -->' +
+                '<div class="ship-addr-region">' +
+                    '<label class="ship-addr-region-label">배송 지역</label>' +
+                    '<select class="ship-region-select" data-idx="' + idx + '">' + buildRegionOptions(card.region) + '</select>' +
+                '</div>' +
                 '<div class="ship-addr-preview">' +
                     '<span class="ship-addr-name">수령인: ' + card.name + '</span>' +
                     '<span class="ship-addr-detail">' + card.addr + '</span>' +
@@ -491,6 +648,15 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
+        // 지역 변경 이벤트
+        list.querySelectorAll('.ship-region-select').forEach(function (sel) {
+            sel.addEventListener('change', function () {
+                var idx = parseInt(sel.dataset.idx);
+                shipCards[idx].region = sel.value;
+                fetchShippingFee();
+            });
+        });
+
         // 메모 변경 이벤트
         list.querySelectorAll('.ship-addr-memo').forEach(function (ta) {
             ta.addEventListener('input', function () {
@@ -502,14 +668,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('smCount').textContent = shipCards.length + '건';
     }
 
-    // 배달비 비동기 조회
+    // 배달비 비동기 조회 (지역별 그룹핑)
     function fetchShippingFee() {
-        if (!currentShippingBtn) return;
-        var region = currentShippingBtn.dataset.region;
-        if (!region) return;
-
         var items = shipCards.map(function (c) {
-            return { region: region, qty: c.qty, splitShipment: false };
+            return { region: c.region || defaultRegion, qty: c.qty, splitShipment: false };
         });
 
         var headers = { 'Content-Type': 'application/json' };
@@ -522,14 +684,36 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(function (res) { return res.json(); })
         .then(function (data) {
-            document.getElementById('smRegion').textContent = data.regionName || '-';
-            document.getElementById('smBase').textContent = data.baseFee ? '₩' + formatNumber(data.baseFee) : '-';
-            document.getElementById('smExtra').textContent = data.extraFee ? '₩' + formatNumber(data.extraFee) : '₩0';
+            // 지역별 그룹 렌더링
+            var container = document.getElementById('smRegionGroups');
+            if (container) {
+                container.innerHTML = '';
+                if (data.regions && data.regions.length > 0) {
+                    data.regions.forEach(function (rg) {
+                        var extra = rg.extraFeeUnit > 0
+                            ? '<div class="ship-fee-row"><span class="ship-fee-label">추가금</span><span class="ship-fee-value">₩' + formatNumber(rg.extraFeeUnit) + '/건</span></div>'
+                            : '';
+                        var div = document.createElement('div');
+                        div.className = 'ship-fee-region-group';
+                        div.innerHTML =
+                            '<div class="ship-fee-row"><span class="ship-fee-label">' + rg.regionName + '</span><span class="ship-fee-value">' + rg.count + '건</span></div>' +
+                            '<div class="ship-fee-row"><span class="ship-fee-label">기본 배달비</span><span class="ship-fee-value">₩' + formatNumber(rg.baseFeeUnit) + '/건</span></div>' +
+                            extra +
+                            '<div class="ship-fee-row"><span class="ship-fee-label">지역 소계</span><span class="ship-fee-value">₩' + formatNumber(rg.subtotal) + '</span></div>';
+                        container.appendChild(div);
+                    });
+                }
+            }
+            document.getElementById('smCount').textContent = data.totalCount || 0;
             document.getElementById('smTotal').textContent = data.totalFee ? '₩' + formatNumber(data.totalFee) : '-';
+            lastDomesticFee = data.totalFee || 0;
+            lastDomesticData = data;
+            fetchEstimateFees();
         })
         .catch(function () {
-            document.getElementById('smBase').textContent = '조회 실패';
-            document.getElementById('smTotal').textContent = '-';
+            document.getElementById('smTotal').textContent = '조회 실패';
+            // 실패해도 운임 계산은 진행
+            fetchEstimateFees();
         });
     }
 

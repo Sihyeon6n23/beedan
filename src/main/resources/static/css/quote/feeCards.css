@@ -38,7 +38,82 @@
     line-height: 28px;
 }
 
-.fee-items { display: flex; flex-direction: column; gap: 16px; }
+.fee-items { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+/* ---- Factory Groups in Card ---- */
+.fc-factory-group {
+    border: 1px solid var(--color-border-light, #e7e5e4);
+    margin-bottom: 8px;
+}
+
+.fc-factory-group:last-child {
+    margin-bottom: 0;
+}
+
+.fc-factory-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--color-surface, #f3f3f3);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.fc-factory-header:hover {
+    background: var(--color-surface-container, #eeeeee);
+}
+
+.fc-factory-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fc-factory-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.fc-factory-meta {
+    font-size: 11px;
+    color: var(--color-text-muted, #78716c);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.fc-factory-amount {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a1c1c);
+    white-space: nowrap;
+}
+
+.fc-factory-details {
+    display: none;
+    padding: 8px 16px 12px;
+    border-top: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.fc-factory-group.is-open .fc-factory-details {
+    display: block;
+}
+
+.fc-factory-details .fee-item {
+    padding: 6px 0;
+    font-size: 12px;
+}
+
+.fc-factory-details .fee-label {
+    font-size: 12px;
+}
+
+.fc-factory-details .fee-value {
+    font-size: 12px;
+}
 
 .fee-item {
     display: flex;
@@ -65,7 +140,7 @@
     justify-content: space-between;
     padding-top: 16px;
     border-top: 1px dashed var(--color-border-subtle, #e7e5e4);
-    margin-top: 4px;
+    margin-top: auto;
 }
 
 .fee-subtotal-label {
@@ -83,6 +158,195 @@
     font-size: 16px;
     color: var(--color-gold-dark, #705d00);
     line-height: 24px;
+}
+
+/* ============================================================
+   Fee Info Tooltip
+   ============================================================ */
+.fee-info-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-light, #a8a29e);
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 2px;
+    transition: color 0.15s ease;
+}
+
+.fee-info-btn:hover {
+    color: var(--color-gold-dark, #705d00);
+}
+
+.fee-tooltip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 220px;
+    padding: 7px 10px;
+    background: var(--color-text-primary, #1a1c1c);
+    color: #fff;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    white-space: normal;
+    z-index: 100;
+}
+
+.fee-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-text-primary, #1a1c1c);
+}
+
+.fee-info-btn.is-active .fee-tooltip {
+    display: block;
+}
+
+/* ---- Shipping Rate Table ---- */
+.shipping-rate-table {
+    margin: 12px 0 4px;
+    padding: 14px 16px;
+    background: var(--color-surface, #f3f3f3);
+    border: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.rate-table-caption {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #78716c);
+    margin-bottom: 10px;
+}
+
+.shipping-rate-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.shipping-rate-table th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-light, #a8a29e);
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.shipping-rate-table th:last-child {
+    text-align: right;
+}
+
+.shipping-rate-table td {
+    font-size: 12px;
+    color: var(--color-text-muted, #78716c);
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.shipping-rate-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+}
+
+.shipping-rate-table tr:last-child td {
+    border-bottom: none;
+}
+
+.shipping-rate-table tr.rate-active td {
+    color: var(--color-gold-dark, #705d00);
+    font-weight: 700;
+    background: rgba(255, 215, 0, 0.08);
+}
+
+.shipping-rate-table tr.rate-active td:first-child::after {
+    content: ' ← 현재';
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* ---- Modal Info Tooltip ---- */
+.modal-info-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-light, #a8a29e);
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 2px;
+    transition: color 0.15s ease;
+}
+
+.modal-info-btn:hover {
+    color: var(--color-gold-dark, #705d00);
+}
+
+.modal-tooltip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: max-content;
+    max-width: 220px;
+    padding: 7px 10px;
+    background: var(--color-text-primary, #1a1c1c);
+    color: #fff;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    white-space: normal;
+    z-index: 100;
+}
+
+.modal-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 12px;
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-text-primary, #1a1c1c);
+}
+
+.modal-info-btn.is-active .modal-tooltip {
+    display: block;
+}
+
+/* ---- Policy Date Badge ---- */
+.modal-policy-date {
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--color-text-light, #a8a29e);
+    text-transform: none;
 }
 
 /* ============================================================

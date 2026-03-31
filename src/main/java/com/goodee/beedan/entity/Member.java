@@ -1,6 +1,7 @@
 package com.goodee.beedan.entity;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.MemberStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -61,4 +63,42 @@ public class Member {
     private LocalDateTime memCreDt;
 
     private LocalDateTime memUpdPwDt;
+
+
+    public void approve() {
+        if (this.memStt.equals(MemberStatus.ACTIVE.toString())) {
+            throw new IllegalArgumentException("이미 승인이 완료된 계정입니다.");
+        }
+        this.memStt = MemberStatus.ACTIVE.toString();
+    }
+
+    public void inactive() {
+        if (this.memStt.equals(MemberStatus.INACTIVE.toString())) {
+            throw new IllegalArgumentException("이미 비활성화가 완료된 계정입니다.");
+        }
+        this.memStt = MemberStatus.INACTIVE.toString();
+    }
+
+    public void withdraw() {
+        this.memLgnId = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+
+        this.memLgnPw = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+
+        this.memEml = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memNm = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memMbPhn = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        // Ci값은 암호화해서 별도 저장?
+        // this.memCi = ;
+
+        this.memBizNo = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memBizTtl = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memCeoNm = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+
+        this.memPosCd = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memBizAdr = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memBizDtAdr = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memCeoPhn = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memCmpTel = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memStt = MemberStatus.WITHDRAWN.toString();
+    }
 }
