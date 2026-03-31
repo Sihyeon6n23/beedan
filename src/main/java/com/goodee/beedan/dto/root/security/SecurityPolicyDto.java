@@ -59,6 +59,8 @@ public class SecurityPolicyDto {
     @JsonProperty("password_expiry_days")
     private Long passwordExpiryDays = 0L; // 0으로 초기화
 
+    private Set<String> fileUploadAllowSet;
+
     public void setFileUploadAllowList(Object value) {
         if (value instanceof String str) {
             this.fileUploadAllowList = Arrays.stream(str.split(","))

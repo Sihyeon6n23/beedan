@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface FileRepository extends JpaRepository<FileUpload, Long> {
     List<FileUpload> findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalseOrderByFileOrAsc(String brdRefTy, Long brdRefNo);
+    List<FileUpload> findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalse(String brdRefTy, Long brdRefNo);
 }
