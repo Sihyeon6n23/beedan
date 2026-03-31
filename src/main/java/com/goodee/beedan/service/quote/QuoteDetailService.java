@@ -22,6 +22,14 @@ public class QuoteDetailService {
     private final QuoteDetailRepository quoteDetailRepository;
 
     /**
+     * 견적 품목 엔티티 직접 저장
+     */
+    @Transactional
+    public QuoteDetail save(QuoteDetail entity) {
+        return quoteDetailRepository.save(entity);
+    }
+
+    /**
      * 견적 품목 등록
      */
     @Transactional

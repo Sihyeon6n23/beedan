@@ -46,6 +46,7 @@ public class QuoteRestController {
     private final BuyerService buyerService;
     private final FeePolicyService feePolicyService;
     private final com.goodee.beedan.repository.receiver.ReceiverRepository receiverRepository;
+    private final com.goodee.beedan.repository.quote.QuoteInfoRepository quoteInfoRepository;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -126,6 +127,24 @@ public class QuoteRestController {
                         .body(Map.of("status", "error", "message", "수정 불가 상태입니다."));
             }
 
+            // 1. QuoteInfo 생성 또는 갱신
+            QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(request.getQuId()).orElse(null);
+            if (quoteInfo == null) {
+                quoteInfo = QuoteInfo.builder()
+                        .quoteId(request.getQuId())
+                        .negoId(quoteBase.getNgId())
+                        .currencyCode(null)
+                        .exchangeRate(null)
+                        .buyerGradePolicyId(null)
+                        .feePolicyId(null)
+                        .ps(request.getMemo())
+                        .desiredDate(null)
+                        .build();
+            }
+            quoteInfo.updateDraft(request.getMemo(), request.getSiId(), request.getStiId());
+            quoteInfo = quoteInfoRepository.save(quoteInfo);
+
+            // 2. QuoteDetail 삭제 후 재저장
             List<QuoteDetail> existing = quoteDetailService.findAllByQuote(request.getQuId());
             existing.forEach(d -> quoteDetailService.delete(d.getQuDtId()));
 
@@ -133,20 +152,21 @@ public class QuoteRestController {
                 Stock stock = stockRepository.findById(item.getStId()).orElse(null);
                 if (stock == null) continue;
 
-                quoteDetailService.create(
-                        com.goodee.beedan.dto.quote.QuoteDetailRequest.builder()
-                                .quInfoId(null)
-                                .quId(request.getQuId())
-                                .ngId(quoteBase.getNgId())
-                                .stId(item.getStId())
-                                .quDtQn(item.getQty())
-                                .stNm(stock.getStNm())
-                                .unGId(item.getUnGId())
-                                .unGNm(item.getUnGNm())
-                                .quUQn(item.getUnGQn())
-                                .quDtFgPr(stock.getStPr())
-                                .build()
-                );
+                QuoteDetail detail = QuoteDetail.builder()
+                        .quoteInfoId(quoteInfo.getQuInfoId())
+                        .quoteId(request.getQuId())
+                        .negoId(quoteBase.getNgId())
+                        .stockId(item.getStId())
+                        .stockQuantity(item.getQty())
+                        .stockName(stock.getStNm())
+                        .unitGroupId(item.getUnGId())
+                        .unitGroupName(item.getUnGNm())
+                        .unitGroupQuantity(item.getUnGQn())
+                        .foreignPrice(stock.getStPr())
+                        .krwTotal(item.getSubtotalKrw())
+                        .receiverId(item.getRcId())
+                        .build();
+                quoteDetailService.save(detail);
             }
 
             return ResponseEntity.ok(Map.of(
@@ -506,6 +526,8 @@ public class QuoteRestController {
         private Long quId;
         private List<DraftItem> items;
         private String memo;
+        private Long siId;          // 선택한 보험 ID
+        private Long stiId;         // 선택한 검사 ID
 
         @Getter
         @NoArgsConstructor
@@ -515,6 +537,8 @@ public class QuoteRestController {
             private Long unGId;
             private String unGNm;
             private Integer unGQn;
+            private BigDecimal subtotalKrw;  // 사용자 조정 소계 (한화)
+            private Long rcId;               // 수령지 ID
         }
     }
 

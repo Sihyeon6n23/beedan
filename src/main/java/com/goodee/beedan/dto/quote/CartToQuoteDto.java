@@ -1,6 +1,7 @@
 package com.goodee.beedan.dto.quote;
 
 import com.goodee.beedan.entity.HsCode;
+import com.goodee.beedan.entity.QuoteDetail;
 import com.goodee.beedan.entity.Stock;
 import com.goodee.beedan.entity.UnitGroup;
 import lombok.Builder;
@@ -33,6 +34,9 @@ public class CartToQuoteDto {
         private String hsCd;
         private String hsNm;
         private BigDecimal hsDuRa;
+        // 임시저장 복원용
+        private BigDecimal savedSubtotalKrw;
+        private Long savedRcId;
 
         public static Item of(int no, Stock stock, Long qty, UnitGroup unitGroup) {
             return of(no, stock, qty, unitGroup, null);
@@ -59,6 +63,33 @@ public class CartToQuoteDto {
                     .hsCd(hsCode != null ? hsCode.getHsCd() : null)
                     .hsNm(hsCode != null ? hsCode.getHsNm() : null)
                     .hsDuRa(hsCode != null ? hsCode.getHsDuRa() : null)
+                    .build();
+        }
+
+        /** 임시저장된 QuoteDetail에서 복원 */
+        public static Item fromDraft(int no, Stock stock, QuoteDetail detail, UnitGroup unitGroup, HsCode hsCode) {
+            Long qty = detail.getQuDtQn() != null ? detail.getQuDtQn().longValue() : 1L;
+            int uqn = detail.getQuUQn() != null ? detail.getQuUQn() : (unitGroup != null ? unitGroup.getUnGQn() : 1);
+            int dozen = uqn > 0 ? (int) Math.ceil((double) qty / uqn) : qty.intValue();
+
+            return Item.builder()
+                    .no(no)
+                    .stId(stock.getStId())
+                    .stNm(stock.getStNm())
+                    .stBrNm(stock.getStBrNm())
+                    .stCd(stock.getStCd())
+                    .qty(qty)
+                    .unGNm(detail.getUnGNm() != null ? detail.getUnGNm() : (unitGroup != null ? unitGroup.getUnGNm() : "-"))
+                    .unGQn(uqn)
+                    .dozenCount(dozen)
+                    .stPr(stock.getStPr())
+                    .totalPr(stock.getStPr().multiply(BigDecimal.valueOf(qty)))
+                    .stCur(stock.getStCur())
+                    .hsCd(hsCode != null ? hsCode.getHsCd() : null)
+                    .hsNm(hsCode != null ? hsCode.getHsNm() : null)
+                    .hsDuRa(hsCode != null ? hsCode.getHsDuRa() : null)
+                    .savedSubtotalKrw(detail.getQuDtPr())
+                    .savedRcId(detail.getRcId())
                     .build();
         }
     }
