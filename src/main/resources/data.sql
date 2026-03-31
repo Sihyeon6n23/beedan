@@ -409,7 +409,7 @@ SELECT
     DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     NULL
-FROM SYSTEM_RANGE(6, 13);
+FROM SYSTEM_RANGE(6, 13) AS T(X);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
@@ -425,7 +425,7 @@ SELECT
           AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(6, 13);
+FROM SYSTEM_RANGE(6, 13) AS T(X);
 
 INSERT INTO chat_room (
     ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
@@ -437,7 +437,7 @@ SELECT
     DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
@@ -453,7 +453,7 @@ SELECT
           AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 
 INSERT INTO chat_room (
     ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, ch_ro_cls_dt, ch_ro_cls_rsn, mem_id, mem_ad_id
@@ -467,7 +467,7 @@ SELECT
     'ADMIN',
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
@@ -483,7 +483,7 @@ SELECT
           AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 -- =====================
 -- 장 준 END
 -- =====================
