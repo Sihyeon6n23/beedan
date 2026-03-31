@@ -14,4 +14,7 @@ public interface NegotiationRepository extends JpaRepository<Negotiation, Long> 
     List<Negotiation> findAllByMemIdAndNgEndDtIsNull(Long memId);
 
     Negotiation findFirstByMemIdOrderByNgCreDtDesc(Long memId);
+    Negotiation findByNgId(Long ngId);
+
+
 }

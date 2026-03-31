@@ -1,6 +1,7 @@
 package com.goodee.beedan.service.auth.phone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.goodee.beedan.dto.member.PhoneVerificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,5 +33,18 @@ public class PortOneService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>(){});
         return mono;
+    }
+
+    public PhoneVerificationDto MonoToPhoneVerificationDto(Mono<Map<String, Object>> verifyMono) {
+        return verifyMono.map(map -> {
+            String name = (String) map.get("name");
+            String phoneNumber = (String) map.get("phoneNumber");
+            String ci = (String) map.get("ci");
+            return PhoneVerificationDto.builder()
+                    .name(name)
+                    .phoneNumber(phoneNumber)
+                    .ci(ci)
+                    .build();
+        }).block();
     }
 }

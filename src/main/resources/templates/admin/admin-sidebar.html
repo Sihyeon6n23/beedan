@@ -22,9 +22,9 @@
                    th:classappend="${activeSub == 'stock-list'} ? ' sidebar-menu__child-link--current' : ''">
                     상품 목록
                 </a>
-                <a th:href="@{/admin/newstock}"
+                <a th:href="@{/admin/require/list}"
                    class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'stock-new'} ? ' sidebar-menu__child-link--current' : ''">
+                   th:classappend="${activeSub == 'stock-require'} ? ' sidebar-menu__child-link--current' : ''">
                     상품 요청 목록
                 </a>
                 <a th:href="@{/admin/newstock}"

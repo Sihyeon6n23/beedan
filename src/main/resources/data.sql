@@ -1,3 +1,74 @@
+-- =====================
+-- 고희권 START
+-- =====================
+-- 1. 관리자 계정 (ROOT)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'root',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 2. 일반 사용자 계정 (USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ADMIN',
+             '홍길동',
+             '010-1234-5678',
+             'user01@example.com',
+             'ACTIVE',
+             NOW()
+         );
+
+-- 3. 비즈니스/기업 사용자 계정 (ADMIN 혹은 USER)
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+) VALUES (
+             'user',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'USER',
+             '김철수',
+             '123-45-67890',
+             '(주)테스트컴퍼니',
+             '서울시 강남구 역삼동',
+             'ACTIVE',
+             NOW()
+         );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin1',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'INACTIVE',
+             NOW()
+         );
+
+INSERT INTO member (
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
+) VALUES (
+             'admin2',
+             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
+             'ROOT',
+             '최고관리자',
+             'admin@example.com',
+             'PENDING',
+             NOW()
+         );
+-- =====================
+-- 고희권 END
+-- =====================
 
 -- =====================
 -- 최준희 START
@@ -95,6 +166,18 @@ ALTER TABLE category ALTER COLUMN cat_id RESTART WITH 100;
 ALTER TABLE stock    ALTER COLUMN st_id  RESTART WITH 100;
 ALTER TABLE cart     ALTER COLUMN ca_id  RESTART WITH 100;
 
+-- =====================
+-- REQUIREMENT
+-- =====================
+INSERT INTO requirement (req_ttl, req_con, req_ref, req_pr, req_stt, req_rep_yn, req_per_yn, req_cre_dt, req_upd_dt, req_del_yn, mem_id) VALUES
+('Kapital Boro Jacket 입고 요청', '카피탈 보로 자켓 시즌 신상 입고 요청합니다. 사이즈 M, L 둘 다 가능합니다.', 'https://kapital.jp/boro-jacket', 2100, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica GORE-TEX 코트 문의', '나나미카 고어텍스 코트 재입고 가능한지 확인 부탁드립니다.', 'https://nanamica.com/goretex-coat', 3600, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kenzo 타이거 스웨터 요청', '겐조 타이거 자수 스웨터 XL 사이즈 입고 요청합니다.', 'https://kenzo.com/tiger-sweater', 1500, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kapital 인디고 데님 팬츠', '카피탈 인디고 데님 팬츠 32인치 입고 가능한지 문의합니다.', NULL, 980, 'SUBMITTED', TRUE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica 러그비 셔츠 입고 요청', '나나미카 쿨맥스 러그비 셔츠 L 사이즈 입고 부탁드립니다.', 'https://nanamica.com/rugby-shirt', 640, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kapital 사시코 니트 조끼', '사시코 니트 조끼 프리사이즈 입고 요청합니다.', NULL, 620, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Kenzo 플라워 프린트 셔츠', '겐조 플라워 프린트 셔츠 M 사이즈 요청합니다. 참고 링크 첨부합니다.', 'https://kenzo.com/flower-shirt', 890, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+('Nanamica 와이드 치노 팬츠', '쿨맥스 와이드 치노 30인치 입고 가능할까요?', 'https://nanamica.com/wide-chino', 1100, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3);
 
 -- =====================
 -- 최준희 END
@@ -227,6 +310,13 @@ INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
                                                                         (9,  10, '6403.99-0000', 'Shoes',            0.1300, '신발류 - 세번 확인 필요'),
                                                                         (10, 11, '4202.22-0000', 'Bags/Accessories', 0.1300, '가방/액세서리 - 세번 확인 필요');
 
+INSERT INTO SHIPPING_INSURANCE (si_nm, si_am, si_des, si_yn, si_cr_dt, si_up_dt) VALUES
+    ('적하보험 (기본)', 0.0100, '해상·항공 운송 중 발생하는 파손, 분실, 침수 등의 사고에 대해 상품가 기준으로 보상합니다. CIF 조건에 포함되는 기본 보험이며, 통관 후 국내 배송 구간은 별도입니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('적하보험 (확장)', 0.0300, '기본 보험 보장 범위에 더해 통관 후 국내 배송 구간, 보관 중 사고, 자연재해로 인한 손상까지 보장합니다. 고가 상품이나 파손 위험이 높은 품목에 권장됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+INSERT INTO STOCK_INSPECTION (sti_nm, sti_am, sti_des, sti_yn, sti_cr_dt, sti_up_dt) VALUES
+    ('1차 품질 검사 (외관·치수·소재)', 100000, '출고 전 현지 파트너가 외관 상태, 치수 오차, 소재 일치 여부를 육안 검수합니다. 전수 또는 샘플링 방식으로 진행되며, 불량률 5% 초과 시 리포트가 발송됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+    ('2차 정밀 검사 (원단·봉제·내구성)', 300000, '원단 조직·밀도 측정, 봉제 강도, 세탁 후 수축률 등 정밀 항목을 검사합니다. 검사 기관 인증 리포트가 제공되며, 품질 기준 미달 시 반품·교환 협의가 가능합니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- =====================
 -- 백시현 END
@@ -234,77 +324,7 @@ INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
 
 
 
--- =====================
--- 고희권 START
--- =====================
--- 1. 관리자 계정 (ROOT)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'root',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'ACTIVE',
-             NOW()
-         );
 
--- 2. 일반 사용자 계정 (USER)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ADMIN',
-             '홍길동',
-             '010-1234-5678',
-             'user01@example.com',
-             'ACTIVE',
-             NOW()
-         );
-
--- 3. 비즈니스/기업 사용자 계정 (ADMIN 혹은 USER)
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
-) VALUES (
-             'user',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'USER',
-             '김철수',
-             '123-45-67890',
-             '(주)테스트컴퍼니',
-             '서울시 강남구 역삼동',
-             'ACTIVE',
-             NOW()
-         );
-
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin1',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'INACTIVE',
-             NOW()
-         );
-
-INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_eml, mem_stt, mem_cre_dt
-) VALUES (
-             'admin2',
-             '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
-             'ROOT',
-             '최고관리자',
-             'admin@example.com',
-             'PENDING',
-             NOW()
-         );
--- =====================
--- 고희권 END
--- =====================
 
 
 
@@ -409,7 +429,7 @@ SELECT
     DATEADD('MINUTE', -X, CURRENT_TIMESTAMP),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     NULL
-FROM SYSTEM_RANGE(6, 13);
+FROM SYSTEM_RANGE(6, 13) AS T(X);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
@@ -425,7 +445,7 @@ SELECT
           AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(6, 13);
+FROM SYSTEM_RANGE(6, 13) AS T(X);
 
 INSERT INTO chat_room (
     ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, mem_id, mem_ad_id
@@ -437,7 +457,7 @@ SELECT
     DATEADD('HOUR', -X, CURRENT_TIMESTAMP),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
@@ -453,7 +473,7 @@ SELECT
           AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 
 INSERT INTO chat_room (
     ch_ro_ttl, ch_ro_stt, ch_ro_cre_dt, ch_ro_last_ms_dt, ch_ro_cls_dt, ch_ro_cls_rsn, mem_id, mem_ad_id
@@ -467,7 +487,7 @@ SELECT
     'ADMIN',
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user'),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 
 INSERT INTO chat_message (
     ch_ms_sen_ty, ch_ms_con, ch_ms_cre_dt, ch_ro_id, mem_id
@@ -483,7 +503,7 @@ SELECT
           AND mem_id = (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
     ),
     (SELECT mem_id FROM member WHERE mem_lgn_id = 'user')
-FROM SYSTEM_RANGE(1, 13);
+FROM SYSTEM_RANGE(1, 13) AS T(X);
 -- =====================
 -- 장 준 END
 -- =====================
@@ -518,3 +538,4 @@ VALUES
 -- =====================
 -- 임 욱 END
 -- =====================
+

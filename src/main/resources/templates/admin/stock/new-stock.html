@@ -13,18 +13,21 @@
 </th:block>
 
 <th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}"/>
 <link rel="stylesheet" th:href="@{/css/crawling/admin-crawling.css}"/>
 
 <section class="admin-crawling-page" th:data-active-tab="${activeTab != null ? activeTab : 'external'}">
 
     <!-- 헤더 -->
-    <header class="admin-crawling-shell">
-        <div>
-            <span class="admin-crawling-kicker">Stock Registration</span>
-            <h1 class="admin-crawling-title">상품 등록</h1>
+    <header class="admin-chat-shell admin-chat-shell--header">
+        <div class="admin-chat-shell__heading">
+            <span class="admin-chat-kicker">Stock Registration</span>
+            <h2 class="admin-chat-title">상품 등록</h2>
         </div>
-        <div class="admin-crawling-shell__rule"></div>
-        <div class="admin-crawling-tabs">
+        <div class="admin-chat-shell__rule">
+            <span></span>
+        </div>
+        <div class="admin-crawling-tabs" style="margin-top:1rem;">
             <button class="admin-crawling-tab" data-tab="external">외부 상품 등록</button>
             <button class="admin-crawling-tab" data-tab="manual">자체 상품 등록</button>
         </div>

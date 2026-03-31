@@ -15,7 +15,9 @@ import java.util.List;
 @RequestMapping("/api/receiver")
 @RequiredArgsConstructor
 @Slf4j
-public class ReceiverApiController {
+public class
+
+ReceiverApiController {
     private final ReceiverService receiverService;
 
     @GetMapping

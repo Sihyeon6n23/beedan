@@ -19,46 +19,7 @@ main > div {
     width: 100% !important;
 }
 
-/* --- 컨테이너 --- */
-.admin-stock-container {
-    width: 1280px !important;
-    min-width: 1280px !important;
-    margin-left: 0 !important;
-    padding: 0 !important;
-}
-
-/* --- 헤더 --- */
-.hero-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 2rem;
-    gap: 1.5rem;
-}
-
-.header-title .text-gold-sub {
-    color: var(--primary-gold);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.15rem;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-}
-
-.header-title h1 {
-    font-family: 'Manrope', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 300;
-    letter-spacing: -0.1rem;
-    color: var(--text-main);
-    margin: 0.5rem 0;
-}
-
-.header-title .text-description {
-    color: var(--text-desc);
-    font-size: 0.875rem;
-    line-height: 1.6;
-}
+/* --- 컨테이너 (admin-chat-page로 대체됨) --- */
 
 /* --- 필터/검색 --- */
 .filter-bar {
@@ -340,13 +301,12 @@ main > div {
 }
 
 /* --- 페이지네이션 --- */
-.pagination-wrapper {
+.pagination-wrapper,
+.admin-chat-shell--pagination .page-info,
+.admin-chat-shell--pagination .page-numbers {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 0;
-    margin-top: 1rem;
-    border-top: 1px solid var(--border-color);
 }
 
 .page-info {

@@ -1,6 +1,6 @@
 package com.goodee.beedan.controller.member;
 
-import com.goodee.beedan.dto.member.biz.BizDto;
+import com.goodee.beedan.dto.member.BizDto;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.member.MemberService;
@@ -22,7 +22,6 @@ public class AuthRestController {
     @PostMapping("/biz-validation")
     public Mono<ResponseEntity<Map<String, Object>>> postBizValidation (
              @RequestBody BizDto bizDto) {
-        System.out.println(bizDto);
 
         return bizValidateService.validate(bizDto)
                 .map(resultMap -> ResponseEntity.ok(resultMap))
