@@ -92,65 +92,80 @@ public class QuoteController {
     public String getWrite(@RequestParam(required = false) Long quId,
                            Model model, HttpSession session,
                            @AuthenticationPrincipal MemberUserDetails userDetails) {
+
+        // quId 없으면 메인으로 리다이렉트
+        if (quId == null) {
+            return "redirect:/mainPage";
+        }
+
+        // quId 조회 후 TEMP_SAVE 상태가 아니면 406
+        QuoteBase quoteBase = quoteBaseService.findById(quId);
+        if (quoteBase == null) {
+            return "redirect:/mainPage";
+        }
+        if (!quoteBase.isEditable()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_ACCEPTABLE,
+                    "임시저장 상태의 견적만 수정할 수 있습니다."
+            );
+        }
+
         model.addAttribute("activeStep", 1);
 
         // 환율 데이터 로딩
         List<ExchangeRate> exchangeRates = exchangeRateService.findAllLatest();
         model.addAttribute("exchangeRates", exchangeRates);
 
-        if (quId != null) {
-            List<UnitGroup> unitGroups = unitGroupService.findAllActive();
-            UnitGroup defaultUnit = unitGroups.isEmpty() ? null : unitGroups.get(0);
-            model.addAttribute("unitGroups", unitGroups);
-            model.addAttribute("quId", quId);
+        List<UnitGroup> unitGroups = unitGroupService.findAllActive();
+        UnitGroup defaultUnit = unitGroups.isEmpty() ? null : unitGroups.get(0);
+        model.addAttribute("unitGroups", unitGroups);
+        model.addAttribute("quId", quId);
 
-            // 견적 코드 (ngNm)
-            QuoteBase quoteBase = quoteBaseService.findById(quId);
-            Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
-            model.addAttribute("ngNm", negotiation.getNgNm());
+        // 견적 코드 (ngNm) - quoteBase는 위에서 이미 조회됨
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        model.addAttribute("ngNm", negotiation.getNgNm());
 
-            // 1) 세션에서 신규 견적 데이터 확인
-            List<QuoteRequestDto.QuoteRequestItemDto> sessionItems =
-                    (List<QuoteRequestDto.QuoteRequestItemDto>) session.getAttribute("quoteItems_" + quId);
+        // 1) 세션에서 신규 견적 데이터 확인
+        List<QuoteRequestDto.QuoteRequestItemDto> sessionItems =
+                (List<QuoteRequestDto.QuoteRequestItemDto>) session.getAttribute("quoteItems_" + quId);
 
-            // 2) DB에서 임시저장 데이터 확인
-            List<QuoteDetail> savedDetails = quoteDetailService.findAllByQuote(quId);
-            QuoteInfo savedInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
+        // 2) DB에서 임시저장 데이터 확인
+        List<QuoteDetail> savedDetails = quoteDetailService.findAllByQuote(quId);
+        QuoteInfo savedInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
 
-            if (savedDetails != null && !savedDetails.isEmpty()) {
-                // ── 임시저장 복원 ──
-                List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
-                for (int i = 0; i < savedDetails.size(); i++) {
-                    QuoteDetail detail = savedDetails.get(i);
-                    Stock stock = detail.getStId() != null
-                            ? stockRepository.findById(detail.getStId()).orElse(null) : null;
-                    if (stock == null) continue;
-                    HsCode hsCode = stock.getCatId() != null
-                            ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null) : null;
-                    quoteItems.add(CartToQuoteDto.Item.fromDraft(i + 1, stock, detail, defaultUnit, hsCode));
-                }
-                model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
-
-                // 저장된 메모, 보험/검사 선택
-                if (savedInfo != null) {
-                    model.addAttribute("draftMemo", savedInfo.getQuInfoPs());
-                    model.addAttribute("draftSiId", savedInfo.getSiId());
-                    model.addAttribute("draftStiId", savedInfo.getStiId());
-                }
-
-            } else if (sessionItems != null && !sessionItems.isEmpty()) {
-                // ── 신규 견적 (세션에서) ──
-                List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
-                for (int i = 0; i < sessionItems.size(); i++) {
-                    QuoteRequestDto.QuoteRequestItemDto item = sessionItems.get(i);
-                    Stock stock = stockRepository.findById(item.getStId()).orElse(null);
-                    if (stock == null) continue;
-                    HsCode hsCode = stock.getCatId() != null
-                            ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null) : null;
-                    quoteItems.add(CartToQuoteDto.Item.of(i + 1, stock, item.getQty(), defaultUnit, hsCode));
-                }
-                model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
+        if (savedDetails != null && !savedDetails.isEmpty()) {
+            // ── 임시저장 복원 ──
+            List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
+            for (int i = 0; i < savedDetails.size(); i++) {
+                QuoteDetail detail = savedDetails.get(i);
+                Stock stock = detail.getStId() != null
+                        ? stockRepository.findById(detail.getStId()).orElse(null) : null;
+                if (stock == null) continue;
+                HsCode hsCode = stock.getCatId() != null
+                        ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null) : null;
+                quoteItems.add(CartToQuoteDto.Item.fromDraft(i + 1, stock, detail, defaultUnit, hsCode));
             }
+            model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
+
+            // 저장된 메모, 보험/검사 선택
+            if (savedInfo != null) {
+                model.addAttribute("draftMemo", savedInfo.getQuInfoPs());
+                model.addAttribute("draftSiId", savedInfo.getSiId());
+                model.addAttribute("draftStiId", savedInfo.getStiId());
+            }
+
+        } else if (sessionItems != null && !sessionItems.isEmpty()) {
+            // ── 신규 견적 (세션에서) ──
+            List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
+            for (int i = 0; i < sessionItems.size(); i++) {
+                QuoteRequestDto.QuoteRequestItemDto item = sessionItems.get(i);
+                Stock stock = stockRepository.findById(item.getStId()).orElse(null);
+                if (stock == null) continue;
+                HsCode hsCode = stock.getCatId() != null
+                        ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null) : null;
+                quoteItems.add(CartToQuoteDto.Item.of(i + 1, stock, item.getQty(), defaultUnit, hsCode));
+            }
+            model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
         }
 
         // 부가 서비스 옵션
