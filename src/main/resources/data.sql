@@ -30,12 +30,14 @@ INSERT INTO member (
 
 -- 3. 비즈니스/기업 사용자 계정 (USER)
 INSERT INTO member (
-    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
+    mem_lgn_id, mem_lgn_pw, mem_aut, mem_nm, mem_mb_phn, mem_eml, mem_biz_no, mem_biz_ttl, mem_biz_adr, mem_stt, mem_cre_dt
 ) VALUES (
              'user',
              '$2a$10$Tx1CyrrWN2qWI48xREs/a.H0N2WGc8jrLsdhBY/lWv53c0z1AFl/2', -- 1234 (BCrypt)
              'USER',
              '김철수',
+             '010-1234-5678',
+             'user01@example.com',
              '123-45-67890',
              '(주)테스트컴퍼니',
              '서울시 강남구 테헤란로',
