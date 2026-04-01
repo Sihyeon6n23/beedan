@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "FEE_POLICY",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uq_fp_gr_ty_yn",

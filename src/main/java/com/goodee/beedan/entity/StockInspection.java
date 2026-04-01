@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "STOCK_INSPECTION")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StockInspection {

@@ -135,14 +135,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var logisticsWithExtras = (data.logisticsTotal || 0) + insuranceExtra + domesticFee;
-        el('fc-logistics-total').textContent = fmt(logisticsWithExtras);
+
+        // ── 운송 비용 할인 (SHIPPING fee policy) ──
+        var shippingRate = parseFloat(data.shippingDiscountRate) || 0;
+        var logisticsEl = el('fc-logistics-total');
+        if (shippingRate > 0 && logisticsWithExtras > 0) {
+            var discountedLogistics = Math.round(logisticsWithExtras * (1 - shippingRate));
+            logisticsEl.className = 'fee-subtotal-value has-discount';
+            logisticsEl.innerHTML =
+                '<span class="original-price">' + fmt(logisticsWithExtras) + '</span>' +
+                '<span class="discounted-price"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(discountedLogistics) + '</span>';
+        } else {
+            logisticsEl.className = 'fee-subtotal-value';
+            logisticsEl.textContent = fmt(logisticsWithExtras);
+        }
 
         // ── 대행 카드 ──
         el('fc-service').textContent = fmt(data.serviceFee);
         el('fc-inspection').textContent = inspectionExtra > 0 ? fmt(inspectionExtra) : '없음';
 
         var procurementWithExtras = (data.procurementTotal || 0) + inspectionExtra;
-        el('fc-procurement-total').textContent = fmt(procurementWithExtras);
+
+        // ── 대행 서비스 할인 (SERVICE_COMMISSION 등급 차이) ──
+        var standardSvcFee = parseFloat(data.standardServiceFee) || 0;
+        var procurementEl = el('fc-procurement-total');
+        if (standardSvcFee > 0 && standardSvcFee > (data.procurementTotal || 0)) {
+            var standardProcurement = standardSvcFee + inspectionExtra;
+            procurementEl.className = 'fee-subtotal-value has-discount';
+            procurementEl.innerHTML =
+                '<span class="original-price">' + fmt(standardProcurement) + '</span>' +
+                '<span class="discounted-price"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(procurementWithExtras) + '</span>';
+        } else {
+            procurementEl.className = 'fee-subtotal-value';
+            procurementEl.textContent = fmt(procurementWithExtras);
+        }
 
         // ── 운임 모달 — 공장별 섹션 동적 렌더링 ──
         var modalBody = document.querySelector('#modal-logistics .modal-body');
@@ -150,7 +176,13 @@ document.addEventListener('DOMContentLoaded', function () {
             // 기존 동적 섹션 제거 (.md-factory-section)
             modalBody.querySelectorAll('.md-factory-section').forEach(function (s) { s.remove(); });
             // 기존 총계 행 갱신
-            el('md-logistics-total').textContent = fmt(logisticsWithExtras);
+            if (shippingRate > 0 && logisticsWithExtras > 0) {
+                var mdDiscounted = Math.round(logisticsWithExtras * (1 - shippingRate));
+                el('md-logistics-total').innerHTML =
+                    '<span style="text-decoration:line-through;color:var(--color-text-light);font-size:13px;margin-right:8px;">' + fmt(logisticsWithExtras) + '</span>' + fmt(mdDiscounted);
+            } else {
+                el('md-logistics-total').textContent = fmt(logisticsWithExtras);
+            }
 
             var insertBefore = modalBody.querySelector('.modal-note');
 
@@ -223,7 +255,13 @@ document.addEventListener('DOMContentLoaded', function () {
         el('md-buyer-grade').textContent = data.buyerGrade || '-';
         el('md-item-total-krw').textContent = '₩' + fmtNum(itemTotalKrw);
         el('md-service-fee').textContent = fmt(data.serviceFee);
-        el('md-procurement-total').textContent = fmt(procurementWithExtras);
+        if (standardSvcFee > 0 && standardSvcFee > (data.procurementTotal || 0)) {
+            var mdStdProc = standardSvcFee + inspectionExtra;
+            el('md-procurement-total').innerHTML =
+                '<span style="text-decoration:line-through;color:var(--color-text-light);font-size:13px;margin-right:8px;">' + fmt(mdStdProc) + '</span>' + fmt(procurementWithExtras);
+        } else {
+            el('md-procurement-total').textContent = fmt(procurementWithExtras);
+        }
 
         // ── 정책 기간 ──
         if (el('md-service-date')) {
