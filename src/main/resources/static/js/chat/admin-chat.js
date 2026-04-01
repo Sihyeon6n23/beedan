@@ -13,9 +13,10 @@
   var adminMessageScrollBody = document.querySelector(".admin-chat-detail-body");
   var pendingDetailUrl = "";
   var pendingRoomId = "";
-    var detailRoomId = detailPage ? detailPage.dataset.roomId : "";
-    var detailAdminName = detailPage ? detailPage.dataset.adminName : "담당자";
-    var detailMemberName = detailPage ? detailPage.dataset.memberName : "이름 미등록";
+  var detailRoomId = detailPage ? detailPage.dataset.roomId : "";
+  var detailAdminName = detailPage ? detailPage.dataset.adminName : "담당자";
+  var detailMemberName = detailPage ? detailPage.dataset.memberName : "이름 미등록";
+  var detailCanWrite = detailPage ? detailPage.dataset.canWrite === "true" : false;
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -204,7 +205,7 @@
 
   // 관리자 메시지 전송 비동기 요청
   function sendAdminChatMessage() {
-    if (!detailRoomId || !adminMessageInput) {
+    if (!detailRoomId || !adminMessageInput || !detailCanWrite) {
       return;
     }
 
@@ -273,7 +274,7 @@
     if (adminMessageScrollBody) {
       adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
     }
-    if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING") {
+    if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING" && detailCanWrite) {
       adminMessageInput.focus();
     }
   }

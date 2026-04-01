@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", function () {
   var modalConfirmButton = widget.querySelector("[data-chat-modal-confirm]");
   var modalTitle = widget.querySelector("[data-chat-modal-title]");
   var modalDescription = widget.querySelector("[data-chat-modal-description]");
+  var closeConfirmModal = widget.querySelector("[data-close-confirm-modal]");
+  var closeConfirmCloseButtons = widget.querySelectorAll("[data-close-confirm-close]");
+  var closeConfirmSubmitButton = widget.querySelector("[data-close-confirm-submit]");
   var loginModal = widget.querySelector("[data-login-modal]");
   var loginModalCloseButtons = widget.querySelectorAll("[data-login-modal-close]");
   var loginModalConfirmButton = widget.querySelector("[data-login-modal-confirm]");
@@ -40,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var currentChatRoomId = null;
   var currentChatRoomStatus = null;
   var pendingChatRoom = null;
+  var currentViewName = "chatbot";
   var isAuthenticated = widget.dataset.authenticated === "true";
   var loginUrl = widget.dataset.loginUrl || "/auth/signin";
   var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
@@ -933,15 +937,35 @@ document.addEventListener("DOMContentLoaded", function () {
     launcher.setAttribute("aria-expanded", isOpen ? "true" : "false");
     if (!isOpen) {
       setModalOpen(false);
+      setCloseConfirmModalOpen(false);
     }
   }
 
   // 위젯 화면 전환
-  function setView(viewName) {
+  function setView(viewName, transitionDirection) {
     var navViewName = viewName === "chat-room" ? "chat-list" : viewName;
+    var direction = transitionDirection;
+
+    if (!direction) {
+      if (currentViewName === "chat-list" && viewName === "chat-room") {
+        direction = "forward";
+      } else if (currentViewName === "chat-room" && viewName === "chat-list") {
+        direction = "back";
+      } else {
+        direction = "neutral";
+      }
+    }
 
     views.forEach(function (view) {
+      view.classList.remove("member-chat-view--slide-forward", "member-chat-view--slide-back");
       view.classList.toggle("is-active", view.dataset.chatView === viewName);
+      if (view.dataset.chatView === viewName) {
+        if (direction === "forward") {
+          view.classList.add("member-chat-view--slide-forward");
+        } else if (direction === "back") {
+          view.classList.add("member-chat-view--slide-back");
+        }
+      }
     });
 
     navButtons.forEach(function (button) {
@@ -957,6 +981,8 @@ document.addEventListener("DOMContentLoaded", function () {
         chatRoomMessageInput.focus();
       });
     }
+
+    currentViewName = viewName;
   }
 
   // 기존 활성 채팅방 안내 모달 열기 또는 닫기
@@ -991,6 +1017,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loginModal.classList.toggle("is-hidden", !isOpen);
     loginModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  }
+
+  // 상담 종료 확인 모달 열기 또는 닫기
+  function setCloseConfirmModalOpen(isOpen) {
+    if (!closeConfirmModal) {
+      return;
+    }
+
+    if (!isOpen && closeConfirmModal.contains(document.activeElement)) {
+      document.activeElement.blur();
+      if (chatRoomCloseButton) {
+        chatRoomCloseButton.focus();
+      }
+    }
+
+    closeConfirmModal.classList.toggle("is-hidden", !isOpen);
+    closeConfirmModal.setAttribute("aria-hidden", isOpen ? "false" : "true");
   }
 
   launcher.addEventListener("click", function () {
@@ -1041,6 +1084,12 @@ document.addEventListener("DOMContentLoaded", function () {
   loginModalCloseButtons.forEach(function (button) {
     button.addEventListener("click", function () {
       setLoginModalOpen(false);
+    });
+  });
+
+  closeConfirmCloseButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setCloseConfirmModalOpen(false);
     });
   });
 
@@ -1107,13 +1156,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (chatRoomCloseButton) {
     chatRoomCloseButton.addEventListener("click", function () {
-      closeMemberChatRoom();
+      setCloseConfirmModalOpen(true);
+    });
+  }
+
+  if (closeConfirmSubmitButton) {
+    closeConfirmSubmitButton.addEventListener("click", function () {
+      closeMemberChatRoom().then(function () {
+        setCloseConfirmModalOpen(false);
+      });
     });
   }
 
   setPanelOpen(false);
   setView("chatbot");
   setModalOpen(false);
+  setCloseConfirmModalOpen(false);
   setLoginModalOpen(false);
   setLauncherUnreadBadgeVisible(false);
 

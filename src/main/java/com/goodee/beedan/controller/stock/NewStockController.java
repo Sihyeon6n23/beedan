@@ -45,6 +45,7 @@ public class NewStockController {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final CrawlingUrlRepository crawlingUrlRepository;
+    private final com.goodee.beedan.service.root.SchedulerService schedulerService;
 
     @Value("${upload.stock.dir:./uploads/stock}")
     private String uploadDir;
@@ -67,6 +68,7 @@ public class NewStockController {
         model.addAttribute("categories", categories);
         model.addAttribute("brandMap", brandMap);
         model.addAttribute("catMap", catMap);
+        model.addAttribute("lastCrawlTime", schedulerService.getSchedulerSetting().getLastCrawlingRunTime());
         return "admin/stock/new-stock";
     }
 
@@ -108,16 +110,19 @@ public class NewStockController {
             catId = category.getCatId();
         }
 
+        boolean isShopify = crawlingService.isShopify(urlForm.getUrlUrl());
+
         crawlingService.saveUrl(
                 CrawlingUrl.builder()
                 .urlUrl(urlForm.getUrlUrl())
                 .brId(brand.getBrId())
                 .catId(catId)
+                .urlTy(isShopify ? "SHOPIFY" : null)
                 .urlUseYn(TRUE)
                 .urlDelYn(FALSE)
                 .urlAtYn(TRUE)
                 .build());
-        redirectAttributes.addFlashAttribute("message", "URL이 등록되었습니다.");
+        redirectAttributes.addFlashAttribute("message", "URL이 등록되었습니다." + (isShopify ? " (Shopify 감지)" : ""));
         return "redirect:/admin/newstock";
     }
 
@@ -148,6 +153,14 @@ public class NewStockController {
         }
         redirectAttributes.addFlashAttribute("activeTab", "manual");
         return "redirect:/admin/newstock";
+    }
+
+    // 전체 크롤링 (urlAtYn=true 대상)
+    @PostMapping("/run-all")
+    @ResponseBody
+    public Map<String, Object> runAllCrawl() {
+        int count = crawlingService.crawlAll();
+        return Map.of("success", true, "newCount", count);
     }
 
     // 크롤링

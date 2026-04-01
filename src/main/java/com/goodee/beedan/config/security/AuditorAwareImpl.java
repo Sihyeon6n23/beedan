@@ -16,7 +16,7 @@ public class AuditorAwareImpl implements AuditorAware<Long> {
         // 2. 로그인을 안 했거나, 익명 사용자라면 빈 값을 반환합니다.
         if (authentication == null || !authentication.isAuthenticated() ||
                 authentication.getPrincipal().equals("anonymousUser")) {
-            return Optional.empty();
+            return Optional.of(0L);
         }
 
         // 3. 앞서 우리가 정성껏 만든 MemberUserDetails로 형변환합니다.

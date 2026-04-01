@@ -24,13 +24,13 @@ public class ChatbotRestController {
         return chatbotService.getFirstLevelTopics();
     }
 
-    // 다음 단계 조회
+    // 다음 단계 조회 (2차 질의 또는 최종 응답)
     @GetMapping("/topics/{topicId}/next")
     public ChatbotNextStepDto getNextStep(@PathVariable Long topicId) {
         return chatbotService.getNextStep(topicId);
     }
 
-    // 최상위 1차 질의 조회
+    // 최상위 1차 질의 조회 (채팅방 제목용)
     @GetMapping("/topics/{topicId}/top-level")
     public ChatbotTopLevelTopicDto getTopLevelTopic(@PathVariable Long topicId) {
         return chatbotService.getTopLevelTopic(topicId);

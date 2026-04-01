@@ -2,47 +2,74 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('Schedular', 'setting', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('Scheduler', 'setting', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Schedular Setting</title>
+<title th:fragment="title">BEEDAN | Scheduler Setting</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{root/root-sidebar :: sidebar('schedular', '')}"></div>
+    <div th:replace="~{root/root-sidebar :: sidebar('scheduler', '')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
     <div class="flex-grow mx-auto px-6 py-12 max-w-5xl">
         <div class="mb-12 flex items-baseline gap-4">
             <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase">스케쥴러 설정</h1>
-            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Schedular Settings)</span>
+            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Scheduler Settings)</span>
         </div>
 
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
 
-            <form id="policyForm" th:action="@{/root/security/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <form id="policyForm" th:action="@{/root/scheduler/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">timer</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">3. 세션 타임아웃</h2>
+                        <span class="material-symbols-outlined text-primary">schedule</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">1. 자동 크롤링</h2>
                     </div>
+
+                    <!-- ON/OFF 라디오 -->
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isSessionTimeoutEnabled" value="true"
-                                   th:checked="${policy.isSessionTimeoutEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
+                            <input type="radio" name="autoCrawlingEnabled" value="true"
+                                   th:checked="${setting.autoCrawlingEnabled}" ...>
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isSessionTimeoutEnabled" value="false"
-                                   th:checked="${!policy.isSessionTimeoutEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
+                            <input type="radio" name="autoCrawlingEnabled" value="false"
+                                   th:checked="${!setting.autoCrawlingEnabled}" ...>
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>
+
+                    <!-- 시작 일시 -->
                     <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">자동 로그아웃 시간 (분)</label>
-                        <input type="number" name="sessionTimeoutMinutes" th:value="${policy.sessionTimeoutMinutes}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="60">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="autoCrawlingStartDt"
+                               th:value="${setting.autoCrawlingStartDt}" ...>
+                    </div>
+
+                    <!-- 주기 selectbox -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">크롤링 주기</label>
+                        <select name="autoCrawlingInterval" ...>
+                            <option value="6" th:selected="${setting.autoCrawlingInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.autoCrawlingInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.autoCrawlingInterval == '24'}">1일</option>
+                            <option value="72" th:selected="${setting.autoCrawlingInterval == '72'}">3일</option>
+                            <option value="168" th:selected="${setting.autoCrawlingInterval == '168'}">7일</option>
+                            <option value="720" th:selected="${setting.autoCrawlingInterval == '720'}">30일</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 크롤링 시간 -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 크롤링 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastCrawlingRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastCrawlingRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>
                 </section>
             </form>

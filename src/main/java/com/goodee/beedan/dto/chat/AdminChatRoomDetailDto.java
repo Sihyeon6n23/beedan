@@ -19,6 +19,7 @@ public class AdminChatRoomDetailDto {
     private String memBizTtl;
     private String memNm;
     private String adminName;
+    private Boolean canWrite;
     private ChatRoomStatus chRoStt;
     private LocalDateTime chRoAsgDt;
     private LocalDateTime chRoClsDt;
