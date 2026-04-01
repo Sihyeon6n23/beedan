@@ -69,13 +69,13 @@ public class AdminChatService {
 
         // 채팅방을 만든 사용자 정보 조회 -> 회사 상호명 조회
         Member member = memberRepository.findById(chatRoom.getMemId())
-                .orElseThrow();
+                .orElseGet(Member::new);
 
         // 담당 관리자 조회 -> 담당자명 조회
         Member admin = null;
         if (chatRoom.getMemAdId() != null) {
             admin = memberRepository.findById(chatRoom.getMemAdId())
-                    .orElseThrow();
+                    .orElseGet(Member::new);
         }
 
         // 미읽음 상태 설정
@@ -238,13 +238,13 @@ public class AdminChatService {
 
         // 사용자 정보 조회
         Member member = memberRepository.findById(chatRoom.getMemId())
-                .orElseThrow();
+                .orElseGet(Member::new);
 
         // 담당자 정보 조회
         Member admin = null;
         if (chatRoom.getMemAdId() != null) {
             admin = memberRepository.findById(chatRoom.getMemAdId())
-                    .orElseThrow();
+                    .orElseGet(Member::new);
         }
 
         // 진행중 상담방을 담당자 본인이 조회하면 관리자 미읽음 상태를 읽음으로 갱신
