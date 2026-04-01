@@ -14,7 +14,6 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "QU_SHIP_FEE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)

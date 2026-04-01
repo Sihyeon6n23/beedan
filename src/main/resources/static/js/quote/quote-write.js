@@ -368,9 +368,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateFeeCards(data, itemTotalKrw, dest, selectedInsurance, selectedInspection, domesticFee, insuranceInfo, domesticData);
             }
 
-            // 총 주문 명세 (부가 서비스 포함)
+            // 총 주문 명세 (부가 서비스 포함 + 등급 할인 적용)
             var totalTax = (data.dutyAmount || 0) + (data.vatAmount || 0);
             var logisticsVal = (data.logisticsTotal || 0) + selectedInsurance + domesticFee;
+            var sdRate = parseFloat(data.shippingDiscountRate) || 0;
+            if (sdRate > 0 && logisticsVal > 0) {
+                logisticsVal = Math.round(logisticsVal * (1 - sdRate));
+            }
             var procurementVal = (data.procurementTotal || 0) + selectedInspection;
             var grandTotal = itemTotalKrw + logisticsVal + procurementVal;
 

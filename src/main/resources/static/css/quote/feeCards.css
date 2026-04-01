@@ -160,6 +160,38 @@
     line-height: 24px;
 }
 
+/* ── 등급 할인 표시 ── */
+.fee-subtotal-value.has-discount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+.fee-subtotal-value .original-price {
+    text-decoration: line-through;
+    color: var(--color-text-light, #a8a29e);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+}
+.fee-subtotal-value .discounted-price {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.grade-badge {
+    display: inline-block;
+    background: var(--color-gold-light, #fef9c3);
+    color: var(--color-gold-dark, #705d00);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 16px;
+    white-space: nowrap;
+}
+
 /* ============================================================
    Fee Info Tooltip
    ============================================================ */

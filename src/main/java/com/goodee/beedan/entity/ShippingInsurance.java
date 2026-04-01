@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "SHIPPING_INSURANCE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ShippingInsurance {
