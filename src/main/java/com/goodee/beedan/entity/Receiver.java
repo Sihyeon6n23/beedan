@@ -31,6 +31,7 @@ public class Receiver {
     private LocalDateTime rcUpdDt;
     private Boolean rcDelYn;
     private Boolean rcAdrDfYn;
+    private Boolean rcIamYn;
 
     @ManyToOne
     @JoinColumn(name = "mem_id")
