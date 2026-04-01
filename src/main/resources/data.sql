@@ -218,144 +218,6 @@ INSERT INTO requirement (req_ttl, req_con, req_ref, req_pr, req_stt, req_rep_yn,
 
 
 
--- =====================
--- 백시현 START
--- =====================
-
-INSERT INTO BUYER_GRADE_POLICY
-(bgp_gr, bgp_min_ord_cnt, bgp_min_tt_am, bgp_ef_fr_dt, bgp_ac_yn, bgp_des)
-VALUES
-    ('VIP',      10, 30000000, CURRENT_TIMESTAMP(), TRUE, 'VIP: 10회 이상 OR 3,000만원 이상'),
-    ('PREMIUM',   3,  5000000, CURRENT_TIMESTAMP(), TRUE, 'PREMIUM: 3회 이상 OR 500만원 이상'),
-    ('STANDARD', NULL,   NULL, CURRENT_TIMESTAMP(), TRUE, 'STANDARD: 기본 등급');
-
-
-INSERT INTO BUYER
-(mem_biz_no, bgp_gr, mem_biz_ttl, by_ord_cnt, by_ttl_am, by_fr_dt, by_lt_dt)
-VALUES
-    ('123-45-67890', 'STANDARD', '주식회사 가나다', 0, 0, NULL, NULL),
-
-    ('234-56-78901', 'PREMIUM', '주식회사 라마바', 5, 8000000, '2025-01-10 00:00:00', '2025-12-01 00:00:00'),
-
-    ('345-67-89012', 'VIP', '주식회사 사아자', 12, 35000000, '2024-06-01 00:00:00', '2025-11-15 00:00:00');
-
-
-
-INSERT INTO FEE_POLICY
-(bgp_gr, fp_fee_ty, fp_calc_ty, fp_val, fp_ac_yn, fp_ef_fr_dt, fp_des)
-VALUES
-    ('STANDARD', 'SERVICE_COMMISSION', 'RATE',  0.0500, TRUE, CURRENT_TIMESTAMP(), '서비스 수수료 5%'),
-    ('PREMIUM',  'SERVICE_COMMISSION', 'RATE',  0.0400, TRUE, CURRENT_TIMESTAMP(), '서비스 수수료 4%'),
-    ('VIP',      'SERVICE_COMMISSION', 'RATE',  0.0300, TRUE, CURRENT_TIMESTAMP(), '서비스 수수료 3%'),
-    ('STANDARD', 'SHIPPING',           'RATE',  0.0000, TRUE, CURRENT_TIMESTAMP(), '배송비 할인 없음'),
-    ('PREMIUM',  'SHIPPING',           'RATE',  0.0500, TRUE, CURRENT_TIMESTAMP(), '배송비 5% 할인'),
-    ('VIP',      'SHIPPING',           'RATE',  0.1000, TRUE, CURRENT_TIMESTAMP(), '배송비 10% 할인'),
-    ('STANDARD', 'CUSTOMS',            'RATE',  0.0000, TRUE, CURRENT_TIMESTAMP(), '통관 할인 없음'),
-    ('PREMIUM',  'CUSTOMS',            'RATE',  0.0500, TRUE, CURRENT_TIMESTAMP(), '통관 5% 할인'),
-    ('VIP',      'CUSTOMS',            'RATE',  0.1000, TRUE, CURRENT_TIMESTAMP(), '통관 10% 할인');
-
-INSERT INTO NEGOTIATION (ng_nm, ng_cre_dt, mem_id) VALUES
-                                                       ('협상 1호', CURRENT_TIMESTAMP(), 1),
-                                                       ('협상 2호', CURRENT_TIMESTAMP(), 1),
-                                                       ('협상 3호', CURRENT_TIMESTAMP(), 2);
-
-INSERT INTO UNIT_GROUP (un_g_nm, un_g_qn, un_g_yn, un_g_cr_dt, un_g_up_dt) VALUES
-    ('다스', 12, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
--- 다스(un_g_id=2 가정) 기준 할인 정책
-INSERT INTO UNIT_DISCOUNT
-(un_g_id, un_d_min_qn, un_d_min_am, un_d_qn_dr, un_d_am_dr, un_d_ov_ty, un_d_des, un_d_cr_dt, un_d_up_dt)
-VALUES
-    (1, 5,  NULL,    0.0300, 0.0000, 'HIGHER', '5다스 이상 수량 3% 할인',   CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    (1, 10, NULL,    0.0500, 0.0000, 'HIGHER', '10다스 이상 수량 5% 할인',  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    (1, NULL, 500000, 0.0000, 0.0300, 'HIGHER', '50만원 이상 금액 3% 할인', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO FACTORY (br_id, fa_nm, fa_ad, fa_cty, fa_c_cd, fa_yn, fa_cr_dt, fa_up_dt) VALUES
-                                                                                          (1, '도쿄 1공장', '도쿄 시부야구 1-1', '도쿄',   'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                          (1, '오사카 1공장', '오사카 난바 2-2', '오사카', 'JP', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                          (2, '상하이 1공장', '상하이 푸동 3-3', '상하이', 'CN', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO EXCHANGE_RATE (er_cr, er_ra, er_ba, er_f_dt, er_cr_dt) VALUES
-                                                                       ('JPY', 9.012345, 'KRW', '2026-03-24 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('JPY', 9.123456, 'KRW', '2026-03-25 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('JPY', 9.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('USD', 1380.123456, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('EUR', 1500.234567, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP()),
-                                                                       ('CNY', 190.345678, 'KRW', '2026-03-26 09:00:00', CURRENT_TIMESTAMP());
-
-
-INSERT INTO SHIPPING_RATE
-(sr_c_cd, sr_trsp_ty, sr_sm_qn, sr_sm_am, sr_md_qn, sr_md_am, sr_lg_qn, sr_lg_am, sr_yn, sr_cr_dt, sr_up_dt)
-VALUES
-    ('JP', 'SEA', 1, 50000,  50, 80000,  200, 120000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('JP', 'AIR', 1, 100000, 50, 150000, 200, 200000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CN', 'SEA', 1, 40000,  50, 70000,  200, 100000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CN', 'AIR', 1, 80000,  50, 120000, 200, 160000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO PORT_CUSTOMS_RATE
-(pcr_ty, pcr_sm_am, pcr_md_am, pcr_lg_am, pcr_yn, pcr_cr_dt, pcr_up_dt)
-VALUES
-    ('PORT',    30000, 50000, 70000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('CUSTOMS', 40000, 60000, 80000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('HS_CODE', 10000, 10000, 10000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO DOMESTIC_DELIVERY_RATE
-(ddr_rgn, ddr_am, ddr_e_am, ddr_yn, ddr_cr_dt, ddr_up_dt)
-VALUES
-    ('SEOUL',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('GYEONGGI', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('METRO',    3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('PROVINCE', 3000, 0,    TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('JEJU',     3000, 3000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('ISLAND',   3000, 5000, TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO QU_BASE (ng_id, qu_sid, qu_rid, qu_stt, qu_op_yn, qu_cre_dt, qu_upd_dt) VALUES
-                                                                                        (1, 1, 2, 'TEMP_SAVE',  FALSE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                        (1, 1, 2, 'SUBMITTED',  TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-                                                                                        (2, 2, 1, 'APPROVED',   TRUE,  CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-
-INSERT INTO QU_INFO
-(qu_id, ng_id, qu_info_exc_rt, qu_info_cur_cd, bgp_id, fp_id)
-VALUES
-    (1, 1, 9.234567, 'JPY', 1, 1),
-    (2, 1, 1380.123456, 'USD', 2, 2);
-
-
-
-INSERT INTO QU_DETAIL
-(qu_info_id, qu_id, ng_id, st_id, st_nm, qu_dt_qn,
- fa_id, fa_nm, un_g_id, un_g_nm, qu_u_qn, qu_dt_fg_pr)
-VALUES
-    (1, 1, 1, 1, '면 티셔츠',  100, 1, '도쿄 1공장',  2, '다스', 5, 1200.0000),
-    (1, 1, 1, 2, '청바지',     50,  1, '도쿄 1공장',  2, '다스', 3, 2500.0000),
-    (1, 1, 1, 3, '후드티',     30,  3, '상하이 1공장',2, '다스', 2, 1800.0000);
-
-
-
-INSERT INTO hs_code (hs_id, cat_id, hs_cd, hs_nm, hs_du_ra, hs_des) VALUES
-                                                                        (1,  1,  '6201.90-0000', 'Coat',             0.1300, '코트류 (우븐/아우터) - 세번 확인 필요'),
-                                                                        (2,  2,  '6203.33-0000', 'Jacket',           0.1300, '남성 재킷류 (우븐) - 세번 확인 필요'),
-                                                                        (3,  3,  '6110.20-0000', 'Hoodie',           0.1300, '후드/집업 (면 편물) - 세번 확인 필요'),
-                                                                        (4,  4,  '6110.30-0000', 'Knitwear',         0.1300, '니트/스웨터 (합성섬유 편물) - 세번 확인 필요'),
-                                                                        (5,  5,  '6205.20-0000', 'Shirt',            0.1300, '셔츠/블라우스 (면 우븐) - 세번 확인 필요'),
-                                                                        (6,  7,  '6109.10-0000', 'T-Shirt',          0.1300, '티셔츠/민소매 (면 편물) - 세번 확인 필요'),
-                                                                        (7,  8,  '6203.42-0000', 'Bottoms',          0.1300, '바지/스커트 (면 우븐) - 세번 확인 필요'),
-                                                                        (8,  9,  '6505.00-0000', 'Headwears',        0.1300, '모자류 - 세번 확인 필요'),
-                                                                        (9,  10, '6403.99-0000', 'Shoes',            0.1300, '신발류 - 세번 확인 필요'),
-                                                                        (10, 11, '4202.22-0000', 'Bags/Accessories', 0.1300, '가방/액세서리 - 세번 확인 필요');
-
-INSERT INTO SHIPPING_INSURANCE (si_nm, si_am, si_des, si_yn, si_cr_dt, si_up_dt) VALUES
-    ('적하보험 (기본)', 0.0100, '해상·항공 운송 중 발생하는 파손, 분실, 침수 등의 사고에 대해 상품가 기준으로 보상합니다. CIF 조건에 포함되는 기본 보험이며, 통관 후 국내 배송 구간은 별도입니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('적하보험 (확장)', 0.0300, '기본 보험 보장 범위에 더해 통관 후 국내 배송 구간, 보관 중 사고, 자연재해로 인한 손상까지 보장합니다. 고가 상품이나 파손 위험이 높은 품목에 권장됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-INSERT INTO STOCK_INSPECTION (sti_nm, sti_am, sti_des, sti_yn, sti_cr_dt, sti_up_dt) VALUES
-    ('1차 품질 검사 (외관·치수·소재)', 100000, '출고 전 현지 파트너가 외관 상태, 치수 오차, 소재 일치 여부를 육안 검수합니다. 전수 또는 샘플링 방식으로 진행되며, 불량률 5% 초과 시 리포트가 발송됩니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-    ('2차 정밀 검사 (원단·봉제·내구성)', 300000, '원단 조직·밀도 측정, 봉제 강도, 세탁 후 수축률 등 정밀 항목을 검사합니다. 검사 기관 인증 리포트가 제공되며, 품질 기준 미달 시 반품·교환 협의가 가능합니다.', TRUE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
--- =====================
--- 백시현 END
--- =====================
 
 
 
@@ -674,13 +536,16 @@ INSERT INTO chat_message (
 -- =====================
 -- 임 욱 START
 -- =====================
-INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt, ord_base_cre_dt)
+INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt)
 VALUES
-('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 3, '1234', 'PREPARING', CURRENT_TIMESTAMP),
-('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 3, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
-('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 3, '1234', 'DELIVERING', CURRENT_TIMESTAMP),
-('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 3, '1234', 'DELIVERED', CURRENT_TIMESTAMP),
-('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 3, '1234', 'CANCELLED', CURRENT_TIMESTAMP);
+('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 3, '1234', 'PREPARING'),
+('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 3, '2345', 'DELIVERING'),
+('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 3, '3456', 'DELIVERING'),
+('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 3, '4567', 'DELIVERED');
+
+INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_can_yn)
+VALUES
+    ('임꺽정', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 3, '5678', true);
 
 INSERT INTO NOTIFICATION (noti_ttl, noti_con, noti_rea_yn, noti_del_yn, noti_upd_mem_id, mem_id)
 VALUES
@@ -690,11 +555,11 @@ VALUES
     ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', TRUE, FALSE, NULL, 3),
     ('상품 배송이 완료되었습니다.', '요청하신 상품 배송이 완료 되었습니다.', FALSE, TRUE, NULL, 3);
 
-INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_rgn, rc_cre_dt, rc_upd_dt, rc_adr_df_yn, rc_del_yn, mem_id)
+INSERT INTO RECEIVER (rc_nm, rc_phn, rc_msg, rc_pos_cd, rc_adr, rc_adr_dt, rc_rgn, rc_adr_df_yn, mem_id)
 VALUES
-    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 'SEOUL', CURRENT_TIMESTAMP, null, TRUE, FALSE, 3),
-    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 'SEOUL', CURRENT_TIMESTAMP, null, FALSE, FALSE, 3),
-    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다. 부재 중 방문 시 연락바랍니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 'SEOUL', CURRENT_TIMESTAMP, null, FALSE, FALSE, 3);
+    ('홍길동', '010-1234-5678', '배송 전에 연락바랍니다.', '08505','서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 'SEOUL', FALSE, 3),
+    ('김구디', '010-2345-6789', '안전 배송 부탁합니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 'SEOUL', FALSE,  3),
+    ('임꺽정', '010-3456-7890', '13시 ~ 15시까지 부재중입니다.', '08505', '서울특별시 금천구 가산디지털2로 95', '3층 305호 구디아카데미', 'SEOUL',  FALSE, 3);
 -- =====================
 -- 임 욱 END
 -- =====================

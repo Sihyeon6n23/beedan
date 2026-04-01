@@ -42,9 +42,11 @@ public class OrderController {
     }
 
     @PostMapping("/cancel/{id}")
-    public String cancelOrder(@PathVariable("id") Long ordId, RedirectAttributes rttr, @AuthenticationPrincipal MemberUserDetails userDetails) {
+    public String cancelOrder(@PathVariable("id") Long ordId, RedirectAttributes rttr,
+                              @AuthenticationPrincipal MemberUserDetails userDetails) {
         try {
             orderService.cancelOrder(ordId, userDetails.getMemberId());
+
             notificationService.createNotification(userDetails.getMemberId(),
                     NotificationType.ORDER_CANCEL, ordId);
 
@@ -56,7 +58,7 @@ public class OrderController {
         return "redirect:/order/list";
     }
 
-    @PostMapping("/update/{id}")
+    @PostMapping("/{id}")
     public String updateOrder(@PathVariable("id") Long ordId,
                               @ModelAttribute OrderDto orderDto, // Dto 필드명과 정확히 일치해야함.
                               RedirectAttributes rttr,

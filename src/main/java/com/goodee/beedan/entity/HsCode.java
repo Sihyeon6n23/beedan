@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "hs_code")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class HsCode {

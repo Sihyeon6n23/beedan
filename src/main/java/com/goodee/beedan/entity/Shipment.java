@@ -34,4 +34,6 @@ public class Shipment {
     @ManyToOne
     @JoinColumn(name="ord_base_id")
     private Order order;
+
+    private Boolean sh_can_yn;
 }

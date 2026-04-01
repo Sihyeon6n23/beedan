@@ -1,9 +1,11 @@
 package com.goodee.beedan.controller.order;
 
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.entity.Order;
+import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.List;
 public class OrderApiController {
     private final OrderService orderService;
     private final ShipmentService shipmentService;
+    private final NotificationService notificationService;
 
     @PostMapping
     public ResponseEntity<OrderDto> createOrder(){
@@ -36,9 +39,9 @@ public class OrderApiController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping
-    public ResponseEntity<List<OrderDto>> getOrders(){
-        List<OrderDto> orderList = orderService.getOrderList(1L); // 테스트용 하드 코딩
+    @GetMapping("/{id}/list")
+    public ResponseEntity<List<OrderDto>> getOrders(@PathVariable("id") Long memId){
+        List<OrderDto> orderList = orderService.getOrderList(memId);
 
         return ResponseEntity.ok(orderList);
     }
@@ -63,11 +66,10 @@ public class OrderApiController {
         return ResponseEntity.ok(orderService.getOrderDetail(ordId, 1L));
     }
 
-    @PatchMapping("/{id}/admin")
+    @PatchMapping("/{id}/admin") // 배송 상태 변경
     public ResponseEntity<OrderDto> updateOrderStatus(@PathVariable("id") Long ordId,
                                                       @RequestParam("status") OrderStatus newStatus) {
         orderService.updateOrderStatus(ordId, newStatus);
-
         return ResponseEntity.ok(orderService.getOrderDetail(ordId, 1L));
     }
 
@@ -76,7 +78,8 @@ public class OrderApiController {
         /*if(userDetails.getAuthorities().equals("ROLE_ADMIN")) {
             orderService.updateOrderStatus(ordId, OrderStatus.CANCELLED);
             return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemId()));
-        }*/
+        }
+         */
         orderService.cancelOrder(ordId, 1L);
 
         return ResponseEntity.ok(orderService.getOrderDetail(ordId, 1L));

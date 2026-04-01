@@ -73,18 +73,19 @@
                                 <div class="admin-chat-detail-message__meta"
                                      th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__meta--admin' : ''">
                                     <th:block th:if="${message.chMsSenTy.name() == 'ADMIN'}">
-                                        <span th:text="${#temporals.format(message.chMsCreDt, 'HH:mm')}">시간</span>
                                         <strong th:text="${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}">담당자</strong>
                                     </th:block>
                                     <th:block th:unless="${message.chMsSenTy.name() == 'ADMIN'}">
                                         <strong th:text="${(chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록') + ' · ' + (chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록')}">상호명 · 이름</strong>
-                                        <span th:text="${#temporals.format(message.chMsCreDt, 'HH:mm')}">시간</span>
                                     </th:block>
                                 </div>
 
                                 <div class="admin-chat-detail-message__bubble"
                                      th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''"
                                      th:text="${message.chMsCon}">메시지</div>
+                                <span class="admin-chat-detail-message__time"
+                                      th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__time--admin' : ''"
+                                      th:text="${#temporals.format(message.chMsCreDt, 'HH:mm')}">시간</span>
                             </div>
                         </article>
                     </th:block>
