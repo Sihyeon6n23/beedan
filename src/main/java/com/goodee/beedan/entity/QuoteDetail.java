@@ -46,6 +46,7 @@ public class QuoteDetail {
     private BigDecimal quDtPr;      // 원화 합계
 
     private String quDtRe;  // 비고
+    private Long rcId;  // 수령지 ID
 
     @Builder
     public QuoteDetail(
@@ -60,7 +61,9 @@ public class QuoteDetail {
             Long unitGroupId,
             String unitGroupName,
             Integer unitGroupQuantity,
-            BigDecimal foreignPrice
+            BigDecimal foreignPrice,
+            BigDecimal krwTotal,
+            Long receiverId
     ){
         this.quInfoId = quoteInfoId;
         this.quId = quoteId;
@@ -74,6 +77,8 @@ public class QuoteDetail {
         this.unGNm = unitGroupName;
         this.quUQn = unitGroupQuantity;
         this.quDtFgPr = foreignPrice;
+        this.quDtPr = krwTotal;
+        this.rcId = receiverId;
     }
 
     public void calculateKrwPrice(BigDecimal exchangeRate){

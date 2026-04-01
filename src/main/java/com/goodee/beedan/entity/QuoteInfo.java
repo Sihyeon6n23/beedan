@@ -54,8 +54,10 @@ public class QuoteInfo {
     private BigDecimal quInfoTp;    // 최종 합계
     @Column(precision = 18, scale = 0)
     private BigDecimal quInfoDisTp; // 할인된 총 금액
-    private String quInfoPs;    // 특기사항
+    private String quInfoPs;    // 메모/특이사항
     private LocalDateTime quInfoDsrDt;  // 희망 수령일
+    private Long siId;  // 선택한 보험 ID
+    private Long stiId; // 선택한 검사 ID
 
     @Builder
     public QuoteInfo(
@@ -76,6 +78,12 @@ public class QuoteInfo {
         this.fpId = feePolicyId;
         this.quInfoPs = ps;
         this.quInfoDsrDt = desiredDate;
+    }
+
+    public void updateDraft(String memo, Long insuranceId, Long inspectionId) {
+        this.quInfoPs = memo;
+        this.siId = insuranceId;
+        this.stiId = inspectionId;
     }
 
     public void calculateServiceFee(

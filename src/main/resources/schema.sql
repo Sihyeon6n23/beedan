@@ -356,6 +356,8 @@ CREATE TABLE QU_INFO (
                          qu_info_dis_tp      DECIMAL(18, 0)  NULL,
                          qu_info_ps          TEXT            NULL,
                          qu_info_dsr_dt      DATETIME        NULL,
+                         si_id               BIGINT          NULL,
+                         sti_id              BIGINT          NULL,
 
                          PRIMARY KEY (qu_info_id)
 );
@@ -379,6 +381,7 @@ CREATE TABLE QU_DETAIL (
                            qu_dt_kr_pr     DECIMAL(18, 0)  NULL,
                            qu_dt_pr        DECIMAL(18, 0)  NULL,
                            qu_dt_re        TEXT            NULL,
+                           rc_id           BIGINT          NULL,
 
                            PRIMARY KEY (qu_dt_id)
 );

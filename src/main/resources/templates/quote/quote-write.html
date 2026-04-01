@@ -112,7 +112,9 @@
                                 <span class="subtotal-krw-total">-</span>
                                 <div class="subtotal-control">
                                     <span class="subtotal-currency">₩</span>
-                                    <input type="text" class="subtotal-input" placeholder="자동 계산" />
+                                    <input type="text" class="subtotal-input" placeholder="자동 계산"
+                                           th:value="${item.savedSubtotalKrw != null ? #numbers.formatInteger(item.savedSubtotalKrw, 3, 'COMMA') : ''}"
+                                           th:data-user-edited="${item.savedSubtotalKrw != null ? 'true' : ''}" />
                                     <svg class="subtotal-edit-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M8.5 1.5l2 2M1 11l.7-2.8L9 1l2 2-7.2 7.2L1 11z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
@@ -223,7 +225,7 @@
             <!-- Memo -->
             <div class="memo-section">
                 <label class="memo-label" for="quoteMemo">메모 / 특이사항</label>
-                <textarea id="quoteMemo" class="memo-textarea" placeholder="운임 조건, 포장 요청, 검수 기준 등 담당 큐레이터에게 전달할 내용을 자유롭게 입력하세요."></textarea>
+                <textarea id="quoteMemo" class="memo-textarea" placeholder="운임 조건, 포장 요청, 검수 기준 등 담당 큐레이터에게 전달할 내용을 자유롭게 입력하세요." th:text="${draftMemo != null ? draftMemo : ''}"></textarea>
             </div>
 
             <!-- Save Draft Button -->
@@ -351,12 +353,16 @@
     </div>
 </div>
 
+<!-- 임시저장 복원 데이터 (JS용) -->
+<span id="js-draft-data"
+      th:data-si-id="${draftSiId != null ? draftSiId : ''}"
+      th:data-sti-id="${draftStiId != null ? draftStiId : ''}" style="display:none"></span>
 <!-- 국내 배송·수령지 데이터 (JS용) -->
-<!-- 국내 배송·수령지 데이터 (JS용, 엔티티 직렬화 회피) -->
 <span id="js-default-region"
       th:data-region="${defaultReceiver != null && defaultReceiver.rcRgn != null ? defaultReceiver.rcRgn : 'SEOUL'}"
       th:data-name="${defaultReceiver != null ? defaultReceiver.rcNm : ''}"
-      th:data-addr="${defaultReceiver != null ? defaultReceiver.rcAdr : ''}" style="display:none"></span>
+      th:data-addr="${defaultReceiver != null ? defaultReceiver.rcAdr : ''}"
+      th:data-rcid="${defaultReceiver != null ? defaultReceiver.rcId : ''}" style="display:none"></span>
 <select id="js-domestic-regions" style="display:none">
     <option th:each="dr : ${domesticRates}" th:value="${dr.ddrRgn}" th:data-am="${dr.ddrAm}" th:data-eam="${dr.ddrEAm != null ? dr.ddrEAm : 0}">지역</option>
 </select>

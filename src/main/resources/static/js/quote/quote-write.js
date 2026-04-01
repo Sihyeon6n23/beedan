@@ -413,6 +413,32 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // ── 임시저장 복원 ──────────────────────────────────
+    // 소계 userEdited 플래그 복원 (Thymeleaf가 data-user-edited="true"를 세팅한 경우)
+    rows.forEach(function (row) {
+        var subtotalInput = row.querySelector('.subtotal-input');
+        if (subtotalInput && subtotalInput.dataset.userEdited === 'true') {
+            subtotalInput.dataset.userEdited = 'true';
+        }
+    });
+
+    // 저장된 보험/검사 선택 복원
+    var draftEl = document.getElementById('js-draft-data');
+    if (draftEl) {
+        var savedSiId = draftEl.dataset.siId;
+        var savedStiId = draftEl.dataset.stiId;
+        if (savedSiId) {
+            document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+                if (item.dataset.id === savedSiId) item.querySelector('.qo-service-check').checked = true;
+            });
+        }
+        if (savedStiId) {
+            document.querySelectorAll('.quote-option-item[data-type="inspection"]').forEach(function (item) {
+                if (item.dataset.id === savedStiId) item.querySelector('.qo-service-check').checked = true;
+            });
+        }
+    }
+
     // 초기 로딩 — estimate-fees 한 번으로 모든 값 채움 (국내 배달비 포함)
     doFetchEstimateFees();
 
@@ -424,23 +450,43 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!quId) { alert('견적 ID가 없습니다.'); return; }
 
             var items = [];
-            rows.forEach(function (row) {
+            rows.forEach(function (row, idx) {
                 var stId = parseInt(row.dataset.stId);
                 var qty = parseInt(row.querySelector('.qty-input').value) || 1;
                 var specSelect = row.querySelector('.spec-select');
                 var selectedOption = specSelect ? specSelect.options[specSelect.selectedIndex] : null;
+
+                // 사용자 조정 소계
+                var subtotalInput = row.querySelector('.subtotal-input');
+                var subtotalKrw = parseFloat((subtotalInput.value || '').replace(/,/g, '')) || 0;
+
+                // 수령지 ID (기본 수령지)
+                var rcIdEl = document.getElementById('js-default-region');
+                var rcId = rcIdEl ? (parseInt(rcIdEl.dataset.rcid) || null) : null;
 
                 items.push({
                     stId: stId,
                     qty: qty,
                     unGId: selectedOption ? parseInt(selectedOption.dataset.ugId) || null : null,
                     unGNm: specSelect ? specSelect.options[specSelect.selectedIndex].text : null,
-                    unGQn: specSelect ? parseInt(specSelect.value) || 1 : 1
+                    unGQn: specSelect ? parseInt(specSelect.value) || 1 : 1,
+                    subtotalKrw: subtotalKrw,
+                    rcId: rcId
                 });
             });
 
             var memo = document.getElementById('quoteMemo')
                 ? document.getElementById('quoteMemo').value : '';
+
+            // 선택한 보험/검사 ID
+            var selectedSiId = null;
+            document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+                if (item.querySelector('.qo-service-check').checked) selectedSiId = parseInt(item.dataset.id) || null;
+            });
+            var selectedStiId = null;
+            document.querySelectorAll('.quote-option-item[data-type="inspection"]').forEach(function (item) {
+                if (item.querySelector('.qo-service-check').checked) selectedStiId = parseInt(item.dataset.id) || null;
+            });
 
             var headers = { 'Content-Type': 'application/json' };
             if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
@@ -451,7 +497,13 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch('/api/quote/draft', {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify({ quId: quId, items: items, memo: memo })
+                body: JSON.stringify({
+                    quId: quId,
+                    items: items,
+                    memo: memo,
+                    siId: selectedSiId,
+                    stiId: selectedStiId
+                })
             })
             .then(function (res) { return res.json(); })
             .then(function (data) {
