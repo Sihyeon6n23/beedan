@@ -29,9 +29,6 @@ public class ShipmentItem {
     @JoinColumn(name = "ord_item_id")
     private OrderItem orderItem;
 
-    @Enumerated(EnumType.STRING)
-    private ShipmentStatus shItemStt;
-
     @Column(name = "sh_qn")
     private Integer shQn;
 }

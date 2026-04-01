@@ -12,6 +12,7 @@ public enum NotificationType {
     INQUIRY_ANSWER("문의 답변 완료", "요청하신 문의 답변이 완료되었습니다.", "/inquiry/detail?id=%s"),
 
     ORDER_APPROVE("주문 승인", "요청하신 주문이 승인 처리되었습니다.", "/order/detail?id=%s"),
+    ORDER_CHANGE("주문 변경", "요청하신 주문의 상태가 변경 되었습니다.", "/order/detail?id=%s"),
     ORDER_CANCEL("주문 취소", "요청하신 주문이 취소 처리되었습니다.", "/order/detail?id=%s"),
 
     SHIPMENT_START("배송 시작", "상품[%s]의 배송이 시작되었습니다.", "/order/list"),

@@ -58,8 +58,8 @@ public class ShipmentService {
         }
 
         switch (shipment.getShStt()) {
-            case SHIPPING -> shipment.setShStt(ShipmentStatus.CUSTOMS);
-            case CUSTOMS -> shipment.setShStt(ShipmentStatus.DELIVERING);
+            case PREPARING -> shipment.setShStt(ShipmentStatus.SHIPPING);
+            case SHIPPING -> shipment.setShStt(ShipmentStatus.DELIVERING);
             case DELIVERING -> shipment.setShStt(ShipmentStatus.DELIVERED);
             default -> throw new IllegalStateException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
         }
@@ -80,23 +80,23 @@ public class ShipmentService {
             orderService.updateOrderStatus(ordId, OrderStatus.DELIVERING);
         } else if (newStatus == ShipmentStatus.DELIVERED) {
             orderService.updateOrderStatus(ordId, OrderStatus.DELIVERED);
-        } else if (newStatus == ShipmentStatus.RETURNED) {
-            orderService.updateOrderStatus(ordId, OrderStatus.CANCELLED);
+        } else if (newStatus == ShipmentStatus.PREPARING) {
+            orderService.updateOrderStatus(ordId, OrderStatus.PREPARING);
         }
 
         dto.setShStt(shipment.getShStt());
         return dto;
     }
 
-    public void cancelShipment(Long shId, Long memId, Long ordId, ShipmentStatus shStt) { // 세관 통과 실패의 경우
+    public void cancelShipment(Long shId, Long memId, Long ordId, Boolean shCanYn) { //
         Shipment shipment = shipmentRepository.findById(shId)
                 .orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
 
         validateShipmentAccess(shipment, ordId, memId);
 
-        if (shStt.equals(ShipmentStatus.RETURNED)) {
-            shipment.setShStt(ShipmentStatus.RETURNED);
-            orderService.updateOrderStatus(ordId, OrderStatus.CANCELLED);
+        if (shCanYn) {
+            shipment.setSh_can_yn(true);
+            orderService.cancelOrder(ordId, memId);
         }
     }
 

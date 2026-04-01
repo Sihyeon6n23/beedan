@@ -82,7 +82,7 @@ public class OrderService {
     public void updateOrderStatus(Long ordId, OrderStatus newStatus) {
         Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if(order.getOrdBaseStt() == OrderStatus.CANCELLED) {
+        if(order.getOrdBaseCanYn() == true ) {
             throw new IllegalStateException("취소된 주문의 상태는 변경할 수 없습니다.");
         }
 
@@ -99,7 +99,7 @@ public class OrderService {
             throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
         }
 
-        order.setOrdBaseStt(OrderStatus.CANCELLED);
+        order.setOrdBaseCanYn(true);
     }
 
     @Transactional
@@ -114,8 +114,6 @@ public class OrderService {
 
         // 1. 협상 정보 조회
         Negotiation negotiation = negotiationRepository.findFirstByMemIdOrderByNgCreDtDesc(memId);
-
-        log.info(negotiation.toString());
 
         if (negotiation == null) {
             throw new IllegalStateException("해당 회원의 협상 정보가 없습니다.");
@@ -178,7 +176,6 @@ public class OrderService {
                     .shipment(shipment)
                     .orderItem(orderItem)
                     .shQn(quoteDetail.getQuDtQn())
-                    .shItemStt(ShipmentStatus.PREPARING)
                     .build();
             shipmentItems.add(shipmentItem);
         }
