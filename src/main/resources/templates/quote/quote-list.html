@@ -1,118 +1,107 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>견적 리스트 페이지 (사용자)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Quotation Overview', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 견적 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'quote-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/quote/quote-list.css}">
-</head>
-<body>
-<div class="quote-wrapper">
-    <header class="header-section">
-        <h1 class="main-title">XXX 님 견적 목록</h1>
-        <div class="summary-container">
-            <div class="summary-card bg-gray">
-                <span class="label">총 견적서</span>
-                <span class="value">24</span>
+
+    <section class="quote-page quote-list-page">
+        <!-- Header -->
+        <header class="quote-shell quote-shell--header">
+            <div class="quote-shell__heading">
+                <span class="quote-kicker">Quotation Overview</span>
+                <h2 class="quote-title">견적 목록</h2>
             </div>
-            <div class="summary-card bg-yellow">
-                <span class="label">미확인 견적서</span>
-                <span class="value">08</span>
+            <div class="quote-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Toolbar -->
+        <section class="quote-shell quote-shell--toolbar" aria-label="견적 목록 필터">
+            <div class="quote-toolbar">
+                <div class="quote-toolbar__filters">
+                    <div class="quote-filter-set" data-filter-group="status">
+                        <a class="quote-filter is-active" href="#">전체</a>
+                        <a class="quote-filter" href="#">제출완료</a>
+                        <a class="quote-filter" href="#">승인</a>
+                        <a class="quote-filter" href="#">거절</a>
+                        <a class="quote-filter" href="#">만료</a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </header>
+        </section>
 
-    <nav class="nav-section">
-        <div class="tab-menu">
-            <button class="tab-item active">모든 견적</button>
-            <button class="tab-item">미열람 견적</button>
-            <button class="tab-item">체결된 견적</button>
-            <button class="tab-item">취소된 견적</button>
-        </div>
-        <div class="filter-box">
-            <select class="select-field">
-                <option>협상 셀렉트 박스</option>
-            </select>
-        </div>
-    </nav>
+        <!-- List -->
+        <section class="quote-shell quote-shell--list">
+            <div class="quote-list-head" aria-hidden="true">
+                <div>견적 정보</div>
+                <div>상태</div>
+                <div>발행일</div>
+                <div>금액</div>
+            </div>
 
-    <div class="table-container">
-        <table class="quote-table">
-            <thead>
-            <tr>
-                <th style="width: 30%;">견적 ID</th>
-                <th style="width: 30%;">발행일자</th>
-                <th style="width: 20%;">상태</th>
-                <th style="width: 20%; text-align: right;">총 합계 금액</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>
-                    <div class="id-cell">
-                        <span class="quote-id">QT-88291-B</span>
-                        <span class="quote-sub">INDUSTRIAL GRADE STEEL</span>
-                    </div>
-                </td>
-                <td class="date-cell">2024/10/21 15:30:21</td>
-                <td>
-                    <div class="status-badge st-pending">
-                        <span class="status-dot dot-yellow"></span>
-                        <span class="status-text">미확인</span>
-                    </div>
-                </td>
-                <td class="amount-cell">$12,450.00</td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="id-cell">
-                        <span class="quote-id">QT-88240-A</span>
-                        <span class="quote-sub">CONCRETE REINFORCEMENTS</span>
-                    </div>
-                </td>
-                <td class="date-cell">2024/10/21 15:30:21</td>
-                <td>
-                    <div class="status-badge st-approved">
-                        <span class="status-dot dot-green"></span>
-                        <span class="status-text color-green">체결</span>
-                    </div>
-                </td>
-                <td class="amount-cell">$45,200.00</td>
-            </tr>
-            <tr class="expired-row">
-                <td>
-                    <div class="id-cell">
-                        <span class="quote-id">QT-87112-X</span>
-                        <span class="quote-sub">ELECTRICAL FIXTURES</span>
-                    </div>
-                </td>
-                <td class="date-cell">2024/10/21 15:30:21</td>
-                <td>
-                    <div class="status-badge st-expired">
-                        <span class="status-dot dot-gray"></span>
-                        <span class="status-text">만료</span>
-                    </div>
-                </td>
-                <td class="amount-cell">$8,900.00</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+            <div class="quote-list-body">
+                <th:block th:each="q : ${quotes}">
+                    <a th:href="@{/quote/detail(quId=${q.quId})}"
+                       class="quote-row"
+                       th:classappend="${!q.quOpYn} ? ' quote-row--featured' : ''">
+                        <div class="quote-row__primary">
+                            <span th:if="${!q.quOpYn}" class="quote-row__unread"></span>
+                            <span th:if="${q.quOpYn}" class="quote-row__unread quote-row__unread--empty"></span>
+                            <div class="quote-row__text">
+                                <h2>
+                                    <span th:text="${q.ngNm}">QU0000</span>
+                                    <small th:text="${q.itemCount + '개 품목'}">0개 품목</small>
+                                </h2>
+                                <p th:text="${q.firstItemName != null ? q.firstItemName : '상품 정보 없음'}">상품명</p>
+                            </div>
+                        </div>
+                        <div class="quote-row__status">
+                            <span class="quote-badge"
+                                  th:classappend="'quote-badge--' + ${q.quStt.toLowerCase()}"
+                                  th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
+                                             q.quStt == 'SUBMITTED' ? '제출완료' :
+                                             q.quStt == 'APPROVED' ? '승인' :
+                                             q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
+                        </div>
+                        <div class="quote-row__time">
+                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">2024.10.21</span>
+                        </div>
+                        <div class="quote-row__amount">
+                            <span th:if="${q.totalAmount != null}"
+                                  th:text="${#numbers.formatInteger(q.totalAmount, 3, 'COMMA') + '원'}">0원</span>
+                            <span th:if="${q.totalAmount == null}" class="quote-row__amount--pending">산출 중</span>
+                        </div>
+                    </a>
+                </th:block>
 
-    <footer class="pagination-section">
-        <div class="yellow-divider"></div>
-        <p class="pagination-info">SHOWING 4 OF 24 ESTIMATIONS</p>
-        <div class="pagination-controls">
-            <button class="pg-arrow">&larr;</button>
-            <button class="pg-num active">1</button>
-            <button class="pg-num">2</button>
-            <button class="pg-num">3</button>
-            <span class="pg-dots">...</span>
-            <button class="pg-num">6</button>
-            <button class="pg-arrow">&rarr;</button>
-        </div>
-    </footer>
-</div>
-</body>
+                <div class="quote-empty-state"
+                     th:if="${#lists.isEmpty(quotes)}">
+                    <strong>표시할 견적이 없습니다.</strong>
+                    <p>아직 요청한 견적이 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pagination -->
+        <footer class="quote-shell quote-shell--pagination">
+            <div class="quote-pagination">
+                <span class="quote-page-button quote-page-button--wide is-disabled">Prev</span>
+                <a class="quote-page-button is-current" href="#">01</a>
+                <a class="quote-page-button" href="#">02</a>
+                <a class="quote-page-button" href="#">03</a>
+                <a class="quote-page-button quote-page-button--wide" href="#">Next</a>
+            </div>
+        </footer>
+    </section>
+</th:block>
 </html>

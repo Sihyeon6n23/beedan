@@ -38,15 +38,15 @@
             </div>
 
             <div class="sidebar-menu__child-wrap">
-                <a th:href="@{/admin/quote/list}"
+                <a th:href="@{/quote/negotiation/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'negotiation-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    협상 목록
+                </a>
+                <a th:href="@{/quote/list}"
                    class="sidebar-menu__child-link"
                    th:classappend="${activeSub == 'quote-list'} ? ' sidebar-menu__child-link--current' : ''">
                     견적 목록
-                </a>
-                <a th:href="@{/admin/quote/write}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'quote-write'} ? ' sidebar-menu__child-link--current' : ''">
-                    새 견적 작성
                 </a>
             </div>
         </div>

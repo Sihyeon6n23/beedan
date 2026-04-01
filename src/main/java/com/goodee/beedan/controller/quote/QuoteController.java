@@ -44,6 +44,7 @@ public class QuoteController {
     private final DomesticDeliveryRateService domesticDeliveryRateService;
     private final QuoteDetailService quoteDetailService;
     private final QuoteInfoRepository quoteInfoRepository;
+    private final QuoteShipFeeService quoteShipFeeService;
     private final ReceiverRepository receiverRepository;
     private final MemberRepository memberRepository;
 
@@ -83,7 +84,40 @@ public class QuoteController {
     }
 
     @GetMapping("/list")
-    public String getList() {
+    public String getList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                          Model model) {
+        if (userDetails == null) return "redirect:/auth/signin";
+        Long memId = userDetails.getMemberId();
+
+        List<QuoteBase> quoteList = quoteBaseService.findAllByReceiver(memId);
+
+        // 각 견적에 대한 협상명, 품목 수, 첫 품목명, 총 금액을 조합
+        List<Map<String, Object>> quotes = new ArrayList<>();
+        for (QuoteBase qb : quoteList) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("quId", qb.getQuId());
+            item.put("quStt", qb.getQuStt().name());
+            item.put("quOpYn", qb.getQuOpYn() != null && qb.getQuOpYn());
+            item.put("quCreDt", qb.getQuCreDt());
+
+            // 협상명
+            Negotiation ng = negotiationService.findById(qb.getNgId());
+            item.put("ngNm", ng.getNgNm());
+
+            // 품목 정보
+            List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
+            item.put("itemCount", details != null ? details.size() : 0);
+            item.put("firstItemName", details != null && !details.isEmpty()
+                    ? details.get(0).getStNm() : null);
+
+            // 총 금액
+            QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
+            item.put("totalAmount", info != null ? info.getQuInfoTp() : null);
+
+            quotes.add(item);
+        }
+
+        model.addAttribute("quotes", quotes);
         return "/quote/quote-list";
     }
 
@@ -104,10 +138,7 @@ public class QuoteController {
             return "redirect:/mainPage";
         }
         if (!quoteBase.isEditable()) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.NOT_ACCEPTABLE,
-                    "임시저장 상태의 견적만 수정할 수 있습니다."
-            );
+            return "redirect:/quote/detail?quId=" + quId;
         }
 
         model.addAttribute("activeStep", 1);
@@ -193,9 +224,66 @@ public class QuoteController {
     }
 
     @GetMapping("/detail")
-    public String getDetail(Model model) {
-        model.addAttribute("activeStep", 3);
+    public String getDetail(@RequestParam Long quId,
+                            @AuthenticationPrincipal MemberUserDetails userDetails,
+                            Model model) {
+        if (userDetails == null) return "redirect:/auth/signin";
+
+        QuoteBase quoteBase = quoteBaseService.findById(quId);
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
+        QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
+
+        // 공장별 배송비
+        List<QuoteShipFee> shipFees = new ArrayList<>();
+        if (quoteInfo != null) {
+            shipFees = quoteShipFeeService.findAllByQuoteInfo(quoteInfo.getQuInfoId());
+        }
+
+        // 상태 → activeStep 변환
+        int activeStep = switch (quoteBase.getQuStt()) {
+            case TEMP_SAVE -> 1;
+            case SUBMITTED -> 2;
+            case APPROVED -> 3;
+            case REJECTED -> 2;
+            case EXPIRED -> 2;
+        };
+
+        model.addAttribute("quoteBase", quoteBase);
+        model.addAttribute("negotiation", negotiation);
+        model.addAttribute("details", details);
+        model.addAttribute("quoteInfo", quoteInfo);
+        model.addAttribute("shipFees", shipFees);
+        model.addAttribute("activeStep", activeStep);
+
         return "/quote/quote-detail";
+    }
+    @GetMapping("/negotiation/list")
+    public String getNegotiationList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                                     Model model) {
+        if (userDetails == null) return "redirect:/auth/signin";
+        Long memId = userDetails.getMemberId();
+
+        List<Negotiation> ngList = negotiationService.findAllByMember(memId);
+
+        List<Map<String, Object>> negotiations = new ArrayList<>();
+        for (Negotiation ng : ngList) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("ngId", ng.getNgId());
+            item.put("ngNm", ng.getNgNm());
+            item.put("ongoing", ng.isOngoing());
+            item.put("ngCreDt", ng.getNgCreDt());
+            item.put("ngEndDt", ng.getNgEndDt());
+
+            // 해당 협상의 견적 수
+            List<QuoteBase> quotes = quoteBaseService.findAllByNego(ng.getNgId());
+            item.put("quoteCount", quotes.size());
+
+            negotiations.add(item);
+        }
+
+        model.addAttribute("negotiations", negotiations);
+        return "/quote/negotiation-list";
     }
 
 }

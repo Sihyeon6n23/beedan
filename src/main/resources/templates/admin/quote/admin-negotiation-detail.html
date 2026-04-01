@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN', 'Negotiation Detail', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 관리자 협상 상세</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('quote', 'negotiation-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/admin/admin-negotiation-detail.css}">
+
+    <section class="and-container">
+
+        <!-- Header -->
+        <header class="and-header">
+            <div class="and-header__top">
+                <a href="/admin/negotiation/list" class="and-back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    협상 목록
+                </a>
+                <span class="and-badge and-badge--ongoing">진행중</span>
+            </div>
+            <div class="and-header__title">
+                <h1 class="and-title">협상 상세</h1>
+                <p class="and-ng-id">#NG-2026-A01</p>
+            </div>
+        </header>
+
+        <!-- Negotiation Info Card -->
+        <section class="and-info-card">
+            <div class="and-info-card__header">
+                <span class="and-section-label">협상 정보</span>
+                <div class="and-info-card__actions">
+                    <button class="and-btn-sm and-btn-sm--close">협상 종료</button>
+                </div>
+            </div>
+            <div class="and-info-card__body">
+                <div class="and-info-grid">
+                    <div class="and-info-item">
+                        <span class="and-info-key">협상명</span>
+                        <span class="and-info-val">QU0412</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">회원명</span>
+                        <span class="and-info-val">홍길동</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">회사명</span>
+                        <span class="and-info-val">(주)구디아카데미</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">시작일</span>
+                        <span class="and-info-val">2026.03.10</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">종료일</span>
+                        <span class="and-info-val and-info-val--empty">진행중</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">총 견적 수</span>
+                        <span class="and-info-val and-info-val--highlight">3건</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Summary -->
+        <section class="and-stats">
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">임시저장</span>
+                <span class="and-stat-card__value">1</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">제출완료</span>
+                <span class="and-stat-card__value">1</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">승인</span>
+                <span class="and-stat-card__value">1</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">거절</span>
+                <span class="and-stat-card__value">0</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">만료</span>
+                <span class="and-stat-card__value">0</span>
+            </div>
+        </section>
+
+        <!-- Quote List Table -->
+        <section class="and-quotes">
+            <div class="and-quotes__header">
+                <span class="and-section-label">견적 목록</span>
+                <button class="and-btn-sm and-btn-sm--new">
+                    <span class="material-symbols-outlined" style="font-size:16px;">add</span>
+                    새 견적 작성
+                </button>
+            </div>
+            <div class="and-table-wrapper">
+                <table class="and-table">
+                    <thead>
+                    <tr>
+                        <th class="col-no">No.</th>
+                        <th class="col-qu-id">견적 ID</th>
+                        <th class="col-status">상태</th>
+                        <th class="col-items">품목수</th>
+                        <th class="col-first-item">대표 품목</th>
+                        <th class="col-amount">금액</th>
+                        <th class="col-date">발행일</th>
+                        <th class="col-action">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="col-no">1</td>
+                        <td class="col-qu-id">QU-001</td>
+                        <td class="col-status">
+                            <span class="and-q-badge and-q-badge--approved">승인</span>
+                        </td>
+                        <td class="col-items">4</td>
+                        <td class="col-first-item">ESSENTIAL OVERSIZED TEE 외 3건</td>
+                        <td class="col-amount">₩22,617,200</td>
+                        <td class="col-date">2026.03.12</td>
+                        <td class="col-action">
+                            <div class="and-action-group">
+                                <a href="/admin/quote/detail?quId=1" class="and-btn-view">VIEW</a>
+                                <a href="/admin/quote/write?quId=1" class="and-btn-edit">EDIT</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-no">2</td>
+                        <td class="col-qu-id">QU-002</td>
+                        <td class="col-status">
+                            <span class="and-q-badge and-q-badge--submitted">제출완료</span>
+                        </td>
+                        <td class="col-items">2</td>
+                        <td class="col-first-item">STRUCTURED DENIM JACKET 외 1건</td>
+                        <td class="col-amount">₩8,940,000</td>
+                        <td class="col-date">2026.03.18</td>
+                        <td class="col-action">
+                            <div class="and-action-group">
+                                <a href="/admin/quote/detail?quId=2" class="and-btn-view">VIEW</a>
+                                <a href="/admin/quote/write?quId=2" class="and-btn-edit">EDIT</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-no">3</td>
+                        <td class="col-qu-id">QU-003</td>
+                        <td class="col-status">
+                            <span class="and-q-badge and-q-badge--temp_save">임시저장</span>
+                        </td>
+                        <td class="col-items">6</td>
+                        <td class="col-first-item">WIDE CARGO PANTS 외 5건</td>
+                        <td class="col-amount and-amount--pending">산출 중</td>
+                        <td class="col-date">2026.03.22</td>
+                        <td class="col-action">
+                            <div class="and-action-group">
+                                <a href="/admin/quote/detail?quId=3" class="and-btn-view">VIEW</a>
+                                <a href="/admin/quote/write?quId=3" class="and-btn-edit">EDIT</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </section>
+</th:block>
+</html>

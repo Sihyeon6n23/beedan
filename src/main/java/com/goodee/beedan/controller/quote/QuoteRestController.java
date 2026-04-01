@@ -115,6 +115,26 @@ public class QuoteRestController {
         }
     }
 
+    // ── 견적 제출 ─────────────────────────────────────
+    @PostMapping("/submit")
+    public ResponseEntity<Map<String, Object>> submitQuote(
+            @RequestBody Map<String, Long> request) {
+        try {
+            Long quId = request.get("quId");
+            quoteBaseService.submit(quId);
+            return ResponseEntity.ok(Map.of(
+                    "status", "ok",
+                    "redirectUrl", "/quote/detail?quId=" + quId
+            ));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("status", "error", "message", "제출 실패: " + e.getMessage()));
+        }
+    }
+
     // ── 임시저장 ─────────────────────────────────────
     @PostMapping("/draft")
     public ResponseEntity<Map<String, Object>> saveDraft(

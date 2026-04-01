@@ -1,9 +1,9 @@
 /* ========================================
-   Quote List Page
+   Negotiation List Page
    ======================================== */
 
 /* Page layout */
-.quote-page {
+.ng-page {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -16,48 +16,48 @@
     margin-bottom: 0;
 }
 
-.quote-list-page {
+.ng-list-page {
     max-width: 1220px;
 }
 
 /* Shell: common block container */
-.quote-shell {
+.ng-shell {
     background: var(--color-surface-container-lowest);
     box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
 }
 
-.quote-shell--header,
-.quote-shell--toolbar,
-.quote-shell--pagination {
+.ng-shell--header,
+.ng-shell--toolbar,
+.ng-shell--pagination {
     padding: 1.5rem;
 }
 
-.quote-list-page .quote-shell--header,
-.quote-list-page .quote-shell--toolbar,
-.quote-list-page .quote-shell--list,
-.quote-list-page .quote-shell--pagination {
+.ng-list-page .ng-shell--header,
+.ng-list-page .ng-shell--toolbar,
+.ng-list-page .ng-shell--list,
+.ng-list-page .ng-shell--pagination {
     padding-inline: 0;
     background: transparent;
     box-shadow: none;
 }
 
-.quote-list-page .quote-shell--header {
+.ng-list-page .ng-shell--header {
     padding-bottom: 0.15rem;
 }
 
-.quote-list-page .quote-shell--toolbar {
+.ng-list-page .ng-shell--toolbar {
     padding-top: 0;
     padding-bottom: 0.15rem;
 }
 
 /* Header */
-.quote-shell__heading {
+.ng-shell__heading {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.quote-kicker {
+.ng-kicker {
     color: var(--color-primary);
     font-size: 10px;
     font-weight: 900;
@@ -65,7 +65,7 @@
     text-transform: uppercase;
 }
 
-.quote-title {
+.ng-title {
     font-family: var(--font-headline);
     font-size: clamp(2.3rem, 5vw, 3.4rem);
     font-weight: 900;
@@ -73,14 +73,14 @@
     line-height: 0.95;
 }
 
-.quote-shell__rule {
+.ng-shell__rule {
     margin-top: 1.25rem;
     width: 100%;
     height: 2px;
     background: var(--color-surface-container-highest);
 }
 
-.quote-shell__rule span {
+.ng-shell__rule span {
     display: block;
     width: 11rem;
     height: 100%;
@@ -88,7 +88,7 @@
 }
 
 /* Toolbar */
-.quote-toolbar {
+.ng-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -96,14 +96,14 @@
     align-items: center;
 }
 
-.quote-toolbar__filters {
+.ng-toolbar__filters {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     align-items: center;
 }
 
-.quote-filter-set {
+.ng-filter-set {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -112,7 +112,7 @@
     background: rgba(255, 248, 220, 0.72);
 }
 
-.quote-filter {
+.ng-filter {
     padding: 0.52rem 0.9rem;
     border: 1px solid var(--color-surface-container-highest);
     background: var(--color-surface-container-low);
@@ -126,13 +126,13 @@
     transition: all 0.2s ease;
 }
 
-.quote-filter:hover {
+.ng-filter:hover {
     background: #fffdfa;
     color: var(--color-on-background);
     border-color: rgba(112, 93, 0, 0.18);
 }
 
-.quote-filter.is-active {
+.ng-filter.is-active {
     background: var(--color-primary-container);
     border-color: var(--color-primary-container);
     color: var(--color-on-primary-container);
@@ -140,7 +140,7 @@
 }
 
 /* List shell */
-.quote-shell--list {
+.ng-shell--list {
     overflow: hidden;
     background: #fcfbf8;
     border: 1px solid #ebe6da;
@@ -148,15 +148,15 @@
 }
 
 /* List head + row: shared grid */
-.quote-list-head,
-.quote-row {
+.ng-list-head,
+.ng-row {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(100px, 1.1fr) minmax(110px, 1.3fr);
+    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(100px, 1.1fr) minmax(100px, 1.1fr);
     gap: 0.8rem;
     align-items: center;
 }
 
-.quote-list-head {
+.ng-list-head {
     padding: 1rem 1.75rem;
     background: #f4f1e8;
     color: #7a7a7a;
@@ -167,19 +167,19 @@
     text-transform: uppercase;
 }
 
-.quote-list-head > div:nth-child(2),
-.quote-list-head > div:nth-child(3),
-.quote-list-head > div:nth-child(4) {
+.ng-list-head > div:nth-child(2),
+.ng-list-head > div:nth-child(3),
+.ng-list-head > div:nth-child(4) {
     text-align: center;
 }
 
-.quote-list-body {
+.ng-list-body {
     border-top: 1px solid var(--color-surface-container-highest);
     background: #fffdf8;
 }
 
 /* Row */
-.quote-row {
+.ng-row {
     width: 100%;
     padding: 1.1rem 1.75rem;
     border-left: 4px solid transparent;
@@ -192,25 +192,25 @@
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
-.quote-row:hover {
+.ng-row:hover {
     background: #fffdfa;
     border-left-color: var(--color-primary);
 }
 
-.quote-row--featured {
+.ng-row--featured {
     background: linear-gradient(180deg, rgba(255, 215, 0, 0.10) 0%, rgba(255, 248, 220, 0.48) 100%);
     border-left-color: var(--color-primary);
 }
 
 /* Row: primary cell */
-.quote-row__primary {
+.ng-row__primary {
     display: flex;
     gap: 0.85rem;
     align-items: center;
     min-width: 0;
 }
 
-.quote-row__unread {
+.ng-row__dot {
     display: inline-block;
     width: 12px;
     min-width: 12px;
@@ -223,15 +223,15 @@
     box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.12);
 }
 
-.quote-row__unread--empty {
+.ng-row__dot--empty {
     opacity: 0;
 }
 
-.quote-row__text {
+.ng-row__text {
     min-width: 0;
 }
 
-.quote-row__text h2 {
+.ng-row__text h2 {
     display: flex;
     align-items: baseline;
     gap: 0.45rem;
@@ -245,20 +245,20 @@
     white-space: nowrap;
 }
 
-.quote-row__text h2 span {
+.ng-row__text h2 span {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.quote-row__text h2 small {
+.ng-row__text h2 small {
     flex-shrink: 0;
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--color-secondary);
 }
 
-.quote-row__text p {
+.ng-row__text p {
     color: var(--color-secondary);
     font-size: 0.9rem;
     line-height: 1.5;
@@ -267,41 +267,23 @@
     white-space: nowrap;
 }
 
-/* Row: status / time / amount cells */
-.quote-row__status,
-.quote-row__time {
+/* Row: status / time cells */
+.ng-row__status,
+.ng-row__time {
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-}
-
-.quote-row__time {
     font-size: 0.85rem;
     white-space: nowrap;
 }
 
-.quote-row__amount {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    text-align: right;
-    font-family: var(--font-headline);
-    font-size: 0.95rem;
-    font-weight: 800;
-    letter-spacing: var(--tracking-tight);
-    white-space: nowrap;
-}
-
-.quote-row__amount--pending {
+.ng-row__time--empty {
     color: var(--color-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    font-style: italic;
 }
 
 /* Badges */
-.quote-badge {
+.ng-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -312,29 +294,18 @@
     text-transform: uppercase;
 }
 
-.quote-badge--submitted {
-    border: 1px solid var(--color-outline-variant);
-    background: var(--color-surface-container-lowest);
-    color: var(--color-secondary);
-}
-
-.quote-badge--approved {
+.ng-badge--ongoing {
     background: var(--color-primary-container);
     color: var(--color-on-primary-container);
 }
 
-.quote-badge--rejected {
-    background: #fde8e8;
-    color: #c53030;
-}
-
-.quote-badge--expired {
+.ng-badge--closed {
     background: var(--color-surface-container-highest);
     color: var(--color-secondary);
 }
 
 /* Empty state */
-.quote-empty-state {
+.ng-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -345,20 +316,20 @@
     color: var(--color-secondary);
 }
 
-.quote-empty-state strong {
+.ng-empty-state strong {
     color: var(--color-on-background);
     font-family: var(--font-headline);
     font-size: 1rem;
     font-weight: 800;
 }
 
-.quote-empty-state p {
+.ng-empty-state p {
     font-size: 0.9rem;
     line-height: 1.6;
 }
 
 /* Pagination */
-.quote-shell--pagination {
+.ng-shell--pagination {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -369,13 +340,13 @@
     border-top: 1px solid #e8e8e8;
 }
 
-.quote-pagination {
+.ng-pagination {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
 }
 
-.quote-page-button {
+.ng-page-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -395,24 +366,24 @@
     transition: all 0.2s ease;
 }
 
-.quote-page-button:hover {
+.ng-page-button:hover {
     background: #fffdfa;
     color: var(--color-on-background);
     border-color: rgba(112, 93, 0, 0.18);
 }
 
-.quote-page-button--wide {
+.ng-page-button--wide {
     min-width: 4.5rem;
     background: var(--color-surface-container-low);
 }
 
-.quote-page-button.is-current {
+.ng-page-button.is-current {
     border-color: var(--color-primary-container);
     background: var(--color-primary-container);
     color: var(--color-on-primary-container);
 }
 
-.quote-page-button.is-disabled {
+.ng-page-button.is-disabled {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
@@ -420,33 +391,32 @@
 
 /* Responsive */
 @media (max-width: 900px) {
-    .quote-list-head {
+    .ng-list-head {
         display: none;
     }
 
-    .quote-row {
+    .ng-row {
         grid-template-columns: 1fr;
         gap: 0.85rem;
         align-items: start;
     }
 
-    .quote-row__status,
-    .quote-row__time,
-    .quote-row__amount {
+    .ng-row__status,
+    .ng-row__time {
         justify-content: flex-start;
         text-align: left;
     }
 
-    .quote-filter-set {
+    .ng-filter-set {
         width: 100%;
     }
 
-    .quote-shell--pagination {
+    .ng-shell--pagination {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .quote-pagination {
+    .ng-pagination {
         justify-content: center;
     }
 }
