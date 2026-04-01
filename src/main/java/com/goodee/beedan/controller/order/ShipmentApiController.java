@@ -51,15 +51,4 @@ public class ShipmentApiController {
         return ResponseEntity.ok(shipmentDto);
     }
 
-    @DeleteMapping("/{id}/cancel")
-    public ResponseEntity<ShipmentDto> cancelShipment(@PathVariable(name="id") Long shId,
-                                                      @RequestParam(name="ordId") Long ordId,
-                                                      @AuthenticationPrincipal MemberUserDetails userDetails,
-                                                      @RequestBody ShipmentDto dto){
-
-        shipmentService.cancelShipment(shId, ordId, userDetails.getMemberId(), dto.getShStt());
-
-        return ResponseEntity.ok(shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId));
-    }
-
 }

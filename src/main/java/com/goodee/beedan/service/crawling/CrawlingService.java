@@ -15,6 +15,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -34,6 +35,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CrawlingService {
 
     private final CrawlingUrlRepository crawlingUrlRepository;
@@ -75,6 +77,7 @@ public class CrawlingService {
         url.setUrlSelImg(dto.getSelImg());
         url.setUrlCur(dto.getCurrency());
     }
+
 
     @Transactional
     public int crawl(Long urlId) throws IOException {
@@ -193,6 +196,28 @@ public class CrawlingService {
         }
 
         return newCount;
+    }
+
+    // 전체 크롤링
+    @Transactional
+        public int crawlAll() {
+        List<CrawlingUrl> targets = crawlingUrlRepository
+                .findByUrlDelYnFalseAndUrlUseYnTrueAndUrlAtYnTrue();
+
+        int totalNewCount = 0;
+
+        for (CrawlingUrl url : targets) {
+            try {
+                int count = this.crawl(url.getUrlId());
+                totalNewCount += count;
+                log.info("전체 크롤링 - 완료: urlId={}, 신규={}건", url.getUrlId(), count);
+            } catch (Exception e) {
+                log.error("전체 크롤링 - 실패: urlId={}, 사유={}", url.getUrlId(), e.getMessage());
+            }
+        }
+
+        log.info("전체 크롤링 종료: 대상={}개, 총 신규={}건", targets.size(), totalNewCount);
+        return totalNewCount;
     }
 
     // Shopify JSON API 시도 (성공 시 상품 목록 반환, 실패 시 null)

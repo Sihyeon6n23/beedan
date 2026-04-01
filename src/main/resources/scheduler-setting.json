@@ -1,0 +1,7 @@
+{
+  "autoCrawlingEnabled" : true,
+  "is_auto_crawling_enabled" : true,
+  "auto_crawling_start_dt" : "2026-03-31T00:00",
+  "auto_crawling_interval" : "6",
+  "last_crawling_run_time" : "2026-04-01T00:00:11.279921100"
+}
