@@ -8,7 +8,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "ORDER_BASE")
 public class Order {
     @Id
@@ -41,6 +44,8 @@ public class Order {
     @Column(name = "ord_base_upd_dt")
     @LastModifiedDate
     private LocalDateTime ordBaseUpdDt;
+    @Column(name = "ord_base_tt_am", precision = 18, scale = 0)
+    private BigDecimal ordBaseTtAm; // 주문 총 금액
     @ManyToOne
     @JoinColumn(name = "mem_id")
     private Member member;

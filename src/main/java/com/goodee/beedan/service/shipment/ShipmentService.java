@@ -15,136 +15,107 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
+@Transactional // 기본적으로 쓰기(Write) 트랜잭션 적용
 public class ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final OrderRepository orderRepository;
     private final OrderService orderService;
 
-    public List<ShipmentDto> getShipmentList(Long shId, Long memId, Long ordId){
-        orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("주문의 배송 내역을 찾을 수 없습니다."));
+    @Transactional(readOnly = true)
+    public List<ShipmentDto> getShipmentList(Long memId, Long ordId) {
+        Order order = orderRepository.findById(ordId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        List<ShipmentDto> shipmentDtoList = shipmentRepository.findByOrder_OrdBaseIdOrderByShCreDtDesc(ordId).stream()
-                .map(shipment -> mapToShipmentDto(shipment))
+        if (!order.getMember().getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 주문 배송 목록만 조회할 수 있습니다.");
+        }
+
+        return shipmentRepository.findByOrder_OrdBaseIdOrderByShCreDtDesc(ordId).stream()
+                .map(this::mapToShipmentDto)
                 .toList();
-
-        return shipmentDtoList;
     }
 
-    public ShipmentDto getShipmentDetail(Long shId, Long memId, Long ordId){
+    @Transactional(readOnly = true)
+    public ShipmentDto getShipmentDetail(Long shId, Long memId, Long ordId) {
         Shipment shipment = shipmentRepository.findById(shId)
-                .orElseThrow(()->new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
 
-        if(!shipment.getOrder().getOrdBaseId().equals(ordId)) {
-            throw new IllegalArgumentException("주문의 배송 내역이 아닙니다.");
-        }
-
-        if(!shipment.getOrder().getMember().getMemId().equals(memId)) {
-            throw new IllegalArgumentException("본인의 주문 배송 내역만 조회할 수 있습니다.");
-        }
+        validateShipmentAccess(shipment, ordId, memId);
 
         return mapToShipmentDto(shipment);
     }
 
-    public void updateStaus(Long shId, Long memId, Long ordId, ShipmentDto dto){ // 다음 배송 단계로 업데이트
-        Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
-        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(()->new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+    public void updateStatus(Long shId, Long memId, Long ordId) {
+        Shipment shipment = shipmentRepository.findById(shId)
+                .orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+        Order order = shipment.getOrder();
 
-        if(!shipment.getOrder().getOrdBaseId().equals(ordId)) {
-            throw new IllegalArgumentException("주문의 배송 내역이 아닙니다.");
-        }
+        validateShipmentAccess(shipment, ordId, memId);
 
-        if(!shipment.getOrder().getMember().getMemId().equals(memId)) {
-            throw new IllegalArgumentException("본인의 주문 배송 내역만 조회할 수 있습니다.");
-        }
-
-        // 주문 상태가 DELIVERING도 아니고, PREPARING도 아닐 때만 return
         if (!order.getOrdBaseStt().equals(OrderStatus.DELIVERING) && !order.getOrdBaseStt().equals(OrderStatus.PREPARING)) {
             return;
         }
-        if(dto.getShStt() == null) return;
 
-        switch (shipment.getShStt()){
-            case SHIPPING -> {shipment.setShStt(ShipmentStatus.CUSTOMS); break;}
-            case CUSTOMS -> {shipment.setShStt(ShipmentStatus.DELIVERING);break;}
-            case DELIVERING -> {shipment.setShStt(ShipmentStatus.DELIVERED);break;}
-            default -> throw new IllegalStateException("배송 상태를 업데이트할 수 없습니다.");
+        switch (shipment.getShStt()) {
+            case SHIPPING -> shipment.setShStt(ShipmentStatus.CUSTOMS);
+            case CUSTOMS -> shipment.setShStt(ShipmentStatus.DELIVERING);
+            case DELIVERING -> shipment.setShStt(ShipmentStatus.DELIVERED);
+            default -> throw new IllegalStateException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
         }
-        shipmentRepository.save(shipment);
     }
 
-    public ShipmentDto updateStatusFromAdmin(Long shId, Long memId, Long ordId, ShipmentDto dto){  // 관리지가 직접 배송 현황을 수정하는 경우(테스트용)
-        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(()->new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+    public ShipmentDto updateStatusFromAdmin(Long shId, Long ordId, ShipmentDto dto) {
+        Shipment shipment = shipmentRepository.findById(shId)
+                .orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
 
-        if(!shipment.getOrder().getOrdBaseId().equals(ordId)) {
-            throw new IllegalArgumentException("주문의 배송 내역이 아닙니다.");
+        if (!shipment.getOrder().getOrdBaseId().equals(ordId)) {
+            throw new IllegalArgumentException("해당 주문의 배송 내역이 아닙니다.");
         }
 
-        Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
+        ShipmentStatus newStatus = dto.getShStt();
+        shipment.setShStt(newStatus);
 
-        switch (dto.getShStt()) {
-            case SHIPPING -> {shipment.setShStt(ShipmentStatus.SHIPPING); break;}
-            case CUSTOMS -> {shipment.setShStt(ShipmentStatus.CUSTOMS); break;}
-            case DELIVERING -> {
-                shipment.setShStt(ShipmentStatus.DELIVERING);
-                order.setOrdBaseStt(OrderStatus.DELIVERING);
-                break;
-            }
-            case DELIVERED -> {
-                shipment.setShStt(ShipmentStatus.DELIVERED);
-                order.setOrdBaseStt(OrderStatus.DELIVERED);
-                break;
-            }
-            case DELAYED -> {shipment.setShStt(ShipmentStatus.DELAYED);break;}
-            case RETURED -> {
-                shipment.setShStt(ShipmentStatus.RETURED);
-                order.setOrdBaseStt(OrderStatus.CANCELLED);
-                break;
-            }
-            default -> throw new IllegalStateException("배송 상태를 업데이트할 수 없습니다.");
+        if (newStatus == ShipmentStatus.DELIVERING) {
+            orderService.updateOrderStatus(ordId, OrderStatus.DELIVERING);
+        } else if (newStatus == ShipmentStatus.DELIVERED) {
+            orderService.updateOrderStatus(ordId, OrderStatus.DELIVERED);
+        } else if (newStatus == ShipmentStatus.RETURNED) {
+            orderService.updateOrderStatus(ordId, OrderStatus.CANCELLED);
         }
-        shipmentRepository.save(shipment);
 
         dto.setShStt(shipment.getShStt());
-
         return dto;
     }
 
-    public void cancelShipment(Long shId, Long memId, Long ordId, ShipmentStatus shStt){ // 세관을 통과하지 못해 국내 배송 이전에 취소되는 경우
-        Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
-        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(()->new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+    public void cancelShipment(Long shId, Long memId, Long ordId, ShipmentStatus shStt) { // 세관 통과 실패의 경우
+        Shipment shipment = shipmentRepository.findById(shId)
+                .orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
 
-        if(!shipment.getOrder().getOrdBaseId().equals(ordId)) {
-            throw new IllegalArgumentException("주문의 배송 내역이 아닙니다.");
+        validateShipmentAccess(shipment, ordId, memId);
+
+        if (shStt.equals(ShipmentStatus.RETURNED)) {
+            shipment.setShStt(ShipmentStatus.RETURNED);
+            orderService.updateOrderStatus(ordId, OrderStatus.CANCELLED);
         }
-
-        if(!shipment.getOrder().getMember().getMemId().equals(memId)) {
-            throw new IllegalArgumentException("본인의 주문 배송 내역만 조회할 수 있습니다.");
-        }
-
-        if(shStt.equals(ShipmentStatus.RETURED)) {
-            shipment.setShStt(ShipmentStatus.RETURED);
-            order.setOrdBaseStt(OrderStatus.CANCELLED);
-        }
-
-        shipmentRepository.save(shipment);
-        orderRepository.save(order);
-    }
-
-    public void createOrder(Long ordId) {
-
     }
 
     public ShipmentDto mapToShipmentDto(Shipment shipment){
-        ShipmentDto shipmentDto = ShipmentDto.builder()
+        return ShipmentDto.builder()
                 .shId(shipment.getShId())
                 .shCarCd(shipment.getShCarCd())
                 .shStt(shipment.getShStt())
                 .shCreDt(shipment.getShCreDt())
                 .shTraNo(shipment.getShTraNo())
                 .build();
+    }
 
-        return shipmentDto;
+    private void validateShipmentAccess(Shipment shipment, Long ordId, Long memId) {
+        if (!shipment.getOrder().getOrdBaseId().equals(ordId)) {
+            throw new IllegalArgumentException("해당 주문의 배송 내역이 아닙니다.");
+        }
+        if (!shipment.getOrder().getMember().getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 주문 배송 내역만 제어할 수 있습니다.");
+        }
     }
 }

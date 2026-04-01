@@ -573,7 +573,8 @@ CREATE TABLE `ORDER_BASE`
     `ord_base_stt`    ENUM('PREPARING', 'DELIVERING', 'DELIVERED', 'CANCELLED'),
     `ord_base_no`     VARCHAR(10) NULL,
     `ord_base_msg`    TEXT NULL,
-    `mem_id`          BIGINT NOT NULL
+    `mem_id`          BIGINT NOT NULL,
+    `ord_base_tt_am`  DECIMAL(18, 0) NULL
     --`qu_dt_id`        BIGINT NULL,
     --`qu_info_id`      BIGINT NULL,
     --`qu_id`           BIGINT NULL,
