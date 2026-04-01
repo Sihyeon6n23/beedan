@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class CrawlingScheduler {
 
     @Scheduled(fixedDelay = 60000)
     public void autoCrawl() {
+        LocalDateTime now = LocalDateTime.now();
         // 설정된 세팅값 확인
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
@@ -35,11 +37,18 @@ public class CrawlingScheduler {
         LocalDateTime startDt = LocalDateTime.parse(setting.getAutoCrawlingStartDt());
         if(LocalDateTime.now().isBefore(startDt)) return;
 
-        // JSON에서 마지막 크롤링 시간 확인
+        // startDt부터 interval 단위로 다음 실행 시점 계산
+        long hoursElapsed = Duration.between(startDt, now).toHours();
         long intervalHours = Long.parseLong(setting.getAutoCrawlingInterval());
+        LocalDateTime nextRun = startDt.plusHours((hoursElapsed / intervalHours) * intervalHours);
+
+        // 아직 다음 실행 시점이 안 됐으면 리턴
+        if (now.isBefore(nextRun)) return;
+
+        // 이미 이번 구간에서 실행했으면 리턴
         if (setting.getLastCrawlingRunTime() != null) {
             LocalDateTime lastRun = LocalDateTime.parse(setting.getLastCrawlingRunTime());
-            if (lastRun.plusHours(intervalHours).isAfter(LocalDateTime.now())) return;
+            if (!lastRun.isBefore(nextRun)) return;
         }
 
         crawlingService.crawlAll();
