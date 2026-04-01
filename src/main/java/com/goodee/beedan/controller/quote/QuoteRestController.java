@@ -394,6 +394,33 @@ public class QuoteRestController {
 
             BigDecimal procurementTotal = serviceFee.add(docFee);
 
+            // ── 3-1. 등급 할인 정보 ─────────────────
+            BigDecimal shippingDiscountRate = BigDecimal.ZERO;
+            try {
+                FeePolicy shippingPolicy = feePolicyService
+                        .findAllActiveByGrade(buyerGrade).stream()
+                        .filter(fp -> "SHIPPING".equals(fp.getFpFeeTy()))
+                        .filter(FeePolicy::isValid)
+                        .findFirst().orElse(null);
+                if (shippingPolicy != null) {
+                    shippingDiscountRate = shippingPolicy.getFpVal();
+                }
+            } catch (Exception ignored) {}
+
+            BigDecimal standardServiceFee = null;
+            if (!"STANDARD".equals(buyerGrade)) {
+                try {
+                    FeePolicy standardCommission = feePolicyService
+                            .findAllActiveByGrade("STANDARD").stream()
+                            .filter(fp -> "SERVICE_COMMISSION".equals(fp.getFpFeeTy()))
+                            .filter(FeePolicy::isValid)
+                            .findFirst().orElse(null);
+                    if (standardCommission != null && request.getItemTotalKrw() != null) {
+                        standardServiceFee = standardCommission.apply(request.getItemTotalKrw());
+                    }
+                } catch (Exception ignored) {}
+            }
+
             // ── 4. 국내 배달비 계산 ─────────────────
             List<String> shipRegions = request.getShipRegions();
             // shipRegions가 없으면 사용자 기본 수령지로 상품 수만큼 세팅
@@ -462,6 +489,8 @@ public class QuoteRestController {
                     .serviceFeeEffTo(fmtDate(svcEffTo))
                     .docFeeEffFrom(fmtDate(docEffFrom))
                     .docFeeEffTo(fmtDate(docEffTo))
+                    .shippingDiscountRate(shippingDiscountRate)
+                    .standardServiceFee(standardServiceFee)
                     .domesticRegions(domesticRegions)
                     .domesticFee(domesticFee)
                     .domesticCount(domesticCount)
@@ -621,6 +650,9 @@ public class QuoteRestController {
         private String serviceFeeEffTo;
         private String docFeeEffFrom;
         private String docFeeEffTo;
+        // 등급 할인
+        private BigDecimal shippingDiscountRate;   // SHIPPING fee policy rate (0이면 할인 없음)
+        private BigDecimal standardServiceFee;     // STANDARD 기준 서비스 수수료 (비교용, null이면 STANDARD)
         // 국내 배달비
         private List<DeliveryFeeResponse.RegionGroup> domesticRegions;
         private BigDecimal domesticFee;

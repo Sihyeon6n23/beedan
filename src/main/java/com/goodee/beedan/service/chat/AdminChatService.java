@@ -253,7 +253,10 @@ public class AdminChatService {
                 && chatRoom.getMemAdId().equals(memAdId)) {
             ChatRoomReadStatus chatRoomReadStatus = chatRoomReadStatusRepository
                     .findByMemIdAndChRoId(memAdId, chRoId)
-                    .orElseThrow();
+                    .orElseGet(() -> ChatRoomReadStatus.builder()
+                            .memId(memAdId)
+                            .chRoId(chRoId)
+                            .build());
 
             chatRoomReadStatus.setChRoReStUnrYn(false); // 미읽음 여부 FALSE -> 읽음
             if (!chatMessages.isEmpty()) {

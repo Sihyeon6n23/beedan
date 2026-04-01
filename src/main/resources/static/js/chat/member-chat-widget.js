@@ -668,6 +668,51 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // 사용자 메시지 1건 즉시 추가
+  function appendMemberChatMessage(message) {
+    if (!chatRoomMessages || !message) {
+      return;
+    }
+
+    var emptyState = chatRoomMessages.querySelector(".member-chat-room-empty");
+    if (emptyState) {
+      emptyState.remove();
+    }
+
+    var article = document.createElement("article");
+    var body = document.createElement("div");
+    var bubble = document.createElement("div");
+    var time = document.createElement("span");
+    var isUserMessage = message.chMsSenTy === "USER";
+
+    article.className = "member-chat-message " + (isUserMessage ? "member-chat-message--right" : "member-chat-message--left");
+    article.classList.add("member-chat-animate-in");
+
+    if (!isUserMessage) {
+      var avatar = document.createElement("div");
+      avatar.className = "member-chat-message__avatar";
+      avatar.textContent = "B";
+      article.appendChild(avatar);
+    }
+
+    body.className = "member-chat-message__body";
+    bubble.className = "member-chat-message__bubble" + (isUserMessage ? " member-chat-message__bubble--accent" : "");
+    bubble.textContent = message.chMsCon;
+    time.textContent = formatChatMessageTime(message.chMsCreDt);
+
+    body.appendChild(bubble);
+    body.appendChild(time);
+    article.appendChild(body);
+    chatRoomMessages.appendChild(article);
+
+    requestAnimationFrame(function () {
+      chatRoomMessages.scrollTo({
+        top: chatRoomMessages.scrollHeight,
+        behavior: "smooth"
+      });
+    });
+  }
+
   // 회원 채팅방 목록 비동기 조회
   function loadMemberChatRooms() {
     return fetch("/api/chat/rooms", {
@@ -827,9 +872,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return response.json();
       })
-      .then(function () {
+      .then(function (message) {
         chatRoomMessageInput.value = "";
-        return loadMemberChatRoomDetail(currentChatRoomId);
+        appendMemberChatMessage(message);
+        chatRoomMessageInput.focus();
+        return loadMemberChatRooms();
       })
       .catch(function (error) {
         console.error(error);
