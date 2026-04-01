@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface CrawlingUrlRepository extends JpaRepository<CrawlingUrl, Long> {
     List<CrawlingUrl> findByUrlDelYnFalse();
+
+    List<CrawlingUrl> findByUrlDelYnFalseAndUrlUseYnTrueAndUrlAtYnTrue();
 }

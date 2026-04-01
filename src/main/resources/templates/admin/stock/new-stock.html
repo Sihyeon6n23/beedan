@@ -44,11 +44,15 @@
         <div class="admin-crawling-shell">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 class="admin-crawling-section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">등록된 크롤링 URL</h2>
-                <button th:unless="${urls.isEmpty()}" id="crawlAllBtn" onclick="crawlAll()"
-                        class="admin-crawling-btn admin-crawling-btn--primary">
-                    <span class="material-symbols-outlined" style="font-size: 14px;">play_circle</span>
-                    전체 크롤링
-                </button>
+                <div th:unless="${urls.isEmpty()}" style="display: flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 0.75rem; color: #a8a29e; font-weight: 600;"
+                          th:text="${lastCrawlTime != null ? '마지막 크롤링: ' + #temporals.format(#temporals.createDateTime(lastCrawlTime), 'yyyy.MM.dd HH:mm') : '크롤링 기록 없음'}"></span>
+                    <button id="crawlAllBtn" onclick="crawlAll()"
+                            class="admin-crawling-btn admin-crawling-btn--primary">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">play_circle</span>
+                        전체 크롤링
+                    </button>
+                </div>
             </div>
 
             <div th:if="${urls.isEmpty()}" style="padding: 2rem 0; text-align: center; font-size: 0.875rem;">
@@ -105,6 +109,13 @@
                                     th:data-sel-nm="${url.urlSelNm}"
                                     th:data-sel-pr="${url.urlSelPr}"
                                     th:data-sel-img="${url.urlSelImg}"
+                                    th:data-currency="${url.urlCur}"
+                                    class="admin-crawling-btn admin-crawling-btn--outline">
+                                수정
+                            </button>
+                            <button th:if="${url.urlTy != null and url.urlTy.equals('SHOPIFY')}"
+                                    onclick="openEditCurrencyModal(this)"
+                                    th:data-id="${url.urlId}"
                                     th:data-currency="${url.urlCur}"
                                     class="admin-crawling-btn admin-crawling-btn--outline">
                                 수정
@@ -272,8 +283,8 @@
                 </datalist>
             </div>
             <div class="admin-crawling-modal-actions">
-                <button type="submit" class="admin-crawling-btn admin-crawling-btn--primary">크롤링 시작</button>
-                <button type="button" onclick="closeCrawlModal()" class="admin-crawling-btn admin-crawling-btn--outline">취소</button>
+                <button type="submit" id="crawlModalSubmitBtn" class="admin-crawling-btn admin-crawling-btn--primary">크롤링 시작</button>
+                <button type="button" id="crawlModalCancelBtn" onclick="closeCrawlModal()" class="admin-crawling-btn admin-crawling-btn--outline">취소</button>
             </div>
         </form>
         <div id="crawlLoading" class="admin-crawling-loading">
@@ -303,8 +314,8 @@
                 </datalist>
             </div>
             <div class="admin-crawling-modal-actions">
-                <button type="submit" class="admin-crawling-btn admin-crawling-btn--primary">크롤링 시작</button>
-                <button type="button" onclick="closeShopifyModal()" class="admin-crawling-btn admin-crawling-btn--outline">취소</button>
+                <button type="submit" id="shopifyModalSubmitBtn" class="admin-crawling-btn admin-crawling-btn--primary">크롤링 시작</button>
+                <button type="button" id="shopifyModalCancelBtn" onclick="closeShopifyModal()" class="admin-crawling-btn admin-crawling-btn--outline">취소</button>
             </div>
         </form>
         <div id="shopifyLoading" class="admin-crawling-loading">
@@ -325,9 +336,29 @@
     // 현재 크롤링 대상 URL id (모달에서 사용)
     let currentCrawlId = null;
 
-    // 전체 크롤링 (TODO: 백엔드 연동)
+    // 전체 크롤링
     function crawlAll() {
-        alert('전체 크롤링 기능은 아직 구현 중입니다.');
+        if (!confirm('자동 크롤링 대상 URL 전체를 크롤링합니다. 진행할까요?')) return;
+
+        const btn = document.getElementById('crawlAllBtn');
+        btn.disabled = true;
+        btn.textContent = '크롤링 중...';
+
+        fetch('/admin/newstock/run-all', {
+            method: 'POST',
+            headers: { [csrfHeader]: csrfToken }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('전체 크롤링 완료! 신규 ' + data.newCount + '건');
+            location.reload();
+        })
+        .catch(err => {
+            alert('크롤링 실패');
+            console.error(err);
+            btn.disabled = false;
+            btn.textContent = '전체 크롤링';
+        });
     }
 
     // 자동 포함 토글 (urlUseYn)
@@ -361,8 +392,10 @@
         form.querySelector('[name="selPr"]').value = btn.dataset.selPr || '';
         form.querySelector('[name="selImg"]').value = btn.dataset.selImg || '';
         form.querySelector('[name="currency"]').value = btn.dataset.currency || '';
-        // 모달을 수정 모드로 열기
+        // 모달을 수정 모드로 열기 — 버튼 텍스트 변경
         document.getElementById('crawlModal').dataset.mode = 'edit';
+        document.getElementById('crawlModalSubmitBtn').textContent = '저장';
+        document.getElementById('crawlModalCancelBtn').textContent = '닫기';
         document.getElementById('crawlModal').classList.add('is-open');
     }
 
@@ -494,10 +527,28 @@
 
     function closeCrawlModal() {
         document.getElementById('crawlModal').classList.remove('is-open');
+        document.getElementById('crawlModal').dataset.mode = '';
+        document.getElementById('crawlModalSubmitBtn').textContent = '크롤링 시작';
+        document.getElementById('crawlModalCancelBtn').textContent = '취소';
     }
 
     function closeShopifyModal() {
         document.getElementById('shopifyModal').classList.remove('is-open');
+        document.getElementById('shopifyModal').dataset.mode = '';
+        document.getElementById('shopifyModalSubmitBtn').textContent = '크롤링 시작';
+        document.getElementById('shopifyModalCancelBtn').textContent = '취소';
+    }
+
+    // Shopify 통화 수정 모달
+    function openEditCurrencyModal(btn) {
+        const id = btn.dataset.id;
+        const form = document.getElementById('shopifyForm');
+        form.querySelector('[name="currency"]').value = btn.dataset.currency || '';
+        document.getElementById('shopifyModal').dataset.mode = 'edit';
+        document.getElementById('shopifyModal').dataset.editId = id;
+        document.getElementById('shopifyModalSubmitBtn').textContent = '저장';
+        document.getElementById('shopifyModalCancelBtn').textContent = '닫기';
+        document.getElementById('shopifyModal').classList.add('is-open');
     }
 
     // HTML 모달 submit
@@ -518,7 +569,24 @@
     // Shopify 모달 submit
     document.getElementById('shopifyForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        saveSelectorAndRun(this);
+        const modal = document.getElementById('shopifyModal');
+        if (modal.dataset.mode === 'edit') {
+            // 통화 수정 모드 → 셀렉터 저장만
+            const id = modal.dataset.editId;
+            const formData = new FormData(this);
+            formData.append(csrfParam, csrfToken);
+            fetch('/admin/newstock/selector/' + id, {
+                method: 'POST',
+                body: formData,
+                redirect: 'follow'
+            })
+            .then(r => { if (!r.ok && r.status !== 302) throw new Error(); })
+            .then(() => location.reload())
+            .catch(() => alert('저장 실패'));
+        } else {
+            // 크롤링 모드
+            saveSelectorAndRun(this);
+        }
     });
 </script>
 </th:block>
