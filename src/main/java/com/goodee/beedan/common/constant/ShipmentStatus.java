@@ -6,6 +6,6 @@ public enum ShipmentStatus {
     SHIPPING,
     CUSTOMS,
     DELAYED,
-    RETURED,
+    RETURNED,
     PREPARING
 }

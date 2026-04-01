@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,6 +36,7 @@ public class OrderService {
     private final ShipmentRepository shipmentRepository;
     private final ShipmentItemRepository shipmentItemRepository;
     private final OrderItemRepository orderItemRepository;
+    private final QuoteInfoRepository  quoteInfoRepository;
 
     public List<OrderDto> getOrderList(Long memId){
         if(!memberRepository.existsById(memId)) return null;
@@ -104,8 +106,17 @@ public class OrderService {
     public void createOrder(Long memId, OrderDto dto){
         Member member = memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("User not found"));
 
+        log.info("조회 시도하는 memId: {}", memId);
+
+        // 1. 전체 리스트를 한번 뽑아보세요 (매핑 문제인지 조건 문제인지 확인용)
+        List<Negotiation> allNegs = negotiationRepository.findAll();
+        log.info("DB에 존재하는 전체 협상 개수: {}", allNegs.size());
+
         // 1. 협상 정보 조회
         Negotiation negotiation = negotiationRepository.findFirstByMemIdOrderByNgCreDtDesc(memId);
+
+        log.info(negotiation.toString());
+
         if (negotiation == null) {
             throw new IllegalStateException("해당 회원의 협상 정보가 없습니다.");
         }
@@ -116,10 +127,14 @@ public class OrderService {
             throw new IllegalStateException("견적 상세 상품이 존재하지 않습니다.");
         }
 
-        // 3. 수량 및 금액 계산 로직 수정 (size() -> 수량 합산)
+        // 3. 수량 및 금액 계산 - 총 수량, 총 금액
         Integer totalQuantity = quoteDetails.stream()
                 .mapToInt(QuoteDetail::getQuDtQn)
                 .sum();
+
+        BigDecimal bigDecimal = quoteInfoRepository.findFirstByNgIdOrderByQuInfoIdDesc(negotiation.getNgId())
+                .map(QuoteInfo::getQuInfoTp)
+                .orElse(BigDecimal.ZERO);
 
         // 주문 생성
         Order order = Order.builder()
@@ -129,6 +144,7 @@ public class OrderService {
                 .ordBaseAdrDt(dto.getOrdBaseAdrDt())
                 .ordBaseMsg(dto.getOrdBaseMsg())
                 .ordBaseStt(OrderStatus.PREPARING)
+                .ordBaseTtAm(bigDecimal.multiply(BigDecimal.valueOf(totalQuantity))) // 총 금액 계산
                 .ordBaseNo(negotiation.getNgNm()) // 협상 이름을 주문 번호로 사용
                 .build();
         orderRepository.save(order);
@@ -191,8 +207,8 @@ public class OrderService {
 
         if(caseCd == 1){
         return IntStream.range(0, 12)
-                .mapToObj(i -> String.valueOf(random.nextInt(10)))
-                .collect(Collectors.joining());
+                    .mapToObj(i -> String.valueOf(ThreadLocalRandom.current().nextInt(10)))
+                    .collect(Collectors.joining());
         } else {
             return IntStream.range(0, 3)
                     .mapToObj(i -> String.valueOf(random.nextInt(10)))

@@ -23,7 +23,7 @@ public class ShipmentApiController {
             @PathVariable(name="id") Long shId,
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestParam(name = "ordId") Long ordId){
-        List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(shId, userDetails.getMemberId(), ordId);
+        List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(shId, ordId);
 
         return ResponseEntity.ok(shipmentDtoList);
     }
@@ -32,9 +32,8 @@ public class ShipmentApiController {
     public ResponseEntity<ShipmentDto> getShipmentDetail(
             @PathVariable(name="id") Long shId,
             @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestParam(name = "ordId") Long ordId,
-            @RequestBody ShipmentDto dto){
-        shipmentService.updateStaus(shId, userDetails.getMemberId(), ordId, dto);
+            @RequestParam(name = "ordId") Long ordId){
+        shipmentService.updateStatus(shId, userDetails.getMemberId(), ordId);
 
         ShipmentDto updatedShipment = shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId);
 
@@ -47,12 +46,20 @@ public class ShipmentApiController {
                                                       @AuthenticationPrincipal MemberUserDetails userDetails,
                                                       @RequestBody ShipmentDto dto){
 
-        ShipmentDto shipmentDto = shipmentService.updateStatusFromAdmin(shId, ordId, userDetails.getMemberId(), dto);
+        ShipmentDto shipmentDto = shipmentService.updateStatusFromAdmin(shId, ordId, dto);
 
         return ResponseEntity.ok(shipmentDto);
     }
 
-    @DeleteMapping("/{id}/admin")
-    public ResponseEntity<S>
+    @DeleteMapping("/{id}/cancel")
+    public ResponseEntity<ShipmentDto> cancelShipment(@PathVariable(name="id") Long shId,
+                                                      @RequestParam(name="ordId") Long ordId,
+                                                      @AuthenticationPrincipal MemberUserDetails userDetails,
+                                                      @RequestBody ShipmentDto dto){
+
+        shipmentService.cancelShipment(shId, ordId, userDetails.getMemberId(), dto.getShStt());
+
+        return ResponseEntity.ok(shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId));
+    }
 
 }
