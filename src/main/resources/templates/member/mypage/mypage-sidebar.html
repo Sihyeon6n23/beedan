@@ -6,14 +6,14 @@
            class="sidebar-menu__link"
            th:classappend="${activeMain == 'member'} ? ' sidebar-menu__link--current' : ''">
             <span class="material-symbols-outlined sidebar-menu__icon">group</span>
-            <span>회원 관리</span>
+            <span>개인정보 관리</span>
         </a>
 
         <div class="sidebar-menu__group">
             <div class="sidebar-menu__link"
                  th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__link--current' : ''">
                 <span class="material-symbols-outlined sidebar-menu__icon">inventory_2</span>
-                <span>상품 관리</span>
+                <span>상품 요청</span>
             </div>
 
             <div class="sidebar-menu__child-wrap">
@@ -34,7 +34,7 @@
             <div class="sidebar-menu__link"
                  th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''">
                 <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
-                <span>견적 관리</span>
+                <span>내 상품</span>
             </div>
 
             <div class="sidebar-menu__child-wrap">
@@ -55,7 +55,28 @@
             <div class="sidebar-menu__link"
                  th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
                 <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
-                <span>문의 관리</span>
+                <span>내 견적관리</span>
+            </div>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/admin/inquiry/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'inquiry-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    문의 목록
+                </a>
+                <a th:href="@{/admin/chat/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'chat-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    채팅 관리
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
+                <span>내 주문조회</span>
             </div>
 
             <div class="sidebar-menu__child-wrap">
