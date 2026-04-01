@@ -74,6 +74,14 @@
   animation: member-chat-view-in 0.18s ease both;
 }
 
+.member-chat-view.is-active.member-chat-view--slide-forward {
+  animation: member-chat-view-slide-forward 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.member-chat-view.is-active.member-chat-view--slide-back {
+  animation: member-chat-view-slide-back 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .member-chat-topbar,
 .member-chat-room-topbar {
   display: flex;
@@ -129,17 +137,12 @@
   overflow: hidden;
   min-height: 10.75rem;
   padding: 1.45rem 1.25rem 1.7rem;
-  background: #ffd21f;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.14) 18%, rgba(255, 255, 255, 0) 36%),
+    radial-gradient(circle at 92% 8%, rgba(255, 240, 173, 0.42) 0%, rgba(255, 210, 31, 0.18) 24%, rgba(255, 210, 31, 0) 44%),
+    radial-gradient(circle at 16% 120%, rgba(255, 186, 8, 0.26) 0%, rgba(255, 186, 8, 0) 34%),
+    linear-gradient(135deg, #fff0a6 0%, #ffd94d 26%, #ffd21f 54%, #efb500 100%);
   color: #473400;
-}
-
-.member-chat-hero__shape {
-  position: absolute;
-  top: -1.8rem;
-  right: -1.2rem;
-  width: 8rem;
-  height: 8rem;
-  background: rgba(255, 255, 255, 0.14);
 }
 
 .member-chat-hero h3 {
@@ -856,11 +859,20 @@
   box-shadow: 0 20px 40px rgba(26, 28, 28, 0.18);
 }
 
+.member-chat-modal__dialog--danger {
+  width: min(100%, 18.25rem);
+  padding-top: 1.15rem;
+}
+
 .member-chat-modal__accent {
   width: 3rem;
   height: 3px;
   margin-bottom: 1rem;
   background: #ffd21f;
+}
+
+.member-chat-modal__accent--danger {
+  background: #d4a106;
 }
 
 .member-chat-modal__dialog h3 {
@@ -901,6 +913,12 @@
   color: #ffffff;
 }
 
+.member-chat-modal__button--danger {
+  background: #1c1c1c;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(26, 28, 28, 0.12);
+}
+
 .member-chat-modal:not(.is-hidden) .member-chat-modal__backdrop {
   animation: member-chat-fade-in 0.18s ease both;
 }
@@ -934,6 +952,30 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes member-chat-view-slide-forward {
+  from {
+    opacity: 0;
+    transform: translateX(1.6rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes member-chat-view-slide-back {
+  from {
+    opacity: 0;
+    transform: translateX(-1.6rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

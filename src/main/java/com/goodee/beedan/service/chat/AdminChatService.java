@@ -266,7 +266,7 @@ public class AdminChatService {
                 .map(this::mapToAdminChatMessageDto)
                 .toList();
 
-        return mapToAdminChatRoomDetailDto(chatRoom, member, admin, messageDtos);
+        return mapToAdminChatRoomDetailDto(chatRoom, member, admin, messageDtos, chatRoom.getMemAdId() != null && chatRoom.getMemAdId().equals(memAdId));
     }
 
     // 관리자 메시지 DTO 변환
@@ -284,13 +284,15 @@ public class AdminChatService {
             ChatRoom chatRoom,
             Member member,
             Member admin,
-            List<AdminChatMessageDto> messageDtos
+            List<AdminChatMessageDto> messageDtos,
+            boolean canWrite
     ) {
         return AdminChatRoomDetailDto.builder()
                 .chRoId(chatRoom.getChRoId())
                 .memBizTtl(member.getMemBizTtl())
                 .memNm(member.getMemNm())
                 .adminName(admin != null ? admin.getMemNm() : null)
+                .canWrite(canWrite)
                 .chRoStt(chatRoom.getChRoStt())
                 .chRoAsgDt(chatRoom.getChRoAsgDt())
                 .chRoClsDt(chatRoom.getChRoClsDt())

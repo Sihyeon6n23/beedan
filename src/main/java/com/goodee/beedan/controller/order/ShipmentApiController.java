@@ -52,7 +52,4 @@ public class ShipmentApiController {
         return ResponseEntity.ok(shipmentDto);
     }
 
-    @DeleteMapping("/{id}/admin")
-    public ResponseEntity<S>
-
 }
