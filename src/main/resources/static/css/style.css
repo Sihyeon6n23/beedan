@@ -219,47 +219,47 @@
     height: auto;
   }
   [hidden]:where(:not([hidden="until-found"])) {
-    display: none !important;
+    display: none;
   }
 }
 @layer utilities {
   /* [1] 그리드 레이아웃 엔진 (PC 화면 768px 이상에서 가로 배치) */
   @media (min-width: 768px) {
     .grid-cols-12 {
-      display: grid !important;
-      grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
     }
 
     /* 왼쪽 8칸 차지 */
     .lg\:col-span-8 {
-      grid-column: span 8 / span 8 !important;
+      grid-column: span 8 / span 8;
     }
 
     /* 오른쪽 4칸 차지 */
     .lg\:col-span-4 {
-      grid-column: span 4 / span 4 !important;
+      grid-column: span 4 / span 4;
     }
 
     /* 간격 조절 (gap-12) */
     .gap-12 {
-      gap: 3rem !important;
+      gap: 3rem;
     }
   }
 
   /* [2] 모바일 대응 (768px 미만에서는 한 줄씩 쌓임) */
   @media (max-width: 767px) {
     .col-span-12 {
-      grid-column: span 12 / span 12 !important;
+      grid-column: span 12 / span 12;
     }
     .gap-12 {
-      gap: 1.5rem !important;
+      gap: 1.5rem;
     }
   }
 
   /* [3] 추가 누락 수치 대응 */
-  .max-w-6xl { max-width: 72rem !important; }
-  .max-w-5xl { max-width: 64rem !important; }
-  .mx-auto { margin-left: auto !important; margin-right: auto !important; }
+  .max-w-6xl { max-width: 72rem; }
+  .max-w-5xl { max-width: 64rem; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
   /* 1. 로그인 박스 전용 건축적 그림자 */
   .shadow-\[0_4px_20px_rgba\(26\,28\,28\,0\.05\)\] {
     box-shadow: 0 4px 20px rgba(26, 28, 28, 0.05);
@@ -345,6 +345,10 @@
   }
   .z-50 {
     z-index: 50;
+  }
+
+  .z-9999 {
+    z-index: 9999;
   }
   .mx-auto {
     margin-inline: auto;
@@ -607,7 +611,7 @@
     border-color: var(--color-outline-variant);
   }
   .border-outline-variant\/30 {
-    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent) !important;
+    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
   }
   .border-stone-100 {
     border-color: #f5f5f4;
@@ -739,12 +743,12 @@
     font-family: var(--font-headline);
   }
   .\!text-lg {
-    font-size: var(--text-lg) !important;
-    line-height: var(--tw-leading, var(--text-lg--line-height)) !important;
+    font-size: var(--text-lg);
+    line-height: var(--tw-leading, var(--text-lg--line-height));
   }
   .\!text-sm {
-    font-size: var(--text-sm) !important;
-    line-height: var(--tw-leading, var(--text-sm--line-height)) !important;
+    font-size: var(--text-sm);
+    line-height: var(--tw-leading, var(--text-sm--line-height));
   }
   .text-xs {
     font-size: var(--text-xs);
@@ -1005,85 +1009,182 @@
     }
   }
   /* [1] 누락된 패딩 및 마진 수치 (pb-20, mb-16 등) */
-  .pb-20 { padding-bottom: 5rem !important; }
-  .mb-16 { margin-bottom: 4rem !important; }
-  .mb-2 { margin-bottom: 0.5rem !important; }
-  .mb-8 { margin-bottom: 2rem !important; }
-  .mb-4 { margin-bottom: 1rem !important; }
-  .mt-0\.5 { margin-top: 0.125rem !important; }
-  .pt-4 { padding-top: 1rem !important; }
+  .pb-20 { padding-bottom: 5rem; }
+  .mb-16 { margin-bottom: 4rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mt-0\.5 { margin-top: 0.125rem; }
+  .pt-4 { padding-top: 1rem; }
 
   /* [2] 폼 박스 특수 보더 (border-l-[6px]) */
   .border-l-\[6px\] {
-    border-left-width: 6px !important;
+    border-left-width: 6px;
   }
 
   /* [3] 컬러 및 투명도 (text-on-primary-container, text-secondary 등) */
-  .text-on-primary-container { color: var(--color-on-primary-container) !important; }
-  .text-on-surface { color: var(--color-on-surface) !important; }
-  .text-secondary { color: var(--color-secondary) !important; }
-  .opacity-20 { opacity: 0.2 !important; }
-  .opacity-30 { opacity: 0.3 !important; }
+  .text-on-primary-container { color: var(--color-on-primary-container); }
+  .text-on-surface { color: var(--color-on-surface); }
+  .text-secondary { color: var(--color-secondary); }
+  .opacity-20 { opacity: 0.2; }
+  .opacity-30 { opacity: 0.3; }
 
   /* [4] 특수 그림자 및 레이아웃 보강 */
-  .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; }
-  .select-none { user-select: none !important; }
+  .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+  .select-none { user-select: none; }
 
   /* [5] 아이콘 크기 수동 제어 (text-9xl) */
-  .text-9xl { font-size: 8rem !important; line-height: 1 !important; }
+  .text-9xl { font-size: 8rem; line-height: 1; }
 
   /* [6] 자식 요소 간격 (space-y-3, space-y-4 등) */
-  .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem !important; }
-  .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem !important; }
-  .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 2rem !important; }
+  .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+  .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+  .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 2rem; }
 
   /* [7] 그리드 간격 보강 (gap-12, gap-3) */
-  .gap-3 { gap: 0.75rem !important; }
+  .gap-3 { gap: 0.75rem; }
   /* [1] 8px 두께의 좌측 강조 보더 */
   .border-l-\[8px\] {
-    border-left-width: 8px !important;
+    border-left-width: 8px;
+  }
+
+  /* --- Benefits Modal Utility Overrides --- */
+
+  /* 1. 배경색 변수 강제 매핑 */
+  .bg-surface-container-lowest {
+    background-color: var(--color-surface-container-lowest, #ffffff);
+  }
+
+  .bg-surface-container-highest {
+    background-color: var(--color-surface-container-highest, #e2e2e2);
+  }
+
+  /* 2. 모달 가시성 제어 클래스 */
+  #benefitsModal.hidden {
+    display: none;
+  }
+
+  /* 3. 레이아웃 사이즈 강제 확보 */
+  .max-w-6xl {
+    max-width: 72rem; /* 1152px */
+  }
+
+  .max-h-\[90vh\] {
+    max-height: 90vh;
+  }
+
+  /* 4. 그리드 시스템 보강 (사이즈가 0으로 나오는 현상 방지) */
+  #benefitsModal .grid {
+    display: grid;
+  }
+
+  /* 5. 투명도 및 백드롭 처리 */
+  .bg-black\/50 {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* --- 추가 누락 유틸리티 매핑 --- */
+
+  /* 1. 화면 전체를 덮는 위치 설정 (inset-0) */
+  .inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  /* 2. 중앙 정렬 시스템 (items-center, justify-center) */
+  .items-center {
+    align-items: center;
+  }
+
+  .justify-center {
+    justify-content: center;
+  }
+
+  /* 3. 배경색 진하기 보정 (bg-black/60) */
+  .bg-black\/60 {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  /* 4. 안쪽 여백 보강 (p-4) */
+  .p-4 {
+    padding: 1rem;
+  }
+
+  /* 5. 텍스트 및 레이아웃 디테일 (모달 내부 전용) */
+  .max-w-6xl {
+    width: 100%;
+    max-width: 72rem;
+  }
+
+  .relative {
+    position: relative;
+  }
+
+  .overflow-y-auto {
+    overflow-y: auto;
+  }
+
+  /* 6. 그림자 효과 (shadow-2xl) */
+  .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 6. 모달 내부 텍스트 컬러 보정 */
+  .text-on-surface {
+    color: var(--color-on-surface, #1a1c1c);
+  }
+
+  .text-primary {
+    color: var(--color-primary, #705d00);
   }
 
   /* [2] 텍스트 및 레이아웃 특수 수치 */
-  .tracking-\[0\.2em\] { letter-spacing: 0.2em !important; }
-  .tracking-\[0\.3em\] { letter-spacing: 0.3em !important; }
-  .text-\[10px\] { font-size: 10px !important; }
-  .text-\[9px\] { font-size: 9px !important; }
+  .tracking-\[0\.2em\] { letter-spacing: 0.2em; }
+  .tracking-\[0\.3em\] { letter-spacing: 0.3em; }
+  .text-\[10px\] { font-size: 10px; }
+  .text-\[9px\] { font-size: 9px; }
 
   /* [3] 요약 카드용 컬러 투명도 제어 */
   .border-white\/10 {
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.1);
   }
   .text-white\/50 {
-    color: rgba(255, 255, 255, 0.5) !important;
+    color: rgba(255, 255, 255, 0.5);
   }
   .text-white\/40 {
-    color: rgba(255, 255, 255, 0.4) !important;
+    color: rgba(255, 255, 255, 0.4);
   }
   .bg-white\/40 {
-    background-color: rgba(255, 255, 255, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.4);
   }
 
   /* [4] 보더 투명도 조합 (border-outline-variant/30) */
   .border-outline-variant\/30 {
-    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent) !important;
+    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
   }
 
   /* [5] 폼 필드 그룹 포커스 애니메이션 */
   .group:focus-within label {
-    color: var(--color-primary) !important;
+    color: var(--color-primary);
     transition: color 0.2s ease;
   }
 
   /* [6] 업로드 드롭존 점선 커스텀 */
   .border-dashed {
-    border-style: dashed !important;
+    border-style: dashed;
   }
 
   /* [7] 스티키 사이드바 위치 보정 */
   .sticky.top-24 {
-    position: sticky !important;
-    top: 6rem !important;
+    position: sticky;
+    top: 6rem;
   }
 
   /* [8] 버튼 강조 스케일 효과 */
@@ -1095,48 +1196,48 @@
   }
   /* [1] 임의 수치 보더 두께 (border-l-[8px]) */
   .border-l-\[8px\] {
-    border-left-width: 8px !important;
+    border-left-width: 8px;
   }
 
   /* [2] 투명도가 적용된 보더 컬러 (border-outline-variant/30) */
   .border-outline-variant\/30 {
-    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent) !important;
+    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
   }
 
   /* [3] 우측 카드 내부 투명도 보더 (border-white/10) */
   .border-white\/10 {
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.1);
   }
 
   /* [4] 텍스트 투명도 (text-white/50, text-white/40) */
-  .text-white\/50 { color: rgba(255, 255, 255, 0.5) !important; }
-  .text-white\/40 { color: rgba(255, 255, 255, 0.4) !important; }
+  .text-white\/50 { color: rgba(255, 255, 255, 0.5); }
+  .text-white\/40 { color: rgba(255, 255, 255, 0.4); }
 
   /* [5] 특수 자간 및 크기 (tracking-[0.3em], tracking-[0.2em], text-[10px]) */
-  .tracking-\[0\.3em\] { letter-spacing: 0.3em !important; }
-  .tracking-\[0\.2em\] { letter-spacing: 0.2em !important; }
-  .text-\[10px\] { font-size: 10px !important; }
-  .text-\[9px\] { font-size: 9px !important; }
+  .tracking-\[0\.3em\] { letter-spacing: 0.3em; }
+  .tracking-\[0\.2em\] { letter-spacing: 0.2em; }
+  .text-\[10px\] { font-size: 10px; }
+  .text-\[9px\] { font-size: 9px; }
 
   /* [6] 레이아웃 보강 (sticky top-24) */
   /* md:ml-64 같은 사이드바 간섭을 고려하여 sticky 위치를 명시합니다. */
   .sticky.top-24 {
-    position: sticky !important;
-    top: 6rem !important; /* 24 * 0.25rem = 6rem */
+    position: sticky;
+    top: 6rem; /* 24 * 0.25rem = 6rem */
   }
 
   /* [7] 버튼 강조 효과 (!bg-primary-container 등) */
   /* !가 붙은 클래스명은 CSS에서 수동으로 처리하기 까다로우므로 아래와 같이 정의합니다. */
   .\!bg-primary-container {
-    background-color: var(--color-primary-container) !important;
+    background-color: var(--color-primary-container);
   }
   .\!text-on-primary-container {
-    color: var(--color-on-primary-container) !important;
+    color: var(--color-on-primary-container);
   }
 
   /* [8] 폼 간격 (space-y-6, space-y-12 등 미정의된 간격) */
-  .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem !important; }
-  .space-y-10 > :not([hidden]) ~ :not([hidden]) { margin-top: 2.5rem !important; }
+  .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+  .space-y-10 > :not([hidden]) ~ :not([hidden]) { margin-top: 2.5rem; }
   /* [1] 검은색 카드 배경 (bg-on-surface) */
   .bg-on-surface {
     /* 변수에 등록된 #1a1c1c 색상을 배경으로 적용 */
@@ -1166,18 +1267,18 @@
   @layer utilities {
     /* 왼쪽 마진을 자동으로 채워 요소를 오른쪽 끝으로 보냄 */
     .ml-auto {
-      margin-left: auto !important;
+      margin-left: auto;
     }
 
     /* (참고) 반대로 오른쪽 마진을 채워 왼쪽으로 밀 때는 mr-auto */
     .mr-auto {
-      margin-right: auto !important;
+      margin-right: auto;
     }
   }
 }
 @layer base {
   * {
-    border-radius: 0px !important;
+    border-radius: 0px;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -1544,122 +1645,122 @@
 
 /* --- 알림창 --- */
 .notification-wrapper {
-  position: absolute !important;
-  top: 80px !important;    /* 아이콘(20px) 바로 아래 적당한 위치 */
-  right: 0 !important;     /* 아이콘 우측 라인에 맞춤 */
-  z-index: 1000 !important;
-  width: 400px !important;
-  cursor: default !important; /* 아이콘은 포인터지만 창 안은 기본 화살표 */
+  position: absolute;
+  top: 80px;    /* 아이콘(20px) 바로 아래 적당한 위치 */
+  right: 0;     /* 아이콘 우측 라인에 맞춤 */
+  z-index: 1000;
+  width: 400px;
+  cursor: default; /* 아이콘은 포인터지만 창 안은 기본 화살표 */
 
   /* 배경색 및 보더 강제 */
-  background-color: #ffffff !important;
-  border: 1px solid #e2e2e2 !important;
-  box-shadow: 20px 20px 0px 0px rgba(0,0,0,0.1) !important;
-  overflow: hidden !important; /* 내부 요소가 테두리를 넘지 않게 */
+  background-color: #ffffff;
+  border: 1px solid #e2e2e2;
+  box-shadow: 20px 20px 0px 0px rgba(0,0,0,0.1);
+  overflow: hidden; /* 내부 요소가 테두리를 넘지 않게 */
 }
 .noti-list {
-  max-height: 400px !important; /* 너무 길어지지 않게 */
-  overflow-y: auto !important;   /* 내용 많으면 스크롤 */
-  background-color: #ffffff !important;
+  max-height: 400px; /* 너무 길어지지 않게 */
+  overflow-y: auto;   /* 내용 많으면 스크롤 */
+  background-color: #ffffff;
 }
 
 .noti-header h3 {
-  font-family: 'Manrope', sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 800 !important;
-  margin: 0 !important;
-  color: #1a1c1c !important;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0;
+  color: #1a1c1c;
 }
 
 /* 알림창 안의 컨테이너 배경색 누락 방지 */
 .notification-container {
-  background-color: #ffffff !important;
-  display: flex !important;
-  flex-direction: column !important;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 푸터 영역 검은색 배경 확실히 적용 */
 .noti-footer {
-  background-color: #1a1c1c !important;
-  padding: 0 !important; /* 버튼이 꽉 차게 */
+  background-color: #1a1c1c;
+  padding: 0; /* 버튼이 꽉 차게 */
 }
 
 .btn-view-all {
-  width: 100% !important;
-  padding: 20px !important;
-  background-color: #1a1c1c !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.3em !important;
-  border: none !important;
-  cursor: pointer !important;
+  width: 100%;
+  padding: 20px;
+  background-color: #1a1c1c;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  border: none;
+  cursor: pointer;
 }
 
 /* --- 알림창 내부 아이템 디테일 추가 --- */
 
 .noti-header {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 24px !important;
-  border-bottom: 1px solid #f5f5f5 !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #f5f5f5;
 }
 
 .btn-mark-read {
-  background: none !important;
-  border: none !important;
-  color: #a3a3a3 !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  text-transform: uppercase !important;
-  cursor: pointer !important;
+  background: none;
+  border: none;
+  color: #a3a3a3;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 .noti-item {
-  display: flex !important;
-  gap: 16px !important;
-  padding: 20px 24px !important;
-  border-bottom: 1px solid #f5f5f5 !important;
-  position: relative !important;
+  display: flex;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f5f5f5;
+  position: relative;
 }
 
-.noti-item.unread { background-color: #fffbeb !important; }
+.noti-item.unread { background-color: #fffbeb; }
 
 .unread-indicator {
-  position: absolute !important;
-  left: 0 !important; top: 0 !important; bottom: 0 !important;
-  width: 4px !important; background-color: #705d00 !important;
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px; background-color: #705d00;
 }
 
 .noti-title {
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  color: #1a1c1c !important;
-  text-transform: uppercase !important;
-  margin: 0 0 4px 0 !important;
+  font-size: 12px;
+  font-weight: 800;
+  color: #1a1c1c;
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
 }
 
 .noti-description {
-  font-size: 12px !important;
-  color: #525252 !important;
-  line-height: 1.5 !important;
-  margin: 0 0 8px 0 !important;
+  font-size: 12px;
+  color: #525252;
+  line-height: 1.5;
+  margin: 0 0 8px 0;
 }
 
 .noti-timestamp {
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  color: #a3a3a3 !important;
-  text-transform: uppercase !important;
+  font-size: 10px;
+  font-weight: 700;
+  color: #a3a3a3;
+  text-transform: uppercase;
 }
 
 /* 아이콘 박스 */
 .noti-icon-container {
-  width: 40px !important; height: 40px !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
-  border: 1px solid #e8e8e8 !important; background: white !important;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #e8e8e8; background: white;
 }
 
 .mypage-changepw-page {
