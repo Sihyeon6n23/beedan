@@ -46,6 +46,8 @@ public class Order {
     private LocalDateTime ordBaseUpdDt;
     @Column(name = "ord_base_tt_am", precision = 18, scale = 0)
     private BigDecimal ordBaseTtAm; // 주문 총 금액
+    @Column(name ="ord_base_can_yn")
+    private Boolean ordBaseCanYn;
     @ManyToOne
     @JoinColumn(name = "mem_id")
     private Member member;
