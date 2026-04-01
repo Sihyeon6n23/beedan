@@ -132,8 +132,13 @@
     bubble.className = "admin-chat-detail-message__bubble admin-chat-detail-message__bubble--admin";
     bubble.textContent = message.chMsCon;
 
+    var messageTime = document.createElement("span");
+    messageTime.className = "admin-chat-detail-message__time admin-chat-detail-message__time--admin";
+    messageTime.textContent = time.textContent;
+
     content.appendChild(meta);
     content.appendChild(bubble);
+    content.appendChild(messageTime);
     article.appendChild(content);
     adminMessageList.appendChild(article);
     if (adminMessageScrollBody) {
