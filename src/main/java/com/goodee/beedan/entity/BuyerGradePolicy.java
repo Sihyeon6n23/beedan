@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "BUYER_GRADE_POLICY")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
