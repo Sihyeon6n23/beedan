@@ -14,61 +14,47 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/order/order.css}">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
-        <div class="order-page-container max-w-6xl mx-auto">
-            <header class="hero-section w-full">
-                <div class="hero-content">
-                    <h1 class="hero-title">ORDER HISTORY</h1>
-                    <div class="user-meta-bar">
-                        <div class="meta-item">
-                            <span class="meta-label">USER NAME</span>
-                            <span class="meta-value" th:text="${#authentication.principal.displayName}">HONG GIL DONG</span>
-                        </div>
-                        <div class="meta-divider"></div>
-                        <div class="meta-item">
-                            <span class="meta-label">MEMBER ID</span>
-                            <span class="meta-value" th:text="${#authentication.principal.memberId}">0123456</span>
-                        </div>
+        <section class="admin-chat-page admin-chat-list-page">
+            <header class="admin-chat-shell admin-chat-shell--header">
+                <div class="admin-chat-shell__heading">
+                    <span class="admin-chat-kicker">ORDER HISTORY</span>
+                    <h2 class="admin-chat-title">주문 관리</h2>
+
+                    <div class="admin-chat-shell__rule">
+                        <span></span>
                     </div>
                 </div>
             </header>
 
-            <section class="summary-grid">
-                <div class="summary-card">
-                    <span class="summary-label">Total Orders</span>
-                    <span class="summary-value" th:text="${#lists.size(orders)}">0</span>
-                </div>
-                <div class="summary-card bg-light">
-                    <span class="summary-label">Completed</span>
-                    <span class="summary-value">128</span>
-                </div>
-                <div class="summary-card bg-primary">
-                    <span class="summary-label">In Progress</span>
-                    <span class="summary-value accent">14</span>
+            <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="배송 목록 필터">
+                <div class="admin-chat-toolbar">
+                    <div class="admin-chat-toolbar__filters">
+                        <div class="admin-chat-filter-set" data-filter-group="status">
+                            <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                            <a class="admin-chat-filter" href="#" data-status="PREPARING">상품 준비중</a>
+                            <a class="admin-chat-filter" href="#" data-status="SHIPPING">배송중</a>
+                            <a class="admin-chat-filter" href="#" data-status="DELIVERED">배송 완료</a>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <form class="filter-section">
-                <div class="filter-group">
-                    <label>Date Range</label>
-                    <div class="date-input-wrapper">
-                        <input type="date" name="start">
-                        <span class="date-sep">to</span>
-                        <input type="date" name="end">
-                    </div>
+            <section class="admin-chat-shell admin-chat-shell--list">
+                <div class="admin-chat-list-head" aria-hidden="true">
+                    <div>주문 번호</div>
+                    <div>주문 일자</div>
+                    <div>수령인</div>
+                    <div>수령 주소</div>
+                    <div>총 금액</div>
+                    <div>주문 상태</div>
+                    <div>Actions</div>
                 </div>
-                <div class="filter-group">
-                    <label>Order Status</label>
-                    <select name="status" class="status-select">
-                        <option value="all">All Statuses</option>
-                        <option value="PREPARING">상품 준비중</option>
-                        <option value="SHIPPING">배송중</option>
-                        <option value="DELIVERED">배송완료</option>
-                        <option value="CANCELLED">주문 취소</option>
-                    </select>
+
+                <div class="admin-chat-list-body" id="require-list-body">
                 </div>
-                <button type="submit" class="btn-apply">APPLY FILTERS</button>
-            </form>
+            </section>
 
             <div class="table-responsive">
                 <table class="order-table">
@@ -185,9 +171,6 @@
                     }
                 });
             </script>
-
-
-
-        </div>
+        </section>
 </th:block>
 </html>

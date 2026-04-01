@@ -38,7 +38,4 @@ public class OrderItem {
     @Column(name = "ord_item_upd_dt")
     @LastModifiedDate
     private LocalDateTime ordItemUpdDt;
-
-/*    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL)
-    private List<ShipmentItem> shipmentItems = new ArrayList<>();*/
 }
