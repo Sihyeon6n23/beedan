@@ -6,7 +6,7 @@ const PhoneNumberVerification = {
             });
             console.log("응답완료", response.data);
             return response.data;
-        } catch (error){
+        } catch (error) {
             console.error("검증 중 에러발생: " + error.response?.data || error.message);
             throw error;
         }

@@ -1309,6 +1309,56 @@
   .tracking-\[0\.2em\] { letter-spacing: 0.2em; }
 }
 @layer components {
+  /* 페이지 레이아웃 및 타이틀 */
+  .mypage-edit-profile-page__kicker {
+    @apply text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-2 block;
+  }
+
+  .mypage-edit-profile-page__title {
+    @apply font-headline text-4xl font-black tracking-tighter text-on-background mb-6;
+  }
+
+  .mypage-edit-profile-page__rule {
+    @apply w-12 h-[3px] bg-primary mb-12;
+  }
+
+  /* 입력 필드 공통 스타일 */
+  .bd-input {
+    @apply w-full px-5 py-4 text-sm font-medium border-none outline-none
+    ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary
+    transition-all duration-200 placeholder:text-outline-variant;
+  }
+
+  /* 읽기 전용 상태 스타일 (본인인증 전 휴대폰 번호) */
+  .bd-input:read-only {
+    @apply bg-surface-container-highest/50 text-secondary/60 cursor-not-allowed;
+  }
+
+  /* 버튼 시스템 */
+  .btn-primary {
+    @apply bg-primary text-on-primary font-bold uppercase tracking-widest
+    hover:bg-primary/90 active:scale-[0.98] transition-all
+    shadow-sm hover:shadow-md disabled:bg-outline-variant;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-container text-on-secondary-container font-bold uppercase tracking-tighter
+    hover:bg-secondary-container/80 active:scale-[0.98] transition-all border-none;
+  }
+
+  .btn-ghost {
+    @apply hover:bg-surface-container-low text-secondary font-bold transition-all;
+  }
+
+  /* 그림자 및 효과 */
+  .shadow-chat-shell {
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  }
+
+  /* 본인인증 전용 팝업 등 인터랙션 요소 (선택) */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
   .header_final-1 {
     margin-inline: auto;
     display: flex;

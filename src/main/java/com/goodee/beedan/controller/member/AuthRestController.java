@@ -29,6 +29,7 @@ public class AuthRestController {
 
     }
 
+    // impUid반환함.
     @PostMapping("/phone-certification")
     public Mono<ResponseEntity<Map<String, Object>>> postPhoneVerification (
             @RequestBody Map<String, String> body) {

@@ -1,27 +1,37 @@
 package com.goodee.beedan.controller.member;
 
 import com.goodee.beedan.dto.buyer.BuyerGradePolicyResponse;
+import com.goodee.beedan.dto.member.PhoneVerificationDto;
+import com.goodee.beedan.dto.member.mypage.UpdateMemberRequest;
 import com.goodee.beedan.entity.Buyer;
 import com.goodee.beedan.entity.BuyerGradePolicy;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.repository.buyer.BuyerRepository;
+import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.buyer.BuyerGradePolicyService;
 import com.goodee.beedan.service.buyer.BuyerService;
 import com.goodee.beedan.service.member.MemberService;
+import com.goodee.beedan.service.member.MypageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,6 +42,8 @@ public class MypageController {
     private final BuyerService buyerService;
     private final BuyerGradePolicyService buyerGradePolicyService;
     private final BuyerRepository buyerRepository;
+    private final MypageService mypageService;
+    private final PortOneService portOneService;
 
     @GetMapping("")
     public String getMainRedirect() {
@@ -110,6 +122,73 @@ public class MypageController {
     @GetMapping("/changepw")
     public String getChangePw() {
         return "/member/mypage/mypage-changepw";
+    }
+
+    @GetMapping("/modify")
+    public String modifyProfileForm(Model model, Principal principal) {
+        Member member = memberService.getLoginId(principal.getName());
+
+        model.addAttribute("member", member);
+
+        return "member/mypage/mypage-modify"; // 파일 경로에 맞춰 수정하세요
+    }
+
+    /**
+     * [POST] 정보 수정 실행
+     * URL: /profile/modify
+     */
+    @PostMapping("/modify")
+    public String modifyProfileUpdate(@Valid @ModelAttribute UpdateMemberRequest request,
+                                      BindingResult bindingResult, // ❗️반드시 @ModelAttribute 바로 다음에 와야 합니다.
+                                      Principal principal,
+                                      RedirectAttributes redirectAttributes,
+                                      Model model) { // 뷰를 다시 보여줄 때 필요할 수 있어 Model 추가
+
+        // 1. DTO 유효성 검사 (@NotBlank, @Email 등) 실패 시 처리
+        if (bindingResult.hasErrors()) {
+            // 에러가 발생하면 수정 폼 화면을 다시 렌더링합니다.
+            // Redirect하지 않고 뷰를 바로 리턴해야 사용자가 입력하던 값과 에러 메시지가 유지됩니다.
+            return "member/mypage/mypage-modify";
+        }
+
+        try {
+            // 2. 본인인증 impUid가 넘어왔는지 확인 (휴대폰 번호를 변경하여 인증을 진행한 경우)
+            if (request.getImpUid() != null && !request.getImpUid().isBlank()) {
+
+                // 휴대폰 번호 API 검증 (백엔드 검증)
+                Mono<Map<String, Object>> verifyMono = portOneService.verify(request.getImpUid());
+                PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
+
+
+                // [수정된 부분] 1. 뷰로 돌아갈 때마다 쓸 수 있게 member 객체를 미리 조회해 둡니다.
+                Member member = memberService.getLoginId(principal.getName());
+
+                // 2. DTO 유효성 검사 실패 시
+                if (bindingResult.hasErrors()) {
+                    model.addAttribute("member", member); // 뷰에서 쓸 수 있게 담아줌
+                    return "member/mypage/mypage-modify";
+                }
+
+                // [핵심] 포트원에서 받은 확실한 데이터로 교체 (위조 방지)
+                request.setPhone(phoneVerificationDto.getPhoneNumber());
+                request.setCi(phoneVerificationDto.getCi());
+
+                // 🔍 객체 내부 데이터 뜯어보기 (콘솔 확인)
+                log.info("🔥 [포트원 본인인증 찐 데이터]: {}", phoneVerificationDto);
+            }
+
+            // 3. 서비스 계층에서 업데이트 로직 실행
+            mypageService.updateMember(principal.getName(), request);
+
+            // 4. 성공 시 마이페이지나 수정 페이지로 리다이렉트
+            redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 변경되었습니다.");
+            return "redirect:/mypage/detail";
+
+        } catch (Exception e) {
+            // 기타 서버 에러 발생 시
+            redirectAttributes.addFlashAttribute("error", "정보 수정 중 오류가 발생했습니다: " + e.getMessage());
+            return "redirect:/mypage/modify";
+        }
     }
 
     @GetMapping("/changebiz")
