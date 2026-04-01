@@ -189,6 +189,7 @@ public class OrderService {
                 .ordBaseMsg(order.getOrdBaseMsg())
                 .ordBaseStt(order.getOrdBaseStt())
                 .ordBaseNo(order.getOrdBaseNo())
+                .ordBaseTtAm(order.getOrdBaseTtAm())
                 .ordBaseCreDt(order.getOrdBaseCreDt())
                 .build();
 
