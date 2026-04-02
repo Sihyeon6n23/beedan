@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="sidebar(activeMain, activeSub)">
+    <div class="sidebar-scope">
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
+                <span>견적 관리</span>
+            </div>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/quote/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'quote-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    견적 목록
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'payment'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">payments</span>
+                <span>결제 관리</span>
+            </div>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/payment/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'payment-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    결제 내역
+                </a>
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>

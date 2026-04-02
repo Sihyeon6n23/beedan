@@ -88,13 +88,15 @@ public class ShipmentService {
         return dto;
     }
 
-    public void cancelShipment(Long shId, Long memId, Long ordId, Boolean shCanYn) { //
+    public void cancelShipment(Long shId, Long memId, Long ordId) { //
         Shipment shipment = shipmentRepository.findById(shId)
                 .orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
 
+        Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
         validateShipmentAccess(shipment, ordId, memId);
 
-        if (shCanYn) {
+        if (order.getOrdBaseStt() == OrderStatus.CANCELLED) {
             shipment.setSh_can_yn(true);
             orderService.cancelOrder(ordId, memId);
         }

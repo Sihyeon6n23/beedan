@@ -117,7 +117,7 @@
 
 .fee-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 }
 
@@ -136,7 +136,7 @@
 
 .fee-subtotal {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     padding-top: 16px;
     border-top: 1px dashed var(--color-border-subtle, #e7e5e4);
@@ -161,23 +161,25 @@
 }
 
 /* ── 등급 할인 표시 ── */
+.fee-value.has-discount,
 .fee-subtotal-value.has-discount {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    gap: 4px;
+    white-space: normal;
 }
+.fee-value .original-price,
 .fee-subtotal-value .original-price {
     text-decoration: line-through;
     color: var(--color-text-light, #a8a29e);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 18px;
 }
-.fee-subtotal-value .discounted-price {
+.fee-value .discounted-line,
+.fee-subtotal-value .discounted-line {
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--color-gold-dark, #705d00);
 }
 .grade-badge {
     display: inline-block;

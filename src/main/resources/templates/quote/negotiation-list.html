@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Negotiation Overview', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 협상 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'negotiation-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/quote/negotiation-list.css}">
+
+    <section class="ng-page ng-list-page">
+        <!-- Header -->
+        <header class="ng-shell ng-shell--header">
+            <div class="ng-shell__heading">
+                <span class="ng-kicker">Negotiation Overview</span>
+                <h2 class="ng-title">협상 목록</h2>
+            </div>
+            <div class="ng-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Toolbar -->
+        <section class="ng-shell ng-shell--toolbar" aria-label="협상 목록 필터">
+            <div class="ng-toolbar">
+                <div class="ng-toolbar__filters">
+                    <div class="ng-filter-set" data-filter-group="status">
+                        <a class="ng-filter is-active" href="#">전체</a>
+                        <a class="ng-filter" href="#">진행중</a>
+                        <a class="ng-filter" href="#">종료</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- List -->
+        <section class="ng-shell ng-shell--list">
+            <div class="ng-list-head" aria-hidden="true">
+                <div>협상 정보</div>
+                <div>상태</div>
+                <div>시작일</div>
+                <div>종료일</div>
+            </div>
+
+            <div class="ng-list-body">
+                <th:block th:each="ng : ${negotiations}">
+                    <a th:href="@{/quote/negotiation/detail(ngId=${ng.ngId})}"
+                       class="ng-row"
+                       th:classappend="${ng.ongoing} ? ' ng-row--featured' : ''">
+                        <div class="ng-row__primary">
+                            <span th:if="${ng.ongoing}" class="ng-row__dot"></span>
+                            <span th:unless="${ng.ongoing}" class="ng-row__dot ng-row__dot--empty"></span>
+                            <div class="ng-row__text">
+                                <h2>
+                                    <span th:text="${ng.ngNm}">QU0000</span>
+                                    <small th:text="'견적 ' + ${ng.quoteCount} + '건'">견적 0건</small>
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="ng-row__status">
+                            <span class="ng-badge"
+                                  th:classappend="${ng.ongoing} ? ' ng-badge--ongoing' : ' ng-badge--closed'"
+                                  th:text="${ng.ongoing} ? '진행중' : '종료'">상태</span>
+                        </div>
+                        <div class="ng-row__time">
+                            <span th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd') : '-'}">2024.10.21</span>
+                        </div>
+                        <div class="ng-row__time">
+                            <span th:if="${ng.ngEndDt != null}" th:text="${#temporals.format(ng.ngEndDt, 'yyyy.MM.dd')}">2024.10.25</span>
+                            <span th:if="${ng.ngEndDt == null}" class="ng-row__time--empty">—</span>
+                        </div>
+                    </a>
+                </th:block>
+
+                <div class="ng-empty-state"
+                     th:if="${#lists.isEmpty(negotiations)}">
+                    <strong>표시할 협상이 없습니다.</strong>
+                    <p>아직 진행한 협상이 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pagination -->
+        <footer class="ng-shell ng-shell--pagination">
+            <div class="ng-pagination">
+                <span class="ng-page-button ng-page-button--wide is-disabled">Prev</span>
+                <a class="ng-page-button is-current" href="#">01</a>
+                <a class="ng-page-button" href="#">02</a>
+                <a class="ng-page-button" href="#">03</a>
+                <a class="ng-page-button ng-page-button--wide" href="#">Next</a>
+            </div>
+        </footer>
+    </section>
+</th:block>
+</html>

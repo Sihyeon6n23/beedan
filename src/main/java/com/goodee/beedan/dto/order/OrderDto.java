@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,6 +20,7 @@ public class OrderDto {
     private String ordBaseAdrDt;
     private String ordBaseMsg;
     private String ordBaseNo;
+    private BigDecimal ordBaseTtAm;
     @Enumerated(EnumType.STRING)
     private OrderStatus ordBaseStt;
     @CreatedDate
