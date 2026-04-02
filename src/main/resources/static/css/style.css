@@ -1275,6 +1275,36 @@
       margin-right: auto;
     }
   }
+  /* 모달 레이아웃 및 애니메이션 */
+  #withdrawalModal {
+    transition: opacity 0.3s ease-out;
+  }
+
+  /* 모달이 열렸을 때 배경 스크롤 방지 보조 */
+  body.modal-open {
+    overflow: hidden;
+    padding-right: 15px; /* 스크롤바 너비만큼 여백을 주어 화면 밀림 방지 */
+  }
+
+  /* Material Symbols 미세 조정 */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+
+  /* 에러/경고 전용 색상 정의 (Tailwind에 없는 경우) */
+  .text-error {
+    color: #dc2626; /* red-600 */
+  }
+  .border-error {
+    border-color: #dc2626;
+  }
+  .bg-surface-container-lowest {
+    background-color: #ffffff;
+  }
+  .bg-surface-container-highest {
+    background-color: #f2f0ee; /* 프로젝트의 Stone 계열 톤에 맞춤 */
+  }
 }
 @layer base {
   * {
@@ -1307,7 +1337,32 @@
   .blur-\[120px\] { filter: blur(120px); }
   .text-\[10px\] { font-size: 10px; }
   .tracking-\[0\.2em\] { letter-spacing: 0.2em; }
+
+  #withdrawalModal:not(.hidden) {
+    display: flex;
+    animation: modal-backdrop-in 0.3s ease-out;
+  }
+
+  @keyframes modal-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* 텍스트 가독성 보정 클래스 */
+  .text-on-surface { color: var(--color-on-surface); }
+  .text-secondary { color: var(--color-secondary); }
+  .text-error { color: var(--color-error); }
+  .bg-error { background-color: var(--color-error); }
+
 }
+#withdrawalModal .font-headline {
+  color: var(--color-on-surface); /* #1a1c1c */
+}
+
+#withdrawalModal .font-body {
+  color: var(--color-secondary); /* #5f5e5e */
+}
+
 @layer components {
   /* 페이지 레이아웃 및 타이틀 */
   .mypage-edit-profile-page__kicker {

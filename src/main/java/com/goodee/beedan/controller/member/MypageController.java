@@ -1,6 +1,7 @@
 package com.goodee.beedan.controller.member;
 
 import com.goodee.beedan.dto.buyer.BuyerGradePolicyResponse;
+import com.goodee.beedan.dto.member.PasswordChangeDto;
 import com.goodee.beedan.dto.member.PhoneVerificationDto;
 import com.goodee.beedan.dto.member.mypage.UpdateMemberRequest;
 import com.goodee.beedan.entity.Buyer;
@@ -66,14 +67,6 @@ public class MypageController {
         Buyer buyer = null;
         String bizNo = member.getMemBizNo();
 
-        // MypageController getDetail 내부
-        String testNo = member.getMemBizNo().trim();
-        log.info("조회 직전 번호 확인: [{}] (길이: {})", testNo, testNo.length());
-
-// 서비스 호출 대신 레포지토리 직접 호출 테스트 (원인 파악용)
-        Optional<Buyer> testBuyer = buyerRepository.findByMemBizNo(testNo);
-        log.info("레포지토리 직접 조회 결과 존재여부: {}", testBuyer.isPresent());
-
         if (bizNo != null && !bizNo.isBlank()) {
             try {
                 // [핵심] 조회 전 모든 하이픈과 공백을 제거하여 DB와 형식을 맞춤
@@ -120,8 +113,39 @@ public class MypageController {
     }
 
     @GetMapping("/changepw")
-    public String getChangePw() {
+    public String getChangePw(
+            Model model) {
+        model.addAttribute("passwordForm", new PasswordChangeDto());
         return "/member/mypage/mypage-changepw";
+    }
+
+    @PostMapping("/changepw")
+    public String postChangePw(@Valid @ModelAttribute("passwordForm") PasswordChangeDto request,
+                               BindingResult bindingResult,
+                               Principal principal,
+                               RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            return "member/mypage/mypage-changepw";
+        }
+
+        if (!mypageService.matchPassword(principal.getName(), request.getCurrentPassword())) {
+            bindingResult.rejectValue("currentPassword", "curPasswordIncorrect", "현재 비밀번호가 일치하지 않습니다.");
+            return "member/mypage/mypage-changepw";
+        }
+
+        if (!request.isPasswordConfirm()) {
+                bindingResult.rejectValue("confirmPassword", "conPasswordIncorrect", "확인 비밀번호가 일치하지 않습니다.");
+            return "member/mypage/mypage-changepw";
+        }
+
+        try {
+            mypageService.changPassword(principal.getName(), request);
+            redirectAttributes.addAttribute("message", "비밀번호가 성공적으로 변경되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addAttribute("message", "비밀번호 변경 중 오류가 발생했습니다.");
+        }
+
+        return "redirect:/mypage/detail";
     }
 
     @GetMapping("/modify")
@@ -130,20 +154,15 @@ public class MypageController {
 
         model.addAttribute("member", member);
 
-        return "member/mypage/mypage-modify"; // 파일 경로에 맞춰 수정하세요
+        return "member/mypage/mypage-modify";
     }
 
-    /**
-     * [POST] 정보 수정 실행
-     * URL: /profile/modify
-     */
     @PostMapping("/modify")
     public String modifyProfileUpdate(@Valid @ModelAttribute UpdateMemberRequest request,
                                       BindingResult bindingResult, // ❗️반드시 @ModelAttribute 바로 다음에 와야 합니다.
                                       Principal principal,
                                       RedirectAttributes redirectAttributes,
-                                      Model model) { // 뷰를 다시 보여줄 때 필요할 수 있어 Model 추가
-
+                                      Model model) {
         // 1. DTO 유효성 검사 (@NotBlank, @Email 등) 실패 시 처리
         if (bindingResult.hasErrors()) {
             // 에러가 발생하면 수정 폼 화면을 다시 렌더링합니다.
@@ -170,6 +189,7 @@ public class MypageController {
                 }
 
                 // [핵심] 포트원에서 받은 확실한 데이터로 교체 (위조 방지)
+                request.setName(phoneVerificationDto.getName());
                 request.setPhone(phoneVerificationDto.getPhoneNumber());
                 request.setCi(phoneVerificationDto.getCi());
 
@@ -191,8 +211,9 @@ public class MypageController {
         }
     }
 
-    @GetMapping("/changebiz")
-    public String getChangeBiz() {
-        return "/member/mypage/mypage-changebiz";
+    @PostMapping("/withdrawal")
+    public String postWithdrawal(Principal principal) {
+        mypageService.withdraw(principal.getName());
+        return "redirect:/auth/signin";
     }
 }

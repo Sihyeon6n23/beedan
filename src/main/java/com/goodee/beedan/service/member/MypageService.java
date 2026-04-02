@@ -42,19 +42,24 @@ public class MypageService {
         log.info("=== [회원 정보 수정 종료] ===");
     }
 
-    public void changPassword(Long memberId, PasswordChangeDto changeDto) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
+    public void changPassword(String username, PasswordChangeDto changeDto) {
+        Member member = memberRepository.findByMemLgnId(username).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
         String memberCurrentPassword = member.getMemLgnPw();
         String dtoCurrentPassword = changeDto.getCurrentPassword();
         if (!passwordEncoder.matches(dtoCurrentPassword, memberCurrentPassword)) {
             return;
         }
 
-        member.setMemLgnPw(passwordEncoder.encode(changeDto.getPassword()));
+        member.setMemLgnPw(passwordEncoder.encode(changeDto.getNewPassword()));
     }
 
-    public void withdraw(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
+    public boolean matchPassword(String username, String currentPassword) {
+        Member member = memberRepository.findByMemLgnId(username).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
+        return passwordEncoder.matches(currentPassword, member.getMemLgnPw());
+    }
+
+    public void withdraw(String username) {
+        Member member = memberRepository.findByMemLgnId(username).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
         member.withdraw();
     }
 }

@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PasswordChangeDto {
     private String currentPassword;
-    private String password;
+    private String newPassword;
     private String confirmPassword;
 
-    public boolean isPasswordMatching() {
-        if (this.password == null || this.confirmPassword == null) {
+    public boolean isPasswordConfirm() {
+        if (this.newPassword == null || this.confirmPassword == null) {
             return false;
         }
-        return this.password.equals(this.confirmPassword);
+        return this.newPassword.equals(this.confirmPassword);
     }
 
 }

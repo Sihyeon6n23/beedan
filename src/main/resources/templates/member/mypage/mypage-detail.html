@@ -90,10 +90,53 @@
          class="px-6 py-3 bg-on-surface text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all duration-200 no-underline">
         비밀번호 변경
       </a>
-      <a th:href="@{/mypage/withdrawal}"
-         class="px-6 py-3 border border-stone-200 text-zinc-400 text-[10px] font-black uppercase tracking-widest hover:border-error hover:text-error transition-all duration-200 no-underline">
+      <button type="button" onclick="openWithdrawalModal()"
+              class="px-6 py-3 border border-stone-200 text-zinc-400 text-[10px] font-black uppercase tracking-widest hover:border-error hover:text-error transition-all duration-200">
         회원 탈퇴
-      </a>
+      </button>
+    </div>
+
+    <div id="withdrawalModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div class="bg-surface-container-lowest max-w-md w-full shadow-[0_20px_40px_rgba(0,0,0,0.1)] relative overflow-hidden border border-stone-100">
+
+        <div class="h-1 bg-error"></div>
+
+        <div class="p-10">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-error">report</span>
+            <h3 class="font-headline text-2xl font-black tracking-tighter text-on-surface uppercase">
+              Account Withdrawal
+            </h3>
+          </div>
+
+          <div class="space-y-6 mb-10">
+            <p class="font-body text-sm text-on-surface leading-relaxed opacity-80">
+              정말 <span class="font-bold text-primary">BEEDAN</span> 서비스를 떠나시겠습니까? <br>
+              탈퇴 시 모든 데이터는 즉시 삭제됩니다.
+            </p>
+
+            <ul class="bg-surface-container-low p-5 border-l-4 border-error/30 text-[11px] text-secondary space-y-2 font-medium">
+              <li class="flex gap-2"><span>•</span> <span>모든 거래 기록 및 프로필이 영구 삭제됩니다.</span></li>
+              <li class="flex gap-2"><span>•</span> <span>보유 중인 등급 혜택 및 쿠폰이 소멸됩니다.</span></li>
+            </ul>
+
+            <p class="text-[10px] font-black text-error uppercase tracking-[0.2em]">
+              This action cannot be undone.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <button onclick="proceedWithdrawal()"
+                    class="w-full py-4 bg-error text-white text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-90 transition-all duration-200">
+              Confirm Withdrawal
+            </button>
+            <button onclick="closeWithdrawalModal()"
+                    class="w-full py-4 bg-surface-container-high text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-container-highest transition-all duration-200">
+              No, I'll stay
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="space-y-6 pb-20">
@@ -170,6 +213,61 @@
       if (event.target == modal) {
         closeBenefitsModal();
       }
+    };
+
+    /* 회원 탈퇴 모달 관련 스크립트 */
+    window.openWithdrawalModal = function() {
+      const modal = document.getElementById('withdrawalModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    };
+
+    window.closeWithdrawalModal = function() {
+      const modal = document.getElementById('withdrawalModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    };
+
+    window.proceedWithdrawal = async function() {
+      // Spring Security CSRF 토큰 획득 (일반적으로 meta 태그에 존재)
+      const token = document.querySelector('meta[name="_csrf"]')?.content;
+      const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+      try {
+        const response = await fetch('/mypage/withdrawal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [header]: token
+          }
+        });
+
+        if (response.ok) {
+          alert("회원 탈퇴가 정상적으로 처리되었습니다.");
+          window.location.href = "/auth/signin"; // 메인 페이지로 이동
+        } else {
+          const errorMsg = await response.text();
+          alert("탈퇴 처리 중 오류가 발생했습니다: " + errorMsg);
+        }
+      } catch (error) {
+        console.error("Withdrawal Error:", error);
+        alert("서버와 통신할 수 없습니다.");
+      }
+    };
+
+    // 기존 배경 클릭 닫기 로직 수정 (여러 모달 대응)
+    window.onclick = function(event) {
+      const bModal = document.getElementById('benefitsModal');
+      const wModal = document.getElementById('withdrawalModal');
+
+      if (event.target === bModal) closeBenefitsModal();
+      if (event.target === wModal) closeWithdrawalModal();
     };
   </script>
 </th:block>
