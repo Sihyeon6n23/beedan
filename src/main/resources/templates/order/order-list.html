@@ -13,131 +13,157 @@
 </th:block>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/order/order.css}">
     <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+    <style>
+        .order-management-list .admin-chat-list-head,
+        .order-management-list .admin-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(120px, 1.2fr) minmax(80px, 0.8fr) minmax(200px, 2fr) minmax(130px, 1.3fr) minmax(90px, 0.9fr) minmax(110px, 1fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
 
-        <section class="admin-chat-page admin-chat-list-page">
-            <header class="admin-chat-shell admin-chat-shell--header">
-                <div class="admin-chat-shell__heading">
-                    <span class="admin-chat-kicker">ORDER HISTORY</span>
-                    <h2 class="admin-chat-title">주문 관리</h2>
+        .order-management-list .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
 
-                    <div class="admin-chat-shell__rule">
-                        <span></span>
-                    </div>
-                </div>
-            </header>
+        .order-management-list .btn-detail {
+            background-color: #e2e2e2;
+            color: #1a1c1c;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .order-management-list .btn-detail:hover { background-color: #d1d1d1; }
 
-            <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="배송 목록 필터">
-                <div class="admin-chat-toolbar">
-                    <div class="admin-chat-toolbar__filters">
-                        <div class="admin-chat-filter-set" data-filter-group="status">
-                            <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
-                            <a class="admin-chat-filter" href="#" data-status="PREPARING">상품 준비중</a>
-                            <a class="admin-chat-filter" href="#" data-status="SHIPPING">배송중</a>
-                            <a class="admin-chat-filter" href="#" data-status="DELIVERED">배송 완료</a>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        .order-management-list .btn-edit {
+            background-color: #1a1c1c;
+            color: #ffffff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .order-management-list .btn-edit:hover { background-color: #333; }
 
-            <section class="admin-chat-shell admin-chat-shell--list">
-                <div class="admin-chat-list-head" aria-hidden="true">
-                    <div>주문 번호</div>
-                    <div>주문 일자</div>
-                    <div>수령인</div>
-                    <div>수령 주소</div>
-                    <div>총 금액</div>
-                    <div>주문 상태</div>
-                    <div>Actions</div>
-                </div>
+        .order-management-list .admin-chat-row__amount {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            padding-right: 10px;
+        }
+    </style>
 
-                <div class="admin-chat-list-body" id="require-list-body">
-                </div>
-            </section>
+    <section class="admin-chat-page admin-chat-list-page order-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">ORDER HISTORY</span>
+                <h2 class="admin-chat-title">주문 관리</h2>
 
-            <div class="table-responsive">
-                <table class="order-table">
-                    <thead>
-                    <tr>
-                        <th>주문번호</th>
-                        <th>주문 일자</th>
-                        <th>수령인</th>
-                        <th>수령 주소</th>
-                        <th>수량</th>
-                        <th>총 금액</th>
-                        <th>주문 상태</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:if="${#lists.isEmpty(orders)}">
-                        <td colspan="6" style="text-align: center; padding: 3rem; color: #666;">
-                            주문 내역이 존재하지 않습니다.
-                        </td>
-                    </tr>
-                    <tr th:unless="${#lists.isEmpty(orders)}" th:each="order : ${orders}">
-                        <td class="order-id" th:text="${order.ordBaseNo != null ? order.ordBaseNo : '#' + order.ordBaseId}">주문번호</td>
-                        <td class="order-date" th:text="${#temporals.format(order.ordBaseCreDt, 'yyyy-MM-dd')}">주문일자</td>
-                        <td class="order-summary" th:text="${order.ordBaseRcvNm} + '님'">수령인</td>
-                        <td class="order-address" th:text="${order.ordBaseAdr + ' ' + order.ordBaseAdrDt}">수령 주소</td>
-                        <td class="order-price">-</td>
-                        <td class="order-amount">-</td>
-                        <td>
-                                <span class="badge"
-                                      th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? 'badge-secondary' :
-                                                      (order.ordBaseStt?.name() == 'DELIVERING' ? 'badge-yellow' :
-                                                      (order.ordBaseStt?.name() == 'DELIVERED' ? 'badge-success' : 'badge-danger'))}"
-                                      th:text="${order.ordBaseStt?.name() == 'PREPARING' ? '상품 준비중' :
-                                               (order.ordBaseStt?.name() == 'DELIVERING' ? '배송중' :
-                                               (order.ordBaseStt?.name() == 'DELIVERED' ? '배송완료' : '주문 취소'))}">
-                                    상태
-                                </span>
-                        </td>
-                        <td class="order-actions">
-                            <div class="action-links" style="display: flex; gap: 10px; justify-content: flex-end;">
-                                <a th:href="@{/order/detail(id=${order.ordBaseId})}" class="link-detail">상세내역</a>
-                                <a href="javascript:void(0);" class="link-detail" th:onclick="|loadShipmentDetail('/api/shipments/' + ${order.ordBaseId})|">배송현황</a>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-
-
-            <div id="orderTrackingModal" class="modal-overlay" style="display: none;">
-                <div class="modal-container">
-                    <header class="modal-header">
-                        <div class="header-main">
-                            <h2 class="modal-title">Shipment Tracking</h2>
-                        </div>
-                        <button class="btn-close" onclick="closeModal()">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
-                    </header>
-
-                    <div class="modal-body">
-                    </div>
-
-                    <footer class="modal-footer">
-                        <button class="btn-solid" onclick="closeModal()">CLOSE</button>
-                    </footer>
+                <div class="admin-chat-shell__rule">
+                    <span></span>
                 </div>
             </div>
+        </header>
 
-            <script>
-                const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>주문번호 / 상품정보</div>
+                <div>수령인</div>
+                <div>배송지 주소</div>
+                <div>결제 금액</div>
+                <div style="text-align: center;">상태</div>
+                <div style="text-align: center;">관리</div>
+            </div>
 
-                function loadShipmentDetail(url) {
+            <div class="admin-chat-list-body">
+                <div th:unless="${#lists.isEmpty(orders)}" th:each="order : ${orders}" class="admin-chat-row">
+
+                    <div class="admin-chat-row__primary">
+                        <span class="admin-chat-row__unread" th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? '' : 'admin-chat-row__unread--empty'}"></span>
+                        <div class="admin-chat-row__text">
+                            <h2 th:text="${order.ordBaseNo}">주문번호</h2>
+                            <p th:text="${order.ordBaseMsg != null ? order.ordBaseMsg : '상품 요약 정보'}">상품 정보</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-chat-row__owner">
+                        <span th:text="${order.ordBaseRcvNm}">수령자 이름</span>
+                    </div>
+
+                    <div class="admin-chat-row__address" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span th:text="${order.ordBaseAdr}">기본 배송지</span>
+                    </div>
+
+                    <div class="admin-chat-row__amount">
+                        <strong th:text="${order.ordBaseTtAm != null ? #numbers.formatInteger(order.ordBaseTtAm, 3, 'COMMA') : 0} + '원'">금액</strong>
+                    </div>
+
+                    <div style="text-align: center;">
+                    <span class="admin-chat-badge"
+                          th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (order.ordBaseStt?.name() == 'DELIVERING' || order.ordBaseStt?.name() == 'DELIVERED' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed')}"
+                          th:text="${order.ordBaseStt?.name() == 'PREPARING' ? '상품준비' : (order.ordBaseStt?.name() == 'DELIVERING' ? '배송중' : (order.ordBaseStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소'))}">상태
+                    </span>
+                    </div>
+
+                    <div class="action-btns">
+                        <a class="btn-edit" th:href="@{/order/detail(id=${order.ordBaseId})}">상세보기</a>
+                        <button class="btn-detail" type="button" th:onclick="|loadShipmentDetail('/api/shipments/' + ${order.ordBaseId})|">배송현황</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <div id="orderTrackingModal" class="modal-overlay" style="display: none;">
+            <div class="modal-container">
+                <header class="modal-header">
+                    <div class="header-main">
+                        <h2 class="modal-title">Shipment Tracking</h2>
+                    </div>
+                    <button class="btn-close" onclick="closeModal()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </header>
+
+                <div class="modal-body">
+                </div>
+
+                <footer class="modal-footer">
+                    <button class="btn-solid" onclick="closeModal()">CLOSE</button>
+                </footer>
+            </div>
+        </div>
+
+        <script>
+            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+            function loadShipmentDetail(url) {
                 const modal = document.getElementById('orderTrackingModal');
                 const contentArea = modal.querySelector('.modal-body');
 
-                // 1. 로딩 표시 (선택 사항이지만 추천)
-                contentArea.innerHTML = '<div style="text-align:center; padding:20px;">정보를 불러오는 중입니다...</div>';
-
-                // 2. 모달 먼저 띄우기
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
 
@@ -154,23 +180,23 @@
                         alert(err.message);
                         closeModal();
                     });
-                }
+            }
 
-                function closeModal() {
-                    const modal = document.getElementById('orderTrackingModal');
-                    if (modal) {
-                        modal.style.display = 'none';
-                        document.body.style.overflow = 'auto';
-                    }
+            function closeModal() {
+                const modal = document.getElementById('orderTrackingModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
                 }
+            }
 
-                window.addEventListener('click', function(event) {
-                    const modal = document.getElementById('orderTrackingModal');
-                    if (event.target === modal) {
-                        closeModal();
-                    }
-                });
-            </script>
-        </section>
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('orderTrackingModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        </script>
+    </section>
 </th:block>
 </html>
