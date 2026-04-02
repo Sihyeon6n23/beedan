@@ -78,7 +78,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
                 // 잠긴 계정 예외 확인시 메시지
                 Duration duration = Duration.between(LocalDateTime.now(),accountStatusDto.getAccountLockDateTime());
                 errorMessage = "계정이 잠겼습니다."
-                        + duration.toMinutes()
+                        + (duration.toMinutes() + 1)
                         + "분 이후에 다시 시도해주세요.";
             }
 

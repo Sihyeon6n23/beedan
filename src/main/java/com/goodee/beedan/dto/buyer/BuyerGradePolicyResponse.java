@@ -6,6 +6,8 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Getter
 @Builder
@@ -17,7 +19,7 @@ public class BuyerGradePolicyResponse {
     private BigDecimal bgpMinTtAm;
     private LocalDateTime bgpEfFrDt;
     private LocalDateTime bgpEfToDt;
-    private String bgpDes;
+    private List<String> bgpDes;
     private Boolean bgpAcYn;
     private LocalDateTime bgpCrDt;
     private LocalDateTime bgpUpDt;
@@ -30,7 +32,8 @@ public class BuyerGradePolicyResponse {
                 .bgpMinTtAm(policy.getBgpMinTtAm())
                 .bgpEfFrDt(policy.getBgpEfFrDt())
                 .bgpEfToDt(policy.getBgpEfToDt())
-                .bgpDes(policy.getBgpDes())
+                .bgpDes(policy.getBgpDes() != null ?
+                        Arrays.asList(policy.getBgpDes().split(",")) : null)
                 .bgpAcYn(policy.getBgpAcYn())
                 .bgpCrDt(policy.getBgpCrDt())
                 .bgpUpDt(policy.getBgpUpDt())

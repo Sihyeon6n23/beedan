@@ -82,7 +82,7 @@ public class OrderService {
     public void updateOrderStatus(Long ordId, OrderStatus newStatus) {
         Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if(order.getOrdBaseCanYn() == true ) {
+        if(order.getOrdBaseStt() == OrderStatus.CANCELLED) {
             throw new IllegalStateException("취소된 주문의 상태는 변경할 수 없습니다.");
         }
 
@@ -99,18 +99,14 @@ public class OrderService {
             throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
         }
 
-        order.setOrdBaseCanYn(true);
+        order.setOrdBaseStt(OrderStatus.CANCELLED);
     }
 
     @Transactional
     public void createOrder(Long memId, OrderDto dto){
         Member member = memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("User not found"));
 
-        log.info("조회 시도하는 memId: {}", memId);
-
-        // 1. 전체 리스트를 한번 뽑아보세요 (매핑 문제인지 조건 문제인지 확인용)
         List<Negotiation> allNegs = negotiationRepository.findAll();
-        log.info("DB에 존재하는 전체 협상 개수: {}", allNegs.size());
 
         // 1. 협상 정보 조회
         Negotiation negotiation = negotiationRepository.findFirstByMemIdOrderByNgCreDtDesc(memId);
@@ -193,6 +189,7 @@ public class OrderService {
                 .ordBaseMsg(order.getOrdBaseMsg())
                 .ordBaseStt(order.getOrdBaseStt())
                 .ordBaseNo(order.getOrdBaseNo())
+                .ordBaseTtAm(order.getOrdBaseTtAm())
                 .ordBaseCreDt(order.getOrdBaseCreDt())
                 .build();
 
