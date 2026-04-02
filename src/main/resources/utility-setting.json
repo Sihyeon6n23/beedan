@@ -1,13 +1,13 @@
 {
   "weather_location_list" : [ {
-    "city_name" : "Las Vegas",
-    "region" : "US"
+    "city_name" : "Washington",
+    "region" : "District of Columbia, US"
   }, {
     "city_name" : "Osaka",
     "region" : "Osaka, JP"
   }, {
-    "city_name" : "Beijing",
-    "region" : "Beijing, CN"
+    "city_name" : "Canberra",
+    "region" : "AU"
   }, {
     "city_name" : "Seoul",
     "region" : "Seoul, KR"
