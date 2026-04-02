@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecificationExecutor<Stock> {
@@ -18,4 +19,6 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
     java.util.Optional<Stock> findByBrIdAndStNm(Long brId, String stNm);
 
     Page<Stock> findByStIdInAndStExpYnTrue(List<Long> stIds, Pageable pageable);
+
+    List<Stock> findTop30ByStExpYnTrueOrderByStCraDtDesc();
 }
