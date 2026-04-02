@@ -40,7 +40,6 @@ public class Shipment {
     @JoinColumn(name="ord_base_id")
     private Order order;
 
-    private Boolean sh_can_yn;
     private String shRcvNm;
     private String shAdr;
     private String shAdrDt;

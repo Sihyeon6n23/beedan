@@ -40,7 +40,7 @@
             <!-- Quote Manifest Section -->
             <section class="quote-manifest">
                 <div class="manifest-header">
-                    <h2 class="manifest-id" th:text="${(ngNm != null ? ngNm : 'N/A') + '-' + (quCd != null ? quCd : 'N/A')}">협상명-QU0000</h2>
+                    <h2 class="manifest-id" th:text="${(ngNm != null ? ngNm : 'N/A') + (quCd != null ? quCd : '')}">협상명-QU0000</h2>
                     <span class="manifest-count" th:text="${cartToQuote != null ? cartToQuote.items.size() + '개의 아이템' : '0개의 아이템'}">4개의 아이템</span>
                 </div>
 
@@ -78,7 +78,8 @@
                                      data-un-g-qn=${item.unGQn},
                                      data-un-g-nm=${item.unGNm},
                                      data-st-cur=${item.stCur},
-                                     data-hs-du-ra=${item.hsDuRa != null ? item.hsDuRa : 0}">
+                                     data-hs-du-ra=${item.hsDuRa != null ? item.hsDuRa : 0}"
+                            th:data-ship-cards="${item.savedShipCardsJson}">
                             <td class="col-no" th:text="${item.no}">1</td>
                             <td class="col-product">
                                 <span class="product-name" th:text="${item.stNm}">ESSENTIAL OVERSIZED TEE</span>
@@ -130,7 +131,10 @@
                                         th:data-region="${defaultReceiver != null ? defaultReceiver.rcRgn : 'SEOUL'}"
                                         onclick="openShippingModal(this)">
                                     <span class="shipping-addr" th:text="${defaultReceiver != null ? defaultReceiver.rcAdr : '배송지를 선택하세요'}">배송지를 선택하세요</span>
-                                    <span class="shipping-meta">단일배송</span>
+                                    <span class="shipping-meta"
+                                          th:text="${item.savedShipCards != null && item.savedShipCards.size() > 1
+                                              ? '분할배송 (' + item.savedShipCards.size() + '건)'
+                                              : '단일배송'}">단일배송</span>
                                 </button>
                             </td>
                         </tr>

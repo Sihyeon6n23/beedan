@@ -205,7 +205,13 @@
 
                 // 서버에 열람 처리 요청 (비동기, 네비게이션은 기본 <a> 동작)
                 var quId = row.dataset.quId;
-                navigator.sendBeacon('/api/quote/' + quId + '/opened');
+                var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                var headers = {};
+                headers[csrfHeader] = csrfToken;
+                fetch('/api/quote/' + quId + '/opened', {
+                    method: 'POST', headers: headers
+                });
             });
         });
     });

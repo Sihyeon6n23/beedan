@@ -257,6 +257,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var defaultRegion = rcEl ? (rcEl.dataset.region || 'SEOUL') : 'SEOUL';
     var defaultReceiverName = rcEl ? (rcEl.dataset.name || '') : '';
     var defaultReceiverAddr = rcEl ? (rcEl.dataset.addr || '') : '';
+    var rowShipMap = {}; // key: row index, value: { type: 'single'|'split', cards: [...] }
+
+    // 임시저장 복원: data-ship-cards → rowShipMap
+    rows.forEach(function (row, idx) {
+        var json = row.dataset.shipCards;
+        if (json) {
+            try {
+                var cards = JSON.parse(json);
+                if (cards && cards.length > 1) {
+                    rowShipMap[idx] = { type: 'split', cards: cards };
+                } else if (cards && cards.length === 1) {
+                    rowShipMap[idx] = { type: 'single', cards: cards };
+                }
+            } catch (e) { /* 파싱 실패 무시 */ }
+        }
+    });
 
     // ── 예상 운임 비용 조회 ─────────────────────────────
     var feeDebounceTimer = null;
@@ -309,11 +325,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
 
-        // 배송지 지역 코드 수집 (shipCards가 세팅되어 있으면 사용, 아니면 백엔드가 기본 수령지 사용)
+        // 배송지 지역 코드 수집 (rowShipMap에서 전체 행의 배송지 취합)
         var shipRegions = [];
-        if (shipCards.length > 0) {
-            shipCards.forEach(function (c) { shipRegions.push(c.region || defaultRegion); });
-        }
+        rows.forEach(function (row, idx) {
+            var data = rowShipMap[idx];
+            if (data && data.cards.length > 0) {
+                data.cards.forEach(function (c) { shipRegions.push(c.region || defaultRegion); });
+            } else {
+                shipRegions.push(defaultRegion);
+            }
+        });
 
         fetch('/api/quote/estimate-fees', {
             method: 'POST',
@@ -452,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var quId = saveDraftBtn ? parseInt(saveDraftBtn.dataset.quId) : null;
 
         var items = [];
-        rows.forEach(function (row) {
+        rows.forEach(function (row, rowIdx) {
             var stId = parseInt(row.dataset.stId);
             var qty = parseInt(row.querySelector('.qty-input').value) || 1;
             var specSelect = row.querySelector('.spec-select');
@@ -462,13 +483,50 @@ document.addEventListener('DOMContentLoaded', function () {
             var rcIdEl = document.getElementById('js-default-region');
             var rcId = rcIdEl ? (parseInt(rcIdEl.dataset.rcid) || null) : null;
 
-            items.push({
-                stId: stId, qty: qty,
-                unGId: selectedOption ? parseInt(selectedOption.dataset.ugId) || null : null,
-                unGNm: specSelect ? specSelect.options[specSelect.selectedIndex].text : null,
-                unGQn: specSelect ? parseInt(specSelect.value) || 1 : 1,
-                subtotalKrw: subtotalKrw, rcId: rcId
-            });
+            var unGId = selectedOption ? parseInt(selectedOption.dataset.ugId) || null : null;
+            var unGNm = specSelect ? specSelect.options[specSelect.selectedIndex].text : null;
+            var unGQn = specSelect ? parseInt(specSelect.value) || 1 : 1;
+
+            var shipData = rowShipMap[rowIdx];
+            if (shipData && shipData.type === 'split' && shipData.cards.length > 1) {
+                // 분할배송: 카드별로 아이템 분리
+                var perQty = subtotalKrw / qty;
+                var usedSubtotal = 0;
+                shipData.cards.forEach(function (card, ci) {
+                    var cardSubtotal;
+                    if (ci === shipData.cards.length - 1) {
+                        cardSubtotal = Math.round(subtotalKrw - usedSubtotal);
+                    } else {
+                        cardSubtotal = Math.round(perQty * card.qty);
+                        usedSubtotal += cardSubtotal;
+                    }
+                    items.push({
+                        stId: stId, qty: card.qty,
+                        unGId: unGId, unGNm: unGNm, unGQn: unGQn,
+                        subtotalKrw: cardSubtotal, rcId: rcId,
+                        grp: rowIdx,
+                        rcRgn: card.region || defaultRegion,
+                        rcNm: card.name || '',
+                        rcAdr: card.addr || '',
+                        rcPhn: card.phone || '',
+                        rcMemo: card.memo || ''
+                    });
+                });
+            } else {
+                // 단일배송
+                var singleCard = (shipData && shipData.cards.length > 0) ? shipData.cards[0] : null;
+                items.push({
+                    stId: stId, qty: qty,
+                    unGId: unGId, unGNm: unGNm, unGQn: unGQn,
+                    subtotalKrw: subtotalKrw, rcId: rcId,
+                    grp: rowIdx,
+                    rcRgn: singleCard ? singleCard.region : defaultRegion,
+                    rcNm: singleCard ? singleCard.name : defaultReceiverName,
+                    rcAdr: singleCard ? singleCard.addr : defaultReceiverAddr,
+                    rcPhn: singleCard ? singleCard.phone : '',
+                    rcMemo: singleCard ? singleCard.memo : ''
+                });
+            }
         });
 
         var memo = document.getElementById('quoteMemo')
@@ -695,12 +753,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.overflow = 'hidden';
 
         var row = btn.closest('.quote-row');
+        var rowIdx = Array.prototype.indexOf.call(rows, row);
         totalItemQty = parseInt(row.querySelector('.qty-input').value) || 1;
 
-        var meta = btn.querySelector('.shipping-meta');
-        currentShipType = (meta && meta.textContent.indexOf('분할') >= 0) ? 'split' : 'single';
-
-        if (currentShipType === 'single' || shipCards.length === 0) {
+        // rowShipMap에서 복원
+        if (rowShipMap[rowIdx]) {
+            currentShipType = rowShipMap[rowIdx].type;
+            shipCards = JSON.parse(JSON.stringify(rowShipMap[rowIdx].cards));
+        } else {
+            currentShipType = 'single';
             shipCards = [{ qty: totalItemQty, region: defaultRegion, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
         }
 
@@ -718,6 +779,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.confirmShipping = function () {
         if (currentShippingBtn) {
+            var row = currentShippingBtn.closest('.quote-row');
+            var rowIdx = Array.prototype.indexOf.call(rows, row);
+            // rowShipMap에 저장
+            rowShipMap[rowIdx] = { type: currentShipType, cards: JSON.parse(JSON.stringify(shipCards)) };
+
             var meta = currentShippingBtn.querySelector('.shipping-meta');
             if (meta) {
                 meta.textContent = currentShipType === 'split'
