@@ -104,7 +104,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void createOrder(Long memId, OrderDto dto) {
+    public Long createOrder(Long memId, OrderDto dto) {
         Member member = memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("User not found"));
 
         Negotiation negotiation = negotiationRepository.findFirstByMemIdOrderByNgCreDtDesc(memId);
@@ -181,6 +181,8 @@ public class OrderService {
                 shipmentItemRepository.saveAll(shipmentItems);
             }
         }
+
+        return order.getOrdBaseId();
     }
 
     public OrderDto mapToOrderDto(Order order) {
@@ -206,7 +208,6 @@ public class OrderService {
         return orderDto;
     }
 
-    // Shipment 엔티티를 DTO로 변환하는 보조 메서드
     private OrderDto.ShipmentResponseDto mapToShipmentDto(Shipment shipment) {
         return OrderDto.ShipmentResponseDto.builder()
                 .shId(shipment.getShId())
