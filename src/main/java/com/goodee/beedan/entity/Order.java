@@ -12,6 +12,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -49,4 +51,13 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "mem_id")
     private Member member;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Shipment> shipments = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
+
 }

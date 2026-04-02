@@ -11,6 +11,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -25,15 +27,26 @@ public class Shipment {
     private Long shId;
     private String shTraNo;
 	private String shCarCd;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private ShipmentStatus shStt;
     @CreatedDate
     private LocalDateTime shCreDt;
     @LastModifiedDate
     private LocalDateTime shUpdDt;
-    @ManyToOne
+    private Boolean shCanYn;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="ord_base_id")
     private Order order;
 
     private Boolean sh_can_yn;
+    private String shRcvNm;
+    private String shAdr;
+    private String shAdrDt;
+    private String shMsg;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShipmentItem> shipmentItems = new ArrayList<>();
 }
