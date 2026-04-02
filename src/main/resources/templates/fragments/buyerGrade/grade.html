@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<th:block th:fragment="tierCard(tierName, iconName, isBest, features)">
+<th:block th:fragment="tierCard(tierName, iconName, features)">
   <div class="border-2 border-primary-container p-8 relative">
-
-    <div th:if="${isBest}" class="absolute -top-3 left-8 bg-primary-container text-on-primary-container px-4 py-1 font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase">
-      Best
-    </div>
 
     <div class="flex items-center gap-3 mb-6">
       <span class="material-symbols-outlined text-3xl text-primary-container" th:text="${iconName}">workspace_premium</span>
@@ -16,7 +12,7 @@
     <div class="w-full h-px bg-neutral-700 mb-6"></div>
 
     <ul class="space-y-4 text-sm">
-      <li th:each="feature : ${policyList}" class="flex items-center gap-3">
+      <li th:each="feature : ${features}" class="flex items-center gap-3">
         <span class="material-symbols-outlined text-primary-container text-lg">check</span>
         <span class="text-neutral-300" th:text="${feature}">혜택 내용</span>
       </li>

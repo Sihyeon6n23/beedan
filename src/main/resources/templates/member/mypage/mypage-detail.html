@@ -25,19 +25,14 @@
           회원님의 비즈니스 프로필과 계정 요약 정보를 관리하십시오.
         </p>
       </div>
-      <div class="flex gap-4">
-        <div class="h-px w-24 bg-primary-container mb-2"></div>
-      </div>
     </section>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-0 mb-12 shadow-sm border border-stone-100">
       <div class="md:col-span-2 bg-surface-container-lowest p-10 flex flex-col justify-between relative overflow-hidden">
         <div class="relative z-10">
           <div class="inline-flex items-center gap-2 bg-primary-container px-3 py-1 mb-6">
-          <span class="material-symbols-outlined text-xs text-on-primary-container"
-                style="font-variation-settings: 'FILL' 1;">verified</span>
-            <span class="text-[10px] font-black uppercase tracking-widest text-on-primary-container">Verified B2B
-            Member</span>
+            <span class="material-symbols-outlined text-xs text-on-primary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-on-primary-container">Verified B2B Member</span>
           </div>
           <h2 class="font-headline text-3xl font-bold text-on-surface mb-2 tracking-tight" th:text="${member.memNm}">Alexander Sterling</h2>
         </div>
@@ -55,22 +50,92 @@
         <div class="absolute right-0 top-0 bottom-0 w-24 bg-primary-container opacity-5 -skew-x-12 translate-x-12"></div>
       </div>
 
-      <div class="bg-primary p-10 text-white flex flex-col justify-center gap-6">
-        <div class="border-l-2 border-primary-container pl-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Current Grade</p>
-          <p class="font-headline text-3xl font-black tracking-tighter" th:text="${buyer.bgpGr}">VIP</p>
+      <div class="bg-primary p-10 text-white flex flex-col justify-center gap-6 relative overflow-hidden">
+        <th:block th:if="${buyer != null}">
+          <div class="border-l-2 border-primary-container pl-4 relative z-10">
+            <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Current Grade</p>
+            <p class="font-headline text-3xl font-black tracking-tighter" th:text="${buyer.bgpGr}">VIP</p>
+          </div>
+          <div class="border-l-2 border-primary-container pl-4 relative z-10">
+            <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Total Orders / Amount</p>
+            <p class="font-headline text-2xl font-black tracking-tighter">
+              <span th:text="${buyer.byOrdCnt}">0</span>건 /
+              <span th:text="${#numbers.formatInteger(buyer.byTtlAm, 0, 'COMMA')}">0</span>원
+            </p>
+          </div>
+          <button onclick="openBenefitsModal()"
+                  class="relative z-10 mt-4 bg-white text-primary px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 w-full text-center">
+            View Grade Benefits
+          </button>
+        </th:block>
+
+        <th:block th:unless="${buyer != null}">
+          <div class="flex flex-col items-center justify-center text-center gap-2 opacity-60">
+            <span class="material-symbols-outlined text-4xl">admin_panel_settings</span>
+            <p class="text-xs font-bold uppercase tracking-widest"
+               th:text="${member.memAut == 'ADMIN' or member.memAut == 'ROOT' ? 'Admin Account' : 'Pending Approval'}">
+              Admin Account
+            </p>
+          </div>
+        </th:block>
+        <div class="absolute right-0 bottom-0 w-32 h-32 bg-white/5 -mb-8 -mr-8 rounded-full blur-2xl"></div>
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-end gap-3 mb-2 w-full">
+      <a th:href="@{/mypage/modify}"
+         class="px-6 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all duration-200 no-underline">
+        정보 수정
+      </a>
+      <a th:href="@{/mypage/changepw}"
+         class="px-6 py-3 bg-on-surface text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all duration-200 no-underline">
+        비밀번호 변경
+      </a>
+      <button type="button" onclick="openWithdrawalModal()"
+              class="px-6 py-3 border border-stone-200 text-zinc-400 text-[10px] font-black uppercase tracking-widest hover:border-error hover:text-error transition-all duration-200">
+        회원 탈퇴
+      </button>
+    </div>
+
+    <div id="withdrawalModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div class="bg-surface-container-lowest max-w-md w-full shadow-[0_20px_40px_rgba(0,0,0,0.1)] relative overflow-hidden border border-stone-100">
+
+        <div class="h-1 bg-error"></div>
+
+        <div class="p-10">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-error">report</span>
+            <h3 class="font-headline text-2xl font-black tracking-tighter text-on-surface uppercase">
+              Account Withdrawal
+            </h3>
+          </div>
+
+          <div class="space-y-6 mb-10">
+            <p class="font-body text-sm text-on-surface leading-relaxed opacity-80">
+              정말 <span class="font-bold text-primary">BEEDAN</span> 서비스를 떠나시겠습니까? <br>
+              탈퇴 시 모든 데이터는 즉시 삭제됩니다.
+            </p>
+
+            <ul class="bg-surface-container-low p-5 border-l-4 border-error/30 text-[11px] text-secondary space-y-2 font-medium">
+              <li class="flex gap-2"><span>•</span> <span>모든 거래 기록 및 프로필이 영구 삭제됩니다.</span></li>
+              <li class="flex gap-2"><span>•</span> <span>보유 중인 등급 혜택 및 쿠폰이 소멸됩니다.</span></li>
+            </ul>
+
+            <p class="text-[10px] font-black text-error uppercase tracking-[0.2em]">
+              This action cannot be undone.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <button onclick="proceedWithdrawal()"
+                    class="w-full py-4 bg-error text-white text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-90 transition-all duration-200">
+              Confirm Withdrawal
+            </button>
+            <button onclick="closeWithdrawalModal()"
+                    class="w-full py-4 bg-surface-container-high text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-container-highest transition-all duration-200">
+              No, I'll stay
+            </button>
+          </div>
         </div>
-        <div class="border-l-2 border-primary-container pl-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Total Orders / Amount</p>
-          <p class="font-headline text-2xl font-black tracking-tighter">
-            <span th:text="${buyer.byOrdCnt}">14</span>건 /
-            <span th:text="${#numbers.formatInteger(buyer.byTtlAm, 0, 'COMMA')}">1,500,000</span>원
-          </p>
-        </div>
-        <button onclick="openBenefitsModal()"
-                class="mt-4 bg-white text-primary px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-primary-container hover:text-on-primary-container transition-all duration-200 w-full text-center">
-          View Grade Benefits
-        </button>
       </div>
     </div>
 
@@ -84,15 +149,15 @@
           <div class="space-y-px bg-surface-container-highest">
             <div class="bg-surface-container-lowest p-8">
               <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Company Legal Name</label>
-              <p class="text-on-surface font-bold text-lg font-headline" th:text="${member.memBizTtl}">Sterling Global Logistics Group Ltd.</p>
+              <p class="text-on-surface font-bold text-lg font-headline" th:text="${member.memBizTtl}">Company Name</p>
             </div>
             <div class="bg-surface-container-lowest p-8">
               <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Business License No.</label>
-              <p class="text-on-surface font-medium font-body" th:text="${member.memBizNo}">US-991827364-B</p>
+              <p class="text-on-surface font-medium font-body" th:text="${member.memBizNo}">License No.</p>
             </div>
             <div class="bg-surface-container-lowest p-8">
               <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">CEO / Representative</label>
-              <p class="text-on-surface font-medium font-body" th:text="${member.memCeoNm}">Marcus V. Sterling</p>
+              <p class="text-on-surface font-medium font-body" th:text="${member.memCeoNm}">CEO Name</p>
             </div>
           </div>
           <div class="bg-surface-container-lowest p-8 flex flex-col">
@@ -103,9 +168,9 @@
               </div>
               <div>
                 <p class="text-on-surface font-medium font-body leading-relaxed">
-                  <span th:text="${member.memPosCd}">우편번호</span><br />
-                  <span th:text="${member.memBizAdr}">기본주소</span><br />
-                  <span th:text="${member.memBizDtAdr}">상세주소</span>
+                  <span th:text="${member.memPosCd}">00000</span><br />
+                  <span th:text="${member.memBizAdr}">Address</span><br />
+                  <span th:text="${member.memBizDtAdr}">Detail Address</span>
                 </p>
                 <a href="#" class="text-primary text-[10px] font-bold uppercase tracking-widest mt-4 inline-block hover:underline">View on Map</a>
               </div>
@@ -113,88 +178,98 @@
           </div>
         </div>
       </section>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 border-t border-zinc-100 justify-between items-center">
-        <div></div>
-        <div class="flex justify-end">
-          <button class="px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all duration-200">
-            Update Details
-          </button>
-        </div>
-        <div></div>
-      </div>
     </div>
 
-    <div id="benefitsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity duration-300">
-      <div class="bg-surface-container-lowest w-full max-w-6xl max-h-[90vh] overflow-y-auto p-10 relative shadow-2xl border border-stone-200">
-
-        <button onclick="closeBenefitsModal()" class="absolute top-6 right-6 text-zinc-400 hover:text-primary transition-colors">
-          <span class="material-symbols-outlined text-3xl">close</span>
-        </button>
-
-        <div class="mb-8">
-          <span class="text-primary font-black tracking-widest text-xs uppercase mb-2 block">MEMBERSHIP</span>
-          <h2 class="font-headline text-3xl font-extrabold tracking-tighter text-on-surface uppercase">Grade Benefits</h2>
-        </div>
-
-        <div class="bg-surface-container-highest p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-8 border-l-4 border-primary">
-          <div>
-            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Current Grade</p>
-            <h3 class="font-headline text-3xl font-extrabold text-primary" th:text="${buyer.bgpGr}">VIP</h3>
-          </div>
-
-          <div th:if="${nextPolicy != null}" class="flex-grow text-right md:border-l border-zinc-300 md:pl-8">
-            <p class="font-body text-zinc-600 text-sm mb-3">
-              다음 등급인 <span class="font-bold text-on-surface" th:text="${nextPolicy.bgpGr}">PREMIUM</span>까지 아래 조건 중 하나만 달성하세요!
-            </p>
-            <div class="flex gap-8 justify-end">
-              <div>
-                <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">남은 구매 횟수</p>
-                <p class="font-headline text-xl font-black text-on-surface"><span th:text="${neededCnt}">5</span>건</p>
-              </div>
-              <div>
-                <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">남은 구매 금액</p>
-                <p class="font-headline text-xl font-black text-on-surface">
-                  <span th:text="${#numbers.formatInteger(neededAmt, 0, 'COMMA')}">500,000</span>원
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div th:if="${nextPolicy == null}" class="flex-grow text-right md:border-l border-zinc-300 md:pl-8">
-            <p class="font-body text-primary font-bold text-lg">최고 등급에 도달하셨습니다. 모든 혜택을 누리세요!</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <th:block th:each="policy, stat : ${policyList}">
-            <div th:replace="~{fragments/tier-card :: tierCard(
-                ${policy.gradeName},
-                'workspace_premium',
-                ${stat.first},
-                ${policy.benefits}
-            )}"></div>
-          </th:block>
-        </div>
-
-      </div>
-    </div>
   </section>
-
-  <script>
-    function openBenefitsModal() {
+  <script inline="javascript">
+    /* 전역 스코프에 안전하게 등록 */
+    window.openBenefitsModal = function() {
+      console.log("모달 실행 로그: openBenefitsModal 호출됨");
       const modal = document.getElementById('benefitsModal');
-      modal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    }
 
-    function closeBenefitsModal() {
+      if (modal) {
+        // hidden 클래스를 제거하면 CSS의 #benefitsModal:not(.hidden) 규칙이 적용됩니다.
+        modal.classList.remove('hidden');
+        // 브라우저 리플로우 강제를 위해 display 속성 명시 (!important 없이 작동 보장)
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      } else {
+        console.error("오류: benefitsModal 요소를 찾을 수 없습니다.");
+      }
+    };
+
+    window.closeBenefitsModal = function() {
       const modal = document.getElementById('benefitsModal');
-      modal.classList.add('hidden');
-      document.body.style.overflow = 'auto';
-    }
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    };
+
+    // 배경 클릭 시 닫기 기능 추가 (사용자 경험 개선)
+    window.onclick = function(event) {
+      const modal = document.getElementById('benefitsModal');
+      if (event.target == modal) {
+        closeBenefitsModal();
+      }
+    };
+
+    /* 회원 탈퇴 모달 관련 스크립트 */
+    window.openWithdrawalModal = function() {
+      const modal = document.getElementById('withdrawalModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    };
+
+    window.closeWithdrawalModal = function() {
+      const modal = document.getElementById('withdrawalModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    };
+
+    window.proceedWithdrawal = async function() {
+      // Spring Security CSRF 토큰 획득 (일반적으로 meta 태그에 존재)
+      const token = document.querySelector('meta[name="_csrf"]')?.content;
+      const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+      try {
+        const response = await fetch('/mypage/withdrawal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [header]: token
+          }
+        });
+
+        if (response.ok) {
+          alert("회원 탈퇴가 정상적으로 처리되었습니다.");
+          window.location.href = "/auth/signin"; // 메인 페이지로 이동
+        } else {
+          const errorMsg = await response.text();
+          alert("탈퇴 처리 중 오류가 발생했습니다: " + errorMsg);
+        }
+      } catch (error) {
+        console.error("Withdrawal Error:", error);
+        alert("서버와 통신할 수 없습니다.");
+      }
+    };
+
+    // 기존 배경 클릭 닫기 로직 수정 (여러 모달 대응)
+    window.onclick = function(event) {
+      const bModal = document.getElementById('benefitsModal');
+      const wModal = document.getElementById('withdrawalModal');
+
+      if (event.target === bModal) closeBenefitsModal();
+      if (event.target === wModal) closeWithdrawalModal();
+    };
   </script>
-
 </th:block>
 
 </html>
