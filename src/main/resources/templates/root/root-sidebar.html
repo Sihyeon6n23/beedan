@@ -1,45 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="sidebar(activeMain, activeSub)">
-    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
-    <div class="admin-sidebar-scope">
-        <a th:href="@{/root/policy}"
-           class="admin-sidebar-menu__link"
-           th:classappend="${activeMain == 'security'} ? ' admin-sidebar-menu__link--current' : ''">
-            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+    <div class="sidebar-scope">
+        <a th:href="@{/root/security}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'security'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
             <span>보안 정책 설정</span>
         </a>
 
         <a th:href="@{/root/scheduler}"
-           class="admin-sidebar-menu__link"
-           th:classappend="${activeMain == 'scheduler'} ? ' admin-sidebar-menu__link--current' : ''">
-            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'scheduler'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
             <span>스케쥴러 설정</span>
         </a>
 
+        <a th:href="@{/root/utility}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'utility'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">settings</span>
+            <span>유틸리티 설정</span>
+        </a>
+
         <a th:href="@{/root/sales}"
-           class="admin-sidebar-menu__link"
-           th:classappend="${activeMain == 'sales'} ? ' admin-sidebar-menu__link--current' : ''">
-            <span class="material-symbols-outlined admin-sidebar-menu__icon">group</span>
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'sales'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
             <span>매출 관리</span>
         </a>
 
-        <div class="admin-sidebar-menu__group">
-            <div class="admin-sidebar-menu__link"
-                 th:classappend="${activeMain == 'account'} ? ' admin-sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined admin-sidebar-menu__icon">request_quote</span>
+        <div class="sidebar-menu__group">
+            <div class="sidebar-menu__link"
+                 th:classappend="${activeMain == 'account'} ? ' sidebar-menu__link--current' : ''">
+                <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
                 <span>계정 관리</span>
             </div>
 
-            <div class="admin-sidebar-menu__child-wrap">
+            <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/root/member/edit}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'member-edit'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'member-edit'} ? ' sidebar-menu__child-link--current' : ''">
                     사용자 정보 수정
                 </a>
                 <a th:href="@{/root/member/create}"
-                   class="admin-sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'member-create'} ? ' admin-sidebar-menu__child-link--current' : ''">
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'member-create'} ? ' sidebar-menu__child-link--current' : ''">
                     계정 생성
                 </a>
             </div>

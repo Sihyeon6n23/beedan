@@ -111,23 +111,23 @@ INSERT INTO member (
 -- BRAND
 -- =====================
 INSERT INTO brand VALUES
-(1, 'Kapital'),
-(2, 'Nanamica'),
-(3, 'Kenzo');
+                      (1, 'Kapital'),
+                      (2, 'Nanamica'),
+                      (3, 'Kenzo');
 -- =====================
 -- CATEGORY
 -- =====================
 INSERT INTO category VALUES
-(1, 'Coat'),
-(2, 'Jacket'),
-(3, 'Hoodie'),
-(4, 'Knitwear'),
-(5, 'Shirt'),
-(7, 'T-Shirt'),
-(8, 'Bottoms'),
-(9, 'Headwears'),
-(10, 'Shoes'),
-(11, 'Bags / Accessories');
+                         (1, 'Coat'),
+                         (2, 'Jacket'),
+                         (3, 'Hoodie'),
+                         (4, 'Knitwear'),
+                         (5, 'Shirt'),
+                         (7, 'T-Shirt'),
+                         (8, 'Bottoms'),
+                         (9, 'Headwears'),
+                         (10, 'Shoes'),
+                         (11, 'Bags / Accessories');
 
 -- =====================
 -- STOCK
@@ -203,14 +203,14 @@ ALTER TABLE cart     ALTER COLUMN ca_id  RESTART WITH 100;
 -- REQUIREMENT
 -- =====================
 INSERT INTO requirement (req_ttl, req_con, req_ref, req_pr, req_stt, req_rep_yn, req_per_yn, req_cre_dt, req_upd_dt, req_del_yn, mem_id) VALUES
-('Kapital Boro Jacket 입고 요청', '카피탈 보로 자켓 시즌 신상 입고 요청합니다. 사이즈 M, L 둘 다 가능합니다.', 'https://kapital.jp/boro-jacket', 2100, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Nanamica GORE-TEX 코트 문의', '나나미카 고어텍스 코트 재입고 가능한지 확인 부탁드립니다.', 'https://nanamica.com/goretex-coat', 3600, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Kenzo 타이거 스웨터 요청', '겐조 타이거 자수 스웨터 XL 사이즈 입고 요청합니다.', 'https://kenzo.com/tiger-sweater', 1500, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Kapital 인디고 데님 팬츠', '카피탈 인디고 데님 팬츠 32인치 입고 가능한지 문의합니다.', NULL, 980, 'SUBMITTED', TRUE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Nanamica 러그비 셔츠 입고 요청', '나나미카 쿨맥스 러그비 셔츠 L 사이즈 입고 부탁드립니다.', 'https://nanamica.com/rugby-shirt', 640, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Kapital 사시코 니트 조끼', '사시코 니트 조끼 프리사이즈 입고 요청합니다.', NULL, 620, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Kenzo 플라워 프린트 셔츠', '겐조 플라워 프린트 셔츠 M 사이즈 요청합니다. 참고 링크 첨부합니다.', 'https://kenzo.com/flower-shirt', 890, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
-('Nanamica 와이드 치노 팬츠', '쿨맥스 와이드 치노 30인치 입고 가능할까요?', 'https://nanamica.com/wide-chino', 1100, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3);
+                                                                                                                                             ('Kapital Boro Jacket 입고 요청', '카피탈 보로 자켓 시즌 신상 입고 요청합니다. 사이즈 M, L 둘 다 가능합니다.', 'https://kapital.jp/boro-jacket', 2100, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Nanamica GORE-TEX 코트 문의', '나나미카 고어텍스 코트 재입고 가능한지 확인 부탁드립니다.', 'https://nanamica.com/goretex-coat', 3600, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Kenzo 타이거 스웨터 요청', '겐조 타이거 자수 스웨터 XL 사이즈 입고 요청합니다.', 'https://kenzo.com/tiger-sweater', 1500, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Kapital 인디고 데님 팬츠', '카피탈 인디고 데님 팬츠 32인치 입고 가능한지 문의합니다.', NULL, 980, 'SUBMITTED', TRUE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Nanamica 러그비 셔츠 입고 요청', '나나미카 쿨맥스 러그비 셔츠 L 사이즈 입고 부탁드립니다.', 'https://nanamica.com/rugby-shirt', 640, 'SUBMITTED', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Kapital 사시코 니트 조끼', '사시코 니트 조끼 프리사이즈 입고 요청합니다.', NULL, 620, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Kenzo 플라워 프린트 셔츠', '겐조 플라워 프린트 셔츠 M 사이즈 요청합니다. 참고 링크 첨부합니다.', 'https://kenzo.com/flower-shirt', 890, 'DRAFT', FALSE, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3),
+                                                                                                                                             ('Nanamica 와이드 치노 팬츠', '쿨맥스 와이드 치노 30인치 입고 가능할까요?', 'https://nanamica.com/wide-chino', 1100, 'SUBMITTED', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE, 3);
 
 -- =====================
 -- 최준희 END
@@ -538,10 +538,10 @@ INSERT INTO chat_message (
 -- =====================
 INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_stt)
 VALUES
-('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 3, '1234', 'PREPARING'),
-('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 3, '2345', 'DELIVERING'),
-('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 3, '3456', 'DELIVERING'),
-('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 3, '4567', 'DELIVERED');
+    ('홍길동', '서울특별시 금천구 가산디지털2로 95', '3층 301호 구디아카데미', 3, '1234', 'PREPARING'),
+    ('갑을병', '서울특별시 금천구 가산디지털2로 95', '3층 302호 구디아카데미', 3, '2345', 'DELIVERING'),
+    ('김구디', '서울특별시 금천구 가산디지털2로 95', '3층 303호 구디아카데미', 3, '3456', 'DELIVERING'),
+    ('병정무', '서울특별시 금천구 가산디지털2로 95', '3층 304호 구디아카데미', 3, '4567', 'DELIVERED');
 
 INSERT INTO ORDER_BASE (ord_base_rcv_nm, ord_base_adr, ord_base_adr_dt, mem_id, ord_base_no, ord_base_can_yn)
 VALUES
@@ -563,4 +563,3 @@ VALUES
 -- =====================
 -- 임 욱 END
 -- =====================
-

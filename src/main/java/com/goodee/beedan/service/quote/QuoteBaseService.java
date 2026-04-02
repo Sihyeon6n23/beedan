@@ -49,6 +49,13 @@ public class QuoteBaseService {
     }
 
     /**
+     * 전체 견적 조회
+     */
+    public List<QuoteBase> findAll() {
+        return quoteBaseRepository.findAll();
+    }
+
+    /**
      * 협상별 견적 전체 조회
      */
     public List<QuoteBase> findAllByNego(Long ngId) {

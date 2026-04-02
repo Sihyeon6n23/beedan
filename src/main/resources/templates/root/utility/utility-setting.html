@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('Utility', 'setting', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | Utility Setting</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('UTILITY', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <div class="flex-grow mx-auto px-6 py-12 max-w-5xl">
+        <div class="mb-12 flex items-baseline gap-4">
+            <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase">유틸리티 설정</h1>
+            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Utility Settings)</span>
+        </div>
+
+        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
+
+            <form id="utilityForm" th:action="@{/root/utility/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <!-- 날씨 지역 설정 -->
+            <section class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">cloud</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">1. 날씨 지역 설정</h2>
+                </div>
+
+                <div id="location-slots" class="space-y-1">
+                    <th:block th:each="loc, iter : ${setting.weatherLocationList}">
+                        <div class="location-slot flex items-center gap-3 py-2 border-b border-zinc-100"
+                             th:data-index="${iter.index}">
+                            <span class="text-xs font-bold text-zinc-400 w-4 text-center" th:text="${iter.index + 1}">1</span>
+                            <input type="text" readonly
+                                   th:name="${'weatherLocationList[' + iter.index + '].cityName'}"
+                                   th:value="${loc.cityName}"
+                                   class="input-city bg-transparent text-sm font-bold w-28 p-0 border-none cursor-default">
+                            <input type="text" readonly
+                                   th:name="${'weatherLocationList[' + iter.index + '].region'}"
+                                   th:value="${loc.region}"
+                                   class="input-region bg-transparent text-xs text-zinc-400 flex-grow p-0 border-none cursor-default">
+                            <button type="button"
+                                    class="btn-change flex-shrink-0 whitespace-nowrap text-xs text-primary hover:underline"
+                                    th:data-index="${iter.index}">변경</button>
+                        </div>
+                    </th:block>
+                </div>
+            </section>
+            </form>
+
+            <!-- 검색 모달 (form 밖) -->
+            <div id="search-modal" class="fixed inset-0 z-50 hidden">
+                <div class="absolute inset-0 bg-black/50" id="modal-overlay"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-lg border-2 border-yellow-400 p-8 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-yellow-500" style="font-size:20px;">travel_explore</span>
+                            <h3 class="text-lg font-bold">지역 검색</h3>
+                        </div>
+                        <button type="button" id="modal-close" class="text-zinc-400 hover:text-zinc-700">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <input type="text" id="search-input" placeholder="도시명을 입력하세요 (예: London, Paris, Tokyo)"
+                           class="w-full border-2 border-zinc-200 rounded-lg px-4 py-3 text-sm focus:border-yellow-400 focus:outline-none transition">
+                    <div id="search-results" class="max-h-80 overflow-y-auto space-y-1">
+                        <p class="text-sm text-zinc-400 text-center py-6">검색어를 입력하면 결과가 표시됩니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-zinc-100 flex justify-end">
+                <button type="submit" form="utilityForm" class="btn-primary px-8 py-4 text-sm gap-2 flex items-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                    설정 저장
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let editingIndex = -1;
+        let debounceTimer = null;
+
+        // 변경 버튼 클릭
+        document.querySelectorAll('.btn-change').forEach(btn => {
+            btn.addEventListener('click', function() {
+                editingIndex = parseInt(this.dataset.index);
+                document.getElementById('search-modal').classList.remove('hidden');
+                const input = document.getElementById('search-input');
+                input.value = '';
+                input.focus();
+                document.getElementById('search-results').innerHTML =
+                    '<p class="text-sm text-zinc-400 text-center py-4">검색어를 입력하면 결과가 표시됩니다.</p>';
+            });
+        });
+
+        // 모달 닫기
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+        document.getElementById('modal-overlay').addEventListener('click', closeModal);
+
+        function closeModal() {
+            document.getElementById('search-modal').classList.add('hidden');
+            editingIndex = -1;
+        }
+
+        // 검색 입력 (debounce 300ms)
+        document.getElementById('search-input').addEventListener('input', function() {
+            const query = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                document.getElementById('search-results').innerHTML =
+                    '<p class="text-sm text-zinc-400 text-center py-4">2글자 이상 입력하세요.</p>';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                document.getElementById('search-results').innerHTML =
+                    '<p class="text-sm text-zinc-400 text-center py-4">검색 중...</p>';
+
+                fetch('/root/utility/weather/search?q=' + encodeURIComponent(query))
+                    .then(res => res.json())
+                    .then(data => renderResults(data))
+                    .catch(() => {
+                        document.getElementById('search-results').innerHTML =
+                            '<p class="text-sm text-red-500 text-center py-4">검색에 실패했습니다.</p>';
+                    });
+            }, 300);
+        });
+
+        // 검색 결과 렌더링
+        function renderResults(data) {
+            const container = document.getElementById('search-results');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="text-sm text-zinc-400 text-center py-4">검색 결과가 없습니다.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(item => {
+                const region = [item.state, item.country].filter(Boolean).join(', ');
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-zinc-100 transition';
+                div.innerHTML =
+                    '<div>' +
+                    '  <p class="text-sm font-bold">' + escapeHtml(item.name) + '</p>' +
+                    '  <p class="text-xs text-zinc-400">' + escapeHtml(region) + '</p>' +
+                    '</div>' +
+                    '<span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>';
+                div.addEventListener('click', () => selectCity(item.name, region));
+                container.appendChild(div);
+            });
+        }
+
+        // 지역 선택 → 폼 input 값 업데이트
+        function selectCity(cityName, region) {
+            if (editingIndex < 0) return;
+
+            const slot = document.querySelector('.location-slot[data-index="' + editingIndex + '"]');
+            slot.querySelector('.input-city').value = cityName;
+            slot.querySelector('.input-region').value = region;
+
+            closeModal();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+    });
+    </script>
+</th:block>
+</html>

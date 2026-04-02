@@ -12,16 +12,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
-import org.springframework.cglib.core.Local;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
@@ -103,22 +100,6 @@ public class MemberService {
         member.inactive();
     }
 
-    public void editMember(Long memberId, EditMemberDto editMemberDto) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
-        memberMapper.updateEntityFromDto(editMemberDto, member);
-    }
-
-    public void changPassword(String token, PasswordChangeDto changeDto) {
-        Member member = findMemberByToken(token);
-        String memberCurrentPassword = member.getMemLgnPw();
-        String dtoCurrentPassword = changeDto.getCurrentPassword();
-        if (!passwordEncoder.matches(dtoCurrentPassword, memberCurrentPassword)) {
-            return;
-        }
-
-        member.setMemLgnPw(passwordEncoder.encode(changeDto.getPassword()));
-    }
-
     public void resetPassword(String token, PasswordResetDto resetDto) {
         Member member = findMemberByToken(token);
         member.setMemLgnPw(passwordEncoder.encode(resetDto.getPassword()));
@@ -172,10 +153,5 @@ public class MemberService {
 
         tokenEntity.useToken();
         return tokenEntity.getMember();
-    }
-
-    public void withdraw(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
-        member.withdraw();
     }
 }
