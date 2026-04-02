@@ -1,17 +1,19 @@
 @charset "UTF-8";
 
-/* --- 1. 기본 레이아웃 제약 해제 (목록 페이지와 동일) --- */
-main > div {
-    max-width: none !important;
-    width: 100% !important;
+/* --- 1. 레이아웃 안정화 (가장 중요) --- */
+/* 외부 Tailwind flex 박스 안에서 컨텐츠가 찌그러지지 않도록 제어 */
+.app-layout__content {
+    flex: 1 !important;
+    min-width: 0 !important;
 }
 
 .admin-edit-container {
-    width: 1024px !important;
-    min-width: 1024px !important;
+    width: 100% !important;
+    max-width: 1100px !important; /* 고정 width 1024를 해제하고 max-width로 변경 */
     margin: 0 auto;
-    padding: 0 0 50px 0;
+    padding: 40px 20px 80px 20px;
     color: #1a1c1c;
+    box-sizing: border-box;
 }
 
 /* --- 2. 헤더 영역 --- */
@@ -26,9 +28,9 @@ main > div {
 
 .header-info h1 {
     font-family: 'Manrope', sans-serif;
-    font-size: 40px;
+    font-size: 36px;
     font-weight: 300;
-    margin-bottom: 10px;
+    margin: 0 0 10px 0;
 }
 
 .meta-info {
@@ -39,16 +41,13 @@ main > div {
     font-size: 14px;
 }
 
-.meta-info .material-symbols-outlined { font-size: 18px; }
-.meta-info .divider { color: #ccc; }
-
 .header-actions {
     display: flex;
     gap: 10px;
 }
 
 .header-actions button {
-    padding: 15px 30px;
+    padding: 12px 28px;
     font-size: 12px;
     font-weight: bold;
     text-transform: uppercase;
@@ -57,25 +56,33 @@ main > div {
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: 0.2s;
 }
 
 .btn-cancel { background-color: #e2e2e2; color: #1a1c1c; }
 .btn-save { background-color: rgba(255, 215, 0, 1); color: #705d00; }
-.btn-save:hover { background-color: #facc15; }
+.btn-save:hover { opacity: 0.8; }
 
-/* --- 3. 폼 레이아웃 (2단 그리드) --- */
+/* --- 3. 폼 그리드 (2단 구조 강제) --- */
 .edit-form-grid {
     display: grid;
-    grid-template-columns: 5.5fr 4.5fr; /* 피그마 비율 맞춤 */
-    gap: 60px;
+    /* 중요: minmax(0, ...)를 써야 내부 요소 때문에 그리드가 터지지 않음 */
+    grid-template-columns: minmax(0, 5.5fr) minmax(0, 4.5fr);
+    gap: 50px;
+    align-items: start;
+    width: 100%;
 }
 
 .form-section {
     margin-bottom: 40px;
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
 }
 
 .form-section h2 {
-    font-size: 14px;
+    font-size: 13px;
     color: #4d4732;
     letter-spacing: 2px;
     border-bottom: 1px solid #d0c6ab;
@@ -93,7 +100,6 @@ main > div {
     display: flex;
     gap: 16px;
 }
-.flex-1 { flex: 1; }
 
 .form-group label {
     display: block;
@@ -107,61 +113,48 @@ main > div {
 
 .form-control {
     width: 100%;
-    background-color: #e8e8e8;
-    border: none;
-    padding: 16px 20px;
+    background-color: #f5f5f5;
+    border: 1px solid transparent;
+    padding: 14px 18px;
     font-size: 14px;
     color: #1a1c1c;
+    box-sizing: border-box;
     outline: none;
 }
 
 .form-control[readonly] {
-    color: #5f5e5e; /* 수정 불가 항목은 약간 흐리게 */
+    background-color: #ededed;
+    color: #888;
 }
 
-/* 아이콘이 포함된 인풋 */
+/* 아이콘 인풋 */
 .input-wrapper {
     display: flex;
     align-items: center;
-    background-color: #e8e8e8;
+    background-color: #f5f5f5;
     padding: 0 16px;
 }
-.input-wrapper .material-symbols-outlined { color: #5f5e5e; font-size: 20px; }
-.input-wrapper .form-control { padding: 16px 12px; }
+.input-wrapper .form-control { background-color: transparent; }
 
-/* 주소 텍스트에어리어 */
+/* 주소 및 지도 */
 .address-textarea {
     resize: none;
-    line-height: 1.5;
+    min-height: 90px;
 }
 
-/* 지도 플레이스홀더 */
 .map-placeholder {
     width: 100%;
-    height: 180px;
-    background-color: #d6d3d1;
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    padding: 10px;
-}
-
-.map-overlay {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    z-index: 10; /* 카카오맵보다 위로 올라오도록 설정 */
-    background: rgba(255, 255, 255, 0.9);
-    padding: 6px 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* --- 5. 회원 이용 이력 --- */
-.history-section {
-    background-color: #f9f9f9;
-    padding: 24px;
+    height: 220px;
+    background-color: #e5e7eb;
+    margin-top: 10px;
     border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- 5. 이용 이력 --- */
+.history-section {
+    background-color: #fafafa !important;
 }
 
 .history-item {
@@ -171,20 +164,7 @@ main > div {
     padding: 12px 0;
 }
 
-.border-bottom { border-bottom: 1px solid rgba(208, 198, 171, 0.3); }
-.mt-4 { margin-top: 16px; }
-
-.history-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #5f5e5e;
-}
-
-.history-value {
-    font-size: 13px;
-    color: #1a1c1c;
-    font-weight: 500;
-}
+.border-bottom { border-bottom: 1px solid #eee; }
 
 .status-badge {
     background-color: rgba(255, 215, 0, 1);
@@ -193,4 +173,11 @@ main > div {
     font-size: 10px;
     font-weight: bold;
     border-radius: 2px;
+}
+
+/* --- 6. 4분할 깨짐 방지 대응 --- */
+@media (max-width: 1200px) {
+    .edit-form-grid {
+        grid-template-columns: 1fr; /* 너비 부족 시 1열로 세로 정렬 */
+    }
 }

@@ -15,7 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -42,7 +41,7 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
 
         String errorMessage="";
         try {
-            Member member = memberService.getLoginId(username);
+            Member member = memberService.getMemberByUsername(username);
             SecurityPolicyDto policy = securityService.getSecPolDto();
             // 계정 상태를 세션에 임시저장
             HttpSession session = request.getSession();
