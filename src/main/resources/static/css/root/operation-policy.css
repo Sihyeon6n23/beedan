@@ -1,0 +1,10 @@
+/* Operation Policy — 등급 행 클릭 힌트 */
+.grade-row-clickable {
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.grade-row-clickable:hover {
+    background-color: var(--color-surface-container-low);
+    outline: 1px solid #fde68a; /* amber-200 */
+}

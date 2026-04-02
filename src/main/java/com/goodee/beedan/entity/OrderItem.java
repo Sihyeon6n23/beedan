@@ -38,4 +38,6 @@ public class OrderItem {
     @Column(name = "ord_item_upd_dt")
     @LastModifiedDate
     private LocalDateTime ordItemUpdDt;
+
+    private String ordItemStNm;
 }

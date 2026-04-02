@@ -21,6 +21,7 @@ public class QuoteBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long quId;
+    private String quCd; // 견적 코드
     private Long ngId;  // 협상 아이디
     private Long quSid; // 송신자 아이디
     private Long quRid; // 수신자 아이디
@@ -40,6 +41,7 @@ public class QuoteBase {
             Long senderId,
             Long receiverId
     ){
+        this.quCd = "QU" + System.currentTimeMillis();
         this.ngId = negoId;
         this.quSid = senderId;
         this.quRid = receiverId;

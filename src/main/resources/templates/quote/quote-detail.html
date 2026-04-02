@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+                ~{::title},
+                null,
+                ~{::content}
+        )}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Goodee — 견적 상세</title>
-    <link rel="stylesheet" th:href="@{/css/quote/quote-detail.css}">
-    <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
-    <link rel="stylesheet" th:href="@{/css/quote/feeCards.css}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    <title th:fragment="title">BEEDAN | 견적 상세</title>
 </head>
-<body>
+<body th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/quote/quote-detail.css}">
+<link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
+<link rel="stylesheet" th:href="@{/css/quote/feeCards.css}">
+
 <div class="page-wrapper">
     <main class="main">
         <div class="main-canvas">
@@ -19,20 +22,21 @@
             <!-- ① Header Section -->
             <section class="header-section">
                 <h1 class="page-title">견적 상세</h1>
-                <p class="quote-id">#A01-PEWGF-A</p>
+                <p class="quote-id" th:text="'#' + ${quoteBase.quCd}">견적코드</p>
             </section>
 
             <!-- ② Status Timeline -->
             <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
 
-            <!-- ③ Main Body: Left Column -->
+            <!-- ③ Main Body -->
             <div class="body-layout">
 
                 <!-- Quote Manifest Table -->
                 <section class="section-manifest">
                     <div class="manifest-header">
-                        <h2 class="manifest-id">A01-PEWGF-A</h2>
-                        <span class="manifest-count">4개의 아이템</span>
+                        <h2 class="manifest-id" th:text="${quoteBase.quCd}">QU0000</h2>
+                        <span class="manifest-count"
+                              th:text="${details.size()} + '개의 아이템'">0개의 아이템</span>
                     </div>
                     <div class="table-wrapper">
                         <table class="quote-table">
@@ -43,68 +47,31 @@
                                 <th class="col-id">상품 아이디</th>
                                 <th class="col-qty">수량</th>
                                 <th class="col-spec">규격</th>
-                                <th class="col-price-unit">공급가액 (엔화)</th>
-                                <th class="col-price-total">공급가 총액 (엔화)</th>
-                                <th class="col-tax">세액 (한화)</th>
+                                <th class="col-price-unit">공급가액 (외화)</th>
+                                <th class="col-price-total">공급가 총액 (외화)</th>
+                                <th class="col-tax">소계 (한화)</th>
                                 <th class="col-subtotal">Subtotal (한화)</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td class="col-no">1</td>
+                            <tr th:each="detail, idx : ${details}">
+                                <td class="col-no" th:text="${idx.count}">1</td>
                                 <td class="col-product">
-                                    <span class="product-name">ESSENTIAL OVERSIZED TEE</span>
-                                    <span class="product-material">Japanese Heavyweight Cotton</span>
+                                    <span class="product-name" th:text="${detail.stNm}">상품명</span>
+                                    <span class="product-material" th:text="${detail.faNm != null ? detail.faNm : '-'}">공장명</span>
                                 </td>
-                                <td class="col-id product-code">BDN-ES-001</td>
-                                <td class="col-qty value-num">50</td>
-                                <td class="col-spec value-num">50</td>
-                                <td class="col-price-unit text-right">¥2,400</td>
-                                <td class="col-price-total text-right">¥2,400,000</td>
-                                <td class="col-tax text-right">₩2,400</td>
-                                <td class="col-subtotal text-right value-bold">₩1,096,800</td>
-                            </tr>
-                            <tr>
-                                <td class="col-no">2</td>
-                                <td class="col-product">
-                                    <span class="product-name">STRUCTURED DENIM JACKET</span>
-                                    <span class="product-material">14oz Selvedge Denim</span>
-                                </td>
-                                <td class="col-id product-code">BDN-DN-124</td>
-                                <td class="col-qty value-num">20</td>
-                                <td class="col-spec value-num">20</td>
-                                <td class="col-price-unit text-right">¥8,200</td>
-                                <td class="col-price-total text-right">¥8,200,000</td>
-                                <td class="col-tax text-right">¥8,200</td>
-                                <td class="col-subtotal text-right value-bold">₩1,498,960</td>
-                            </tr>
-                            <tr>
-                                <td class="col-no">3</td>
-                                <td class="col-product">
-                                    <span class="product-name">STRUCTURED DENIM JACKET</span>
-                                    <span class="product-material">14oz Selvedge Denim</span>
-                                </td>
-                                <td class="col-id product-code">BDN-DN-124</td>
-                                <td class="col-qty value-num">20</td>
-                                <td class="col-spec value-num">20</td>
-                                <td class="col-price-unit text-right">¥8,200</td>
-                                <td class="col-price-total text-right">¥8,200,000</td>
-                                <td class="col-tax text-right">¥8,200</td>
-                                <td class="col-subtotal text-right value-bold">₩1,498,960</td>
-                            </tr>
-                            <tr>
-                                <td class="col-no">4</td>
-                                <td class="col-product">
-                                    <span class="product-name">STRUCTURED DENIM JACKET</span>
-                                    <span class="product-material">14oz Selvedge Denim</span>
-                                </td>
-                                <td class="col-id product-code">BDN-DN-124</td>
-                                <td class="col-qty value-num">20</td>
-                                <td class="col-spec value-num">20</td>
-                                <td class="col-price-unit text-right">¥8,200</td>
-                                <td class="col-price-total text-right">¥8,200,000</td>
-                                <td class="col-tax text-right">¥8,200</td>
-                                <td class="col-subtotal text-right value-bold">₩1,498,960</td>
+                                <td class="col-id product-code" th:text="${detail.stId}">BDN-001</td>
+                                <td class="col-qty value-num" th:text="${detail.quDtQn}">0</td>
+                                <td class="col-spec value-num"
+                                    th:text="${detail.quUQn != null ? detail.quUQn + ' ' + (detail.unGNm != null ? detail.unGNm : '') : '-'}">0</td>
+                                <td class="col-price-unit text-right"
+                                    th:text="${detail.quDtFgPr != null ? #numbers.formatDecimal(detail.quDtFgPr, 1, 'COMMA', 0, 'POINT') : '-'}">0</td>
+                                <td class="col-price-total text-right"
+                                    th:text="${detail.quDtFgPr != null && detail.quDtQn != null ? #numbers.formatDecimal(detail.quDtFgPr * detail.quDtQn, 1, 'COMMA', 0, 'POINT') : '-'}">0</td>
+                                <td class="col-tax text-right"
+                                    th:text="${detail.quDtKrPr != null ? '₩' + #numbers.formatInteger(detail.quDtKrPr, 3, 'COMMA') : '-'}">₩0</td>
+                                <td class="col-subtotal text-right value-bold"
+                                    th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</td>
                             </tr>
                             </tbody>
                         </table>
@@ -112,10 +79,63 @@
                 </section>
 
                 <!-- Logistics & Procurement Fees -->
-                <div th:replace="~{fragments/quoteAndPayment/feeCards :: feeCards}"></div>
+                <div class="fees-grid" th:if="${quoteInfo != null}">
+                    <!-- 예상 운임 비용 -->
+                    <div class="fee-card">
+                        <div class="fee-card-header">
+                            <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1h14v10H1V1zm14 3h4l2 3v4h-6V4z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                                <circle cx="4.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                                <circle cx="16.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
+                            </svg>
+                            <h3 class="fee-card-title">예상 운임 비용</h3>
+                        </div>
+                        <div class="fee-items">
+                            <th:block th:each="sf : ${shipFees}">
+                                <div class="fee-item">
+                                    <span class="fee-label" th:text="${sf.qsfFaNm + ' (' + sf.qsfTrspTy + ')'}">공장명</span>
+                                    <span class="fee-value" th:text="${sf.qsfTtl != null ? '₩' + #numbers.formatInteger(sf.qsfTtl, 3, 'COMMA') : '-'}">₩0</span>
+                                </div>
+                            </th:block>
+                            <div class="fee-item" th:if="${quoteInfo.quInfoDomShiFe != null}">
+                                <span class="fee-label">국내 운임</span>
+                                <span class="fee-value" th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoDomShiFe, 3, 'COMMA')}">₩0</span>
+                            </div>
+                            <div class="fee-subtotal">
+                                <span class="fee-subtotal-label">운송 비용 소계</span>
+                                <span class="fee-subtotal-value"
+                                      th:text="${quoteInfo.quInfoTtlShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA') : '-'}">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 구매 대행 수수료 -->
+                    <div class="fee-card">
+                        <div class="fee-card-header">
+                            <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 1H2C1.4 1 1 1.4 1 2v16c0 .6.4 1 1 1h12c.6 0 1-.4 1-1V6l-5-5z" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                                <path d="M10 1v5h5" stroke="#1a1c1c" stroke-width="1.5" stroke-linejoin="round"/>
+                                <path d="M4 10h8M4 13h6" stroke="#1a1c1c" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            <h3 class="fee-card-title">구매 대행 수수료</h3>
+                        </div>
+                        <div class="fee-items">
+                            <div class="fee-item">
+                                <span class="fee-label">서비스 수수료</span>
+                                <span class="fee-value"
+                                      th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">-</span>
+                            </div>
+                            <div class="fee-subtotal">
+                                <span class="fee-subtotal-label">대행 서비스 소계</span>
+                                <span class="fee-subtotal-value"
+                                      th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Cost Summary Section -->
-                <div class="cost-summary-section">
+                <div class="cost-summary-section" th:if="${quoteInfo != null}">
                     <div class="cost-summary-heading">
                         <span class="cost-summary-title">비용 명세 요약</span>
                         <div class="heading-divider"></div>
@@ -123,37 +143,27 @@
                     <div class="cost-cards-grid">
                         <div class="cost-card">
                             <div class="cost-card-top">
-                                <span class="cost-card-label">해상 운임</span>
-                                <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6 1v10M1 7l5 5 5-5" stroke="#a3a3a3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
+                                <span class="cost-card-label">운송 비용 합계</span>
                             </div>
-                            <div class="cost-card-amount">₩1,240,000</div>
-                            <div class="cost-card-desc">
-                                Osaka Port (JP) to Busan<br>New Port (KR). Estimated<br>transit: 14 Days.
-                            </div>
+                            <div class="cost-card-amount"
+                                 th:text="${quoteInfo.quInfoTtlShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA') : '-'}">₩0</div>
+                            <div class="cost-card-desc">국제 운임 + 국내 배송비</div>
                         </div>
                         <div class="cost-card">
                             <div class="cost-card-top">
                                 <span class="cost-card-label">큐레이션 수수료</span>
-                                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="6.5" cy="6.5" r="5.5" stroke="#a3a3a3" stroke-width="1.2"/>
-                                    <path d="M6.5 4v3l2 1" stroke="#a3a3a3" stroke-width="1.2" stroke-linecap="round"/>
-                                </svg>
                             </div>
-                            <div class="cost-card-amount">₩ 920,000</div>
-                            <div class="cost-card-desc">현지 품질 검수, 물류 조정 및 보험료</div>
+                            <div class="cost-card-amount"
+                                 th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">₩0</div>
+                            <div class="cost-card-desc">서비스 수수료 (할인 적용)</div>
                         </div>
                         <div class="cost-card">
                             <div class="cost-card-top">
-                                <span class="cost-card-label">관세 및 통관 수수료</span>
-                                <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M5 1l4 3v6H1V4l4-3z" stroke="#a3a3a3" stroke-width="1.2" stroke-linejoin="round"/>
-                                    <path d="M3 8h4M3 6h4" stroke="#a3a3a3" stroke-width="1.2" stroke-linecap="round"/>
-                                </svg>
+                                <span class="cost-card-label">관세 및 부가세</span>
                             </div>
-                            <div class="cost-card-amount">₩ 1,854,200</div>
-                            <div class="cost-card-desc">부가세(10%) 핸들링 비용 및 품목 분류 (HS Code) 신고료</div>
+                            <div class="cost-card-amount"
+                                 th:text="${quoteInfo.quInfoTax != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTax, 3, 'COMMA') : '-'}">₩0</div>
+                            <div class="cost-card-desc">관세 + 부가세 합계</div>
                         </div>
                     </div>
                 </div>
@@ -168,7 +178,10 @@
                 </svg>
                 <div class="notice-text">
                     <p>본 견적의 유효 기간은 발행일로부터 영업일 기준 7일입니다.</p>
-                    <p>견적 금액은 현재 JPY/KRW 환율을 기준으로 산출되었으며 최종 인보이스 발행 시점의 환율에 따라 조정될 수 있습니다.</p>
+                    <p th:if="${quoteInfo != null && quoteInfo.quInfoCurCd != null}"
+                       th:text="'견적 금액은 ' + ${quoteInfo.quInfoCurCd} + '/KRW 환율을 기준으로 산출되었으며 최종 인보이스 발행 시점의 환율에 따라 조정될 수 있습니다.'">환율 안내</p>
+                    <p th:if="${quoteInfo == null || quoteInfo.quInfoCurCd == null}">
+                        견적 금액은 현재 환율을 기준으로 산출되었으며 최종 인보이스 발행 시점의 환율에 따라 조정될 수 있습니다.</p>
                 </div>
             </div>
 
@@ -176,12 +189,16 @@
             <div class="final-payment-card">
                 <div class="payment-info">
                     <span class="payment-label">최종 결제 금액</span>
-                    <span class="payment-amount">₩ 22,617,200</span>
+                    <span class="payment-amount"
+                          th:text="${quoteInfo != null && quoteInfo.quInfoTp != null ? '₩ ' + #numbers.formatInteger(quoteInfo.quInfoTp, 3, 'COMMA') : '산출 중'}">₩ 0</span>
                     <span class="payment-note">INC. VAT &amp; DELIVERY</span>
                 </div>
-                <div class="payment-actions">
+                <div class="payment-actions" th:if="${quoteBase.quStt.name() == 'SUBMITTED'}">
                     <button class="btn-approve">견적 승인</button>
                     <button class="btn-renew">견적 갱신 요청</button>
+                </div>
+                <div class="payment-actions" th:if="${quoteBase.quStt.name() == 'APPROVED'}">
+                    <button class="btn-approve">결제 진행</button>
                 </div>
                 <div class="quick-actions">
                     <button class="btn-pdf">
@@ -193,11 +210,20 @@
                 </div>
             </div>
 
+            <!-- 메모 표시 -->
+            <div class="notice-banner" th:if="${quoteInfo != null && quoteInfo.quInfoPs != null && !quoteInfo.quInfoPs.isEmpty()}">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10" cy="10" r="9" stroke="#737373" stroke-width="1.5"/>
+                    <path d="M10 9v5M10 6.5v.5" stroke="#737373" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <div class="notice-text">
+                    <p th:text="${quoteInfo.quInfoPs}">메모 내용</p>
+                </div>
+            </div>
+
         </div><!-- /.main-canvas -->
     </main>
 </div><!-- /.page-wrapper -->
-
-<!-- Modals + JS → feeCards fragment에 포함 -->
 
 </body>
 </html>

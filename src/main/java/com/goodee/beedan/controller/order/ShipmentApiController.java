@@ -18,12 +18,12 @@ import java.util.List;
 public class ShipmentApiController {
     private final ShipmentService shipmentService;
 
-    @GetMapping("/list/{id}")
-    public ResponseEntity<List<ShipmentDto>> getShipment(
-            @PathVariable(name="id") Long shId,
+    @GetMapping("/list")
+    public ResponseEntity<List<ShipmentDto>> getShipmentList(
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestParam(name = "ordId") Long ordId){
-        List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(shId, ordId);
+
+        List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(userDetails.getMemberId(), ordId);
 
         return ResponseEntity.ok(shipmentDtoList);
     }
@@ -33,18 +33,30 @@ public class ShipmentApiController {
             @PathVariable(name="id") Long shId,
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestParam(name = "ordId") Long ordId){
-        shipmentService.updateStatus(shId, userDetails.getMemberId(), ordId);
 
+        ShipmentDto shipmentDetail = shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId);
+
+        return ResponseEntity.ok(shipmentDetail);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ShipmentDto> updateShipmentStatus(
+            @PathVariable(name="id") Long shId,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @RequestParam(name = "ordId") Long ordId) {
+
+        shipmentService.updateStatus(shId, userDetails.getMemberId(), ordId);
         ShipmentDto updatedShipment = shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId);
 
         return ResponseEntity.ok(updatedShipment);
     }
 
-    @PatchMapping("/{id}") // 관리자 테스트용 배송 현황 수정용
-    public ResponseEntity<ShipmentDto> updateShipment(@PathVariable(name="id") Long shId,
-                                                      @RequestParam(name="ordId") Long ordId,
-                                                      @AuthenticationPrincipal MemberUserDetails userDetails,
-                                                      @RequestBody ShipmentDto dto){
+    @PatchMapping("/{id}/admin")
+    public ResponseEntity<ShipmentDto> updateShipmentFromAdmin(
+            @PathVariable(name="id") Long shId,
+            @RequestParam(name="ordId") Long ordId,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @RequestBody ShipmentDto dto){
 
         ShipmentDto shipmentDto = shipmentService.updateStatusFromAdmin(shId, ordId, dto);
 

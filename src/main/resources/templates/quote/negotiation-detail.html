@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Negotiation Detail', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 협상 상세</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'negotiation-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/quote/negotiation-detail.css}">
+
+    <section class="ngd-page">
+
+        <!-- Header -->
+        <header class="ngd-shell ngd-shell--header">
+            <div class="ngd-header__top">
+                <a th:href="@{/quote/negotiation/list}" class="ngd-back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    협상 목록
+                </a>
+                <span class="ngd-badge"
+                      th:classappend="${negotiation.ongoing} ? ' ngd-badge--ongoing' : ' ngd-badge--closed'"
+                      th:text="${negotiation.ongoing} ? '진행중' : '종료'">상태</span>
+            </div>
+            <div class="ngd-header__title">
+                <span class="ngd-kicker">Negotiation Detail</span>
+                <h2 class="ngd-title" th:text="${negotiation.ngNm}">NG0000</h2>
+            </div>
+            <div class="ngd-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Info Summary -->
+        <section class="ngd-shell ngd-shell--info">
+            <div class="ngd-info-grid">
+                <div class="ngd-info-item">
+                    <span class="ngd-info-key">시작일</span>
+                    <span class="ngd-info-val"
+                          th:text="${negotiation.ngCreDt != null ? #temporals.format(negotiation.ngCreDt, 'yyyy.MM.dd') : '-'}">2026.03.10</span>
+                </div>
+                <div class="ngd-info-item">
+                    <span class="ngd-info-key">종료일</span>
+                    <span th:if="${negotiation.ngEndDt != null}" class="ngd-info-val"
+                          th:text="${#temporals.format(negotiation.ngEndDt, 'yyyy.MM.dd')}">2026.03.25</span>
+                    <span th:if="${negotiation.ngEndDt == null}" class="ngd-info-val ngd-info-val--empty">진행중</span>
+                </div>
+                <div class="ngd-info-item">
+                    <span class="ngd-info-key">총 견적</span>
+                    <span class="ngd-info-val ngd-info-val--highlight"
+                          th:text="${quotes.size()} + '건'">0건</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="ngd-shell ngd-shell--stats">
+            <div class="ngd-stats">
+                <div class="ngd-stat">
+                    <span class="ngd-stat__label">임시저장</span>
+                    <span class="ngd-stat__value" th:text="${statusCounts['TEMP_SAVE']}">0</span>
+                </div>
+                <div class="ngd-stat">
+                    <span class="ngd-stat__label">제출완료</span>
+                    <span class="ngd-stat__value" th:text="${statusCounts['SUBMITTED']}">0</span>
+                </div>
+                <div class="ngd-stat">
+                    <span class="ngd-stat__label">승인</span>
+                    <span class="ngd-stat__value" th:text="${statusCounts['APPROVED']}">0</span>
+                </div>
+                <div class="ngd-stat">
+                    <span class="ngd-stat__label">거절</span>
+                    <span class="ngd-stat__value" th:text="${statusCounts['REJECTED']}">0</span>
+                </div>
+                <div class="ngd-stat">
+                    <span class="ngd-stat__label">만료</span>
+                    <span class="ngd-stat__value" th:text="${statusCounts['EXPIRED']}">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quote List -->
+        <section class="ngd-shell ngd-shell--list">
+            <div class="ngd-list-header">
+                <span class="ngd-section-label">견적 목록</span>
+            </div>
+
+            <div class="ngd-list-head">
+                <div>견적 정보</div>
+                <div>상태</div>
+                <div class="ngd-sortable is-active" data-sort="quUpdDt" data-dir="desc">
+                    최근 업데이�� <span class="ngd-sort-icon">▼</span>
+                </div>
+                <div class="ngd-sortable" data-sort="quCreDt" data-dir="desc">
+                    발행일 <span class="ngd-sort-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="ngd-list-body">
+                <th:block th:each="q : ${quotes}">
+                    <a th:href="@{/quote/detail(quId=${q.quId})}"
+                       class="ngd-row"
+                       th:classappend="${!q.quOpYn} ? ' ngd-row--featured' : ''"
+                       th:data-qu-id="${q.quId}"
+                       th:data-qu-upd-dt="${q.quUpdDt}"
+                       th:data-qu-cre-dt="${q.quCreDt}"
+                       th:data-qu-op-yn="${q.quOpYn}">
+                        <div class="ngd-row__primary">
+                            <span th:if="${!q.quOpYn}" class="ngd-row__dot"></span>
+                            <span th:if="${q.quOpYn}" class="ngd-row__dot ngd-row__dot--empty"></span>
+                            <div class="ngd-row__text">
+                                <h3>
+                                    <span th:text="${q.quCd}">QU0000</span>
+                                    <small th:text="${q.itemCount + '개 품목'}">0개 품목</small>
+                                </h3>
+                                <p th:text="${q.firstItemName != null ? q.firstItemName : '상품 정보 없음'}">상품명</p>
+                            </div>
+                        </div>
+                        <div class="ngd-row__status">
+                            <span class="ngd-q-badge"
+                                  th:classappend="'ngd-q-badge--' + ${q.quStt.toLowerCase()}"
+                                  th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
+                                             q.quStt == 'SUBMITTED' ? '제출완료' :
+                                             q.quStt == 'APPROVED' ? '승인' :
+                                             q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
+                        </div>
+                        <div class="ngd-row__time">
+                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">2026.03.12</span>
+                        </div>
+                        <div class="ngd-row__amount">
+                            <span th:if="${q.totalAmount != null}"
+                                  th:text="${#numbers.formatInteger(q.totalAmount, 3, 'COMMA') + '원'}">0원</span>
+                            <span th:if="${q.totalAmount == null}" class="ngd-row__amount--pending">산출 중</span>
+                        </div>
+                    </a>
+                </th:block>
+
+                <div class="ngd-empty-state"
+                     th:if="${#lists.isEmpty(quotes)}">
+                    <strong>표시할 견적이 없습니다.</strong>
+                    <p>이 협상에 아직 견적이 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+    </section>
+
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const listBody = document.querySelector('.ngd-list-body');
+        const sortHeaders = document.querySelectorAll('.ngd-sortable');
+
+        // ── 정렬 ──
+        function sortRows(key, dir) {
+            const rows = Array.from(listBody.querySelectorAll('.ngd-row'));
+            rows.sort(function (a, b) {
+                const va = a.dataset[key] || '';
+                const vb = b.dataset[key] || '';
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            });
+            rows.forEach(function (r) { listBody.appendChild(r); });
+        }
+
+        // 카멜 변환: quUpdDt -> quUpdDt (data-qu-upd-dt -> quUpdDt)
+        function toCamel(s) {
+            return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
+        }
+
+        sortHeaders.forEach(function (header) {
+            header.addEventListener('click', function () {
+                const sortKey = toCamel(header.dataset.sort);
+                let dir = header.dataset.dir;
+
+                // 이미 활성이면 방향 토글, 아니면 해당 컬럼 활성화
+                if (header.classList.contains('is-active')) {
+                    dir = dir === 'desc' ? 'asc' : 'desc';
+                } else {
+                    sortHeaders.forEach(function (h) { h.classList.remove('is-active'); });
+                    header.classList.add('is-active');
+                }
+                header.dataset.dir = dir;
+                header.querySelector('.ngd-sort-icon').textContent = dir === 'desc' ? '▼' : '▲';
+
+                sortRows(sortKey, dir);
+            });
+        });
+
+        // 초기 정렬: 최근 업데이트순
+        sortRows('quUpdDt', 'desc');
+
+        // ── 열람 처리 ──
+        listBody.querySelectorAll('.ngd-row').forEach(function (row) {
+            row.addEventListener('click', function () {
+                if (row.dataset.quOpYn === 'true') return;
+
+                // 즉시 UI 업데이트
+                row.classList.remove('ngd-row--featured');
+                var dot = row.querySelector('.ngd-row__dot');
+                if (dot) dot.classList.add('ngd-row__dot--empty');
+                row.dataset.quOpYn = 'true';
+
+                // 서버에 열람 처리 요청 (비동기, 네비게이션은 기본 <a> 동작)
+                var quId = row.dataset.quId;
+                navigator.sendBeacon('/api/quote/' + quId + '/opened');
+            });
+        });
+    });
+    </script>
+</th:block>
+</html>

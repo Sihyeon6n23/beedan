@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -19,5 +20,13 @@ public class ShipmentDto {
     private ShipmentStatus shStt;
     private LocalDateTime shCreDt;
     private LocalDateTime shUpdDt;
-    private Order order;
+
+    private Long ordBaseId;
+
+    private Boolean shCanYn;
+    private String shRcvNm;
+    private String shAdr;
+    private String shAdrDt;
+
+    private List<ShipmentItemDto> items;
 }

@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -60,24 +58,25 @@ public class OrderService {
     }
 
     @Transactional
-    public void updateOrder(Long ordId, Long memId, OrderDto dto){
-        Order order = orderRepository.findById(ordId).orElseThrow(()->new IllegalArgumentException("Order not found"));
+    public void updateOrder(Long ordId, Long memId, OrderDto dto) {
+        Order order = orderRepository.findById(ordId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        if(!order.getMember().getMemId().equals(memId)) {
+        if (!order.getMember().getMemId().equals(memId)) {
             throw new IllegalArgumentException("본인의 주문만 수정할 수 있습니다.");
         }
 
         if (order.getOrdBaseStt() != OrderStatus.PREPARING) {
-            throw new IllegalStateException("배송 준비 중일 때만 주소를 수정할 수 있습니다.");
+            throw new IllegalStateException("배송 준비 중일 때만 정보를 수정할 수 있습니다.");
         }
-        if(dto == null) return;
 
-        if(dto.getOrdBaseAdr() != null) order.setOrdBaseAdr(dto.getOrdBaseAdr());
-        if(dto.getOrdBaseAdrDt() != null) order.setOrdBaseAdrDt(dto.getOrdBaseAdrDt());
-        if(dto.getOrdBaseRcvNm() != null) order.setOrdBaseRcvNm(dto.getOrdBaseRcvNm());
-        if(dto.getOrdBaseMsg() != null) order.setOrdBaseMsg(dto.getOrdBaseMsg());
+        if (dto == null) return;
+
+        if (dto.getOrdBaseAdr() != null) order.setOrdBaseAdr(dto.getOrdBaseAdr());
+        if (dto.getOrdBaseAdrDt() != null) order.setOrdBaseAdrDt(dto.getOrdBaseAdrDt());
+        if (dto.getOrdBaseRcvNm() != null) order.setOrdBaseRcvNm(dto.getOrdBaseRcvNm());
+        if (dto.getOrdBaseMsg() != null) order.setOrdBaseMsg(dto.getOrdBaseMsg());
     }
-
     @Transactional
     public void updateOrderStatus(Long ordId, OrderStatus newStatus) {
         Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
@@ -100,28 +99,24 @@ public class OrderService {
         }
 
         order.setOrdBaseStt(OrderStatus.CANCELLED);
+
+        order.getShipments().forEach(sh -> sh.setShCanYn(true));
     }
 
     @Transactional
-    public void createOrder(Long memId, OrderDto dto){
+    public Long createOrder(Long memId, OrderDto dto) {
         Member member = memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("User not found"));
 
-        List<Negotiation> allNegs = negotiationRepository.findAll();
-
-        // 1. 협상 정보 조회
         Negotiation negotiation = negotiationRepository.findFirstByMemIdOrderByNgCreDtDesc(memId);
-
         if (negotiation == null) {
-            throw new IllegalStateException("해당 회원의 협상 정보가 없습니다.");
+            throw new IllegalStateException("해당 회원의 협상 정보가 없습니다."); // 협상 이름은 주문번호로 사용
         }
 
-        // 2. 견적 상세 정보 조회
         List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByNgId(negotiation.getNgId());
         if (quoteDetails.isEmpty()) {
             throw new IllegalStateException("견적 상세 상품이 존재하지 않습니다.");
         }
 
-        // 3. 수량 및 금액 계산 - 총 수량, 총 금액
         Integer totalQuantity = quoteDetails.stream()
                 .mapToInt(QuoteDetail::getQuDtQn)
                 .sum();
@@ -130,7 +125,6 @@ public class OrderService {
                 .map(QuoteInfo::getQuInfoTp)
                 .orElse(BigDecimal.ZERO);
 
-        // 주문 생성
         Order order = Order.builder()
                 .member(member)
                 .ordBaseRcvNm(dto.getOrdBaseRcvNm())
@@ -138,62 +132,100 @@ public class OrderService {
                 .ordBaseAdrDt(dto.getOrdBaseAdrDt())
                 .ordBaseMsg(dto.getOrdBaseMsg())
                 .ordBaseStt(OrderStatus.PREPARING)
-                .ordBaseTtAm(bigDecimal.multiply(BigDecimal.valueOf(totalQuantity))) // 총 금액 계산
-                .ordBaseNo(negotiation.getNgNm()) // 협상 이름을 주문 번호로 사용
+                .ordBaseTtAm(bigDecimal.multiply(BigDecimal.valueOf(totalQuantity)))
+                .ordBaseNo(negotiation.getNgNm())
                 .build();
         orderRepository.save(order);
 
-        log.info("주문 생성 성공");
-
-        // 주문 상품 생성
-        OrderItem orderItem = OrderItem.builder()
-                .order(order)
-                .ordItemQn(totalQuantity) // 총 주문 수량
-                .build();
-        orderItemRepository.save(orderItem);
-
-        log.info("주문 상품 생성 성공");
-
-        // 배송 생성
-        Shipment shipment = Shipment.builder()
-                .order(order)
-                .shStt(ShipmentStatus.PREPARING)
-                .shCarCd(createRandNum(2)) // 랜덤 배송사 번호
-                .shTraNo(createRandNum(1)) // 랜덤 운송장 번호
-                .build();
-        shipmentRepository.save(shipment);
-
-        log.info("배송 생성 성공");
-
-        // 배송 아이템 생성
-        List<ShipmentItem> shipmentItems = new ArrayList<>();
+        Map<Long, OrderItem> orderItemMap = new HashMap<>(); // 전체 수량을 QuoteDetail별로 저장(상품 수량, 이름)
         for (QuoteDetail quoteDetail : quoteDetails) {
-            ShipmentItem shipmentItem = ShipmentItem.builder()
-                    .shipment(shipment)
-                    .orderItem(orderItem)
-                    .shQn(quoteDetail.getQuDtQn())
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .ordItemQn(quoteDetail.getQuDtQn())
+                    .ordItemStNm(quoteDetail.getStNm())
                     .build();
-            shipmentItems.add(shipmentItem);
-        }
-        shipmentItemRepository.saveAll(shipmentItems);
+            orderItemRepository.save(orderItem);
 
-        log.info("배송 아이템 생성 성공");
+            orderItemMap.put(quoteDetail.getQuDtId(), orderItem); // ShipmentItem과 연결하기 위해 견적상세ID를 Key로 담아둠
+        }
+
+        if (dto.getShipmentRequests() != null && !dto.getShipmentRequests().isEmpty()) {
+            for (OrderDto.ShipmentRequestDto shipmentDto : dto.getShipmentRequests()) {
+
+                Shipment shipment = Shipment.builder()
+                        .order(order)
+                        .shRcvNm(shipmentDto.getShRcvNm())
+                        .shAdr(shipmentDto.getShAdr())
+                        .shAdrDt(shipmentDto.getShAdrDt())
+                        .shStt(ShipmentStatus.PREPARING)
+                        .shCarCd(createRandNum(2))
+                        .shTraNo(createRandNum(1))
+                        .build();
+                shipmentRepository.save(shipment);
+
+                List<ShipmentItem> shipmentItems = new ArrayList<>();
+                for (OrderDto.ShipmentItemRequestDto itemDto : shipmentDto.getItems()) {
+                    OrderItem targetOrderItem = orderItemMap.get(itemDto.getQuDtId());
+
+                    if (targetOrderItem == null) {
+                        throw new IllegalStateException("유효하지 않은 견적 상품 ID입니다.");
+                    }
+
+                    ShipmentItem shipmentItem = ShipmentItem.builder()
+                            .shipment(shipment)
+                            .orderItem(targetOrderItem)
+                            .shQn(itemDto.getShQn())
+                            .build();
+                    shipmentItems.add(shipmentItem);
+                }
+                shipmentItemRepository.saveAll(shipmentItems);
+            }
+        }
+
+        return order.getOrdBaseId();
     }
 
-    public OrderDto mapToOrderDto(Order order){
+    public OrderDto mapToOrderDto(Order order) {
         OrderDto orderDto = OrderDto.builder()
                 .ordBaseId(order.getOrdBaseId())
+                .ordBaseNo(order.getOrdBaseNo())
+                .ordBaseRcvNm(order.getOrdBaseRcvNm())
                 .ordBaseAdr(order.getOrdBaseAdr())
                 .ordBaseAdrDt(order.getOrdBaseAdrDt())
-                .ordBaseRcvNm(order.getOrdBaseRcvNm())
                 .ordBaseMsg(order.getOrdBaseMsg())
                 .ordBaseStt(order.getOrdBaseStt())
-                .ordBaseNo(order.getOrdBaseNo())
                 .ordBaseTtAm(order.getOrdBaseTtAm())
                 .ordBaseCreDt(order.getOrdBaseCreDt())
                 .build();
 
+        if (order.getShipments() != null) {
+            List<OrderDto.ShipmentResponseDto> shipmentDtos = order.getShipments().stream()
+                    .map(this::mapToShipmentDto) // 하위 변환 메서드 호출
+                    .toList();
+            orderDto.setShipmentResponses(shipmentDtos);
+        }
+
         return orderDto;
+    }
+
+    private OrderDto.ShipmentResponseDto mapToShipmentDto(Shipment shipment) {
+        return OrderDto.ShipmentResponseDto.builder()
+                .shId(shipment.getShId())
+                .shRcvNm(shipment.getShRcvNm())
+                .shAdr(shipment.getShAdr())
+                .shAdrDt(shipment.getShAdrDt())
+                .shTraNo(shipment.getShTraNo())
+                .shCarCd(shipment.getShCarCd())
+                .shStt(shipment.getShStt())
+                .shMsg(shipment.getShMsg())
+                .shipmentItems(shipment.getShipmentItems().stream()
+                        .map(si -> OrderDto.ShipmentItemResponseDto.builder()
+                                .shItemId(si.getShItemId())
+                                .shQn(si.getShQn())
+                                // 필요시 OrderItem을 통해 상품명 등을 추가로 가져옴
+                                .build())
+                        .toList())
+                .build();
     }
 
     public String createRandNum(int caseCd){

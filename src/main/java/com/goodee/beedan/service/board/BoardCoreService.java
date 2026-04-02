@@ -19,7 +19,7 @@ public class BoardCoreService {
     private final BoardRepository boardRepository;
 
     public Board getBoard(Long boardId, BoardType boardType) {
-        return boardRepository.findByIdAndBoardTypeAndIsDeletedFalse(boardId, boardType)
+        return boardRepository.findByBrdIdAndBrdTyAndBrdDelYnFalse(boardId, boardType)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
     }
 
@@ -39,7 +39,7 @@ public class BoardCoreService {
     }
 
     public Page<Board> getBoardList(BoardType boardType, Pageable pageable) {
-        Page<Board> boardPage = boardRepository.findByBoardTypeAndIsDeletedFalse(boardType, pageable);
+        Page<Board> boardPage = boardRepository.findByBrdTyAndBrdDelYnFalse(boardType, pageable);
         if (boardPage == null) {
             log.info("{} 게시글이 0건 입니다.", boardType);
         }
