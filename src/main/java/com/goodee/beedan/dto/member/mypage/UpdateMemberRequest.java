@@ -15,4 +15,9 @@ public class UpdateMemberRequest {
     private String email;
     private String impUid;
     private String ci;
+
+    // 주소 관련 필드 추가
+    private String postCode;       // 우편번호 (memPosCd)
+    private String address;        // 기본주소 (memBizAdr)
+    private String addressDetail;  // 상세주소 (memBizDtAdr)
 }

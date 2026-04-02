@@ -7,15 +7,20 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MemberMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(source = "name", target = "memNm")    // DTO의 email -> Entity의 memEml
-    @Mapping(source = "email", target = "memEml")    // DTO의 email -> Entity의 memEml
-    @Mapping(source = "phone", target = "memMbPhn")  // DTO의 phone -> Entity의 memMbPhn
-    @Mapping(source = "ci", target = "memCi")        // DTO의 ci -> Entity의 memCi
+    @Mapping(source = "name", target = "memNm")
+    @Mapping(source = "email", target = "memEml")
+    @Mapping(source = "phone", target = "memMbPhn")
+    @Mapping(source = "ci", target = "memCi")
+    // 주소 필드 매핑 추가
+    @Mapping(source = "postCode", target = "memPosCd")
+    @Mapping(source = "address", target = "memBizAdr")
+    @Mapping(source = "addressDetail", target = "memBizDtAdr")
     void updateEntityFromDto(UpdateMemberRequest dto, @MappingTarget Member entity);
 
 }
