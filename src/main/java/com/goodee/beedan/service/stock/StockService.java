@@ -75,6 +75,7 @@ public class StockService {
         return categoryRepository.findAll();
     }
 
+
     // 필터 + 정렬 조회
     public Page<StockListDto> findFiltered(List<Long> brandIds
                                          , List<String> catNms
@@ -201,7 +202,15 @@ public class StockService {
                 .build());
     }
 
-
+    // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개)
+    public List<StockListDto> findNewStocks() {
+        List<Stock> newStocks = stockRepository.findTop30ByStExpYnTrueOrderByStCraDtDesc();
+        Collections.shuffle(newStocks);
+        return newStocks.stream()
+                .limit(16)
+                .map(stock -> mapToStockListDto(stock, Collections.emptySet()))
+                .collect(Collectors.toList());
+    }
 
     // STOCK 엔티티 객체를 DTO 객체로 변환
     public StockListDto mapToStockListDto(Stock stock, Set<Long> wishedIds) {
