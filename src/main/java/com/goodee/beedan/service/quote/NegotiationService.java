@@ -39,6 +39,10 @@ public class NegotiationService {
                         "협상을 찾을 수 없습니다. id: " + ngId));
     }
 
+    public List<Negotiation> findAll() {
+        return negotiationRepository.findAll();
+    }
+
     public List<Negotiation> findAllByMember(Long memId) {
         return negotiationRepository.findAllByMemId(memId);
     }

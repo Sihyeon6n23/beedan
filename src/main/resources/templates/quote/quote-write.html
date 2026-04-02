@@ -40,7 +40,7 @@
             <!-- Quote Manifest Section -->
             <section class="quote-manifest">
                 <div class="manifest-header">
-                    <h2 class="manifest-id" th:text="${ngNm != null ? ngNm : 'N/A'}">QU0000</h2>
+                    <h2 class="manifest-id" th:text="${(ngNm != null ? ngNm : 'N/A') + '-' + (quCd != null ? quCd : 'N/A')}">협상명-QU0000</h2>
                     <span class="manifest-count" th:text="${cartToQuote != null ? cartToQuote.items.size() + '개의 아이템' : '0개의 아이템'}">4개의 아이템</span>
                 </div>
 
@@ -267,7 +267,7 @@
                         <span class="summary-total-value" id="os-grand-total">-</span>
                     </div>
 
-                    <button class="btn-submit">
+                    <button class="btn-submit" id="btnOpenSubmitModal">
                         견적 요청서 제출
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M3 8h10M9 4l4 4-4 4" stroke="#705e00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -366,6 +366,43 @@
 <select id="js-domestic-regions" style="display:none">
     <option th:each="dr : ${domesticRates}" th:value="${dr.ddrRgn}" th:data-am="${dr.ddrAm}" th:data-eam="${dr.ddrEAm != null ? dr.ddrEAm : 0}">지역</option>
 </select>
+<!-- ===== 제출 확인 모달 ===== -->
+<div class="modal-overlay" id="modal-submit-confirm" role="dialog" aria-modal="true">
+    <div class="modal submit-confirm-modal">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <h2 class="modal-title" th:text="#{submit.title}">견적 요청서 제출</h2>
+            </div>
+            <button class="modal-close" id="btnCloseSubmitModal" aria-label="닫기">&#10005;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- 필수 확인 사항 (DB에서 동적 로드) -->
+            <div class="submit-section" id="submit-required-section" style="display:none">
+                <p class="submit-section-label">확인 사항 <span class="submit-required-tag">(필수)</span></p>
+                <div class="submit-checklist" id="submit-required-list"></div>
+            </div>
+
+            <!-- 알림 설정 (DB에서 동적 로드) -->
+            <div class="submit-section" id="submit-optional-section" style="display:none">
+                <p class="submit-section-label">알림 설정 <span class="submit-optional-tag">(선택)</span></p>
+                <div class="submit-checklist" id="submit-optional-list"></div>
+            </div>
+
+            <!-- 최종 동의 -->
+            <label class="submit-final-agree">
+                <input type="checkbox" id="chkSubmitAgree" disabled />
+                <span th:text="#{submit.finalAgree}">위 필수 사항을 모두 확인하였으며, 견적 요청서를 제출합니다.</span>
+            </label>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" id="btnCancelSubmit" th:text="#{submit.btn.cancel}">취소</button>
+            <button type="button" class="btn-confirm" id="btnConfirmSubmit" disabled th:text="#{submit.btn.confirm}">제출하기</button>
+        </div>
+    </div>
+</div>
+
 <script th:src="@{/js/quote/quote-write.js}"></script>
 </body>
 </html>

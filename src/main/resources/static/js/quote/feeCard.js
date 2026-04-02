@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ── 공장별 카드 그룹 렌더링 ─────────────────────
-    function renderFactoryGroups(factories) {
+    function renderFactoryGroups(factories, shippingRate, buyerGrade) {
         var container = document.getElementById('fc-factory-groups');
         if (!container) return;
         container.innerHTML = '';
@@ -88,6 +88,17 @@ document.addEventListener('DOMContentLoaded', function () {
             var displayName = (f.factoryCity || f.factoryName || '알 수 없음')
                 + (f.countryCode ? ' (' + f.countryCode + ')' : '');
 
+            // 해외 운임 할인 표시
+            var shippingHtml;
+            if (shippingRate > 0 && (f.shippingFee || 0) > 0) {
+                var discShipping = Math.round(f.shippingFee * (1 - shippingRate));
+                shippingHtml = '<span class="fee-value has-discount">' +
+                    '<span class="original-price">' + fmt(f.shippingFee) + '</span>' +
+                    '<span class="discounted-line"><span class="grade-badge">' + buyerGrade + '</span>' + fmt(discShipping) + '</span></span>';
+            } else {
+                shippingHtml = '<span class="fee-value">' + (f.shippingFee ? fmt(f.shippingFee) : '큐레이터가 공급처 확인 후 재안내드립니다') + '</span>';
+            }
+
             group.innerHTML =
                 '<div class="fc-factory-header">' +
                     '<div class="fc-factory-label">' +
@@ -97,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<span class="fc-factory-amount">' + fmt(f.subtotal) + '</span>' +
                 '</div>' +
                 '<div class="fc-factory-details">' +
-                    '<div class="fee-item"><span class="fee-label">해외 운임</span><span class="fee-value">' + fmt(f.shippingFee) + '</span></div>' +
+                    '<div class="fee-item"><span class="fee-label">해외 운임</span>' + shippingHtml + '</div>' +
                     '<div class="fee-item"><span class="fee-label">항만/통관/HS</span><span class="fee-value">' + fmt(portCustoms) + '</span></div>' +
                     '<div class="fee-item"><span class="fee-label">보험</span><span class="fee-value">' + fmt(f.insuranceFee) + '</span></div>' +
                     '<div class="fee-item"><span class="fee-label">관세 + 부가세</span><span class="fee-value">' + fmt(dutyVat) + '</span></div>' +
@@ -124,47 +135,63 @@ document.addEventListener('DOMContentLoaded', function () {
         domesticData = domesticData || null;
 
         // ── 공장별 그룹 렌더링 ──
-        renderFactoryGroups(data.factories);
+        var shippingRate = parseFloat(data.shippingDiscountRate) || 0;
+        renderFactoryGroups(data.factories, shippingRate, data.buyerGrade || '');
 
         // ── 카드 총계 ──
-        // 국내 운임 (건수 포함)
+        // 국내 운임 (건수 포함 + 할인)
+        var domesticEl = el('fc-domestic');
         if (domesticData && domesticData.totalCount > 0) {
-            el('fc-domestic').textContent = fmt(domesticFee) + ' (' + domesticData.totalCount + '건)';
+            if (shippingRate > 0 && domesticFee > 0) {
+                var discDomestic = Math.round(domesticFee * (1 - shippingRate));
+                domesticEl.className = 'fee-value has-discount';
+                domesticEl.innerHTML =
+                    '<span class="original-price">' + fmt(domesticFee) + ' (' + domesticData.totalCount + '건)</span>' +
+                    '<span class="discounted-line"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(discDomestic) + '</span>';
+            } else {
+                domesticEl.className = 'fee-value';
+                domesticEl.textContent = fmt(domesticFee) + ' (' + domesticData.totalCount + '건)';
+            }
         } else {
-            el('fc-domestic').textContent = '없음';
+            domesticEl.className = 'fee-value';
+            domesticEl.textContent = '없음';
         }
 
         var logisticsWithExtras = (data.logisticsTotal || 0) + insuranceExtra + domesticFee;
-
-        // ── 운송 비용 할인 (SHIPPING fee policy) ──
-        var shippingRate = parseFloat(data.shippingDiscountRate) || 0;
         var logisticsEl = el('fc-logistics-total');
         if (shippingRate > 0 && logisticsWithExtras > 0) {
             var discountedLogistics = Math.round(logisticsWithExtras * (1 - shippingRate));
             logisticsEl.className = 'fee-subtotal-value has-discount';
             logisticsEl.innerHTML =
                 '<span class="original-price">' + fmt(logisticsWithExtras) + '</span>' +
-                '<span class="discounted-price"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(discountedLogistics) + '</span>';
+                '<span class="discounted-line"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(discountedLogistics) + '</span>';
         } else {
             logisticsEl.className = 'fee-subtotal-value';
             logisticsEl.textContent = fmt(logisticsWithExtras);
         }
 
         // ── 대행 카드 ──
-        el('fc-service').textContent = fmt(data.serviceFee);
+        var standardSvcFee = parseFloat(data.standardServiceFee) || 0;
+        var svcEl = el('fc-service');
+        if (standardSvcFee > 0 && standardSvcFee > (data.serviceFee || 0)) {
+            svcEl.className = 'fee-value has-discount';
+            svcEl.innerHTML =
+                '<span class="original-price">' + fmt(standardSvcFee) + '</span>' +
+                '<span class="discounted-line"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(data.serviceFee) + '</span>';
+        } else {
+            svcEl.className = 'fee-value';
+            svcEl.textContent = fmt(data.serviceFee);
+        }
         el('fc-inspection').textContent = inspectionExtra > 0 ? fmt(inspectionExtra) : '없음';
 
         var procurementWithExtras = (data.procurementTotal || 0) + inspectionExtra;
-
-        // ── 대행 서비스 할인 (SERVICE_COMMISSION 등급 차이) ──
-        var standardSvcFee = parseFloat(data.standardServiceFee) || 0;
         var procurementEl = el('fc-procurement-total');
-        if (standardSvcFee > 0 && standardSvcFee > (data.procurementTotal || 0)) {
+        if (standardSvcFee > 0 && standardSvcFee > (data.serviceFee || 0)) {
             var standardProcurement = standardSvcFee + inspectionExtra;
             procurementEl.className = 'fee-subtotal-value has-discount';
             procurementEl.innerHTML =
                 '<span class="original-price">' + fmt(standardProcurement) + '</span>' +
-                '<span class="discounted-price"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(procurementWithExtras) + '</span>';
+                '<span class="discounted-line"><span class="grade-badge">' + (data.buyerGrade || '') + '</span>' + fmt(procurementWithExtras) + '</span>';
         } else {
             procurementEl.className = 'fee-subtotal-value';
             procurementEl.textContent = fmt(procurementWithExtras);
@@ -179,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (shippingRate > 0 && logisticsWithExtras > 0) {
                 var mdDiscounted = Math.round(logisticsWithExtras * (1 - shippingRate));
                 el('md-logistics-total').innerHTML =
-                    '<span style="text-decoration:line-through;color:var(--color-text-light);font-size:13px;margin-right:8px;">' + fmt(logisticsWithExtras) + '</span>' + fmt(mdDiscounted);
+                    '<span style="text-decoration:line-through;color:var(--color-text-light);margin-right:8px;">' + fmt(logisticsWithExtras) + '</span>' + fmt(mdDiscounted);
             } else {
                 el('md-logistics-total').textContent = fmt(logisticsWithExtras);
             }
@@ -214,6 +241,15 @@ document.addEventListener('DOMContentLoaded', function () {
                             '</tbody></table></div>';
                 }
 
+                // 모달 해외 운임 할인 표시
+                var mdShippingVal;
+                if (shippingRate > 0 && (f.shippingFee || 0) > 0) {
+                    var mdDiscShip = Math.round(f.shippingFee * (1 - shippingRate));
+                    mdShippingVal = '<span style="text-decoration:line-through;color:var(--color-text-light);margin-right:8px;">' + fmt(f.shippingFee) + '</span>' + fmt(mdDiscShip);
+                } else {
+                    mdShippingVal = fmt(f.shippingFee);
+                }
+
                 section.innerHTML =
                     '<div class="modal-divider"></div>' +
                     '<div>' +
@@ -225,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             '<div class="modal-detail-row"><span class="modal-row-key">운송 수단' + tipBtn(tips.transport) + '</span><span class="modal-row-val">' + (transportNames[f.transportType] || f.transportType || '-') + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">운임 기준' + tipBtn(tips.basis) + '</span><span class="modal-row-val">CIF 부산항</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">적용 규모' + tipBtn(tips.sizeType) + '</span><span class="modal-row-val">' + (sizeNames[f.sizeType] || '-') + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">해외 운임' + tipBtn(tips.shippingFee) + '</span><span class="modal-row-val">' + fmt(f.shippingFee) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">해외 운임' + tipBtn(tips.shippingFee) + '</span><span class="modal-row-val">' + mdShippingVal + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">항만/통관/HS' + tipBtn(tips.portFee) + '</span><span class="modal-row-val">' + fmt(portCustoms) + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">보험' + tipBtn(tips.insurance) + '</span><span class="modal-row-val">' + fmt(f.insuranceFee) + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">CIF' + tipBtn(tips.cif) + '</span><span class="modal-row-val">' + fmt(f.cifAmount) + '</span></div>' +
@@ -254,11 +290,17 @@ document.addEventListener('DOMContentLoaded', function () {
         // ── 대행 수수료 모달 상세 ──
         el('md-buyer-grade').textContent = data.buyerGrade || '-';
         el('md-item-total-krw').textContent = '₩' + fmtNum(itemTotalKrw);
-        el('md-service-fee').textContent = fmt(data.serviceFee);
-        if (standardSvcFee > 0 && standardSvcFee > (data.procurementTotal || 0)) {
+        // 서비스 수수료 — 등급 할인 표시
+        if (standardSvcFee > 0 && standardSvcFee > (data.serviceFee || 0)) {
+            el('md-service-fee').innerHTML =
+                '<span style="text-decoration:line-through;color:var(--color-text-light);font-size:13px;margin-right:8px;">' + fmt(standardSvcFee) + '</span>' + fmt(data.serviceFee);
+        } else {
+            el('md-service-fee').textContent = fmt(data.serviceFee);
+        }
+        if (standardSvcFee > 0 && standardSvcFee > (data.serviceFee || 0)) {
             var mdStdProc = standardSvcFee + inspectionExtra;
             el('md-procurement-total').innerHTML =
-                '<span style="text-decoration:line-through;color:var(--color-text-light);font-size:13px;margin-right:8px;">' + fmt(mdStdProc) + '</span>' + fmt(procurementWithExtras);
+                '<span style="text-decoration:line-through;color:var(--color-text-light);margin-right:8px;">' + fmt(mdStdProc) + '</span>' + fmt(procurementWithExtras);
         } else {
             el('md-procurement-total').textContent = fmt(procurementWithExtras);
         }

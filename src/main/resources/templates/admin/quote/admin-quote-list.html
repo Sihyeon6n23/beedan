@@ -1,10 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN', 'Quote Management', ~{::sidebar})},
+          ~{::content}
+      )}">
 
-</body>
+<title th:fragment="title">BEEDAN | 관리자 견적 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('quote', 'quote-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/admin/admin-quote-list.css}">
+
+    <section class="admin-quote-container">
+        <!-- Header -->
+        <header class="aq-header">
+            <div class="aq-header__title">
+                <span class="aq-kicker">Quote Management</span>
+                <h1 class="aq-title">견적 목록</h1>
+                <p class="aq-desc">모든 회원의 견적 요청을 조회하고 관리합니다.</p>
+            </div>
+        </header>
+
+        <!-- Filter & Search -->
+        <section class="aq-toolbar">
+            <div class="aq-search-wrapper">
+                <input type="text" placeholder="견적 ID, 회원명, 협상명으로 검색">
+                <span class="material-symbols-outlined">search</span>
+            </div>
+            <div class="aq-filter-set">
+                <button class="aq-filter is-active">전체</button>
+                <button class="aq-filter">임시저장</button>
+                <button class="aq-filter">제출완료</button>
+                <button class="aq-filter">승인</button>
+                <button class="aq-filter">거절</button>
+                <button class="aq-filter">만료</button>
+            </div>
+        </section>
+
+        <!-- Table -->
+        <div class="aq-table-wrapper">
+            <table class="aq-table">
+                <thead>
+                <tr>
+                    <th class="col-check"><input type="checkbox"></th>
+                    <th class="col-id">견적 ID</th>
+                    <th class="col-member">회원명</th>
+                    <th class="col-negotiation">협상명</th>
+                    <th class="col-items">품목수</th>
+                    <th class="col-status">상태</th>
+                    <th class="col-amount">금액</th>
+                    <th class="col-date">발행일</th>
+                    <th class="col-action">관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="q : ${quotes}">
+                    <tr>
+                        <td class="col-check"><input type="checkbox"></td>
+                        <td class="col-id" th:text="${q.quId}">1</td>
+                        <td class="col-member">
+                            <span class="member-name" th:text="${q.memNm}">회원명</span>
+                            <span class="member-company" th:text="${q.memBizTtl}">회사명</span>
+                        </td>
+                        <td class="col-negotiation" th:text="${q.ngNm}">협상명</td>
+                        <td class="col-items" th:text="${q.itemCount}">0</td>
+                        <td class="col-status">
+                            <span class="aq-badge"
+                                  th:classappend="'aq-badge--' + ${q.quStt.toLowerCase()}"
+                                  th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
+                                             q.quStt == 'SUBMITTED' ? '제출완료' :
+                                             q.quStt == 'APPROVED' ? '승인' :
+                                             q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
+                        </td>
+                        <td class="col-amount"
+                            th:if="${q.totalAmount != null}"
+                            th:text="'₩' + ${#numbers.formatInteger(q.totalAmount, 3, 'COMMA')}">₩0</td>
+                        <td class="col-amount aq-amount--pending"
+                            th:if="${q.totalAmount == null}">산출 중</td>
+                        <td class="col-date"
+                            th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">2026.03.15</td>
+                        <td class="col-action">
+                            <div class="aq-action-group">
+                                <a th:href="@{/admin/quote/detail(quId=${q.quId})}" class="aq-btn-view">VIEW</a>
+                                <a th:href="@{/admin/quote/write(quId=${q.quId})}" class="aq-btn-edit">EDIT</a>
+                            </div>
+                        </td>
+                    </tr>
+                </th:block>
+                <tr th:if="${#lists.isEmpty(quotes)}">
+                    <td colspan="9" style="text-align:center; padding:3rem; color:#78716c;">
+                        표시할 견적이 없습니다.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <footer class="aq-pagination-wrapper">
+            <p class="aq-page-info"
+               th:text="'총 ' + ${quotes.size()} + ' 건'">총 0 건</p>
+            <div class="aq-page-numbers">
+                <button class="aq-page-btn active">1</button>
+            </div>
+        </footer>
+    </section>
+</th:block>
 </html>
