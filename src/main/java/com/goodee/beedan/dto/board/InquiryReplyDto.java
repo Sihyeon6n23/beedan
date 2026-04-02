@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class InquiryReplyDto {
     private Long brdId;             // 답글 id
     private String brdCon;          // 답글 내용
-    private String adminName;       // 답글 작성자(관리자) 이름
+    private String memAdName;       // 답글 작성자(관리자) 이름
     private LocalDateTime brdCreDt; // 답글 작성 일시
     private LocalDateTime brdUpdDt; // 답글 수정 일시
     private Boolean edited;         // 답글 수정 여부
