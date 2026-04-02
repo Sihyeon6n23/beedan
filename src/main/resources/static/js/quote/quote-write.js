@@ -524,9 +524,14 @@ document.addEventListener('DOMContentLoaded', function () {
         var btnConfirm = document.getElementById('btnConfirmSubmit');
         if (!overlay || !finalChk || !btnConfirm) return;
 
-        var requiredChecks = overlay.querySelectorAll('.chk-required');
+        var requiredList = document.getElementById('submit-required-list');
+        var optionalList = document.getElementById('submit-optional-list');
+        var requiredSection = document.getElementById('submit-required-section');
+        var optionalSection = document.getElementById('submit-optional-section');
+        var checkItemsLoaded = false;
 
         function updateFinalState() {
+            var requiredChecks = overlay.querySelectorAll('.chk-required');
             var allChecked = Array.prototype.every.call(requiredChecks, function (c) { return c.checked; });
             finalChk.disabled = !allChecked;
             if (!allChecked) {
@@ -535,11 +540,66 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        function openSubmitModal() {
-            // 초기화
-            requiredChecks.forEach(function (c) { c.checked = false; });
+        function renderCheckItems(items) {
+            requiredList.innerHTML = '';
+            optionalList.innerHTML = '';
+            var hasRequired = false;
+            var hasOptional = false;
+
+            items.forEach(function (item) {
+                var label = document.createElement('label');
+                var input = document.createElement('input');
+                var span = document.createElement('span');
+
+                input.type = 'checkbox';
+                input.dataset.id = item.qscId;
+
+                if (item.qscRqYn) {
+                    label.className = 'submit-check-item required';
+                    input.className = 'chk-required';
+                    span.textContent = item.qscDes;
+                    input.addEventListener('change', updateFinalState);
+                    requiredList.appendChild(label);
+                    hasRequired = true;
+                } else {
+                    label.className = 'submit-check-item optional';
+                    input.className = 'chk-optional';
+                    if (item.qscKey) input.dataset.key = item.qscKey;
+                    if (item.qscDfltYn) input.defaultChecked = true;
+                    span.textContent = item.qscDes;
+                    optionalList.appendChild(label);
+                    hasOptional = true;
+                }
+
+                label.appendChild(input);
+                label.appendChild(span);
+            });
+
+            requiredSection.style.display = hasRequired ? '' : 'none';
+            optionalSection.style.display = hasOptional ? '' : 'none';
+            checkItemsLoaded = true;
+        }
+
+        function loadAndOpenModal() {
+            if (checkItemsLoaded) {
+                resetAndOpen();
+                return;
+            }
+            fetch('/api/quote/submit-checks')
+                .then(function (res) { return res.json(); })
+                .then(function (items) {
+                    renderCheckItems(items);
+                    resetAndOpen();
+                })
+                .catch(function () {
+                    alert('체크 항목을 불러올 수 없습니다.');
+                });
+        }
+
+        function resetAndOpen() {
+            overlay.querySelectorAll('.chk-required').forEach(function (c) { c.checked = false; });
             overlay.querySelectorAll('.chk-optional').forEach(function (c) {
-                c.checked = c.hasAttribute('checked');
+                c.checked = c.defaultChecked;
             });
             finalChk.checked = false;
             finalChk.disabled = true;
@@ -547,21 +607,17 @@ document.addEventListener('DOMContentLoaded', function () {
             overlay.classList.add('is-open');
             document.body.style.overflow = 'hidden';
         }
+
         function closeSubmitModal() {
             overlay.classList.remove('is-open');
             document.body.style.overflow = '';
         }
 
-        document.getElementById('btnOpenSubmitModal').addEventListener('click', openSubmitModal);
+        document.getElementById('btnOpenSubmitModal').addEventListener('click', loadAndOpenModal);
         document.getElementById('btnCloseSubmitModal').addEventListener('click', closeSubmitModal);
         document.getElementById('btnCancelSubmit').addEventListener('click', closeSubmitModal);
         overlay.addEventListener('click', function (e) {
             if (e.target === overlay) closeSubmitModal();
-        });
-
-        // 필수 체크 변경 → 최종 동의 활성화 여부
-        requiredChecks.forEach(function (c) {
-            c.addEventListener('change', updateFinalState);
         });
 
         // 최종 동의 → 제출 버튼
@@ -571,10 +627,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         btnConfirm.addEventListener('click', function () {
             if (!finalChk.checked) return;
-            // 선택 옵션 수집
-            var options = {};
-            overlay.querySelectorAll('.chk-optional').forEach(function (c) {
-                options[c.dataset.key] = c.checked;
+            // 체크 항목 수집 (필수 + 선택 모두)
+            var checks = {};
+            overlay.querySelectorAll('.chk-required, .chk-optional').forEach(function (c) {
+                if (c.dataset.id) checks[c.dataset.id] = c.checked;
             });
             var draftData = collectDraftData();
             if (!draftData.quId) { alert('견적 ID가 없습니다.'); return; }
@@ -582,7 +638,7 @@ document.addEventListener('DOMContentLoaded', function () {
             btnConfirm.disabled = true;
             btnConfirm.textContent = '제출 중...';
 
-            // 1) 데이터 저장 → 2) 상태 변경
+            // 1) 데이터 저장 → 2) 상태 변경 + 체크 로그
             saveDraft()
             .then(function (draftRes) {
                 if (draftRes.status !== 'ok') {
@@ -592,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
                 return fetch('/api/quote/submit', {
                     method: 'POST', headers: headers,
-                    body: JSON.stringify({ quId: draftData.quId })
+                    body: JSON.stringify({ quId: draftData.quId, checks: checks })
                 }).then(function (res) { return res.json(); });
             })
             .then(function (data) {

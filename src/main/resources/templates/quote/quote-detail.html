@@ -22,7 +22,7 @@
             <!-- ① Header Section -->
             <section class="header-section">
                 <h1 class="page-title">견적 상세</h1>
-                <p class="quote-id" th:text="'#' + ${negotiation.ngNm}">견적코드</p>
+                <p class="quote-id" th:text="'#' + ${quoteBase.quCd}">견적코드</p>
             </section>
 
             <!-- ② Status Timeline -->
@@ -34,7 +34,7 @@
                 <!-- Quote Manifest Table -->
                 <section class="section-manifest">
                     <div class="manifest-header">
-                        <h2 class="manifest-id" th:text="${negotiation.ngNm}">QU0000</h2>
+                        <h2 class="manifest-id" th:text="${quoteBase.quCd}">QU0000</h2>
                         <span class="manifest-count"
                               th:text="${details.size()} + '개의 아이템'">0개의 아이템</span>
                     </div>

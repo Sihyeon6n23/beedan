@@ -49,7 +49,7 @@
 
             <div class="ng-list-body">
                 <th:block th:each="ng : ${negotiations}">
-                    <a th:href="@{/quote/list(ngId=${ng.ngId})}"
+                    <a th:href="@{/quote/negotiation/detail(ngId=${ng.ngId})}"
                        class="ng-row"
                        th:classappend="${ng.ongoing} ? ' ng-row--featured' : ''">
                         <div class="ng-row__primary">

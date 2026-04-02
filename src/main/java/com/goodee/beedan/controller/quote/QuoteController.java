@@ -59,7 +59,7 @@ public class QuoteController {
 
         // 1. Negotiation 생성
         long millis = System.currentTimeMillis() % 10000; // 0 ~ 9999
-        String ngNm = "QU" + String.format("%04d", millis);
+        String ngNm = "NG" + String.format("%04d", millis);
         Negotiation negotiation = negotiationService.create(
                 NegotiationRequest.builder()
                         .ngNm(ngNm)
@@ -98,11 +98,8 @@ public class QuoteController {
             item.put("quId", qb.getQuId());
             item.put("quStt", qb.getQuStt().name());
             item.put("quOpYn", qb.getQuOpYn() != null && qb.getQuOpYn());
+            item.put("quCd", qb.getQuCd());
             item.put("quCreDt", qb.getQuCreDt());
-
-            // 협상명
-            Negotiation ng = negotiationService.findById(qb.getNgId());
-            item.put("ngNm", ng.getNgNm());
 
             // 품목 정보
             List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
@@ -152,7 +149,8 @@ public class QuoteController {
         model.addAttribute("unitGroups", unitGroups);
         model.addAttribute("quId", quId);
 
-        // 견적 코드 (ngNm) - quoteBase는 위에서 이미 조회됨
+        // 견적 코드 + 협상명
+        model.addAttribute("quCd", quoteBase.getQuCd());
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         model.addAttribute("ngNm", negotiation.getNgNm());
 
@@ -284,6 +282,58 @@ public class QuoteController {
 
         model.addAttribute("negotiations", negotiations);
         return "/quote/negotiation-list";
+    }
+
+    @GetMapping("/negotiation/detail")
+    public String getNegotiationDetail(@AuthenticationPrincipal MemberUserDetails userDetails,
+                                       @RequestParam Long ngId,
+                                       Model model) {
+        if (userDetails == null) return "redirect:/auth/signin";
+
+        Negotiation negotiation = negotiationService.findById(ngId);
+        if (negotiation == null) return "redirect:/quote/negotiation/list";
+
+        // 소유자 검증
+        if (!negotiation.getMemId().equals(userDetails.getMemberId())) {
+            return "redirect:/quote/negotiation/list";
+        }
+
+        // 해당 협상의 견적 목록
+        List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId);
+
+        // 상태별 카운트
+        Map<String, Long> statusCounts = new java.util.LinkedHashMap<>();
+        for (com.goodee.beedan.common.constant.QuoteStatus s : com.goodee.beedan.common.constant.QuoteStatus.values()) {
+            statusCounts.put(s.name(), quoteList.stream().filter(q -> q.getQuStt() == s).count());
+        }
+
+        // 견적 상세 데이터 조합
+        List<Map<String, Object>> quotes = new ArrayList<>();
+        for (QuoteBase qb : quoteList) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("quId", qb.getQuId());
+            item.put("quCd", qb.getQuCd());
+            item.put("quStt", qb.getQuStt().name());
+            item.put("quOpYn", qb.getQuOpYn() != null && qb.getQuOpYn());
+            item.put("quCreDt", qb.getQuCreDt());
+            item.put("quUpdDt", qb.getQuUpdDt());
+
+            List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
+            item.put("itemCount", details != null ? details.size() : 0);
+            item.put("firstItemName", details != null && !details.isEmpty()
+                    ? details.get(0).getStNm() : null);
+
+            QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
+            item.put("totalAmount", info != null ? info.getQuInfoTp() : null);
+
+            quotes.add(item);
+        }
+
+        model.addAttribute("negotiation", negotiation);
+        model.addAttribute("quotes", quotes);
+        model.addAttribute("statusCounts", statusCounts);
+
+        return "/quote/negotiation-detail";
     }
 
 }

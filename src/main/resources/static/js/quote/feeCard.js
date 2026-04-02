@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<span class="original-price">' + fmt(f.shippingFee) + '</span>' +
                     '<span class="discounted-line"><span class="grade-badge">' + buyerGrade + '</span>' + fmt(discShipping) + '</span></span>';
             } else {
-                shippingHtml = '<span class="fee-value">' + fmt(f.shippingFee) + '</span>';
+                shippingHtml = '<span class="fee-value">' + (f.shippingFee ? fmt(f.shippingFee) : '큐레이터가 공급처 확인 후 재안내드립니다') + '</span>';
             }
 
             group.innerHTML =
