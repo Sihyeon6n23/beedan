@@ -96,9 +96,7 @@ public class OrderService {
         if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
             throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
         }
-
         order.setOrdBaseStt(OrderStatus.CANCELLED);
-
         order.getShipments().forEach(sh -> sh.setShCanYn(true));
     }
 

@@ -126,16 +126,11 @@
                             </div>
 
                             <div class="action-btns">
-                                <a class="btn-detail"
-                                        th:classappend="${order.ordBaseStt.name() == 'PREPARING' ? 'btn-disabled' : ''}"
-                                        th:onclick="|loadShipmentDetail('/api/shipments/list?ordId=${order.ordBaseId}')|">
+                                <a class="btn-detail" th:classappend="${order.ordBaseStt.name() == 'PREPARING' ? 'btn-disabled' : ''}" th:onclick="|loadShipmentDetail('/api/shipments/list?ordId=${order.ordBaseId}')|">
                                     배송 현황
                                 </a>
 
-                                <button th:if="${order.ordBaseStt.name() == 'PREPARING'}" class="btn-edit"
-                                        th:onclick="|cancelOrder('${order.ordBaseId}')|">
-                                    주문 취소
-                                </button>
+                                <button th:if="${order.ordBaseStt.name() == 'PREPARING'}" class="btn-edit" th:onclick="cancelOrder([[${order.ordBaseId}]])">주문 취소</button>
                             </div>
 
                         </div>
@@ -173,8 +168,7 @@
                                     배송 현황
                                 </a>
 
-                                <button th:if="${order.ordBaseStt.name() == 'PREPARING'}"
-                                        class="btn-edit" th:action="@{/order/cancel/id(id=${order.ordBaseId})}" type="submit">주문 취소</button>
+                                <button th:if="${order.ordBaseStt.name() == 'PREPARING'}" th:onclick="cancelOrder([[${order.ordBaseId}]])" class="btn-edit" type="button">주문 취소</button>
                             </div>
                         </div>
                     </th:block>
@@ -187,25 +181,33 @@
 
                 </div>
 
+                <form th:id="'cancelForm-' + ${order.ordBaseId}" th:action="@{/order/cancel}"
+                      method="post"
+                      style="display: none;">
+                    <input type="hidden" name="ordId" th:value="${order.ordBaseId}" />
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+
                 <footer class="admin-chat-shell admin-chat-shell--pagination">
                     <p class="page-info" id="page-info"></p>
                     <div class="page-numbers" id="page-numbers"></div>
                 </footer>
             </section>
 
-        <script>
-            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-
+        <script th:inline="javascript">
             function cancelOrder(ordId) {
+                if (!ordId) return;
                 if (confirm("이 주문을 정말로 취소하시겠습니까?\n(모든 배송지의 발송이 취소됩니다.)")) {
-                    document.getElementById('cancelForm-' + ordId).submit();
+                    const form = document.getElementById('cancelForm-' + ordId);
+                    console.log(form);
+                    if (form) form.submit();
                 }
             }
 
             function loadShipmentDetail(url) {
                 const modal = document.getElementById('orderTrackingModal');
                 const contentArea = modal.querySelector('.modal-body');
+                if (!modal || !contentArea) return;
 
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -238,7 +240,7 @@
                 if (event.target === modal) {
                     closeModal();
                 }
-            );
+            });
         </script>
     </section>
 </th:block>
