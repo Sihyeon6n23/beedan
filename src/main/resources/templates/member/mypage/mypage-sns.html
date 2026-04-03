@@ -138,16 +138,16 @@
     </script>
 
     <script>
-        let integrateBtnKAKAO = document.getElementById("KAKAO");
+        let integrateBtnKAKAO = document.getElementById("KAKAOBtn");
         integrateBtnKAKAO.addEventListener('click', () => {
             loginWithKakao();
         })
         function loginWithKakao() {
-            const clientID = 'YOUR_REST_API_KEY';
+            const clientID = 'ce3fde8edd50b8db4b38d5cfc64df724';
             const redirectUri = encodeURIComponent('http://localhost:8080/auth/kakao/callback');
             // OIDC를 위해 scope에 openid를 반드시 포함합니다.
             const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientID}&redirect_uri=${redirectUri}&response_type=code&scope=openid`;
-            window.open(kakaoAuthUrl);
+            location.href(kakaoAuthUrl);
         }
     </script>
 
@@ -162,7 +162,7 @@
     </button>
 
     <a th:if="${snsIntegrateResponse?.connected != true}"
-       th:id="${providerName}Btn"
+       th:id="${providerName}+Btn"
        class="bg-primary-container text-on-primary-container font-black text-xs uppercase tracking-widest px-8 py-3 sharp-edge hover:bg-primary-fixed-dim transition-all shadow-sm">
 
         연결하기

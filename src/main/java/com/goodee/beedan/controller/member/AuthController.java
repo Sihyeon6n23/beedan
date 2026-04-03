@@ -16,13 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -137,5 +135,20 @@ public class AuthController {
     @GetMapping("/find")
     public String getFind() {
         return "/member/auth/find";
+    }
+
+    @GetMapping("/kakao/callback")
+    public String getSnsIntegrateCallback(@RequestParam("code")String code,
+                                          Principal principal) {
+        // 1. sns 서비스 호출 -> id값으로 member 조회 후 인증정보 조회(방어) -> 있으면 return
+//        if (memberService.getMemberByUsername(principal.getName())) {
+//
+//        }
+        // 2. 없으면 반환된 코드로 카톡 API 호출해서 토큰값 확인
+        // 3. 확인된 토큰을 DB에 저장하기 위해서 전달.
+        // 4. 저장 후 반환값으로 redirect / sns 페이지 넘어갔을 때 1회용 메시지 전달을 위한 리다이렉트 flash에 저장 후 출력
+        // 5. 최종 redirect 후 연동여부 표시.
+
+        return "redirect:/mypage/sns";
     }
 }

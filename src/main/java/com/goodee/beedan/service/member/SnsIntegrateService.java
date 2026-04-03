@@ -1,5 +1,6 @@
 package com.goodee.beedan.service.member;
 
+import com.goodee.beedan.dto.member.sns.SnsIntegrateRequest;
 import com.goodee.beedan.dto.member.sns.SnsIntegrateResponse;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.entity.SnsIntegrate;
@@ -28,5 +29,10 @@ public class SnsIntegrateService {
 
     public Boolean isSnsIntegrate(Member member) {
         return snsIntegrateRepository.existsBySnsCanYnFalseAndMember(member);
+    }
+
+    public void setSnsIntegrateRequest(SnsIntegrateRequest request, Member member) {
+//        SnsIntegrate snsIntegrate = SnsIntegrate.builder().build();
+//        return snsIntegrateRepository.save(snsIntegrate);
     }
 }

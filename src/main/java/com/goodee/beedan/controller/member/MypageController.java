@@ -229,8 +229,6 @@ public class MypageController {
         return "/member/mypage/mypage-sns";
     }
 
-
-
     @GetMapping("/sns/integrate")
     public String getSnsIntegrate(Model model,
                                   Principal principal) {

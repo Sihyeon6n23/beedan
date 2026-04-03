@@ -50,4 +50,11 @@ public class AuthRestController {
             return true;
         }
     }
+
+    @GetMapping("/kakao/callback")
+    public String getSnsIntegrateCallback() {
+
+        return "/mypage/sns";
+    }
+
 }
