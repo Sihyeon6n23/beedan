@@ -15,6 +15,7 @@
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/admin/admin-quote-detail.css}">
     <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
+    <link rel="stylesheet" th:href="@{/css/quote/feeCards.css}">
 
     <section class="aqd-container">
 
@@ -25,11 +26,16 @@
                     <span class="material-symbols-outlined">arrow_back</span>
                     목록으로
                 </a>
-                <span class="aqd-badge aqd-badge--submitted">제출완료</span>
+                <span class="aqd-badge"
+                      th:classappend="'aqd-badge--' + ${quoteBase.quStt.name().toLowerCase()}"
+                      th:text="${quoteBase.quStt.name() == 'TEMP_SAVE' ? '임시저장' :
+                                 quoteBase.quStt.name() == 'SUBMITTED' ? '대기중' :
+                                 quoteBase.quStt.name() == 'APPROVED' ? '승인' :
+                                 quoteBase.quStt.name() == 'REJECTED' ? '거절' : '만료'}">상태</span>
             </div>
             <div class="aqd-header__title">
                 <h1 class="aqd-title">견적 상세</h1>
-                <p class="aqd-quote-id">#QU-20260315-001</p>
+                <p class="aqd-quote-id" th:text="'#' + ${quoteBase.quCd}">#QU0000</p>
             </div>
         </header>
 
@@ -41,62 +47,47 @@
             <div class="aqd-member-card__body">
                 <div class="aqd-info-row">
                     <span class="aqd-info-label">회원명</span>
-                    <span class="aqd-info-value">홍길동</span>
+                    <span class="aqd-info-value" th:text="${member != null ? member.memNm : '-'}">-</span>
                 </div>
                 <div class="aqd-info-row">
                     <span class="aqd-info-label">회사명</span>
-                    <span class="aqd-info-value">(주)구디아카데미</span>
+                    <span class="aqd-info-value" th:text="${member != null ? member.memBizTtl : '-'}">-</span>
                 </div>
                 <div class="aqd-info-row">
                     <span class="aqd-info-label">협상명</span>
-                    <span class="aqd-info-value">NG-2026-A01</span>
+                    <span class="aqd-info-value" th:text="${negotiation.ngNm}">-</span>
                 </div>
                 <div class="aqd-info-row">
                     <span class="aqd-info-label">요청일</span>
-                    <span class="aqd-info-value">2026.03.15</span>
+                    <span class="aqd-info-value" th:text="${quoteBase.quCreDt != null ? #temporals.format(quoteBase.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">-</span>
                 </div>
-                <div class="aqd-info-row">
+                <div class="aqd-info-row" th:if="${quoteBase.quExpDt != null}">
                     <span class="aqd-info-label">유효기간</span>
-                    <span class="aqd-info-value">2026.03.22 까지 (영업일 7일)</span>
+                    <span class="aqd-info-value" th:text="${#temporals.format(quoteBase.quExpDt, 'yyyy.MM.dd HH:mm') + ' 까지'}">-</span>
                 </div>
             </div>
         </section>
 
         <!-- Status Timeline -->
         <div class="aqd-timeline-wrap">
-            <div class="road-to-payment">
-                <div class="rtp-step rtp-step--done">
-                    <div class="rtp-dot"></div>
-                    <span class="rtp-label">견적 요청</span>
-                </div>
-                <div class="rtp-line rtp-line--done"></div>
-                <div class="rtp-step rtp-step--done">
-                    <div class="rtp-dot"></div>
-                    <span class="rtp-label">견적 확인</span>
-                </div>
-                <div class="rtp-line rtp-line--active"></div>
-                <div class="rtp-step rtp-step--active">
-                    <div class="rtp-dot"></div>
-                    <span class="rtp-label">견적 승인</span>
-                </div>
-                <div class="rtp-line"></div>
-                <div class="rtp-step">
-                    <div class="rtp-dot"></div>
-                    <span class="rtp-label">대금 결제</span>
-                </div>
-                <div class="rtp-line"></div>
-                <div class="rtp-step">
-                    <div class="rtp-dot"></div>
-                    <span class="rtp-label">발주 확정</span>
-                </div>
-            </div>
+            <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
+        </div>
+
+        <!-- 거절 사유 배너 -->
+        <div class="rejection-banner" th:if="${quoteBase.quStt.name() == 'REJECTED'}" style="background:#fef2f2; border:1px solid #fecaca; padding:1.2rem 1.5rem; margin-bottom:1.5rem; display:flex; gap:0.75rem; align-items:flex-start;">
+            <div style="color:#991b1b; font-weight:700; font-size:0.8rem;">REJECTED</div>
+            <p th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '거절 사유가 기재되지 않았습니다.'}"
+               style="color:#991b1b; font-size:0.85rem; margin:0;">거절 사유</p>
         </div>
 
         <!-- Quote Manifest Table -->
-        <section class="aqd-manifest">
+        <section class="aqd-manifest" th:if="${details != null && !details.isEmpty()}">
             <div class="aqd-manifest__header">
-                <h2 class="aqd-manifest__id">A01-PEWGF-A</h2>
-                <span class="aqd-manifest__count">4개의 아이템</span>
+                <h2 class="aqd-manifest__id" th:text="${quoteBase.quCd}">QU0000</h2>
+                <span class="aqd-manifest__count" th:text="${details.size()} + '개의 아이템'">0개의 아이템</span>
+                <span class="aqd-manifest__rate"
+                      th:if="${quoteInfo != null && quoteInfo.quInfoExcRt != null && quoteInfo.quInfoCurCd != null}"
+                      th:text="'적용 환율 1 ' + ${quoteInfo.quInfoCurCd} + ' = ₩' + ${#numbers.formatDecimal(quoteInfo.quInfoExcRt, 1, 'COMMA', 2, 'POINT')}">적용 환율</span>
             </div>
             <div class="aqd-table-wrapper">
                 <table class="aqd-table">
@@ -107,154 +98,147 @@
                         <th class="col-id">상품 아이디</th>
                         <th class="col-qty">수량</th>
                         <th class="col-spec">규격</th>
-                        <th class="col-price-unit">공급가액 (엔화)</th>
-                        <th class="col-price-total">공급가 총액 (엔화)</th>
-                        <th class="col-tax">세액 (한화)</th>
-                        <th class="col-subtotal">Subtotal (한화)</th>
+                        <th class="col-price-total">공급가 총액</th>
+                        <th class="col-subtotal">소계 (한화)</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td class="col-no">1</td>
+                    <tr th:each="detail, idx : ${details}">
+                        <td class="col-no" th:text="${idx.count}">1</td>
                         <td class="col-product">
-                            <span class="product-name">ESSENTIAL OVERSIZED TEE</span>
-                            <span class="product-material">Japanese Heavyweight Cotton</span>
+                            <span class="product-name" th:text="${detail.stNm}">상품명</span>
+                            <span class="product-material" th:text="${detail.faNm != null ? detail.faNm : '-'}">공장명</span>
                         </td>
-                        <td class="col-id product-code">BDN-ES-001</td>
-                        <td class="col-qty">50</td>
-                        <td class="col-spec">50</td>
-                        <td class="col-price-unit text-right">¥2,400</td>
-                        <td class="col-price-total text-right">¥120,000</td>
-                        <td class="col-tax text-right">₩14,040</td>
-                        <td class="col-subtotal text-right">₩1,096,800</td>
-                    </tr>
-                    <tr>
-                        <td class="col-no">2</td>
-                        <td class="col-product">
-                            <span class="product-name">STRUCTURED DENIM JACKET</span>
-                            <span class="product-material">14oz Selvedge Denim</span>
-                        </td>
-                        <td class="col-id product-code">BDN-DN-124</td>
-                        <td class="col-qty">20</td>
-                        <td class="col-spec">20</td>
-                        <td class="col-price-unit text-right">¥8,200</td>
-                        <td class="col-price-total text-right">¥164,000</td>
-                        <td class="col-tax text-right">₩19,188</td>
-                        <td class="col-subtotal text-right">₩1,498,960</td>
-                    </tr>
-                    <tr>
-                        <td class="col-no">3</td>
-                        <td class="col-product">
-                            <span class="product-name">WIDE CARGO PANTS</span>
-                            <span class="product-material">12oz Canvas Twill</span>
-                        </td>
-                        <td class="col-id product-code">BDN-CP-088</td>
-                        <td class="col-qty">30</td>
-                        <td class="col-spec">30</td>
-                        <td class="col-price-unit text-right">¥5,600</td>
-                        <td class="col-price-total text-right">¥168,000</td>
-                        <td class="col-tax text-right">₩19,656</td>
-                        <td class="col-subtotal text-right">₩1,535,280</td>
-                    </tr>
-                    <tr>
-                        <td class="col-no">4</td>
-                        <td class="col-product">
-                            <span class="product-name">MINIMAL TOTE BAG</span>
-                            <span class="product-material">Waxed Cotton Canvas</span>
-                        </td>
-                        <td class="col-id product-code">BDN-TB-210</td>
-                        <td class="col-qty">100</td>
-                        <td class="col-spec">100</td>
-                        <td class="col-price-unit text-right">¥1,800</td>
-                        <td class="col-price-total text-right">¥180,000</td>
-                        <td class="col-tax text-right">₩21,060</td>
-                        <td class="col-subtotal text-right">₩1,644,720</td>
+                        <td class="col-id product-code"
+                            th:text="${detailExtras[__${idx.index}__]['stCd'] != null ? detailExtras[__${idx.index}__]['stCd'] : '-'}">-</td>
+                        <td class="col-qty" th:text="${detail.quDtQn}">0</td>
+                        <td class="col-spec"
+                            th:text="${detailExtras[__${idx.index}__]['spec'] != null ? detailExtras[__${idx.index}__]['spec'] + ' ' + (detail.unGNm != null ? detail.unGNm : '') : '-'}">-</td>
+                        <td class="col-price-total text-right"
+                            th:text="${detail.quDtFgPr != null and detail.quDtQn != null ? detailExtras[__${idx.index}__]['stCur'] + #numbers.formatDecimal(detail.quDtFgPr * detail.quDtQn, 1, 'COMMA', 0, 'POINT') : '-'}">-</td>
+                        <td class="col-subtotal text-right"
+                            th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">-</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Options Summary -->
-        <section class="aqd-options">
-            <div class="aqd-section-label">부가 서비스</div>
-            <div class="aqd-options-grid">
-                <div class="aqd-option-card">
-                    <div class="aqd-option-card__header">적하보험</div>
-                    <div class="aqd-option-card__body">
-                        <div class="aqd-option-row">
-                            <span>적하보험 (기본)</span>
-                            <span class="aqd-option-value">₩28,878</span>
-                        </div>
-                        <div class="aqd-option-row aqd-option-row--note">
-                            공급가의 0.5%
-                        </div>
-                    </div>
-                </div>
-                <div class="aqd-option-card">
-                    <div class="aqd-option-card__header">품질 검사</div>
-                    <div class="aqd-option-card__body">
-                        <div class="aqd-option-row">
-                            <span>1차 품질 검사</span>
-                            <span class="aqd-option-value">₩0 (무료)</span>
-                        </div>
-                        <div class="aqd-option-row">
-                            <span>2차 정밀 검사</span>
-                            <span class="aqd-option-value">₩150,000</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- Logistics & Procurement Fee Cards -->
+        <div th:if="${quoteInfo != null}"
+             th:replace="~{fragments/quoteAndPayment/feeCards :: feeCards}"></div>
 
-        <!-- Cost Summary -->
-        <section class="aqd-cost-summary">
+        <!-- Cost Summary Section -->
+        <section class="aqd-cost-summary" th:if="${quoteInfo != null}">
             <div class="aqd-cost-summary__heading">
                 <span class="aqd-cost-summary__title">비용 명세 요약</span>
                 <div class="aqd-heading-divider"></div>
             </div>
             <div class="aqd-cost-cards">
                 <div class="aqd-cost-card">
-                    <div class="aqd-cost-card__label">해상 운임</div>
-                    <div class="aqd-cost-card__amount">₩1,240,000</div>
-                    <div class="aqd-cost-card__desc">Osaka Port (JP) → Busan New Port (KR)<br>Estimated transit: 14 Days</div>
+                    <div class="aqd-cost-card__label">운송 비용 합계</div>
+                    <div class="aqd-cost-card__amount"
+                         th:text="${quoteInfo.quInfoTtlShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA') : '-'}">-</div>
+                    <div class="aqd-cost-card__desc">국제 운임 + 국내 배송비</div>
                 </div>
                 <div class="aqd-cost-card">
-                    <div class="aqd-cost-card__label">큐레이션 수수료</div>
-                    <div class="aqd-cost-card__amount">₩920,000</div>
-                    <div class="aqd-cost-card__desc">현지 품질 검수, 물류 조정 및 보험료</div>
+                    <div class="aqd-cost-card__label">
+                        큐레이션 수수료
+                        <span th:if="${quoteInfo.quInfoSrvFeR != null && quoteInfo.quInfoSrvFeR > 0}"
+                              th:text="'-' + ${#numbers.formatDecimal(quoteInfo.quInfoSrvFeR * 100, 1, 'POINT', 0, 'POINT')} + '%'"
+                              style="color:#705d00; font-size:0.7rem; margin-left:4px;">-10%</span>
+                    </div>
+                    <div class="aqd-cost-card__amount"
+                         th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">-</div>
+                    <div class="aqd-cost-card__desc"
+                         th:if="${quoteInfo.quInfoSrvFeR != null && quoteInfo.quInfoSrvFeR > 0}"
+                         th:text="'정가 ₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFe, 3, 'COMMA')} + ' 에서 할인 적용'">할인 적용</div>
+                    <div class="aqd-cost-card__desc"
+                         th:if="${quoteInfo.quInfoSrvFeR == null || quoteInfo.quInfoSrvFeR == 0}">서비스 수수료</div>
                 </div>
                 <div class="aqd-cost-card">
-                    <div class="aqd-cost-card__label">관세 및 통관 수수료</div>
-                    <div class="aqd-cost-card__amount">₩1,854,200</div>
-                    <div class="aqd-cost-card__desc">부가세(10%) 핸들링 비용 및 품목 분류 (HS Code) 신고료</div>
+                    <div class="aqd-cost-card__label">관세 및 부가세</div>
+                    <div class="aqd-cost-card__amount"
+                         th:text="${quoteInfo.quInfoTax != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTax, 3, 'COMMA') : '-'}">-</div>
+                    <div class="aqd-cost-card__desc">관세 + 부가세 합계</div>
                 </div>
             </div>
         </section>
 
         <!-- Memo -->
-        <section class="aqd-memo">
-            <div class="aqd-section-label">고객 메모</div>
-            <div class="aqd-memo__content">
-                운임 조건은 FOB 기준으로 요청드립니다. 포장은 개별 폴리백 + 마스터 카튼으로 부탁드리며, 검수 시 컬러 차이 기준 Delta E 3.0 이하로 맞춰주세요.
-            </div>
+        <section class="aqd-memo" th:if="${quoteInfo != null && quoteInfo.quInfoPs != null && !quoteInfo.quInfoPs.isEmpty()}">
+            <div class="aqd-section-label">메모</div>
+            <div class="aqd-memo__content" th:text="${quoteInfo.quInfoPs}">메모 내용</div>
         </section>
 
-        <!-- Final Payment & Admin Actions -->
+        <!-- Final Payment -->
         <section class="aqd-final">
             <div class="aqd-final__payment">
                 <span class="aqd-final__label">최종 결제 금액</span>
-                <span class="aqd-final__amount">₩22,617,200</span>
-                <span class="aqd-final__note">INC. VAT & DELIVERY</span>
+                <span class="aqd-final__amount"
+                      th:text="${quoteInfo != null && quoteInfo.quInfoTp != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTp, 3, 'COMMA') : '산출 중'}">산출 중</span>
+                <span class="aqd-final__note">INC. VAT &amp; DELIVERY</span>
             </div>
             <div class="aqd-final__actions">
-                <button class="aqd-btn aqd-btn--approve">견적 승인</button>
-                <button class="aqd-btn aqd-btn--reject">견적 거절</button>
-                <button class="aqd-btn aqd-btn--edit" onclick="location.href='/admin/quote/write?quId=1'">견적 수정</button>
-                <button class="aqd-btn aqd-btn--pdf">PDF 다운로드</button>
+                <button class="aqd-btn aqd-btn--edit" th:onclick="'location.href=\'/admin/quote/write?quId=' + ${quoteBase.quId} + '\''">견적 수정</button>
             </div>
         </section>
 
     </section>
+
+    <!-- feeCard.js 데이터 전달 -->
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var shipFees = /*[[${shipFees}]]*/ [];
+        var quoteInfo = /*[[${quoteInfo}]]*/ null;
+        var factoryItemCounts = /*[[${factoryItemCounts}]]*/ {};
+        var itemTotalKrw = /*[[${itemTotalKrw}]]*/ 0;
+        var buyerGrade = /*[[${buyerGrade}]]*/ 'STANDARD';
+
+        if (!quoteInfo || typeof updateFeeCards !== 'function') return;
+
+        var shippingDiscountRate = 0;
+        if (shipFees.length > 0 && shipFees[0].qsfDscR) {
+            shippingDiscountRate = parseFloat(shipFees[0].qsfDscR) || 0;
+        }
+
+        var factories = shipFees.map(function (sf) {
+            return {
+                factoryName: sf.qsfFaNm,
+                factoryCity: sf.qsfFaNm,
+                countryCode: sf.qsfFaCCd,
+                transportType: sf.qsfTrspTy,
+                sizeType: null,
+                itemCount: factoryItemCounts[sf.faId] || 0,
+                totalDozen: sf.qsfUnQn || 0,
+                shippingFee: sf.qsfSrAm,
+                portFee: sf.qsfPrtAm,
+                customsFee: sf.qsfCstAm,
+                hsCodeFee: sf.qsfHsCd,
+                insuranceFee: sf.qsfInsYn ? sf.qsfInsAm : 0,
+                cifAmount: sf.qsfCifAm,
+                dutyRate: sf.qsfDtyR,
+                dutyAmount: sf.qsfDty,
+                vatAmount: sf.qsfVat,
+                subtotal: sf.qsfTtl
+            };
+        });
+
+        updateFeeCards({
+            factories: factories,
+            shippingDiscountRate: shippingDiscountRate,
+            totalItemAmountKrw: parseFloat(itemTotalKrw) || 0,
+            serviceFee: quoteInfo.quInfoSrvFe || 0,
+            serviceFeeRate: quoteInfo.quInfoSrvFeR || 0,
+            serviceFeeAmount: quoteInfo.quInfoSrvFeAm || 0,
+            domesticFee: quoteInfo.quInfoDmsFe || 0,
+            insuranceName: quoteInfo.siNm || null,
+            insuranceFee: quoteInfo.quInfoInsAm || 0,
+            inspectionName: quoteInfo.stiNm || null,
+            inspectionFee: quoteInfo.quInfoStiAm || 0,
+            buyerGrade: buyerGrade
+        });
+    });
+    </script>
 </th:block>
 </html>

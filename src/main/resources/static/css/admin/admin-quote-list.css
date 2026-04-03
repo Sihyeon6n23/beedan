@@ -173,29 +173,89 @@ main > div {
 }
 
 /* Column widths */
-.aq-table .col-check { width: 40px; }
 .aq-table .col-id { width: 160px; text-align: left; }
 .aq-table .col-member { width: 160px; text-align: left; }
 .aq-table .col-negotiation { width: 130px; }
 .aq-table .col-items { width: 60px; }
 .aq-table .col-status { width: 90px; }
-.aq-table .col-amount { width: 130px; text-align: right; }
 .aq-table .col-date { width: 100px; }
-.aq-table .col-action { width: 130px; }
+
+.aq-table .col-latest-update { width: 120px; }
 
 .aq-table td.col-id {
     font-weight: 700;
     font-size: 0.75rem;
+    position: relative;
+}
+
+/* Unread dot */
+.aq-unread-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #e53935;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* Row interaction */
+.aq-table tbody tr {
+    cursor: pointer;
+}
+
+.aq-table tbody tr:hover {
+    outline: 2px solid rgba(255, 215, 0, 0.5);
+    outline-offset: -2px;
+}
+
+/* Unread row highlight */
+.aq-row--unread {
+    background: rgba(255, 215, 0, 0.06);
+}
+
+/* Closed row (rejected / expired) */
+.aq-row--closed {
+    background: #ffffff;
+    color: #aaaaaa;
+}
+
+.aq-row--closed td {
+    color: #aaaaaa;
+}
+
+.aq-row--closed .member-name,
+.aq-row--closed .member-company {
+    color: #aaaaaa;
+}
+
+/* Sortable headers */
+.aq-sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.aq-sortable:hover {
+    background: #e8e8e8;
+    color: var(--aq-text-main);
+}
+
+.aq-sortable.is-active {
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--aq-gold-dark);
+}
+
+.aq-sort-icon {
+    font-size: 9px;
+    vertical-align: middle;
+    margin-left: 2px;
 }
 
 .aq-table td.col-member {
     text-align: left;
 }
 
-.aq-table td.col-amount {
-    text-align: right;
-    font-weight: 700;
-}
 
 /* Member cell */
 .member-name {
@@ -211,12 +271,6 @@ main > div {
     color: var(--aq-text-muted);
 }
 
-/* Amount pending */
-.aq-amount--pending {
-    color: var(--aq-text-muted) !important;
-    font-style: italic;
-    font-weight: 400 !important;
-}
 
 /* Badges */
 .aq-badge {
@@ -254,47 +308,6 @@ main > div {
 .aq-badge--temp_save {
     background: #e0f2fe;
     color: #0369a1;
-}
-
-/* Action buttons */
-.aq-action-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-}
-
-.aq-btn-view,
-.aq-btn-edit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 12px;
-    font-size: 10px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    text-transform: uppercase;
-    transition: all 0.15s ease;
-}
-
-.aq-btn-view {
-    background: var(--aq-text-main);
-    color: #ffffff;
-}
-
-.aq-btn-view:hover {
-    background: #333333;
-}
-
-.aq-btn-edit {
-    background: #e2e2e2;
-    color: var(--aq-text-main);
-}
-
-.aq-btn-edit:hover {
-    background: #d1d1d1;
 }
 
 /* Pagination */
@@ -340,8 +353,13 @@ main > div {
     color: var(--aq-gold-dark);
 }
 
-.aq-page-btn:hover:not(.active) {
+.aq-page-btn:hover:not(.active):not(:disabled) {
     background: #d5d5d5;
+}
+
+.aq-page-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
 }
 
 /* Responsive */

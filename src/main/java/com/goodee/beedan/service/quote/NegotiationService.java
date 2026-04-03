@@ -6,6 +6,8 @@ import com.goodee.beedan.repository.quote.NegotiationRepository;
 import groovy.util.logging.Slf4j;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,10 @@ public class NegotiationService {
 
     public List<Negotiation> findAllByMember(Long memId) {
         return negotiationRepository.findAllByMemId(memId);
+    }
+
+    public Page<Negotiation> findAllByMember(Long memId, Pageable pageable) {
+        return negotiationRepository.findAllByMemId(memId, pageable);
     }
 
     public List<Negotiation> findOngoingByMember(Long memId) {

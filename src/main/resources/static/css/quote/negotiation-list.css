@@ -173,6 +173,31 @@
     text-align: center;
 }
 
+/* Sortable headers */
+.ng-sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.ng-sortable:hover {
+    color: var(--color-on-background);
+}
+
+.ng-sortable.is-active {
+    color: var(--color-on-primary-container);
+    background: rgba(112, 93, 0, 0.08);
+    border-radius: 2px;
+    padding: 0.2rem 0.4rem;
+    margin: -0.2rem -0.4rem;
+}
+
+.ng-sort-icon {
+    font-size: 9px;
+    vertical-align: middle;
+    margin-left: 0.2rem;
+}
+
 .ng-list-body {
     border-top: 1px solid var(--color-surface-container-highest);
     background: #fffdf8;
@@ -200,6 +225,22 @@
 .ng-row--featured {
     background: linear-gradient(180deg, rgba(255, 215, 0, 0.10) 0%, rgba(255, 248, 220, 0.48) 100%);
     border-left-color: var(--color-primary);
+}
+
+.ng-row--closed {
+    background: #ffffff;
+    color: #aaaaaa;
+}
+
+.ng-row--closed .ng-row__text h2,
+.ng-row--closed .ng-row__text h2 small,
+.ng-row--closed .ng-row__text p,
+.ng-row--closed .ng-row__time {
+    color: #aaaaaa;
+}
+
+.ng-row--closed:hover {
+    background: #fafafa;
 }
 
 /* Row: primary cell */
