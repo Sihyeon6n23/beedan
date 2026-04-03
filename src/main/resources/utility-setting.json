@@ -6,12 +6,12 @@
     "city_name" : "Osaka",
     "region" : "Osaka, JP"
   }, {
-    "city_name" : "Beijing",
-    "region" : "Beijing, CN"
+    "city_name" : "Tokyo",
+    "region" : "JP"
   }, {
     "city_name" : "Seoul",
     "region" : "Seoul, KR"
   } ],
-  "news_keyword_left" : "세계 패션 트렌드",
+  "news_keyword_left" : "뉴진스",
   "news_keyword_right" : "관세 환율"
 }
