@@ -22,33 +22,59 @@
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
 
             <form id="utilityForm" th:action="@{/root/utility/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <!-- 날씨 지역 설정 -->
-            <section class="space-y-6">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary">cloud</span>
-                    <h2 class="text-xl font-bold tracking-tight uppercase">1. 날씨 지역 설정</h2>
-                </div>
+                <!-- 메인 페이지 날씨 지역 설정 -->
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">sunny</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">1. 날씨 지역 설정</h2>
+                    </div>
 
-                <div id="location-slots" class="space-y-1">
-                    <th:block th:each="loc, iter : ${setting.weatherLocationList}">
-                        <div class="location-slot flex items-center gap-3 py-2 border-b border-zinc-100"
-                             th:data-index="${iter.index}">
-                            <span class="text-xs font-bold text-zinc-400 w-4 text-center" th:text="${iter.index + 1}">1</span>
-                            <input type="text" readonly
-                                   th:name="${'weatherLocationList[' + iter.index + '].cityName'}"
-                                   th:value="${loc.cityName}"
-                                   class="input-city bg-transparent text-sm font-bold w-28 p-0 border-none cursor-default">
-                            <input type="text" readonly
-                                   th:name="${'weatherLocationList[' + iter.index + '].region'}"
-                                   th:value="${loc.region}"
-                                   class="input-region bg-transparent text-xs text-zinc-400 flex-grow p-0 border-none cursor-default">
-                            <button type="button"
-                                    class="btn-change flex-shrink-0 whitespace-nowrap text-xs text-primary hover:underline"
-                                    th:data-index="${iter.index}">변경</button>
+                    <div id="location-slots" class="space-y-1">
+                        <th:block th:each="loc, iter : ${setting.weatherLocationList}">
+                            <div class="location-slot flex items-center gap-3 py-2 border-b border-zinc-100"
+                                 th:data-index="${iter.index}">
+                                <span class="text-xs font-bold text-zinc-400 w-4 text-center" th:text="${iter.index + 1}">1</span>
+                                <input type="text" readonly
+                                       th:name="${'weatherLocationList[' + iter.index + '].cityName'}"
+                                       th:value="${loc.cityName}"
+                                       class="input-city bg-transparent text-sm font-bold w-28 p-0 border-none cursor-default">
+                                <input type="text" readonly
+                                       th:name="${'weatherLocationList[' + iter.index + '].region'}"
+                                       th:value="${loc.region}"
+                                       class="input-region bg-transparent text-xs text-zinc-400 flex-grow p-0 border-none cursor-default">
+                                <button type="button"
+                                        class="btn-change flex-shrink-0 whitespace-nowrap text-xs text-primary hover:underline"
+                                        th:data-index="${iter.index}">변경</button>
+                            </div>
+                        </th:block>
+                    </div>
+                </section>
+                <!-- 메인 페이지 뉴스 키워드 설정 -->
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">breaking_news</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">2. 뉴스 키워드 설정</h2>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-3 py-2 border-b border-zinc-100">
+                            <span class="text-xs font-bold text-zinc-400 w-4 text-center">L</span>
+                            <label class="text-sm font-bold w-28">Left 키워드</label>
+                            <input type="text" name="newsKeywordLeft"
+                                   th:value="${setting.newsKeywordLeft}"
+                                   class="flex-grow text-sm border border-zinc-200 rounded px-3 py-1.5 focus:border-primary focus:outline-none"
+                                   placeholder="예: 일본 패션 유통">
                         </div>
-                    </th:block>
-                </div>
-            </section>
+                        <div class="flex items-center gap-3 py-2 border-b border-zinc-100">
+                            <span class="text-xs font-bold text-zinc-400 w-4 text-center">R</span>
+                            <label class="text-sm font-bold w-28">Right 키워드</label>
+                            <input type="text" name="newsKeywordRight"
+                                   th:value="${setting.newsKeywordRight}"
+                                   class="flex-grow text-sm border border-zinc-200 rounded px-3 py-1.5 focus:border-primary focus:outline-none"
+                                   placeholder="예: 관세 환율">
+                        </div>
+                    </div>
+                </section>
             </form>
 
             <!-- 검색 모달 (form 밖) -->

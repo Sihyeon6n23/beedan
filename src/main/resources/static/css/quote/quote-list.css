@@ -151,7 +151,7 @@
 .quote-list-head,
 .quote-row {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(100px, 1.1fr) minmax(110px, 1.3fr);
+    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(100px, 1.1fr) minmax(100px, 1.1fr) minmax(80px, 0.9fr);
     gap: 0.8rem;
     align-items: center;
 }
@@ -169,8 +169,34 @@
 
 .quote-list-head > div:nth-child(2),
 .quote-list-head > div:nth-child(3),
-.quote-list-head > div:nth-child(4) {
+.quote-list-head > div:nth-child(4),
+.quote-list-head > div:nth-child(5) {
     text-align: center;
+}
+
+/* Sortable headers */
+.quote-sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.quote-sortable:hover {
+    color: var(--color-on-background);
+}
+
+.quote-sortable.is-active {
+    color: var(--color-on-primary-container);
+    background: rgba(112, 93, 0, 0.08);
+    border-radius: 2px;
+    padding: 0.2rem 0.4rem;
+    margin: -0.2rem -0.4rem;
+}
+
+.quote-sort-icon {
+    font-size: 9px;
+    vertical-align: middle;
+    margin-left: 0.2rem;
 }
 
 .quote-list-body {
@@ -281,25 +307,6 @@
     white-space: nowrap;
 }
 
-.quote-row__amount {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    text-align: right;
-    font-family: var(--font-headline);
-    font-size: 0.95rem;
-    font-weight: 800;
-    letter-spacing: var(--tracking-tight);
-    white-space: nowrap;
-}
-
-.quote-row__amount--pending {
-    color: var(--color-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    font-style: italic;
-}
-
 /* Badges */
 .quote-badge {
     display: inline-flex;
@@ -331,6 +338,35 @@
 .quote-badge--expired {
     background: var(--color-surface-container-highest);
     color: var(--color-secondary);
+}
+
+/* Admin read status */
+.quote-row__admin-read {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.quote-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.7rem;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.quote-admin-badge--read {
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+}
+
+.quote-admin-badge--unread {
+    background: #fde8e8;
+    color: #c53030;
 }
 
 /* Empty state */
@@ -432,7 +468,7 @@
 
     .quote-row__status,
     .quote-row__time,
-    .quote-row__amount {
+    .quote-row__admin-read {
         justify-content: flex-start;
         text-align: left;
     }

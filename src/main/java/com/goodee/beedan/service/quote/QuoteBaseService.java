@@ -7,6 +7,8 @@ import com.goodee.beedan.repository.quote.QuoteBaseRepository;
 import groovy.util.logging.Slf4j;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,6 +85,10 @@ public class QuoteBaseService {
         return quoteBaseRepository.findAllByQuRid(quRid);
     }
 
+    public Page<QuoteBase> findAllByReceiver(Long quRid, Pageable pageable) {
+        return quoteBaseRepository.findAllByQuRid(quRid, pageable);
+    }
+
     /**
      * 견적 제출
      * TEMP_SAVE 상태일 때만 가능
@@ -135,13 +141,24 @@ public class QuoteBaseService {
     }
 
     /**
-     * 견적 열람 처리
+     * 운영자 열람 처리
      */
     @Transactional
-    public QuoteBase open(Long quId) {
+    public QuoteBase adminOpen(Long quId) {
         QuoteBase quoteBase = findById(quId);
-        quoteBase.opened();
-        log.info("견적 열람 처리 완료. ID: {}", quId);
+        quoteBase.adminOpened();
+        log.info("운영자 열람 처리 완료. ID: {}", quId);
+        return quoteBase;
+    }
+
+    /**
+     * 사용자 열람 처리
+     */
+    @Transactional
+    public QuoteBase userOpen(Long quId) {
+        QuoteBase quoteBase = findById(quId);
+        quoteBase.userOpened();
+        log.info("사용자 열람 처리 완료. ID: {}", quId);
         return quoteBase;
     }
 }

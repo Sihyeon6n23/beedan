@@ -2,12 +2,16 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="sidebar(activeMain, activeSub)">
     <div class="sidebar-scope">
-        <div class="sidebar-menu__group">
-            <div class="sidebar-menu__link"
-                 th:classappend="${activeMain == 'member'} ? ' sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined sidebar-menu__icon">inventory_2</span>
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'member'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'member'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'member'} ? 'true' : 'false'">
+                <span class="material-symbols-outlined sidebar-menu__icon">person</span>
                 <span>개인정보 관리</span>
-            </div>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
 
             <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/mypage/detail}"
@@ -22,7 +26,7 @@
                 </a>
                 <a th:href="@{/mypage/changepw}"
                    class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'stock-require'} ? ' sidebar-menu__child-link--current' : ''">
+                   th:classappend="${activeSub == 'changepw'} ? ' sidebar-menu__child-link--current' : ''">
                     비밀번호 변경
                 </a>
                 <a th:href="@{/mypage/sns}"
@@ -38,12 +42,23 @@
             </div>
         </div>
 
-        <div class="sidebar-menu__group">
-            <div class="sidebar-menu__link"
-                 th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__link--current' : ''">
+        <a th:href="@{/inquiry/list}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
+            <span>문의 관리</span>
+        </a>
+
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'stock'} ? 'true' : 'false'">
                 <span class="material-symbols-outlined sidebar-menu__icon">inventory_2</span>
                 <span>상품 요청</span>
-            </div>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
 
             <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/admin/stock/list}"
@@ -59,12 +74,16 @@
             </div>
         </div>
 
-        <div class="sidebar-menu__group">
-            <div class="sidebar-menu__link"
-                 th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''">
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'quote'} ? 'true' : 'false'">
                 <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
                 <span>내 상품</span>
-            </div>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
 
             <div class="sidebar-menu__child-wrap">
                 <a th:href="@{/quote/negotiation/list}"
@@ -80,47 +99,6 @@
             </div>
         </div>
 
-        <div class="sidebar-menu__group">
-            <div class="sidebar-menu__link"
-                 th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
-                <span>내 견적관리</span>
-            </div>
-
-            <div class="sidebar-menu__child-wrap">
-                <a th:href="@{/admin/inquiry/list}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'inquiry-list'} ? ' sidebar-menu__child-link--current' : ''">
-                    문의 목록
-                </a>
-                <a th:href="@{/admin/chat/list}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'chat-list'} ? ' sidebar-menu__child-link--current' : ''">
-                    채팅 관리
-                </a>
-            </div>
-        </div>
-
-        <div class="sidebar-menu__group">
-            <div class="sidebar-menu__link"
-                 th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
-                <span>내 주문조회</span>
-            </div>
-
-            <div class="sidebar-menu__child-wrap">
-                <a th:href="@{/admin/inquiry/list}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'inquiry-list'} ? ' sidebar-menu__child-link--current' : ''">
-                    문의 목록
-                </a>
-                <a th:href="@{/admin/chat/list}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'chat-list'} ? ' sidebar-menu__child-link--current' : ''">
-                    채팅 관리
-                </a>
-            </div>
-        </div>
     </div>
 </th:block>
 </html>

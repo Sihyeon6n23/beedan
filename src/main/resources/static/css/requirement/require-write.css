@@ -1,0 +1,260 @@
+/* ============================================================
+   BEEDAN — 상품 요청 작성 (Requirement Write Page)
+   ============================================================ */
+
+.req-write__form {
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+}
+
+/* --- Form --- */
+.req-write__form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- Field Group --- */
+.req-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.req-field--row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.req-field__label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.req-field__label em {
+  font-style: normal;
+  color: #ba1a1a;
+  margin-left: 2px;
+}
+
+.req-field__input,
+.req-field__textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-outline-variant);
+  background: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-on-background);
+  transition: border-color 0.2s;
+}
+
+.req-field__input:focus,
+.req-field__textarea:focus {
+  outline: none;
+  border-color: #d0c6ab;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.req-field__input::placeholder,
+.req-field__textarea::placeholder {
+  color: var(--color-outline);
+}
+
+.req-field__textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.req-field__hint {
+  font-size: 12px;
+  color: var(--color-outline);
+}
+
+/* --- Price Input --- */
+.req-field__price-wrap {
+  position: relative;
+}
+
+.req-field__price-wrap .req-field__input {
+  padding-right: 2.5rem;
+}
+
+.req-field__price-unit {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-secondary);
+  pointer-events: none;
+}
+
+/* --- File Upload --- */
+.req-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.req-upload__zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2rem;
+  border: 2px dashed var(--color-outline-variant);
+  background: rgba(255, 248, 220, 0.25);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.req-upload__zone:hover,
+.req-upload__zone.is-dragover {
+  border-color: #d0c6ab;
+  background: rgba(255, 248, 220, 0.5);
+}
+
+.req-upload__zone-icon {
+  font-size: 2rem;
+  color: var(--color-secondary);
+}
+
+.req-upload__zone-text {
+  font-size: 13px;
+  color: var(--color-secondary);
+  text-align: center;
+}
+
+.req-upload__zone-text strong {
+  color: var(--color-on-primary-container);
+  font-weight: 800;
+}
+
+.req-upload__input {
+  display: none;
+}
+
+.req-upload__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.req-upload__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  font-size: 13px;
+}
+
+.req-upload__item-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-on-background);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.req-upload__item-name .material-symbols-outlined {
+  font-size: 16px;
+  color: var(--color-secondary);
+}
+
+.req-upload__item-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-secondary);
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+.req-upload__item-remove:hover {
+  color: #ba1a1a;
+}
+
+/* --- Actions --- */
+.req-write__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.req-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.75rem;
+  padding: 0 1.6rem;
+  border: none;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.req-btn--secondary {
+  background: var(--color-surface-container-highest);
+  color: var(--color-on-background);
+}
+
+.req-btn--secondary:hover {
+  background: var(--color-surface-container-high);
+}
+
+.req-btn--draft {
+  background: #fff;
+  color: var(--color-on-background);
+  border: 1px solid var(--color-outline-variant);
+}
+
+.req-btn--draft:hover {
+  background: var(--color-surface-container-low);
+}
+
+.req-btn--primary {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+.req-btn--primary:hover {
+  box-shadow: 0 6px 14px rgba(26, 28, 28, 0.1);
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .req-write {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .req-field--row {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .req-write__actions {
+    flex-direction: column;
+  }
+
+  .req-btn {
+    width: 100%;
+  }
+}

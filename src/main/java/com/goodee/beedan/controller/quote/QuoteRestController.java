@@ -57,10 +57,17 @@ public class QuoteRestController {
             "PROVINCE", "지방"
     );
 
-    // ── 견적 열람 처리 ─────────────────────────────────
+    // ── 사용자 견적 열람 처리 ─────────────────────────────────
     @PostMapping("/{quId}/opened")
     public ResponseEntity<Void> markOpened(@PathVariable Long quId) {
-        quoteBaseService.open(quId);
+        quoteBaseService.userOpen(quId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ── 운영자 견적 열람 처리 ─────────────────────────────────
+    @PostMapping("/{quId}/admin-opened")
+    public ResponseEntity<Void> markAdminOpened(@PathVariable Long quId) {
+        quoteBaseService.adminOpen(quId);
         return ResponseEntity.ok().build();
     }
 
@@ -209,6 +216,12 @@ public class QuoteRestController {
                         .foreignPrice(stock.getStPr())
                         .krwTotal(item.getSubtotalKrw())
                         .receiverId(item.getRcId())
+                        .group(item.getGrp())
+                        .rcRegion(item.getRcRgn())
+                        .rcName(item.getRcNm())
+                        .rcAddress(item.getRcAdr())
+                        .rcPhone(item.getRcPhn())
+                        .rcMemo(item.getRcMemo())
                         .build();
                 quoteDetailService.save(detail);
             }
@@ -612,6 +625,13 @@ public class QuoteRestController {
             private Integer unGQn;
             private BigDecimal subtotalKrw;  // 사용자 조정 소계 (한화)
             private Long rcId;               // 수령지 ID
+            // 분할배송
+            private Integer grp;             // 그룹 인덱스 (행 번호)
+            private String rcRgn;            // 배송 지역
+            private String rcNm;             // 수령인명
+            private String rcAdr;            // 수령지 주소
+            private String rcPhn;            // 수령인 연락처
+            private String rcMemo;           // 배달 요청사항
         }
     }
 

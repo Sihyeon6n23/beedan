@@ -24,10 +24,10 @@ public class RequirementService {
 
         switch (status) {
             case "SUBMITTED":
-                pages = requirementRepository.findByReqDelYnFalseAndReqSttAndReqPerYn("SUBMITTED", false, pageable);
+                pages = requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYn("SUBMITTED", false, pageable);
                 break;
             case "ANSWERED":
-                pages = requirementRepository.findByReqDelYnFalseAndReqSttAndReqPerYn("SUBMITTED", true, pageable);
+                pages = requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYn("SUBMITTED", true, pageable);
                 break;
             default:
                 pages = requirementRepository.findByReqDelYnFalseAndReqStt("SUBMITTED", pageable);
@@ -46,10 +46,10 @@ public class RequirementService {
                 pages = requirementRepository.findByReqDelYnFalseAndMemberMemIdAndReqStt(memId, "DRAFT", pageable);
                 break;
             case "SUBMITTED":
-                pages = requirementRepository.findByReqDelYnFalseAndMemberMemIdAndReqSttAndReqPerYn(memId, "SUBMITTED", false, pageable);
+                pages = requirementRepository.findByReqDelYnFalseAndMemberMemIdAndReqSttAndReqRepYn(memId, "SUBMITTED", false, pageable);
                 break;
             case "ANSWERED":
-                pages = requirementRepository.findByReqDelYnFalseAndMemberMemIdAndReqSttAndReqPerYn(memId, "SUBMITTED", true, pageable);
+                pages = requirementRepository.findByReqDelYnFalseAndMemberMemIdAndReqSttAndReqRepYn(memId, "SUBMITTED", true, pageable);
                 break;
             default:
                 pages = requirementRepository.findByReqDelYnFalseAndMemberMemId(memId, pageable);
@@ -67,9 +67,10 @@ public class RequirementService {
                 .reqTtl(requirement.getReqTtl())
                 .reqStt(requirement.getReqStt())
                 .reqPerYn(requirement.getReqPerYn())
+                .reqRepYn(requirement.getReqRepYn())
                 .reqCreDt(requirement.getReqCreDt())
-                .memNm(requirement.getMember().getMemNm())
                 .memStt(requirement.getMember().getMemStt())
+                .memNm(requirement.getMember().getMemNm())
                 .memBizTtl(requirement.getMember().getMemBizTtl())
                 .build();
     }

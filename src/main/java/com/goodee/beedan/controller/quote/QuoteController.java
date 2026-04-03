@@ -24,6 +24,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository;
+import org.springframework.data.domain.Page;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +52,7 @@ public class QuoteController {
     private final QuoteShipFeeService quoteShipFeeService;
     private final ReceiverRepository receiverRepository;
     private final MemberRepository memberRepository;
+    private final BuyerGradePolicyRepository buyerGradePolicyRepository;
 
     @PostMapping("/request")
     @ResponseBody
@@ -85,21 +91,26 @@ public class QuoteController {
 
     @GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                          @RequestParam(defaultValue = "1") int page,
                           Model model) {
         if (userDetails == null) return "redirect:/auth/signin";
         Long memId = userDetails.getMemberId();
 
-        List<QuoteBase> quoteList = quoteBaseService.findAllByReceiver(memId);
+        int pageSize = 10;
+        Page<QuoteBase> quPage = quoteBaseService.findAllByReceiver(
+                memId, org.springframework.data.domain.PageRequest.of(page - 1, pageSize));
 
         // 각 견적에 대한 협상명, 품목 수, 첫 품목명, 총 금액을 조합
         List<Map<String, Object>> quotes = new ArrayList<>();
-        for (QuoteBase qb : quoteList) {
+        for (QuoteBase qb : quPage.getContent()) {
             Map<String, Object> item = new java.util.LinkedHashMap<>();
             item.put("quId", qb.getQuId());
             item.put("quStt", qb.getQuStt().name());
-            item.put("quOpYn", qb.getQuOpYn() != null && qb.getQuOpYn());
+            item.put("quOpYn", qb.getQuUsOpYn() != null && qb.getQuUsOpYn());
+            item.put("quAdOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
             item.put("quCd", qb.getQuCd());
             item.put("quCreDt", qb.getQuCreDt());
+            item.put("quUpdDt", qb.getQuUpdDt());
 
             // 품목 정보
             List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
@@ -114,7 +125,16 @@ public class QuoteController {
             quotes.add(item);
         }
 
+        int totalPages = quPage.getTotalPages();
+        List<String> pageLabels = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageLabels.add(String.format("%02d", i));
+        }
+
         model.addAttribute("quotes", quotes);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("pageLabels", pageLabels);
         return "/quote/quote-list";
     }
 
@@ -163,16 +183,25 @@ public class QuoteController {
         QuoteInfo savedInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
 
         if (savedDetails != null && !savedDetails.isEmpty()) {
-            // ── 임시저장 복원 ──
+            // ── 임시저장 복원 (분할배송 그룹핑) ──
+            // quDtGrp으로 그룹핑 — null이면 개별 그룹 취급
+            java.util.LinkedHashMap<Integer, List<QuoteDetail>> groups = new java.util.LinkedHashMap<>();
+            int autoGrp = -1;
+            for (QuoteDetail d : savedDetails) {
+                int grp = d.getQuDtGrp() != null ? d.getQuDtGrp() : autoGrp--;
+                groups.computeIfAbsent(grp, k -> new ArrayList<>()).add(d);
+            }
+
             List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
-            for (int i = 0; i < savedDetails.size(); i++) {
-                QuoteDetail detail = savedDetails.get(i);
-                Stock stock = detail.getStId() != null
-                        ? stockRepository.findById(detail.getStId()).orElse(null) : null;
+            int no = 1;
+            for (List<QuoteDetail> group : groups.values()) {
+                QuoteDetail first = group.get(0);
+                Stock stock = first.getStId() != null
+                        ? stockRepository.findById(first.getStId()).orElse(null) : null;
                 if (stock == null) continue;
                 HsCode hsCode = stock.getCatId() != null
                         ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null) : null;
-                quoteItems.add(CartToQuoteDto.Item.fromDraft(i + 1, stock, detail, defaultUnit, hsCode));
+                quoteItems.add(CartToQuoteDto.Item.fromDraftGroup(no++, stock, group, defaultUnit, hsCode));
             }
             model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
 
@@ -232,11 +261,8 @@ public class QuoteController {
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
 
-        // 공장별 배송비
-        List<QuoteShipFee> shipFees = new ArrayList<>();
-        if (quoteInfo != null) {
-            shipFees = quoteShipFeeService.findAllByQuoteInfo(quoteInfo.getQuInfoId());
-        }
+        // 공장별 배송비 (quId로 직접 조회)
+        List<QuoteShipFee> shipFees = quoteShipFeeService.findAllByQuote(quId);
 
         // 상태 → activeStep 변환
         int activeStep = switch (quoteBase.getQuStt()) {
@@ -247,25 +273,67 @@ public class QuoteController {
             case EXPIRED -> 2;
         };
 
+        // 표시용 부가 데이터 (stCd, stCur, spec)
+        List<Map<String, Object>> detailExtras = new ArrayList<>();
+        for (QuoteDetail d : details) {
+            Map<String, Object> extra = new java.util.LinkedHashMap<>();
+            Stock stock = d.getStId() != null
+                    ? stockRepository.findById(d.getStId()).orElse(null) : null;
+            extra.put("stCd", stock != null ? stock.getStCd() : null);
+            extra.put("stCur", stock != null ? stock.getStCur() : "");
+            if (d.getQuUQn() != null && d.getQuUQn() > 0 && d.getQuDtQn() != null) {
+                extra.put("spec", (int) Math.ceil((double) d.getQuDtQn() / d.getQuUQn()));
+            } else {
+                extra.put("spec", null);
+            }
+            detailExtras.add(extra);
+        }
+
+        // 공장별 품목 수 (feeCard.js 표시용)
+        Map<Long, Integer> factoryItemCounts = new java.util.HashMap<>();
+        BigDecimal itemTotalKrw = BigDecimal.ZERO;
+        for (QuoteDetail d : details) {
+            if (d.getFaId() != null) {
+                factoryItemCounts.merge(d.getFaId(), 1, Integer::sum);
+            }
+            if (d.getQuDtPr() != null) {
+                itemTotalKrw = itemTotalKrw.add(d.getQuDtPr());
+            }
+        }
+
+        // 적용 등급
+        String buyerGrade = "STANDARD";
+        if (quoteInfo != null && quoteInfo.getBgpId() != null) {
+            buyerGrade = buyerGradePolicyRepository.findById(quoteInfo.getBgpId())
+                    .map(BuyerGradePolicy::getBgpGr).orElse("STANDARD");
+        }
+
         model.addAttribute("quoteBase", quoteBase);
         model.addAttribute("negotiation", negotiation);
         model.addAttribute("details", details);
+        model.addAttribute("detailExtras", detailExtras);
         model.addAttribute("quoteInfo", quoteInfo);
         model.addAttribute("shipFees", shipFees);
+        model.addAttribute("factoryItemCounts", factoryItemCounts);
+        model.addAttribute("itemTotalKrw", itemTotalKrw);
+        model.addAttribute("buyerGrade", buyerGrade);
         model.addAttribute("activeStep", activeStep);
 
         return "/quote/quote-detail";
     }
     @GetMapping("/negotiation/list")
     public String getNegotiationList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                                     @RequestParam(defaultValue = "1") int page,
                                      Model model) {
         if (userDetails == null) return "redirect:/auth/signin";
         Long memId = userDetails.getMemberId();
 
-        List<Negotiation> ngList = negotiationService.findAllByMember(memId);
+        int pageSize = 10;
+        Page<Negotiation> ngPage = negotiationService.findAllByMember(
+                memId, org.springframework.data.domain.PageRequest.of(page - 1, pageSize));
 
         List<Map<String, Object>> negotiations = new ArrayList<>();
-        for (Negotiation ng : ngList) {
+        for (Negotiation ng : ngPage.getContent()) {
             Map<String, Object> item = new java.util.LinkedHashMap<>();
             item.put("ngId", ng.getNgId());
             item.put("ngNm", ng.getNgNm());
@@ -273,14 +341,35 @@ public class QuoteController {
             item.put("ngCreDt", ng.getNgCreDt());
             item.put("ngEndDt", ng.getNgEndDt());
 
-            // 해당 협상의 견적 수
+            // 해당 협상의 견적 목록
             List<QuoteBase> quotes = quoteBaseService.findAllByNego(ng.getNgId());
             item.put("quoteCount", quotes.size());
+
+            // 미열람 견적 존재 여부
+            boolean hasUnread = quotes.stream().anyMatch(q -> q.getQuUsOpYn() == null || !q.getQuUsOpYn());
+            item.put("hasUnread", hasUnread);
+
+            // 최신 견적 업데이트 시간 (정렬용)
+            LocalDateTime latestUpdate = quotes.stream()
+                    .map(QuoteBase::getQuUpdDt)
+                    .filter(java.util.Objects::nonNull)
+                    .max(LocalDateTime::compareTo)
+                    .orElse(ng.getNgCreDt());
+            item.put("latestUpdate", latestUpdate);
 
             negotiations.add(item);
         }
 
+        int totalPages = ngPage.getTotalPages();
+        List<String> pageLabels = new ArrayList<>();
+        for (int i = 1; i <= totalPages; i++) {
+            pageLabels.add(String.format("%02d", i));
+        }
+
         model.addAttribute("negotiations", negotiations);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("pageLabels", pageLabels);
         return "/quote/negotiation-list";
     }
 
@@ -301,6 +390,14 @@ public class QuoteController {
         // 해당 협상의 견적 목록
         List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId);
 
+        // 수신자 본인의 미열람 견적 열람 처리
+        Long memId = userDetails.getMemberId();
+        for (QuoteBase qb : quoteList) {
+            if (memId.equals(qb.getQuRid()) && (qb.getQuUsOpYn() == null || !qb.getQuUsOpYn())) {
+                quoteBaseService.userOpen(qb.getQuId());
+            }
+        }
+
         // 상태별 카운트
         Map<String, Long> statusCounts = new java.util.LinkedHashMap<>();
         for (com.goodee.beedan.common.constant.QuoteStatus s : com.goodee.beedan.common.constant.QuoteStatus.values()) {
@@ -314,7 +411,7 @@ public class QuoteController {
             item.put("quId", qb.getQuId());
             item.put("quCd", qb.getQuCd());
             item.put("quStt", qb.getQuStt().name());
-            item.put("quOpYn", qb.getQuOpYn() != null && qb.getQuOpYn());
+            item.put("quOpYn", qb.getQuUsOpYn() != null && qb.getQuUsOpYn());
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
 

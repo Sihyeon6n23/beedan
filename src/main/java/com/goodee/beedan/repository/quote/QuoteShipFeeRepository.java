@@ -13,4 +13,7 @@ public interface QuoteShipFeeRepository extends JpaRepository<QuoteShipFee, Long
 
     // 견적 상세 아이디 + 공장 아이디로 조회 (공장별 단건)
     Optional<QuoteShipFee> findByQuInfoIdAndFaId(Long quInfoId, Long faId);
+
+    // 견적 아이디로 전체 조회
+    List<QuoteShipFee> findAllByQuId(Long quId);
 }
