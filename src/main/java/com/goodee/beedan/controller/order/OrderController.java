@@ -43,7 +43,7 @@ public class OrderController {
     public String orderDetail(@RequestParam("id") Long ordId,
                               @AuthenticationPrincipal MemberUserDetails userDetails,
                               Model model) {
-        OrderDto order = orderService.getOrderDetail(ordId, userDetails.getMemberId());
+        OrderDto order = orderService.getOrderDetail(ordId, userDetails);
         model.addAttribute("order", order);
 
         return "order/order-detail";
@@ -53,10 +53,8 @@ public class OrderController {
     public String cancelOrder(@RequestParam("ordId") Long ordId,
                               @AuthenticationPrincipal MemberUserDetails userDetails,
                               RedirectAttributes redirectAttributes) {
-        log.info("주문 취소 요청 도달 - ID: {}", ordId);
 
         try {
-            log.info("주문 취소 요청 시작");
             orderService.cancelOrder(ordId, userDetails.getMemberId());
             redirectAttributes.addFlashAttribute("message", "주문이 정상적으로 취소되었습니다.");
 

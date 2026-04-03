@@ -3,6 +3,7 @@ package com.goodee.beedan.service.order;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
@@ -48,14 +49,16 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderDto getOrderDetail(Long ordId, Long memId){
-        Order order = orderRepository.findByIdWithShipments(ordId).orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
+    public OrderDto getOrderDetail(Long ordId, MemberUserDetails userDetails) {
+        Order order = orderRepository.findByIdWithShipments(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if(!order.getMember().getMemId().equals(memId)) throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isOwner = order.getMember().getMemId().equals(userDetails.getMemberId());
 
+        if (!isAdmin && !isOwner) throw new IllegalArgumentException("해당 주문에 대한 조회 권한이 없습니다.");
+        
         return mapToOrderDto(order);
     }
-
     @Transactional
     public void updateOrder(Long ordId, Long memId, OrderDto dto) {
         Order order = orderRepository.findById(ordId)
@@ -210,7 +213,7 @@ public class OrderService {
 
         if (order.getShipments() != null) {
             List<OrderDto.ShipmentResponseDto> shipmentDtos = order.getShipments().stream()
-                    .map(this::mapToShipmentDto) // 하위 변환 메서드 호출
+                    .map(this::mapToShipmentDto)
                     .toList();
             orderDto.setShipmentResponses(shipmentDtos);
         }

@@ -32,7 +32,7 @@ public class OrderApiController {
 
         Long createdOrdId = orderService.createOrder(memId, orderDto);
 
-        OrderDto ordResponseDto = orderService.getOrderDetail(createdOrdId, memId);
+        OrderDto ordResponseDto = orderService.getOrderDetail(createdOrdId, userDetails);
 
         return ResponseEntity.ok(ordResponseDto);
     }
@@ -49,7 +49,7 @@ public class OrderApiController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderDto> getOrderDetail(@PathVariable("id") Long ordId,
                                                    @AuthenticationPrincipal MemberUserDetails userDetails) {
-        OrderDto orderDetail = orderService.getOrderDetail(ordId, userDetails.getMemberId());
+        OrderDto orderDetail = orderService.getOrderDetail(ordId, userDetails);
 
         return ResponseEntity.ok(orderDetail);
     }
@@ -59,9 +59,9 @@ public class OrderApiController {
                                                       @AuthenticationPrincipal MemberUserDetails userDetails,
                                                       @RequestBody OrderDto orderDto) {
         Long memId = userDetails.getMemberId();
-        orderService.updateOrder(ordId, memId, orderDto); // 테스트용 하드 코딩
+        orderService.updateOrder(ordId, memId, orderDto);
 
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, memId));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
     }
 
     @PatchMapping("/{id}/admin") // 배송 상태 변경
@@ -69,7 +69,7 @@ public class OrderApiController {
                                                       @RequestParam("newStatus") OrderStatus newStatus,
                                                       @AuthenticationPrincipal MemberUserDetails userDetails) {
         orderService.updateOrderStatus(ordId, newStatus);
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
     }
 
     @DeleteMapping("/{id}")
@@ -79,7 +79,7 @@ public class OrderApiController {
 
         orderService.cancelOrder(ordId, memId);
 
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, memId));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
     }
 
 }

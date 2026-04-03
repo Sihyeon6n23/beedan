@@ -136,45 +136,21 @@
                     <a th:if="${orders.hasPrevious()}"
                        class="admin-chat-page-button admin-chat-page-button--wide"
                        th:href="@{/admin/order/list(page=${orders.number - 1})}">Prev</a>
-                    <span th:unless="${orders.hasPrevious()}"
-                          class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
+                    <span th:unless="${orders.hasPrevious()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
 
                     <th:block th:if="${totalPages > 0}">
-                        <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
-                           class="admin-chat-page-button"
+                        <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}" class="admin-chat-page-button"
                            th:classappend="${pageNumber == orders.number} ? ' is-current' : ''"
                            th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
                            th:href="@{/admin/order/list(page=${pageNumber})}">01</a>
                     </th:block>
 
-                    <a th:if="${orders.hasNext()}"
-                       class="admin-chat-page-button admin-chat-page-button--wide"
+                    <a th:if="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide"
                        th:href="@{/admin/order/list(page=${orders.number + 1})}">Next</a>
-                    <span th:unless="${orders.hasNext()}"
-                          class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
+                    <span th:unless="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
                 </div>
             </footer>
         </section>
-
-        <div id="orderTrackingModal" class="modal-overlay" style="display: none;">
-            <div class="modal-container">
-                <header class="modal-header">
-                    <div class="header-main">
-                        <h2 class="modal-title">Shipment Tracking</h2>
-                    </div>
-                    <button class="btn-close" onclick="closeModal()">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </header>
-
-                <div class="modal-body">
-                </div>
-
-                <footer class="modal-footer">
-                    <button class="btn-solid" onclick="closeModal()">CLOSE</button>
-                </footer>
-            </div>
-        </div>
     </section>
 </th:block>
 </html>
