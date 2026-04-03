@@ -41,12 +41,12 @@
                 <div class="ngd-info-item">
                     <span class="ngd-info-key">시작일</span>
                     <span class="ngd-info-val"
-                          th:text="${negotiation.ngCreDt != null ? #temporals.format(negotiation.ngCreDt, 'yyyy.MM.dd') : '-'}">2026.03.10</span>
+                          th:text="${negotiation.ngCreDt != null ? #temporals.format(negotiation.ngCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2026.03.10</span>
                 </div>
                 <div class="ngd-info-item">
                     <span class="ngd-info-key">종료일</span>
                     <span th:if="${negotiation.ngEndDt != null}" class="ngd-info-val"
-                          th:text="${#temporals.format(negotiation.ngEndDt, 'yyyy.MM.dd')}">2026.03.25</span>
+                          th:text="${#temporals.format(negotiation.ngEndDt, 'yyyy.MM.dd HH:mm')}">2026.03.25</span>
                     <span th:if="${negotiation.ngEndDt == null}" class="ngd-info-val ngd-info-val--empty">진행중</span>
                 </div>
                 <div class="ngd-info-item">
@@ -102,7 +102,7 @@
 
             <div class="ngd-list-body">
                 <th:block th:each="q : ${quotes}">
-                    <a th:href="@{/quote/detail(quId=${q.quId})}"
+                    <a th:href="${q.quStt == 'TEMP_SAVE' ? '/quote/write?quId=' + q.quId : '/quote/detail?quId=' + q.quId}"
                        class="ngd-row"
                        th:classappend="${!q.quOpYn} ? ' ngd-row--featured' : ''"
                        th:data-qu-id="${q.quId}"
@@ -129,7 +129,7 @@
                                              q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
                         </div>
                         <div class="ngd-row__time">
-                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">2026.03.12</span>
+                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2026.03.12</span>
                         </div>
                         <div class="ngd-row__amount">
                             <span th:if="${q.totalAmount != null}"

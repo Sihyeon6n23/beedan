@@ -2,6 +2,7 @@ package com.goodee.beedan.controller.admin;
 
 import com.goodee.beedan.dto.quote.CartToQuoteDto;
 import com.goodee.beedan.entity.*;
+import com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.quote.HsCodeRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,6 +44,8 @@ public class AdminQuoteController {
     private final StockInspectionRepository stockInspectionRepository;
     private final DomesticDeliveryRateService domesticDeliveryRateService;
     private final ReceiverRepository receiverRepository;
+    private final QuoteShipFeeService quoteShipFeeService;
+    private final BuyerGradePolicyRepository buyerGradePolicyRepository;
 
     @GetMapping("/negotiation/list")
     public String negotiationList(Model model) {
@@ -95,7 +99,47 @@ public class AdminQuoteController {
     }
 
     @GetMapping("/negotiation/detail")
-    public String negotiationDetail() {
+    public String negotiationDetail(@RequestParam Long ngId, Model model) {
+        Negotiation negotiation = negotiationService.findById(ngId);
+
+        // 회원 정보
+        Member member = memberRepository.findById(negotiation.getMemId()).orElse(null);
+
+        // 견적 목록
+        List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId);
+
+        // 상태별 카운트
+        Map<String, Long> statusCounts = new LinkedHashMap<>();
+        for (com.goodee.beedan.common.constant.QuoteStatus s : com.goodee.beedan.common.constant.QuoteStatus.values()) {
+            statusCounts.put(s.name(), quoteList.stream().filter(q -> q.getQuStt() == s).count());
+        }
+
+        // 견적 상세 데이터
+        List<Map<String, Object>> quotes = new ArrayList<>();
+        int no = 1;
+        for (QuoteBase qb : quoteList) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("no", no++);
+            item.put("quId", qb.getQuId());
+            item.put("quCd", qb.getQuCd());
+            item.put("quStt", qb.getQuStt().name());
+            item.put("quOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
+            item.put("quCreDt", qb.getQuCreDt());
+            item.put("quUpdDt", qb.getQuUpdDt());
+
+            List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
+            item.put("itemCount", details != null ? details.size() : 0);
+            item.put("firstItemName", details != null && !details.isEmpty()
+                    ? details.get(0).getStNm() : null);
+
+            quotes.add(item);
+        }
+
+        model.addAttribute("negotiation", negotiation);
+        model.addAttribute("member", member);
+        model.addAttribute("statusCounts", statusCounts);
+        model.addAttribute("quotes", quotes);
+        model.addAttribute("quoteCount", quoteList.size());
         return "admin/quote/admin-negotiation-detail";
     }
 
@@ -144,7 +188,71 @@ public class AdminQuoteController {
     }
 
     @GetMapping("/quote/detail")
-    public String quoteDetail() {
+    public String quoteDetail(@RequestParam Long quId, Model model) {
+        QuoteBase quoteBase = quoteBaseService.findById(quId);
+        if (quoteBase == null) return "redirect:/admin/quote/list";
+
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        Member member = memberRepository.findById(negotiation.getMemId()).orElse(null);
+        List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
+        QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
+        List<QuoteShipFee> shipFees = quoteShipFeeService.findAllByQuote(quId);
+
+        // 상태 → activeStep
+        int activeStep = switch (quoteBase.getQuStt()) {
+            case TEMP_SAVE -> 1;
+            case SUBMITTED -> 2;
+            case APPROVED -> 3;
+            case REJECTED -> 2;
+            case EXPIRED -> 2;
+        };
+
+        // 표시용 부가 데이터
+        List<Map<String, Object>> detailExtras = new ArrayList<>();
+        for (QuoteDetail d : details) {
+            Map<String, Object> extra = new LinkedHashMap<>();
+            Stock stock = d.getStId() != null
+                    ? stockRepository.findById(d.getStId()).orElse(null) : null;
+            extra.put("stCd", stock != null ? stock.getStCd() : null);
+            extra.put("stCur", stock != null ? stock.getStCur() : "");
+            if (d.getQuUQn() != null && d.getQuUQn() > 0 && d.getQuDtQn() != null) {
+                extra.put("spec", (int) Math.ceil((double) d.getQuDtQn() / d.getQuUQn()));
+            } else {
+                extra.put("spec", null);
+            }
+            detailExtras.add(extra);
+        }
+
+        // 공장별 품목 수 + 품목 총 한화
+        Map<Long, Integer> factoryItemCounts = new java.util.HashMap<>();
+        BigDecimal itemTotalKrw = BigDecimal.ZERO;
+        for (QuoteDetail d : details) {
+            if (d.getFaId() != null) {
+                factoryItemCounts.merge(d.getFaId(), 1, Integer::sum);
+            }
+            if (d.getQuDtPr() != null) {
+                itemTotalKrw = itemTotalKrw.add(d.getQuDtPr());
+            }
+        }
+
+        // 적용 등급
+        String buyerGrade = "STANDARD";
+        if (quoteInfo != null && quoteInfo.getBgpId() != null) {
+            buyerGrade = buyerGradePolicyRepository.findById(quoteInfo.getBgpId())
+                    .map(BuyerGradePolicy::getBgpGr).orElse("STANDARD");
+        }
+
+        model.addAttribute("quoteBase", quoteBase);
+        model.addAttribute("negotiation", negotiation);
+        model.addAttribute("member", member);
+        model.addAttribute("details", details);
+        model.addAttribute("detailExtras", detailExtras);
+        model.addAttribute("quoteInfo", quoteInfo);
+        model.addAttribute("shipFees", shipFees);
+        model.addAttribute("factoryItemCounts", factoryItemCounts);
+        model.addAttribute("itemTotalKrw", itemTotalKrw);
+        model.addAttribute("buyerGrade", buyerGrade);
+        model.addAttribute("activeStep", activeStep);
         return "admin/quote/admin-quote-detail";
     }
 

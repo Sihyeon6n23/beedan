@@ -80,9 +80,9 @@
                                   th:text="${ng.ongoing} ? '진행중' : '종료'">상태</span>
                         </td>
                         <td class="col-latest-update"
-                            th:text="${ng.latestUpdate != null ? #temporals.format(ng.latestUpdate, 'yyyy.MM.dd') : '-'}">-</td>
+                            th:text="${ng.latestUpdate != null ? #temporals.format(ng.latestUpdate, 'yyyy.MM.dd HH:mm') : '-'}">-</td>
                         <td class="col-start-date"
-                            th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd') : '-'}">-</td>
+                            th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd HH:mm') : '-'}">-</td>
                     </tr>
                 </th:block>
                 <tr id="angEmptyRow" th:if="${#lists.isEmpty(negotiations)}">
