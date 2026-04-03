@@ -41,6 +41,10 @@
         </section>
 
         <section class="admin-chat-shell admin-chat-shell--list">
+            <div style="display:flex;justify-content:flex-end;padding:0 0 0.5rem 0;">
+                <a th:href="@{/require/write}" class="admin-chat-badge admin-chat-badge--approved"
+                   style="text-decoration:none;padding:0.55rem 1.1rem;font-size:11px;letter-spacing:0.06em;">+ 상품 요청</a>
+            </div>
             <div class="admin-chat-list-head" aria-hidden="true">
                 <div>제목 및 고객사</div>
                 <div>작성자</div>
@@ -118,13 +122,21 @@
             }
 
             body.innerHTML = items.map(function(req) {
-                var perLabel, perStyle;
-                if (req.reqPerYn === true) {
-                    perLabel = '승인'; perStyle = 'color:var(--color-primary);font-weight:800;';
-                } else if (req.reqPerYn === false) {
-                    perLabel = '미승인'; perStyle = 'color:var(--color-secondary);';
+                var perLabel, perBadge;
+                if (req.reqStt === 'DRAFT') {
+                    perLabel = '임시 저장'; perBadge = 'admin-chat-badge admin-chat-badge--pending';
+                } else if (req.reqRepYn === true) {
+                    if (req.reqPerYn === true) {
+                        perLabel = '승인';
+                        perBadge = 'admin-chat-badge admin-chat-badge--approved';
+                    } else if (req.reqPerYn === false) {
+                        perLabel = '반려';
+                        perBadge = 'admin-chat-badge admin-chat-badge--rejected';
+                    }
                 } else {
-                    perLabel = '미처리'; perStyle = 'color:var(--color-secondary);';
+                        perLabel = '답변 대기중';
+                        perBadge = 'admin-chat-badge admin-chat-badge--pending';
+
                 }
 
                 var detailUrl = '/require/detail?id=' + req.reqId;
@@ -144,7 +156,7 @@
                         '<span>' + (req.reqCreDt ? req.reqCreDt.substring(0, 10) : '-') + '</span>' +
                     '</div>' +
                     '<div class="admin-chat-row__time">' +
-                        '<span style="' + perStyle + '">' + perLabel + '</span>' +
+                        '<span class="' + perBadge + '">' + perLabel + '</span>' +
                     '</div>' +
                 '</a>';
             }).join('');

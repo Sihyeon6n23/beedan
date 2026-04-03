@@ -13,8 +13,10 @@ public class RequirementListDto {
     private Long memId;
     private String reqTtl;
     private String reqStt;
+    private Boolean reqRepYn;
     private Boolean reqPerYn;
     private LocalDateTime reqCreDt;
+
 
     // 필요한 멤버 추가 정보 (이름, 상태)
     private String memNm;

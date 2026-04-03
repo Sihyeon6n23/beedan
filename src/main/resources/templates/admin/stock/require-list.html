@@ -111,13 +111,17 @@
             }
 
             body.innerHTML = items.map(function(req) {
-                var perLabel, perStyle;
-                if (req.reqPerYn === true) {
-                    perLabel = '승인'; perStyle = 'color:var(--color-primary);font-weight:800;';
-                } else if (req.reqPerYn === false) {
-                    perLabel = '미승인'; perStyle = 'color:var(--color-secondary);';
+                var perLabel, perBadge;
+                if (req.reqRepYn === true) {
+                    if (req.reqPerYn === true) {
+                        perLabel = '승인'; perBadge = 'admin-chat-badge admin-chat-badge--approved';
+                    } else if (req.reqPerYn === false) {
+                        perLabel = '반려'; perBadge = 'admin-chat-badge admin-chat-badge--rejected';
+                    } else {
+                        perLabel = '미처리'; perBadge = 'admin-chat-badge admin-chat-badge--pending';
+                    }
                 } else {
-                    perLabel = '미처리'; perStyle = 'color:var(--color-secondary);';
+                    perLabel = '미처리'; perBadge = 'admin-chat-badge admin-chat-badge--pending';
                 }
 
                 var detailUrl = '/admin/require/detail?id=' + req.reqId;
@@ -137,7 +141,7 @@
                         '<span>' + (req.memNm ? req.reqCreDt.substring(0, 10) : '-') + '</span>' +
                     '</div>' +
                     '<div class="admin-chat-row__time">' +
-                        '<span style="' + perStyle + '">' + perLabel + '</span>' +
+                        '<span class="' + perBadge + '">' + perLabel + '</span>' +
                     '</div>' +
                 '</a>';
             }).join('');

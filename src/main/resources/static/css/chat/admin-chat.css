@@ -363,6 +363,22 @@
   color: var(--color-secondary);
 }
 
+.admin-chat-badge--approved {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+}
+
+.admin-chat-badge--rejected {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.admin-chat-badge--pending {
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-secondary);
+}
+
 /* 관리자 채팅 상세: 페이지 전용 레이아웃 */
 .admin-chat-detail-page {
   max-width: 1040px;

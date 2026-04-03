@@ -24,7 +24,7 @@ public class Requirement {
     public String reqTtl;
     public String reqCon;
     public String reqRef;
-    public Long reqPr;
+    public String reqPr;
     public String reqStt;
     public Boolean reqRepYn;
     public Boolean reqPerYn;
