@@ -1,10 +1,179 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="${isAdmin}
+          ? ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame(
+                  'COMMUNICATIONS',
+                  'Inquiry Detail',
+                  ~{admin/admin-sidebar :: sidebar('inquiry', 'inquiry-list')}
+              )},
+              ~{::content}
+          )}
+          : ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame(
+                  'MY PAGE',
+                  'Inquiry Detail',
+                  ~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'inquiry-list')}
+              )},
+              ~{::content}
+          )}">
 
-</body>
+<title th:fragment="title">BEEDAN | 문의 상세</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+
+    <section class="inquiry-page inquiry-detail-page"
+             th:attr="data-board-id=${inquiryBoardDetail.brdId}, data-status=${inquiryBoardDetail.brdInqStt.name()}, data-is-admin=${isAdmin}">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker"
+                      th:text="${isAdmin ? 'Inquiry Workspace' : 'My Inquiry Detail'}">Inquiry Workspace</span>
+                <h2 class="inquiry-title"
+                    th:text="${isAdmin ? '문의 상세' : '문의 확인'}">문의 상세</h2>
+            </div>
+            <div class="inquiry-shell__rule">
+                <span></span>
+            </div>
+        </header>
+
+        <section class="inquiry-shell inquiry-shell--detail">
+            <article class="inquiry-post">
+                <header class="inquiry-post__header">
+                    <div class="inquiry-post__top">
+                        <a th:if="${isAdmin}" th:href="@{/admin/inquiry/list}" class="inquiry-post__back">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            <span>목록으로</span>
+                        </a>
+                        <a th:unless="${isAdmin}" th:href="@{/inquiry/list}" class="inquiry-post__back">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            <span>목록으로</span>
+                        </a>
+
+                        <span class="inquiry-badge"
+                              th:classappend="${
+                                  inquiryBoardDetail.brdInqStt.name() == 'RECEIVED' ? ' inquiry-badge--received' :
+                                  (inquiryBoardDetail.brdInqStt.name() == 'IN_PROGRESS' ? ' inquiry-badge--progress' :
+                                  (inquiryBoardDetail.brdInqStt.name() == 'ANSWERED' ? ' inquiry-badge--answered' : ' inquiry-badge--cancelled'))
+                              }"
+                              th:text="${
+                                  inquiryBoardDetail.brdInqStt.name() == 'RECEIVED' ? '접수' :
+                                  (inquiryBoardDetail.brdInqStt.name() == 'IN_PROGRESS' ? '처리중' :
+                                  (inquiryBoardDetail.brdInqStt.name() == 'ANSWERED' ? '답변완료' : '취소'))
+                              }">상태</span>
+                    </div>
+
+                    <div class="inquiry-post__heading">
+                        <span class="inquiry-post__eyebrow"
+                              th:text="${isAdmin ? 'Inquiry Post' : 'My Inquiry Post'}">Inquiry Post</span>
+                        <h3 th:text="${inquiryBoardDetail.brdTtl}">문의 제목</h3>
+                    </div>
+
+                    <dl class="inquiry-post__meta">
+                        <div class="inquiry-post__meta-item">
+                            <dt>작성자</dt>
+                            <dd th:text="${(inquiryBoardDetail.memBizTtl != null ? inquiryBoardDetail.memBizTtl : '상호명 미등록') + ' · ' + (inquiryBoardDetail.memNm != null ? inquiryBoardDetail.memNm : '이름 미등록')}">작성자</dd>
+                        </div>
+                        <div class="inquiry-post__meta-item">
+                            <dt>등록일</dt>
+                            <dd th:text="${#temporals.format(inquiryBoardDetail.brdCreDt, 'yyyy.MM.dd HH:mm')}">등록일</dd>
+                        </div>
+                    </dl>
+
+                    <div class="inquiry-post__actions" th:if="${!isAdmin or inquiryBoardDetail.canCancel or inquiryBoardDetail.canUpdateStatus or inquiryBoardDetail.canAnswer or inquiryBoardDetail.canEditReply}">
+                        <a th:if="${!isAdmin and inquiryBoardDetail.canEdit}"
+                           th:href="@{/inquiry/edit(id=${inquiryBoardDetail.brdId})}"
+                           class="inquiry-outline-button">
+                            <span class="material-symbols-outlined">edit</span>
+                            <span>수정</span>
+                        </a>
+
+                        <button th:if="${!isAdmin and inquiryBoardDetail.canCancel}"
+                                type="button"
+                                class="inquiry-outline-button"
+                                data-action="cancel-inquiry">
+                            <span class="material-symbols-outlined">close</span>
+                            <span>취소</span>
+                        </button>
+
+                        <button th:if="${isAdmin and inquiryBoardDetail.canUpdateStatus}"
+                                type="button"
+                                class="inquiry-outline-button"
+                                data-action="mark-in-progress">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                            <span>처리 시작</span>
+                        </button>
+
+                        <button th:if="${isAdmin and inquiryBoardDetail.canCancel}"
+                                type="button"
+                                class="inquiry-outline-button"
+                                data-action="cancel-inquiry-admin">
+                            <span class="material-symbols-outlined">close</span>
+                            <span>취소</span>
+                        </button>
+
+                        <button th:if="${isAdmin and inquiryBoardDetail.canAnswer}"
+                                type="button"
+                                class="inquiry-outline-button inquiry-outline-button--primary"
+                                data-action="create-reply">
+                            <span class="material-symbols-outlined">rate_review</span>
+                            <span>답변 작성</span>
+                        </button>
+
+                        <button th:if="${isAdmin and inquiryBoardDetail.canEditReply}"
+                                type="button"
+                                class="inquiry-outline-button"
+                                data-action="edit-reply"
+                                th:attr="data-reply-id=${inquiryBoardDetail.reply != null ? inquiryBoardDetail.reply.brdId : null}">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            <span>답변 수정</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div class="inquiry-post__body">
+                    <div class="inquiry-post__content" th:text="${inquiryBoardDetail.brdCon}">문의 내용</div>
+                </div>
+            </article>
+
+            <section class="inquiry-detail-alert"
+                     th:if="${inquiryBoardDetail.brdInqStt.name() == 'CANCELLED' and inquiryBoardDetail.brdCanRe != null and !#strings.isEmpty(inquiryBoardDetail.brdCanRe)}">
+                <span class="material-symbols-outlined">info</span>
+                <div class="inquiry-detail-alert__text">
+                    <strong>취소 사유</strong>
+                    <p th:text="${inquiryBoardDetail.brdCanRe}">취소 사유</p>
+                </div>
+            </section>
+
+            <section class="inquiry-reply-section">
+                <header class="inquiry-reply-section__header">
+                    <div class="inquiry-reply-section__heading">
+                        <span class="inquiry-post__eyebrow">Admin Reply</span>
+                        <h3>관리자 답변</h3>
+                    </div>
+                </header>
+
+                <div th:if="${inquiryBoardDetail.reply != null}" class="inquiry-reply-section__body">
+                    <div class="inquiry-reply-section__meta">
+                        <strong th:text="${inquiryBoardDetail.reply.memAdName != null ? inquiryBoardDetail.reply.memAdName : '관리자'}">관리자</strong>
+                        <span th:text="${#temporals.format(inquiryBoardDetail.reply.brdCreDt, 'yyyy.MM.dd HH:mm')}">작성일</span>
+                        <span th:if="${inquiryBoardDetail.reply.edited}" class="inquiry-reply-section__edited">(수정됨)</span>
+                    </div>
+                    <div class="inquiry-reply-section__content"
+                         th:text="${inquiryBoardDetail.reply.brdCon}">답변 내용</div>
+                </div>
+
+                <div th:unless="${inquiryBoardDetail.reply != null}" class="inquiry-reply-empty">
+                    <span class="material-symbols-outlined">chat_bubble_outline</span>
+                    <strong th:text="${isAdmin ? '아직 등록된 답변이 없습니다.' : '관리자 답변을 기다리고 있습니다.'}">답변 대기</strong>
+                    <p th:text="${isAdmin ? '처리중 상태에서 답변을 등록하면 문의 상태가 답변완료로 변경됩니다.' : '답변이 등록되면 이 화면에서 바로 확인할 수 있습니다.'}">답변 안내</p>
+                </div>
+            </section>
+        </section>
+    </section>
+
+    <script defer th:src="@{/js/board/inquiry.js}"></script>
+</th:block>
 </html>

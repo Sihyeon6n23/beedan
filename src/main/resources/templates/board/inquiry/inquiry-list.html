@@ -150,9 +150,9 @@
 
         <section class="inquiry-shell inquiry-shell--list">
             <div class="inquiry-list-head" aria-hidden="true">
-                <div>문의 정보</div>
+                <div>문의 제목</div>
                 <div>상태</div>
-                <div>답변</div>
+                <div>회사 상호명</div>
                 <div>등록일</div>
             </div>
 
@@ -165,10 +165,6 @@
                     <div class="inquiry-row__primary">
                         <div class="inquiry-row__text">
                             <h2 th:text="${board.brdTtl}">문의 제목</h2>
-                            <p>
-                                <span th:text="${board.memBizTtl != null ? board.memBizTtl : '상호명 미등록'}">상호명</span>
-                                <small th:text="${board.memNm != null ? board.memNm : '이름 미등록'}">작성자명</small>
-                            </p>
                         </div>
                     </div>
 
@@ -186,16 +182,12 @@
                               }">상태</span>
                     </div>
 
-                    <div class="inquiry-row__reply">
-                        <div class="inquiry-reply-state"
-                             th:classappend="${board.hasReply != null and board.hasReply} ? ' is-complete' : ''">
-                            <strong th:text="${board.hasReply != null and board.hasReply ? '답변 있음' : '답변 없음'}">답변 상태</strong>
-                            <span th:text="${board.replyEdited != null and board.replyEdited ? '(수정됨)' : '원본'}">원본</span>
-                        </div>
+                    <div class="inquiry-row__company">
+                        <span th:text="${board.memBizTtl != null ? board.memBizTtl : '상호명 미등록'}">회사 상호명</span>
                     </div>
 
                     <div class="inquiry-row__time">
-                        <span th:text="${#temporals.format(board.brdCreDt, 'yy.MM.dd HH:mm')}">등록일</span>
+                        <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">등록일</span>
                     </div>
                 </a>
 
@@ -207,9 +199,6 @@
                     <div class="inquiry-row__primary">
                         <div class="inquiry-row__text">
                             <h2 th:text="${board.brdTtl}">문의 제목</h2>
-                            <p>
-                                <span th:text="${board.hasReply != null and board.hasReply ? '답변이 등록된 문의입니다.' : '답변 대기 중인 문의입니다.'}">답변 상태 안내</span>
-                            </p>
                         </div>
                     </div>
 
@@ -227,16 +216,12 @@
                               }">상태</span>
                     </div>
 
-                    <div class="inquiry-row__reply">
-                        <div class="inquiry-reply-state"
-                             th:classappend="${board.hasReply != null and board.hasReply} ? ' is-complete' : ''">
-                            <strong th:text="${board.hasReply != null and board.hasReply ? '답변 있음' : '답변 없음'}">답변 상태</strong>
-                            <span th:text="${board.replyEdited != null and board.replyEdited ? '(수정됨)' : '원본'}">원본</span>
-                        </div>
+                    <div class="inquiry-row__company">
+                        <span th:text="${board.memBizTtl != null ? board.memBizTtl : '상호명 미등록'}">회사 상호명</span>
                     </div>
 
                     <div class="inquiry-row__time">
-                        <span th:text="${#temporals.format(board.brdCreDt, 'yy.MM.dd HH:mm')}">등록일</span>
+                        <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">등록일</span>
                     </div>
                 </a>
 

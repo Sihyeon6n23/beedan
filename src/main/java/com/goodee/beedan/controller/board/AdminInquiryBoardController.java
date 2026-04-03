@@ -26,9 +26,7 @@ public class AdminInquiryBoardController {
                                        InquiryBoardSearchDto searchDto,
                                        @AuthenticationPrincipal MemberUserDetails userDetails) {
         searchDto.setPage(Math.max(searchDto.getPage(), 0));
-        if (searchDto.getSize() <= 0) {
-            searchDto.setSize(10);
-        }
+        searchDto.setSize(10);
         if (searchDto.getMyAnsweredOnly() == null) {
             searchDto.setMyAnsweredOnly(false);
         }

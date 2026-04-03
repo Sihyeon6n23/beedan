@@ -119,6 +119,7 @@ public class InquiryBoardService {
                 .canCancel(inquiryBoard.getBrdInqStt() == InquiryStatus.RECEIVED)
                 .canAnswer(false)
                 .canUpdateStatus(false)
+                .canEditReply(false)
                 .reply(replyDto)
                 .build();
     }
@@ -138,6 +139,8 @@ public class InquiryBoardService {
 
         InquiryReplyDto replyDto = replyBoard.map(this::mapToInquiryReplyDto)
                 .orElse(null);
+        boolean canEditReply = replyBoard.map(reply -> reply.getMemId().equals(memAdId))
+                .orElse(false);
 
         return InquiryBoardDetailDto.builder()
                 .brdId(inquiryBoard.getBrdId())
@@ -152,6 +155,7 @@ public class InquiryBoardService {
                 .canCancel(inquiryBoard.getBrdInqStt() == InquiryStatus.RECEIVED)
                 .canAnswer(inquiryBoard.getBrdInqStt() == InquiryStatus.IN_PROGRESS && replyDto == null)
                 .canUpdateStatus(inquiryBoard.getBrdInqStt() == InquiryStatus.RECEIVED)
+                .canEditReply(canEditReply)
                 .reply(replyDto)
                 .build();
     }
