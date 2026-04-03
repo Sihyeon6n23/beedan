@@ -23,19 +23,14 @@ public class OrderDto {
     private String ordBaseMsg;
     private String ordBaseNo;
     private BigDecimal ordBaseTtAm;
-
     @Enumerated(EnumType.STRING)
     private OrderStatus ordBaseStt;
-
     private LocalDateTime ordBaseCreDt;
 
-    // 1. [요청용] 주문 생성 시 프론트에서 보내주는 데이터 리스트
-    private List<ShipmentRequestDto> shipmentRequests;
+    private List<ShipmentRequestDto> shipmentRequests; // 주문 생성시 이용
+    private List<ShipmentResponseDto> shipmentResponses; // 주문 상세 조회용
+    private String ordSummaryNm;
 
-    // 2. [응답용] 주문 상세 조회 시 DB에서 꺼내서 담아주는 데이터 리스트
-    private List<ShipmentResponseDto> shipmentResponses;
-
-    // --- Inner Classes (요청용) ---
     @Data
     public static class ShipmentRequestDto {
         private String shRcvNm;
@@ -51,7 +46,6 @@ public class OrderDto {
         private Integer shQn;
     }
 
-    // --- Inner Classes (응답용) ---
     @Data @Builder
     @NoArgsConstructor @AllArgsConstructor
     public static class ShipmentResponseDto {
@@ -70,6 +64,7 @@ public class OrderDto {
     @NoArgsConstructor @AllArgsConstructor
     public static class ShipmentItemResponseDto {
         private Long shItemId;
+        private String ordItmNm;
         private Integer shQn;
         private Long prodId;
     }

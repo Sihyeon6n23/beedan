@@ -1,10 +1,21 @@
 package com.goodee.beedan.repository.order;
 
 import com.goodee.beedan.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByMember_MemIdOrderByOrdBaseCreDtDesc(Long memId);
+    Page<Order> findByMember_MemIdOrderByOrdBaseCreDtDesc(Long memId, Pageable pageable);
+
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.shipments WHERE o.ordBaseId = :ordId")
+    Optional<Order> findByIdWithShipments(@Param("ordId") Long ordId);
+
+    Page<Order> findAll(Pageable pageable);
 }

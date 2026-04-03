@@ -1,7 +1,9 @@
 package com.goodee.beedan.service.order;
 
+import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
@@ -10,6 +12,8 @@ import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.repository.quote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,27 +40,25 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final QuoteInfoRepository  quoteInfoRepository;
 
-    public List<OrderDto> getOrderList(Long memId){
+    public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
         if(!memberRepository.existsById(memId)) return null;
 
-        List<OrderDto> orderList = orderRepository.findByMember_MemIdOrderByOrdBaseCreDtDesc(memId).stream()
-                .map(order -> mapToOrderDto(order))
-                .toList();
+        Page<Order> orderList = orderRepository.findByMember_MemIdOrderByOrdBaseCreDtDesc(memId, pageable);
 
-        return orderList;
+        return orderList.map(this::mapToOrderDto);
     }
 
-    public OrderDto getOrderDetail(Long ordId, Long memId){
-        Order order = orderRepository.findById(ordId)
-                .orElseThrow(()->new IllegalArgumentException("주문을 찾을 수 없습니다."));
+    @Transactional(readOnly = true)
+    public OrderDto getOrderDetail(Long ordId, MemberUserDetails userDetails) {
+        Order order = orderRepository.findByIdWithShipments(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        if(!order.getMember().getMemId().equals(memId)) {
-            throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
-        }
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isOwner = order.getMember().getMemId().equals(userDetails.getMemberId());
 
+        if (!isAdmin && !isOwner) throw new IllegalArgumentException("해당 주문에 대한 조회 권한이 없습니다.");
+        
         return mapToOrderDto(order);
     }
-
     @Transactional
     public void updateOrder(Long ordId, Long memId, OrderDto dto) {
         Order order = orderRepository.findById(ordId)
@@ -97,9 +99,7 @@ public class OrderService {
         if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
             throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
         }
-
         order.setOrdBaseStt(OrderStatus.CANCELLED);
-
         order.getShipments().forEach(sh -> sh.setShCanYn(true));
     }
 
@@ -131,7 +131,6 @@ public class OrderService {
                 .ordBaseAdr(dto.getOrdBaseAdr())
                 .ordBaseAdrDt(dto.getOrdBaseAdrDt())
                 .ordBaseMsg(dto.getOrdBaseMsg())
-                .ordBaseStt(OrderStatus.PREPARING)
                 .ordBaseTtAm(bigDecimal.multiply(BigDecimal.valueOf(totalQuantity)))
                 .ordBaseNo(negotiation.getNgNm())
                 .build();
@@ -141,8 +140,8 @@ public class OrderService {
         for (QuoteDetail quoteDetail : quoteDetails) {
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
-                    .ordItemQn(quoteDetail.getQuDtQn())
-                    .ordItemStNm(quoteDetail.getStNm())
+                    .ordItmQn(quoteDetail.getQuDtQn())
+                    .ordItmNm(quoteDetail.getStNm())
                     .build();
             orderItemRepository.save(orderItem);
 
@@ -186,6 +185,19 @@ public class OrderService {
     }
 
     public OrderDto mapToOrderDto(Order order) {
+        String summaryName = "상품명";
+
+        if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
+            int totalItems = order.getOrderItems().size();
+            String firstItemName = order.getOrderItems().get(0).getOrdItmNm();
+
+            if (totalItems > 1) {
+                summaryName = firstItemName + " 외 " + (totalItems - 1) + "건";
+            } else {
+                summaryName = firstItemName;
+            }
+        }
+
         OrderDto orderDto = OrderDto.builder()
                 .ordBaseId(order.getOrdBaseId())
                 .ordBaseNo(order.getOrdBaseNo())
@@ -196,11 +208,12 @@ public class OrderService {
                 .ordBaseStt(order.getOrdBaseStt())
                 .ordBaseTtAm(order.getOrdBaseTtAm())
                 .ordBaseCreDt(order.getOrdBaseCreDt())
+                .ordSummaryNm(summaryName)
                 .build();
 
         if (order.getShipments() != null) {
             List<OrderDto.ShipmentResponseDto> shipmentDtos = order.getShipments().stream()
-                    .map(this::mapToShipmentDto) // 하위 변환 메서드 호출
+                    .map(this::mapToShipmentDto)
                     .toList();
             orderDto.setShipmentResponses(shipmentDtos);
         }
@@ -209,23 +222,34 @@ public class OrderService {
     }
 
     private OrderDto.ShipmentResponseDto mapToShipmentDto(Shipment shipment) {
+        List<OrderDto.ShipmentItemResponseDto> shipmentItemDtos = shipment.getShipmentItems().stream()
+                .map(shItem -> OrderDto.ShipmentItemResponseDto.builder()
+                        .ordItmNm(shItem.getOrdItmNm()) // ShipmentItem 엔티티의 상품명 바로 사용
+                        .shQn(shItem.getShQn())         // ShipmentItem 엔티티의 배송 수량 바로 사용
+                        .build())
+                .toList();
+
         return OrderDto.ShipmentResponseDto.builder()
                 .shId(shipment.getShId())
-                .shRcvNm(shipment.getShRcvNm())
-                .shAdr(shipment.getShAdr())
-                .shAdrDt(shipment.getShAdrDt())
                 .shTraNo(shipment.getShTraNo())
                 .shCarCd(shipment.getShCarCd())
                 .shStt(shipment.getShStt())
+                .shRcvNm(shipment.getShRcvNm())
+                .shAdr(shipment.getShAdr())
+                .shAdrDt(shipment.getShAdrDt())
                 .shMsg(shipment.getShMsg())
-                .shipmentItems(shipment.getShipmentItems().stream()
-                        .map(si -> OrderDto.ShipmentItemResponseDto.builder()
-                                .shItemId(si.getShItemId())
-                                .shQn(si.getShQn())
-                                // 필요시 OrderItem을 통해 상품명 등을 추가로 가져옴
-                                .build())
-                        .toList())
+                .shipmentItems(shipmentItemDtos)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderDto> getListByAdmin(Long adminMemId, Pageable pageable) {
+        Member member = memberRepository.findById(adminMemId).orElseThrow(()->new UsernameNotFoundException("User not found"));
+        if(!member.getMemAut().equals(MemberAuthority.ADMIN)) throw new IllegalArgumentException("관리자만 주문 목록을 조회할 수 있습니다.");
+
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+
+        return orderPage.map(this::mapToOrderDto);
     }
 
     public String createRandNum(int caseCd){

@@ -6,6 +6,11 @@ import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,25 +22,48 @@ import java.util.List;
 @Controller
 @RequestMapping("/order")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
     private final OrderService orderService;
     private final NotificationService notificationService;
 
     @GetMapping("/list")
-    public String orderList(@AuthenticationPrincipal MemberUserDetails userDetails, Model model) {
+    public String orderList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable,
+                            Model model) {
         Long memId = userDetails.getMemberId();
 
-        List<OrderDto> orders = orderService.getOrderList(memId);
+        Page<OrderDto> orders = orderService.getOrderList(memId, pageable);
         model.addAttribute("orders", orders);
 
         return "order/order-list";
     }
 
     @GetMapping("/detail")
-    public String orderDetail(@RequestParam("id") Long ordId, Model model, @AuthenticationPrincipal MemberUserDetails userDetails) {
-        OrderDto order = orderService.getOrderDetail(ordId, userDetails.getMemberId());
+    public String orderDetail(@RequestParam("id") Long ordId,
+                              @AuthenticationPrincipal MemberUserDetails userDetails,
+                              Model model) {
+        OrderDto order = orderService.getOrderDetail(ordId, userDetails);
         model.addAttribute("order", order);
+
         return "order/order-detail";
+    }
+
+    @PostMapping("/cancel")
+    public String cancelOrder(@RequestParam("ordId") Long ordId,
+                              @AuthenticationPrincipal MemberUserDetails userDetails,
+                              RedirectAttributes redirectAttributes) {
+
+        try {
+            orderService.cancelOrder(ordId, userDetails.getMemberId());
+            redirectAttributes.addFlashAttribute("message", "주문이 정상적으로 취소되었습니다.");
+
+            notificationService.createNotification(userDetails.getMemberId(), NotificationType.ORDER_CANCEL, ordId);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/order/detail?id=" + ordId;
     }
 
 }
