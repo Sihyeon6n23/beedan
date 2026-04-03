@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="frame(title, subTitle, menuContent)">
     <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+    <script defer th:src="@{/js/sidebar.js}"></script>
     <aside class="sidebar-frame hidden md:block w-64 min-h-full bg-stone-50 overflow-y-auto">
         <div class="sidebar-frame__inner h-full w-full">
             <div class="sidebar-frame__header">
