@@ -86,6 +86,29 @@ public class QuoteShipFee {
         this.qsfInsYn = false;
     }
 
+    public void resetForRecalculation(String factoryName, String factoryCountryCode,
+                                      String transportType, Integer totalDozen) {
+        this.qsfFaNm = factoryName;
+        this.qsfFaCCd = factoryCountryCode;
+        this.qsfTrspTy = transportType;
+        this.qsfUnQn = totalDozen;
+        this.qsfSrAm = null;
+        this.qsfSrYn = false;
+        this.qsfSrDes = null;
+        this.qsfPrtAm = null;
+        this.qsfCstAm = null;
+        this.qsfHsCd = null;
+        this.qsfInsYn = false;
+        this.qsfInsAm = null;
+        this.qsfCifAm = null;
+        this.qsfDtyR = null;
+        this.qsfDty = null;
+        this.qsfVat = null;
+        this.qsfDscR = null;
+        this.qsfDscAm = null;
+        this.qsfTtl = null;
+    }
+
     public void setShippingFee(BigDecimal amount){
         this.qsfSrAm = amount;
         this.qsfSrYn = false;

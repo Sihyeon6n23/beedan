@@ -16,4 +16,7 @@ public interface QuoteShipFeeRepository extends JpaRepository<QuoteShipFee, Long
 
     // 견적 아이디로 전체 조회
     List<QuoteShipFee> findAllByQuId(Long quId);
+
+    // 견적 아이디로 전체 삭제
+    void deleteAllByQuId(Long quId);
 }

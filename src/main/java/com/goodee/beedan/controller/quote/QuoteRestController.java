@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/quote")
 @RequiredArgsConstructor
@@ -49,6 +51,10 @@ public class QuoteRestController {
     private final com.goodee.beedan.repository.receiver.ReceiverRepository receiverRepository;
     private final com.goodee.beedan.repository.quote.QuoteInfoRepository quoteInfoRepository;
     private final QuoteSubmitCheckService quoteSubmitCheckService;
+    private final com.goodee.beedan.service.exchangeRate.ExchangeRateService exchangeRateService;
+    private final com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository buyerGradePolicyRepository;
+    private final com.goodee.beedan.repository.quote.QuoteShipFeeRepository quoteShipFeeRepository;
+    private final com.goodee.beedan.repository.quote.ShippingInsuranceRepository shippingInsuranceRepository;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -68,6 +74,21 @@ public class QuoteRestController {
     @PostMapping("/{quId}/admin-opened")
     public ResponseEntity<Void> markAdminOpened(@PathVariable Long quId) {
         quoteBaseService.adminOpen(quId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ── 견적 승인 ─────────────────────────────────
+    @PostMapping("/{quId}/approve")
+    public ResponseEntity<Void> approveQuote(@PathVariable Long quId) {
+        quoteBaseService.approve(quId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ── 견적 거절 ─────────────────────────────────
+    @PostMapping("/{quId}/reject")
+    public ResponseEntity<Void> rejectQuote(@PathVariable Long quId,
+                                            @RequestBody Map<String, String> body) {
+        quoteBaseService.reject(quId, body.get("reason"));
         return ResponseEntity.ok().build();
     }
 
@@ -167,6 +188,7 @@ public class QuoteRestController {
     }
 
     // ── 임시저장 ─────────────────────────────────────
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/draft")
     public ResponseEntity<Map<String, Object>> saveDraft(
             @RequestBody DraftRequest request) {
@@ -192,39 +214,242 @@ public class QuoteRestController {
                         .desiredDate(null)
                         .build();
             }
-            quoteInfo.updateDraft(request.getMemo(), request.getSiId(), request.getStiId());
+            quoteInfo.updateDraft(request.getMemo(), request.getSiId(), request.getStiId(), request.getGrandTotal());
+
+            log.info("Draft save - grandTotal: {}, feeInfo null?: {}", request.getGrandTotal(), request.getFeeInfo() == null);
+
+            // 비용 정보 저장
+            if (request.getFeeInfo() != null) {
+                log.info("Draft save - feeInfo: serviceFee={}, totalTax={}, totalShipFee={}, buyerGrade={}",
+                        request.getFeeInfo().getServiceFee(), request.getFeeInfo().getTotalTax(),
+                        request.getFeeInfo().getTotalShipFee(), request.getFeeInfo().getBuyerGrade());
+                var fee = request.getFeeInfo();
+
+                // 환율 조회
+                var latestRates = exchangeRateService.findAllLatest();
+                if (!latestRates.isEmpty()) {
+                    var rate = latestRates.get(0);
+                    quoteInfo.updateExchangeRate(rate.getErCr(), rate.getErRa());
+                }
+
+                // 등급 → bgpId, fpId 조회
+                Long bgpId = null;
+                Long fpId = null;
+                String grade = fee.getBuyerGrade() != null ? fee.getBuyerGrade() : "STANDARD";
+                try {
+                    var bgp = buyerGradePolicyRepository.findByBgpGrAndBgpAcYnTrue(grade).orElse(null);
+                    if (bgp != null) bgpId = bgp.getBgpId();
+                } catch (Exception ignored) {}
+                try {
+                    var policies = feePolicyService.findAllActiveByGrade(grade);
+                    var commPolicy = policies.stream()
+                            .filter(fp -> "SERVICE_COMMISSION".equals(fp.getFpFeeTy()))
+                            .findFirst().orElse(null);
+                    if (commPolicy != null) fpId = commPolicy.getFpId();
+                } catch (Exception ignored) {}
+
+                quoteInfo.updateFeeInfo(
+                        fee.getServiceFee(),
+                        fee.getServiceFeeRate(),
+                        fee.getServiceFeeAmount(),
+                        fee.getDomesticFee(),
+                        fee.getDomesticExtraFee(),
+                        fee.getIntShipFee(),
+                        fee.getDomShipFee(),
+                        fee.getTotalShipFee(),
+                        fee.getTotalTax(),
+                        fee.getDiscountedTotal(),
+                        bgpId,
+                        fpId
+                );
+            }
+
             quoteInfo = quoteInfoRepository.save(quoteInfo);
 
-            // 2. QuoteDetail 삭제 후 재저장
-            List<QuoteDetail> existing = quoteDetailService.findAllByQuote(request.getQuId());
-            existing.forEach(d -> quoteDetailService.delete(d.getQuDtId()));
+            // 2. QuoteDetail + QuoteShipFee merge (기존 항목 유지, 수정/추가/삭제)
+            List<QuoteDetail> existingDetails = quoteDetailService.findAllByQuote(request.getQuId());
+            Set<Long> processedDetailIds = new HashSet<>();
+
+            List<QuoteShipFee> existingShipFees = quoteShipFeeRepository.findAllByQuId(request.getQuId());
+            Set<Long> processedShipFeeIds = new HashSet<>();
+
+            // 환율 (QuoteShipFee 계산용)
+            var latestRates = exchangeRateService.findAllLatest();
+            BigDecimal exchangeRate = !latestRates.isEmpty() ? latestRates.get(0).getErRa() : BigDecimal.ONE;
+
+            // 보험 여부 + 보험율
+            boolean insured = request.getSiId() != null;
+            BigDecimal insuranceRate = BigDecimal.ZERO;
+            if (insured) {
+                try {
+                    var si = shippingInsuranceRepository.findById(request.getSiId()).orElse(null);
+                    if (si != null && si.getSiAm() != null) {
+                        insuranceRate = si.getSiAm();
+                    }
+                } catch (Exception ignored) {
+                    insuranceRate = new BigDecimal("0.005");
+                }
+            }
+
+            // 배송비 할인율
+            BigDecimal shippingDiscountRate = BigDecimal.ZERO;
+            if (request.getFeeInfo() != null && request.getFeeInfo().getShippingDiscountRate() != null) {
+                shippingDiscountRate = request.getFeeInfo().getShippingDiscountRate();
+            }
 
             for (DraftRequest.DraftItem item : request.getItems()) {
                 Stock stock = stockRepository.findById(item.getStId()).orElse(null);
                 if (stock == null) continue;
 
-                QuoteDetail detail = QuoteDetail.builder()
-                        .quoteInfoId(quoteInfo.getQuInfoId())
-                        .quoteId(request.getQuId())
-                        .negoId(quoteBase.getNgId())
-                        .stockId(item.getStId())
-                        .stockQuantity(item.getQty())
-                        .stockName(stock.getStNm())
-                        .unitGroupId(item.getUnGId())
-                        .unitGroupName(item.getUnGNm())
-                        .unitGroupQuantity(item.getUnGQn())
-                        .foreignPrice(stock.getStPr())
-                        .krwTotal(item.getSubtotalKrw())
-                        .receiverId(item.getRcId())
-                        .group(item.getGrp())
-                        .rcRegion(item.getRcRgn())
-                        .rcName(item.getRcNm())
-                        .rcAddress(item.getRcAdr())
-                        .rcPhone(item.getRcPhn())
-                        .rcMemo(item.getRcMemo())
-                        .build();
+                // 공장 조회
+                Factory factory = null;
+                if (stock.getBrId() != null) {
+                    List<Factory> factories = factoryRepository.findAllByBrIdAndFaYnTrue(stock.getBrId());
+                    factory = factories.isEmpty() ? null : factories.get(0);
+                }
+
+                // QuoteDetail: 기존 항목 매칭 (stId + grp) → 있으면 update, 없으면 insert
+                QuoteDetail detail = existingDetails.stream()
+                        .filter(d -> d.getStId().equals(item.getStId())
+                                && Objects.equals(d.getQuDtGrp(), item.getGrp())
+                                && !processedDetailIds.contains(d.getQuDtId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (detail != null) {
+                    detail.updateFrom(
+                            item.getQty(), stock.getStNm(),
+                            factory != null ? factory.getFaId() : null,
+                            factory != null ? factory.getFaNm() : null,
+                            item.getUnGId(), item.getUnGNm(), item.getUnGQn(),
+                            stock.getStPr(), item.getSubtotalKrw(),
+                            item.getRcId(),
+                            item.getRcRgn(), item.getRcNm(), item.getRcAdr(),
+                            item.getRcPhn(), item.getRcMemo()
+                    );
+                    processedDetailIds.add(detail.getQuDtId());
+                } else {
+                    detail = QuoteDetail.builder()
+                            .quoteInfoId(quoteInfo.getQuInfoId())
+                            .quoteId(request.getQuId())
+                            .negoId(quoteBase.getNgId())
+                            .stockId(item.getStId())
+                            .stockQuantity(item.getQty())
+                            .stockName(stock.getStNm())
+                            .factoryId(factory != null ? factory.getFaId() : null)
+                            .factoryName(factory != null ? factory.getFaNm() : null)
+                            .unitGroupId(item.getUnGId())
+                            .unitGroupName(item.getUnGNm())
+                            .unitGroupQuantity(item.getUnGQn())
+                            .foreignPrice(stock.getStPr())
+                            .krwTotal(item.getSubtotalKrw())
+                            .receiverId(item.getRcId())
+                            .group(item.getGrp())
+                            .rcRegion(item.getRcRgn())
+                            .rcName(item.getRcNm())
+                            .rcAddress(item.getRcAdr())
+                            .rcPhone(item.getRcPhn())
+                            .rcMemo(item.getRcMemo())
+                            .build();
+                }
                 quoteDetailService.save(detail);
+
+                // 품목별 묶음(다스) 수 계산
+                int dozen = 0;
+                if (item.getUnGQn() != null && item.getUnGQn() > 0 && item.getQty() != null) {
+                    dozen = (int) Math.ceil((double) item.getQty() / item.getUnGQn());
+                }
+
+                // QuoteShipFee: 기존 항목 매칭 (faId) → 있으면 reset+recalc, 없으면 insert
+                Long faId = factory != null ? factory.getFaId() : null;
+                String countryCode = factory != null ? factory.getFaCCd() : null;
+
+                QuoteShipFee shipFee = existingShipFees.stream()
+                        .filter(sf -> Objects.equals(sf.getFaId(), faId)
+                                && !processedShipFeeIds.contains(sf.getQsfId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (shipFee != null) {
+                    shipFee.resetForRecalculation(
+                            factory != null ? factory.getFaNm() : null,
+                            countryCode, "SEA", dozen
+                    );
+                    processedShipFeeIds.add(shipFee.getQsfId());
+                } else {
+                    shipFee = QuoteShipFee.builder()
+                            .quoteInfoId(quoteInfo.getQuInfoId())
+                            .quoteId(request.getQuId())
+                            .negoId(quoteBase.getNgId())
+                            .factoryId(faId)
+                            .factoryName(factory != null ? factory.getFaNm() : null)
+                            .factoryCountryCode(countryCode)
+                            .transportType("SEA")
+                            .totalDozen(dozen)
+                            .build();
+                }
+
+                // 해외 운임
+                BigDecimal shippingFee = BigDecimal.ZERO;
+                try {
+                    if (countryCode != null) {
+                        var sr = shippingRateService.findByCCdAndTransportType(
+                                countryCode, com.goodee.beedan.common.constant.TransportType.SEA);
+                        shippingFee = sr.getApplicableAmount(dozen);
+                    }
+                } catch (Exception ignored) {}
+                shipFee.setShippingFee(shippingFee);
+
+                // 항만/통관/HS
+                BigDecimal portFee = BigDecimal.ZERO, customsFee = BigDecimal.ZERO, hsCodeFee = BigDecimal.ZERO;
+                String sizeType = "SMALL";
+                try {
+                    if (countryCode != null) {
+                        var sr = shippingRateService.findByCCdAndTransportType(
+                                countryCode, com.goodee.beedan.common.constant.TransportType.SEA);
+                        sizeType = sr.getSizeType(dozen);
+                    }
+                } catch (Exception ignored) {}
+                try { portFee = portCustomsRateService.findActiveByType("PORT").getApplicableAmount(sizeType); } catch (Exception ignored) {}
+                try { customsFee = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception ignored) {}
+                try { hsCodeFee = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception ignored) {}
+                shipFee.setPortCustomsFee(portFee, customsFee, hsCodeFee);
+
+                // 보험
+                BigDecimal itemKrw = item.getSubtotalKrw() != null ? item.getSubtotalKrw() : BigDecimal.ZERO;
+                if (insured && itemKrw.compareTo(BigDecimal.ZERO) > 0) {
+                    shipFee.setInsurance(itemKrw.multiply(insuranceRate).setScale(0, java.math.RoundingMode.HALF_UP));
+                }
+
+                // CIF + 관세/부가세
+                shipFee.calculateCif(itemKrw);
+
+                // 관세율 (HS Code에서)
+                BigDecimal dutyRate = new BigDecimal("0.13"); // 기본 13%
+                try {
+                    if (stock.getCatId() != null) {
+                        var hsCode = hsCodeRepository.findByCatId(stock.getCatId()).orElse(null);
+                        if (hsCode != null && hsCode.getHsDuRa() != null) {
+                            dutyRate = hsCode.getHsDuRa();
+                        }
+                    }
+                } catch (Exception ignored) {}
+                shipFee.calculateDutyAndVat(dutyRate);
+
+                // 할인율 적용 + 합계
+                shipFee.applyDiscount(shippingDiscountRate);
+                shipFee.calculateTotal();
+
+                quoteShipFeeRepository.save(shipFee);
             }
+
+            // 3. 요청에 없는 기존 항목만 삭제 (사용자가 제거한 품목)
+            existingDetails.stream()
+                    .filter(d -> !processedDetailIds.contains(d.getQuDtId()))
+                    .forEach(d -> quoteDetailService.delete(d.getQuDtId()));
+            existingShipFees.stream()
+                    .filter(sf -> !processedShipFeeIds.contains(sf.getQsfId()))
+                    .forEach(sf -> quoteShipFeeRepository.delete(sf));
 
             return ResponseEntity.ok(Map.of(
                     "status", "ok",
@@ -614,6 +839,25 @@ public class QuoteRestController {
         private String memo;
         private Long siId;          // 선택한 보험 ID
         private Long stiId;         // 선택한 검사 ID
+        private BigDecimal grandTotal; // 최종 금액
+        private DraftFeeInfo feeInfo;  // 비용 정보
+
+        @Getter
+        @NoArgsConstructor
+        public static class DraftFeeInfo {
+            private BigDecimal serviceFee;         // 대행 수수료
+            private BigDecimal serviceFeeRate;     // 할인율
+            private BigDecimal serviceFeeAmount;   // 할인 후 수수료
+            private BigDecimal domesticFee;        // 국내 배송비
+            private BigDecimal domesticExtraFee;   // 도서산간 추가
+            private BigDecimal intShipFee;         // 국제 배송비 합계
+            private BigDecimal domShipFee;         // 국내 배송비 합계
+            private BigDecimal totalShipFee;       // 전체 배송비 합계
+            private BigDecimal totalTax;           // 총 세액
+            private BigDecimal discountedTotal;    // 할인 적용 총액
+            private String buyerGrade;             // 적용 등급
+            private BigDecimal shippingDiscountRate; // 운송 할인율
+        }
 
         @Getter
         @NoArgsConstructor

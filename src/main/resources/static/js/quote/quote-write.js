@@ -1,5 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── estimate-fees 결과 보관 ─────────────────────
+    var lastEstimateData = null;
+    var lastItemTotalKrw = 0;
+    var lastDomesticFee = 0;
+    var lastSelectedInsurance = 0;
+    var lastSelectedInspection = 0;
+    var lastShippingDiscountRate = 0;
+
     // ── 부가 서비스 아코디언 토글 ──────────────────
     document.querySelectorAll('.quote-option-toggle').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -282,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function () {
         feeDebounceTimer = setTimeout(doFetchEstimateFees, 400);
     }
 
-    function doFetchEstimateFees() {
+    function doFetchEstimateFees(returnPromise) {
         var estimateItems = [];
         var itemTotalKrw = 0;
         var supplyTotalKrw = 0;
@@ -336,7 +344,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        fetch('/api/quote/estimate-fees', {
+        console.log('estimate-fees request:', JSON.stringify({itemCount: estimateItems.length, itemTotalKrw: itemTotalKrw, supplyTotalKrw: supplyTotalKrw}));
+        var p = fetch('/api/quote/estimate-fees', {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
@@ -355,6 +364,10 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('estimate-fees response:', JSON.stringify(data).substring(0, 500));
             var el = function (id) { return document.getElementById(id); };
             var fmt = function (v) { return v ? '₩' + formatNumber(v) : '-'; };
+
+            // estimate 결과 보관
+            lastEstimateData = data;
+            lastItemTotalKrw = itemTotalKrw;
 
             // 부가 서비스 금액 갱신
             updateServiceValues(supplyTotalKrw);
@@ -389,6 +402,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateFeeCards(data, itemTotalKrw, dest, selectedInsurance, selectedInspection, domesticFee, insuranceInfo, domesticData);
             }
 
+            // estimate 부가서비스 보관
+            lastDomesticFee = domesticFee;
+            lastSelectedInsurance = selectedInsurance;
+            lastSelectedInspection = selectedInspection;
+            lastShippingDiscountRate = parseFloat(data.shippingDiscountRate) || 0;
+
             // 총 주문 명세 (부가 서비스 포함 + 등급 할인 적용)
             var totalTax = (data.dutyAmount || 0) + (data.vatAmount || 0);
             var logisticsVal = (data.logisticsTotal || 0) + selectedInsurance + domesticFee;
@@ -406,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
             el('os-grand-total').textContent = grandTotal > 0 ? '₩' + formatNumber(grandTotal) : '-';
         })
         .catch(function (err) { console.error('estimate-fees error:', err); });
+        return p;
     }
 
     // 부가 서비스 체크박스 — 같은 카드 내 하나만 선택 + 재조회
@@ -540,11 +560,46 @@ document.addEventListener('DOMContentLoaded', function () {
             if (item.querySelector('.qo-service-check').checked) selectedStiId = parseInt(item.dataset.id) || null;
         });
 
-        return { quId: quId, items: items, memo: memo, siId: selectedSiId, stiId: selectedStiId };
+        // 최종 금액 (os-grand-total에서 추출)
+        var grandTotalEl = document.getElementById('os-grand-total');
+        var grandTotal = null;
+        if (grandTotalEl) {
+            var parsed = parseInt(grandTotalEl.textContent.replace(/[^\d]/g, ''));
+            if (!isNaN(parsed) && parsed > 0) grandTotal = parsed;
+        }
+
+        // estimate-fees 결과 포함
+        var feeInfo = null;
+        if (lastEstimateData) {
+            var d = lastEstimateData;
+            var sdRate = lastShippingDiscountRate;
+            var logisticsRaw = (d.logisticsTotal || 0) + lastSelectedInsurance + lastDomesticFee;
+            var logisticsDiscounted = sdRate > 0 ? Math.round(logisticsRaw * (1 - sdRate)) : logisticsRaw;
+            var totalTax = (d.dutyAmount || 0) + (d.vatAmount || 0);
+            var discountedTotal = lastItemTotalKrw + logisticsDiscounted + (d.procurementTotal || 0) + lastSelectedInspection;
+
+            feeInfo = {
+                serviceFee: d.serviceFee || 0,
+                serviceFeeRate: sdRate,
+                serviceFeeAmount: d.procurementTotal || 0,
+                domesticFee: lastDomesticFee,
+                domesticExtraFee: 0,
+                intShipFee: d.logisticsTotal || 0,
+                domShipFee: lastDomesticFee,
+                totalShipFee: logisticsDiscounted,
+                totalTax: totalTax,
+                discountedTotal: discountedTotal,
+                buyerGrade: d.buyerGrade || 'STANDARD',
+                shippingDiscountRate: sdRate
+            };
+        }
+
+        return { quId: quId, items: items, memo: memo, siId: selectedSiId, stiId: selectedStiId, grandTotal: grandTotal, feeInfo: feeInfo };
     }
 
     function saveDraft() {
         var payload = collectDraftData();
+        console.log('saveDraft payload:', JSON.stringify({grandTotal: payload.grandTotal, feeInfo: payload.feeInfo}));
         var headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
         return fetch('/api/quote/draft', {
@@ -696,8 +751,9 @@ document.addEventListener('DOMContentLoaded', function () {
             btnConfirm.disabled = true;
             btnConfirm.textContent = '제출 중...';
 
-            // 1) 데이터 저장 → 2) 상태 변경 + 체크 로그
-            saveDraft()
+            // 0) estimate-fees 최신화 → 1) 데이터 저장 → 2) 상태 변경 + 체크 로그
+            doFetchEstimateFees()
+            .then(function () { return saveDraft(); })
             .then(function (draftRes) {
                 if (draftRes.status !== 'ok') {
                     throw new Error(draftRes.message || '데이터 저장 실패');
