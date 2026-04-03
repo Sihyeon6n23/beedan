@@ -11,5 +11,7 @@
   }, {
     "city_name" : "Seoul",
     "region" : "Seoul, KR"
-  } ]
+  } ],
+  "news_keyword_left" : "세계 패션 트렌드",
+  "news_keyword_right" : "관세 환율"
 }

@@ -33,19 +33,22 @@
                 </th:block>
             </div>
 
-            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative cursor-pointer">
-                <span class="material-symbols-outlined">notifications</span>
+            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
+                <span class="material-symbols-outlined leading-none">notifications</span>
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
-
                 <div th:replace="~{notification/notification :: notificationDropdown}"></div>
             </div>
 
-            <a th:href="@{/wishlist}" sec:authorize="hasRole('USER')" class="cursor-pointer hover:opacity-70 transition-opacity no-underline text-stone-900">
-                <span class="material-symbols-outlined">favorite</span>
-            </a>
-            <a th:href="@{/cart}" sec:authorize="hasRole('USER')" class="cursor-pointer hover:opacity-70 transition-opacity no-underline text-stone-900">
-                <span class="material-symbols-outlined">shopping_cart</span>
-            </a>
+            <div id="wishlistIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
+                <a th:href="@{/wishlist}" class="flex items-center">
+                    <span class="material-symbols-outlined leading-none">favorite</span>
+                </a>
+            </div>
+            <div id="cartIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
+                <a th:href="@{/cart}" class="flex items-center">
+                    <span class="material-symbols-outlined leading-none">shopping_cart</span>
+                </a>
+            </div>
         </div>
 
     </div>

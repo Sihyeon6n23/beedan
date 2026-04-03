@@ -11,6 +11,7 @@
     <title th:fragment="title">BEEDAN | Home</title>
 </head>
 <body th:fragment="content">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link th:href="@{/css/main/index.css}" rel="stylesheet"/>
 
 <!-- ===================== -->
@@ -124,46 +125,30 @@
     <h2 class="main-section__title">News &amp; Updates</h2>
 
     <div class="news-grid">
-        <!-- Left: 일본 패션 유통 -->
+        <!-- Left -->
         <div class="news-column">
-            <h3 class="news-column__title">Japan Fashion &amp; Distribution</h3>
-            <div class="news-item">
-                <p class="news-item__title">일본 스트릿 패션 브랜드, 글로벌 유통망 확대 본격화</p>
-                <span class="news-item__meta">2026.03.28 &middot; Nikkei Asia</span>
-            </div>
-            <div class="news-item">
-                <p class="news-item__title">도쿄 컬렉션 2026 FW — 핵심 트렌드와 바이어 반응 분석</p>
-                <span class="news-item__meta">2026.03.25 &middot; WWD Japan</span>
-            </div>
-            <div class="news-item">
-                <p class="news-item__title">오사카 섬유 산업 단지, 친환경 소재 전환 가속</p>
-                <span class="news-item__meta">2026.03.22 &middot; Senken Shimbun</span>
-            </div>
-            <div class="news-item">
-                <p class="news-item__title">Kapital, Visvim 등 일본 디자이너 브랜드 한국 직배송 확대</p>
-                <span class="news-item__meta">2026.03.20 &middot; Fashionsnap</span>
-            </div>
+            <h3 class="news-column__title">Fashion & Trend</h3>
+            <th:block th:each="n : ${leftNewsList}">
+                <a th:href="${n.link}" th:target="_blank">
+                    <div class="news-item">
+                        <p class="news-item__title" th:text="${n.title}">기사 제목</p>
+                        <span class="news-item__meta" th:text="${n.pubDate}">2026.01.01</span>
+                    </div>
+                </a>
+            </th:block>
         </div>
 
-        <!-- Right: 관세 · 환율 -->
+        <!-- Right -->
         <div class="news-column">
-            <h3 class="news-column__title">Tariff &amp; Exchange Rate</h3>
-            <div class="news-item">
-                <p class="news-item__title">한&middot;일 섬유 관세율 인하 협상, 4분기 타결 전망</p>
-                <span class="news-item__meta">2026.03.30 &middot; 한국경제</span>
-            </div>
-            <div class="news-item">
-                <p class="news-item__title">엔화 약세 지속 — 100엔 당 870원대, 바이어 매입 적기</p>
-                <span class="news-item__meta">2026.03.27 &middot; 매일경제</span>
-            </div>
-            <div class="news-item">
-                <p class="news-item__title">EU 의류 수입 관세 개편안 발표, 한국 수출기업 영향 분석</p>
-                <span class="news-item__meta">2026.03.24 &middot; Reuters</span>
-            </div>
-            <div class="news-item">
-                <p class="news-item__title">위안화 변동성 확대 — 중국발 원자재 수입 단가 영향 전망</p>
-                <span class="news-item__meta">2026.03.21 &middot; Bloomberg</span>
-            </div>
+            <h3 class="news-column__title">Tariff & Economy</h3>
+            <th:block th:each="n : ${rightNewsList}">
+                <a th:href="${n.link}" th:target="_blank">
+                    <div class="news-item">
+                        <p class="news-item__title" th:text="${n.title}">기사 제목</p>
+                        <span class="news-item__meta" th:text="${n.pubDate}">2026.01.01</span>
+                    </div>
+                </a>
+            </th:block>
         </div>
     </div>
 </section>
@@ -278,86 +263,14 @@
         <button class="carousel__btn carousel__btn--prev" onclick="carouselMove('carousel-recent', -1)">
             <span class="material-symbols-outlined">chevron_left</span>
         </button>
-        <div class="carousel__track">
-            <div class="product-card">
+        <div class="carousel__track" >
+            <div th:each="item : ${newStockList}" th:onclick="'location.href=\'/stock/detail/' + ${item.stId} + '\''" class="product-card">
                 <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80" alt="Product"/>
+                    <img th:src="${item.getStImgUrl()}" alt="Product"/>
                 </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">Ruck Sack</p>
-                <p class="product-card__price">&yen; 1,400.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">Boro Remake Jeans</p>
-                <p class="product-card__price">&yen; 1,200.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kenzo</p>
-                <p class="product-card__name">Boke Flower Shirt</p>
-                <p class="product-card__price">&euro; 260.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">Sashiko Knit Vest</p>
-                <p class="product-card__price">&yen; 620.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">Club Coat</p>
-                <p class="product-card__price">&yen; 3,600.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1571945153237-4929e783af4a?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">COOLMAX Rugby Shirt</p>
-                <p class="product-card__price">&yen; 640.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">SUVIN Jersey Tee</p>
-                <p class="product-card__price">&yen; 320.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1596755389378-c31d21fd1273?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">Gauze Boro Shirt</p>
-                <p class="product-card__price">&yen; 540.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">Briefcase M</p>
-                <p class="product-card__price">&yen; 1,800.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kenzo</p>
-                <p class="product-card__name">Boke Flower Scarf</p>
-                <p class="product-card__price">&euro; 150.00</p>
+                <p th:text="${item.stBrNm}" class="product-card__brand">Nanamica</p>
+                <p th:text="${item.stNm}" class="product-card__name">Ruck Sack</p>
+                <p th:text="${item.stCur + ' ' + (item.stCur == '₩' ? #numbers.formatInteger(item.stPr, 1, 'COMMA') : #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT'))}" class="product-card__price"></p>
             </div>
         </div>
         <button class="carousel__btn carousel__btn--next" onclick="carouselMove('carousel-recent', 1)">
@@ -371,9 +284,10 @@
 function carouselMove(id, dir) {
     const track = document.querySelector('#' + id + ' .carousel__track');
     const card = track.querySelector('.product-card');
-    const gap = parseFloat(getComputedStyle(track).gap) || 24;
-    const scrollAmount = (card.offsetWidth + gap) * dir;
-    track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+    const page = (card.offsetWidth + gap) * 4;
+    const target = track.scrollLeft + page * dir;
+    track.scrollTo({ left: target, behavior: 'smooth' });
 }
 </script>
 
