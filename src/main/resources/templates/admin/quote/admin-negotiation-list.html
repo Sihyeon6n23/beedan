@@ -28,13 +28,13 @@
         <!-- Filter & Search -->
         <section class="ang-toolbar">
             <div class="ang-search-wrapper">
-                <input type="text" placeholder="협상명, 회원명으로 검색">
+                <input type="text" id="angSearchInput" placeholder="협상명, 회원명으로 검색">
                 <span class="material-symbols-outlined">search</span>
             </div>
             <div class="ang-filter-set">
-                <button class="ang-filter is-active">전체</button>
-                <button class="ang-filter">진행중</button>
-                <button class="ang-filter">종료</button>
+                <button class="ang-filter is-active" data-filter="all">전체</button>
+                <button class="ang-filter" data-filter="ongoing">진행중</button>
+                <button class="ang-filter" data-filter="closed">종료</button>
             </div>
         </section>
 
@@ -43,28 +43,35 @@
             <table class="ang-table">
                 <thead>
                 <tr>
-                    <th class="col-check"><input type="checkbox"></th>
                     <th class="col-ng-id">협상 ID</th>
-                    <th class="col-ng-name">협상명</th>
-                    <th class="col-member">회원명</th>
+                    <th class="col-member">고객사</th>
                     <th class="col-quote-count">견적 수</th>
                     <th class="col-status">상태</th>
-                    <th class="col-start-date">시작일</th>
-                    <th class="col-end-date">종료일</th>
-                    <th class="col-action">관리</th>
+                    <th class="col-latest-update ang-sortable is-active" data-sort="latestUpdate" data-dir="desc">
+                        최근 업데이트 <span class="ang-sort-icon">▼</span>
+                    </th>
+                    <th class="col-start-date ang-sortable" data-sort="ngCreDt" data-dir="desc">
+                        시작일 <span class="ang-sort-icon">▼</span>
+                    </th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="angTableBody">
                 <th:block th:each="ng : ${negotiations}">
-                    <tr>
-                        <td class="col-check"><input type="checkbox"></td>
-                        <td class="col-ng-id" th:text="${ng.ngNm}">NG-2026-A01</td>
-                        <td class="col-ng-name">
-                            <span class="ng-name-text" th:text="${ng.ngNm}">협상명</span>
+                    <tr th:data-ng-id="${ng.ngId}"
+                        th:data-latest-update="${ng.latestUpdate}"
+                        th:data-ng-cre-dt="${ng.ngCreDt}"
+                        th:data-status="${ng.ongoing} ? 'ongoing' : 'closed'"
+                        th:data-search="${ng.ngNm + ' ' + ng.memNm + ' ' + ng.memBizTtl}"
+                        th:data-unread-qu-ids="${ng.unreadQuIds}"
+                        th:class="(${ng.ongoing} ? '' : 'ang-row--closed') + ' ' + (${ng.hasUnread} ? 'ang-row--unread' : '')">
+                        <td class="col-ng-id">
+                            <span th:text="${ng.ngNm}">NG0000</span>
+                            <span th:if="${ng.hasUnread}" class="ang-unread-dot"
+                                  th:title="${ng.unreadCount + '건 미열람'}"></span>
                         </td>
                         <td class="col-member">
-                            <span class="member-name" th:text="${ng.memNm}">회원명</span>
-                            <span class="member-company" th:text="${ng.memBizTtl}">회사명</span>
+                            <span class="member-name" th:text="${ng.memBizTtl}">고객사명</span>
+                            <span class="member-company" th:text="${ng.memNm}">담당자명</span>
                         </td>
                         <td class="col-quote-count" th:text="${ng.quoteCount}">0</td>
                         <td class="col-status">
@@ -72,20 +79,14 @@
                                   th:classappend="${ng.ongoing} ? ' ang-badge--ongoing' : ' ang-badge--closed'"
                                   th:text="${ng.ongoing} ? '진행중' : '종료'">상태</span>
                         </td>
+                        <td class="col-latest-update"
+                            th:text="${ng.latestUpdate != null ? #temporals.format(ng.latestUpdate, 'yyyy.MM.dd HH:mm') : '-'}">-</td>
                         <td class="col-start-date"
-                            th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd') : '-'}">2026.03.10</td>
-                        <td class="col-end-date"
-                            th:classappend="${ng.ngEndDt == null} ? ' ang-date--empty' : ''"
-                            th:text="${ng.ngEndDt != null ? #temporals.format(ng.ngEndDt, 'yyyy.MM.dd') : '—'}">—</td>
-                        <td class="col-action">
-                            <div class="ang-action-group">
-                                <a th:href="@{/admin/negotiation/detail(ngId=${ng.ngId})}" class="ang-btn-view">VIEW</a>
-                            </div>
-                        </td>
+                            th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd HH:mm') : '-'}">-</td>
                     </tr>
                 </th:block>
-                <tr th:if="${#lists.isEmpty(negotiations)}">
-                    <td colspan="9" style="text-align:center; padding:3rem; color:#78716c;">
+                <tr id="angEmptyRow" th:if="${#lists.isEmpty(negotiations)}">
+                    <td colspan="6" style="text-align:center; padding:3rem; color:#78716c;">
                         표시할 협상이 없습니다.
                     </td>
                 </tr>
@@ -102,5 +103,167 @@
             </div>
         </footer>
     </section>
+
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const tbody = document.getElementById('angTableBody');
+        const sortHeaders = document.querySelectorAll('.ang-sortable');
+        const searchInput = document.getElementById('angSearchInput');
+        const filterBtns = document.querySelectorAll('.ang-filter');
+
+        let currentFilter = 'all';
+        let currentSearch = '';
+        const PAGE_SIZE = 20;
+        let currentPage = 0;
+
+        // ── 정렬 ──
+        function toCamel(s) {
+            return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
+        }
+
+        function sortRows(key, dir) {
+            const rows = Array.from(tbody.querySelectorAll('tr:not(#angEmptyRow)'));
+            rows.sort(function (a, b) {
+                const va = a.dataset[key] || '';
+                const vb = b.dataset[key] || '';
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            });
+            rows.forEach(function (r) { tbody.appendChild(r); });
+        }
+
+        sortHeaders.forEach(function (header) {
+            header.addEventListener('click', function () {
+                const sortKey = toCamel(header.dataset.sort);
+                let dir = header.dataset.dir;
+
+                if (header.classList.contains('is-active')) {
+                    dir = dir === 'desc' ? 'asc' : 'desc';
+                } else {
+                    sortHeaders.forEach(function (h) { h.classList.remove('is-active'); });
+                    header.classList.add('is-active');
+                }
+                header.dataset.dir = dir;
+                header.querySelector('.ang-sort-icon').textContent = dir === 'desc' ? '▼' : '▲';
+
+                sortRows(sortKey, dir);
+                currentPage = 0;
+                renderPage();
+            });
+        });
+
+        // 초기 정렬
+        sortRows('latestUpdate', 'desc');
+        renderPage();
+
+        // ── 필터 + 검색 + 페이지네이션 ──
+        function getFilteredRows() {
+            var rows = Array.from(tbody.querySelectorAll('tr:not(#angEmptyRow)'));
+            return rows.filter(function (row) {
+                var status = row.dataset.status || '';
+                var searchText = (row.dataset.search || '').toLowerCase();
+                var matchFilter = currentFilter === 'all' || status === currentFilter;
+                var matchSearch = currentSearch === '' || searchText.includes(currentSearch);
+                return matchFilter && matchSearch;
+            });
+        }
+
+        function applyFilterAndSearch() {
+            currentPage = 0;
+            renderPage();
+        }
+
+        function renderPage() {
+            var allRows = Array.from(tbody.querySelectorAll('tr:not(#angEmptyRow)'));
+            var filtered = getFilteredRows();
+            var totalItems = filtered.length;
+            var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+            if (currentPage >= totalPages) currentPage = totalPages - 1;
+
+            var start = currentPage * PAGE_SIZE;
+            var end = Math.min(start + PAGE_SIZE, totalItems);
+            var pageItems = filtered.slice(start, end);
+
+            allRows.forEach(function (r) { r.style.display = 'none'; });
+            pageItems.forEach(function (r) { r.style.display = ''; });
+
+            var pageInfo = document.querySelector('.ang-page-info');
+            if (pageInfo) {
+                if (totalItems > 0) {
+                    pageInfo.textContent = (start + 1) + '-' + end + ' of ' + totalItems + ' 건';
+                } else {
+                    pageInfo.textContent = '총 0 건';
+                }
+            }
+
+            var nums = document.querySelector('.ang-page-numbers');
+            if (nums) {
+                var html = '';
+                html += '<button class="ang-page-btn" ' + (currentPage === 0 ? 'disabled' : '') + ' data-page="prev"><span class="material-symbols-outlined" style="font-size:18px">chevron_left</span></button>';
+
+                var maxPages = 10;
+                var startPage = Math.max(0, currentPage - 4);
+                var endPage = Math.min(totalPages - 1, startPage + maxPages - 1);
+                if (endPage - startPage < maxPages - 1) startPage = Math.max(0, endPage - maxPages + 1);
+
+                for (var i = startPage; i <= endPage; i++) {
+                    html += '<button class="ang-page-btn ' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + (i + 1) + '</button>';
+                }
+
+                html += '<button class="ang-page-btn" ' + (currentPage >= totalPages - 1 ? 'disabled' : '') + ' data-page="next"><span class="material-symbols-outlined" style="font-size:18px">chevron_right</span></button>';
+                nums.innerHTML = html;
+
+                nums.querySelectorAll('.ang-page-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var p = btn.dataset.page;
+                        if (p === 'prev') currentPage--;
+                        else if (p === 'next') currentPage++;
+                        else currentPage = parseInt(p);
+                        renderPage();
+                    });
+                });
+            }
+        }
+
+        filterBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                filterBtns.forEach(function (b) { b.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+                currentFilter = btn.dataset.filter;
+                applyFilterAndSearch();
+            });
+        });
+
+        searchInput.addEventListener('input', function () {
+            currentSearch = searchInput.value.trim().toLowerCase();
+            applyFilterAndSearch();
+        });
+
+        // ── CSRF 토큰 ──
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // ── 행 클릭 → 열람 처리 + 상세 이동 ──
+        tbody.addEventListener('click', function (e) {
+            if (e.target.closest('button, a')) return;
+            var row = e.target.closest('tr');
+            if (!row || !row.dataset.ngId) return;
+
+            if (row.classList.contains('ang-row--unread')) {
+                var ids = (row.dataset.unreadQuIds || '').split(',').filter(Boolean);
+                var headers = {};
+                headers[csrfHeader] = csrfToken;
+                ids.forEach(function (id) {
+                    fetch('/api/quote/' + id + '/admin-opened', {
+                        method: 'POST', headers: headers
+                    });
+                });
+                row.classList.remove('ang-row--unread');
+                var dot = row.querySelector('.ang-unread-dot');
+                if (dot) dot.remove();
+            }
+            window.location.href = '/admin/negotiation/detail?ngId=' + row.dataset.ngId;
+        });
+    });
+    </script>
 </th:block>
 </html>

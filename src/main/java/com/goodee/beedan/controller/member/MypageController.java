@@ -16,6 +16,7 @@ import com.goodee.beedan.service.member.MypageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -32,7 +33,6 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -45,6 +45,9 @@ public class MypageController {
     private final BuyerRepository buyerRepository;
     private final MypageService mypageService;
     private final PortOneService portOneService;
+
+    @Value("${kakao.map.appkey}")
+    private String kakaoAppKey;
 
     @GetMapping("")
     public String getMainRedirect() {
@@ -61,7 +64,7 @@ public class MypageController {
         if (userDetails == null) return "redirect:/login";
 
         String memberLgnId = userDetails.getUsername();
-        Member member = memberService.getLoginId(memberLgnId);
+        Member member = memberService.getMemberByUsername(memberLgnId);
         model.addAttribute("member", member); // 멤버 정보는 미리 담아둠
 
         Buyer buyer = null;
@@ -107,6 +110,7 @@ public class MypageController {
         }
 
         // 최종적으로 찾은(혹은 null인) buyer를 전달
+        model.addAttribute("kakaoAppKey", kakaoAppKey);
         model.addAttribute("buyer", buyer);
 
         return "member/mypage/mypage-detail";
@@ -150,9 +154,10 @@ public class MypageController {
 
     @GetMapping("/modify")
     public String modifyProfileForm(Model model, Principal principal) {
-        Member member = memberService.getLoginId(principal.getName());
+        Member member = memberService.getMemberByUsername(principal.getName());
 
         model.addAttribute("member", member);
+        model.addAttribute("kakaoAppKey", kakaoAppKey);
 
         return "member/mypage/mypage-modify";
     }
@@ -180,7 +185,7 @@ public class MypageController {
 
 
                 // [수정된 부분] 1. 뷰로 돌아갈 때마다 쓸 수 있게 member 객체를 미리 조회해 둡니다.
-                Member member = memberService.getLoginId(principal.getName());
+                Member member = memberService.getMemberByUsername(principal.getName());
 
                 // 2. DTO 유효성 검사 실패 시
                 if (bindingResult.hasErrors()) {

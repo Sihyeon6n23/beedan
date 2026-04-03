@@ -21,10 +21,11 @@ public class InquiryBoardDetailDto {
     private LocalDateTime brdCreDt;
     private String memBizTtl;
     private String memNm;
-    private String cancelReason;
+    private String brdCanRe;
     private Boolean canEdit;            // 사용자 문의 수정 가능 여부
     private Boolean canCancel;          // 사용자 문의 취소 가능 여부
     private Boolean canAnswer;          // 관리자 답글 작성 가능 여부
     private Boolean canUpdateStatus;    // 관리자 문의 상태 수정 가능 여부
+    private Boolean canEditReply;
     private InquiryReplyDto reply;
 }

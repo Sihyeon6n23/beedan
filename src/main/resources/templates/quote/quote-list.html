@@ -42,18 +42,30 @@
 
         <!-- List -->
         <section class="quote-shell quote-shell--list">
-            <div class="quote-list-head" aria-hidden="true">
+            <div class="quote-list-head">
                 <div>견적 정보</div>
-                <div>상태</div>
-                <div>발행일</div>
-                <div>금액</div>
+                <div class="quote-sortable is-active" data-sort="status" data-dir="asc">
+                    상태 <span class="quote-sort-icon">▼</span>
+                </div>
+                <div class="quote-sortable" data-sort="quUpdDt" data-dir="desc">
+                    최근 업데이트 <span class="quote-sort-icon">▼</span>
+                </div>
+                <div class="quote-sortable" data-sort="quCreDt" data-dir="desc">
+                    발행일 <span class="quote-sort-icon">▼</span>
+                </div>
+                <div>관리자 열람</div>
             </div>
 
             <div class="quote-list-body">
                 <th:block th:each="q : ${quotes}">
-                    <a th:href="@{/quote/detail(quId=${q.quId})}"
+                    <a th:href="${q.quStt == 'TEMP_SAVE' ? '/quote/write?quId=' + q.quId : '/quote/detail?quId=' + q.quId}"
                        class="quote-row"
-                       th:classappend="${!q.quOpYn} ? ' quote-row--featured' : ''">
+                       th:classappend="${!q.quOpYn} ? ' quote-row--featured' : ''"
+                       th:data-qu-id="${q.quId}"
+                       th:data-status="${q.quStt == 'SUBMITTED' ? '0' : q.quStt == 'APPROVED' ? '1' : q.quStt == 'REJECTED' ? '2' : q.quStt == 'EXPIRED' ? '3' : '4'}"
+                       th:data-qu-upd-dt="${q.quUpdDt}"
+                       th:data-qu-cre-dt="${q.quCreDt}"
+                       th:data-qu-op-yn="${q.quOpYn}">
                         <div class="quote-row__primary">
                             <span th:if="${!q.quOpYn}" class="quote-row__unread"></span>
                             <span th:if="${q.quOpYn}" class="quote-row__unread quote-row__unread--empty"></span>
@@ -74,12 +86,14 @@
                                              q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
                         </div>
                         <div class="quote-row__time">
-                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">2024.10.21</span>
+                            <span th:text="${q.quUpdDt != null ? #temporals.format(q.quUpdDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
                         </div>
-                        <div class="quote-row__amount">
-                            <span th:if="${q.totalAmount != null}"
-                                  th:text="${#numbers.formatInteger(q.totalAmount, 3, 'COMMA') + '원'}">0원</span>
-                            <span th:if="${q.totalAmount == null}" class="quote-row__amount--pending">산출 중</span>
+                        <div class="quote-row__time">
+                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
+                        </div>
+                        <div class="quote-row__admin-read">
+                            <span th:if="${q.quAdOpYn}" class="quote-admin-badge quote-admin-badge--read">확인</span>
+                            <span th:unless="${q.quAdOpYn}" class="quote-admin-badge quote-admin-badge--unread">미확인</span>
                         </div>
                     </a>
                 </th:block>
@@ -93,15 +107,146 @@
         </section>
 
         <!-- Pagination -->
-        <footer class="quote-shell quote-shell--pagination">
+        <footer class="quote-shell quote-shell--pagination" th:if="${totalPages >= 1}">
             <div class="quote-pagination">
-                <span class="quote-page-button quote-page-button--wide is-disabled">Prev</span>
-                <a class="quote-page-button is-current" href="#">01</a>
-                <a class="quote-page-button" href="#">02</a>
-                <a class="quote-page-button" href="#">03</a>
-                <a class="quote-page-button quote-page-button--wide" href="#">Next</a>
+                <a class="quote-page-button quote-page-button--wide"
+                   th:if="${currentPage > 1}"
+                   th:href="@{/quote/list(page=${currentPage - 1})}">Prev</a>
+                <span class="quote-page-button quote-page-button--wide is-disabled"
+                      th:if="${currentPage <= 1}">Prev</span>
+
+                <th:block th:each="label, stat : ${pageLabels}">
+                    <a class="quote-page-button"
+                       th:classappend="${stat.count == currentPage} ? ' is-current' : ''"
+                       th:href="@{/quote/list(page=${stat.count})}"
+                       th:text="${label}">01</a>
+                </th:block>
+
+                <a class="quote-page-button quote-page-button--wide"
+                   th:if="${currentPage < totalPages}"
+                   th:href="@{/quote/list(page=${currentPage + 1})}">Next</a>
+                <span class="quote-page-button quote-page-button--wide is-disabled"
+                      th:if="${currentPage >= totalPages}">Next</span>
             </div>
         </footer>
     </section>
+
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const listBody = document.querySelector('.quote-list-body');
+        const sortHeaders = document.querySelectorAll('.quote-sortable');
+        const filterLinks = document.querySelectorAll('.quote-filter');
+
+        // ── 정렬 ──
+        function toCamel(s) {
+            return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
+        }
+
+        function sortRows(key, dir) {
+            const rows = Array.from(listBody.querySelectorAll('.quote-row'));
+            rows.sort(function (a, b) {
+                if (key === 'status') {
+                    var sa = a.dataset.status || '';
+                    var sb = b.dataset.status || '';
+                    var cmp = dir === 'asc' ? sa.localeCompare(sb) : sb.localeCompare(sa);
+                    if (cmp !== 0) return cmp;
+                    var ua = a.dataset.quUpdDt || '';
+                    var ub = b.dataset.quUpdDt || '';
+                    return ub.localeCompare(ua);
+                }
+                const va = a.dataset[key] || '';
+                const vb = b.dataset[key] || '';
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            });
+            rows.forEach(function (r) { listBody.appendChild(r); });
+        }
+
+        sortHeaders.forEach(function (header) {
+            header.addEventListener('click', function () {
+                const sortKey = toCamel(header.dataset.sort);
+                var dir = header.dataset.dir;
+
+                if (header.classList.contains('is-active')) {
+                    dir = dir === 'desc' ? 'asc' : 'desc';
+                } else {
+                    sortHeaders.forEach(function (h) { h.classList.remove('is-active'); });
+                    header.classList.add('is-active');
+                }
+                header.dataset.dir = dir;
+                header.querySelector('.quote-sort-icon').textContent = dir === 'desc' ? '▼' : '▲';
+
+                sortRows(sortKey, dir);
+            });
+        });
+
+        // 초기 정렬: 상태순 + 최근 업데이트순
+        sortRows('status', 'asc');
+
+        // ── 필터 ──
+        var emptyState = document.querySelector('.quote-empty-state');
+        var STATUS_MAP = {
+            '전체': null,
+            '제출완료': 'SUBMITTED',
+            '승인': 'APPROVED',
+            '거절': 'REJECTED',
+            '만료': 'EXPIRED'
+        };
+        var STATUS_CODE_MAP = {
+            'SUBMITTED': '0',
+            'APPROVED': '1',
+            'REJECTED': '2',
+            'EXPIRED': '3'
+        };
+
+        filterLinks.forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                filterLinks.forEach(function (l) { l.classList.remove('is-active'); });
+                link.classList.add('is-active');
+
+                var filterStatus = STATUS_MAP[link.textContent.trim()];
+                var filterCode = filterStatus ? STATUS_CODE_MAP[filterStatus] : null;
+                var rows = listBody.querySelectorAll('.quote-row');
+                var visibleCount = 0;
+                rows.forEach(function (row) {
+                    if (!filterCode) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        var match = row.dataset.status === filterCode;
+                        row.style.display = match ? '' : 'none';
+                        if (match) visibleCount++;
+                    }
+                });
+                if (emptyState) {
+                    emptyState.style.display = visibleCount === 0 ? '' : 'none';
+                }
+            });
+        });
+
+        // ── CSRF 토큰 ──
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // ── 열람 처리 ──
+        listBody.querySelectorAll('.quote-row').forEach(function (row) {
+            row.addEventListener('click', function () {
+                if (row.dataset.quOpYn === 'true') return;
+
+                row.classList.remove('quote-row--featured');
+                var dot = row.querySelector('.quote-row__unread');
+                if (dot) dot.classList.add('quote-row__unread--empty');
+                row.dataset.quOpYn = 'true';
+
+                var quId = row.dataset.quId;
+                var headers = {};
+                headers[csrfHeader] = csrfToken;
+                fetch('/api/quote/' + quId + '/opened', {
+                    method: 'POST', headers: headers
+                });
+            });
+        });
+    });
+    </script>
 </th:block>
 </html>

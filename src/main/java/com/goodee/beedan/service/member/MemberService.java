@@ -32,7 +32,12 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
 
-    public Member getLoginId(String username) {
+    public Member getMemberById(Long userId) {
+        return memberRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("UsernameNotFoundException"));
+    }
+
+    public Member getMemberByUsername(String username) {
         return memberRepository.findByMemLgnId(username)
                 .orElseThrow(() -> new UsernameNotFoundException("UsernameNotFoundException"));
     }

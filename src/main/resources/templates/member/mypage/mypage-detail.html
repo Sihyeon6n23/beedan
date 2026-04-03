@@ -146,41 +146,108 @@
           <div class="flex-grow h-px bg-surface-container-highest"></div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-px shadow-sm border border-stone-100">
-          <div class="space-y-px bg-surface-container-highest">
-            <div class="bg-surface-container-lowest p-8">
+
+          <div class="flex flex-col gap-px bg-surface-container-highest h-full">
+            <div class="bg-surface-container-lowest p-8 flex-1 flex flex-col justify-center">
               <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Company Legal Name</label>
               <p class="text-on-surface font-bold text-lg font-headline" th:text="${member.memBizTtl}">Company Name</p>
             </div>
-            <div class="bg-surface-container-lowest p-8">
+            <div class="bg-surface-container-lowest p-8 flex-1 flex flex-col justify-center">
               <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Business License No.</label>
               <p class="text-on-surface font-medium font-body" th:text="${member.memBizNo}">License No.</p>
             </div>
-            <div class="bg-surface-container-lowest p-8">
+            <div class="bg-surface-container-lowest p-8 flex-1 flex flex-col justify-center">
               <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">CEO / Representative</label>
               <p class="text-on-surface font-medium font-body" th:text="${member.memCeoNm}">CEO Name</p>
             </div>
           </div>
-          <div class="bg-surface-container-lowest p-8 flex flex-col">
+
+          <div class="bg-surface-container-lowest p-8 flex flex-col md:col-span-2 h-full">
             <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4 block">Registered Business Address</label>
-            <div class="flex gap-4 items-start">
+            <div class="flex gap-4 items-start flex-1">
               <div class="w-12 h-12 bg-surface-container flex items-center justify-center flex-shrink-0">
                 <span class="material-symbols-outlined text-zinc-400">location_on</span>
               </div>
-              <div>
-                <p class="text-on-surface font-medium font-body leading-relaxed">
+              <div class="w-full flex flex-col">
+                <p class="text-on-surface font-medium font-body leading-relaxed mb-4">
                   <span th:text="${member.memPosCd}">00000</span><br />
-                  <span th:text="${member.memBizAdr}">Address</span><br />
+                  <span id="targetAddress" th:text="${member.memBizAdr}">Address</span><br />
                   <span th:text="${member.memBizDtAdr}">Detail Address</span>
                 </p>
-                <a href="#" class="text-primary text-[10px] font-bold uppercase tracking-widest mt-4 inline-block hover:underline">View on Map</a>
+
+                <div id="map" class="w-full bg-surface-container border border-outline-variant/30 rounded-sm relative overflow-hidden" style="min-height: 200px; height: 100%;">
+                  <div class="absolute inset-0 flex items-center justify-center text-secondary/40 text-[10px] gap-2">
+                    <span class="material-symbols-outlined text-sm">location_on</span>
+                    위치 정보 로딩 중...
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
+
         </div>
       </section>
     </div>
+    <div th:if="${buyer != null}" id="benefitsModal" class="hidden fixed inset-0 z-[9999] items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
 
+      <div class="bg-surface-container-lowest w-full max-w-6xl max-h-[90vh] overflow-y-auto p-10 relative shadow-2xl border border-stone-200">
+
+        <button type="button" onclick="closeBenefitsModal()" class="absolute top-6 right-6 text-zinc-400 hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-3xl">close</span>
+        </button>
+
+        <div class="mb-8">
+          <span class="text-primary font-black tracking-widest text-xs uppercase mb-2 block">MEMBERSHIP</span>
+          <h2 class="font-headline text-3xl font-extrabold tracking-tighter text-on-surface uppercase">Grade Benefits</h2>
+        </div>
+
+        <div class="bg-surface-container-highest p-8 mb-10 flex flex-col md:flex-row items-center justify-between gap-8 border-l-4 border-primary">
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Current Grade</p>
+            <h3 class="font-headline text-3xl font-extrabold text-primary" th:text="${buyer.bgpGr}">VIP</h3>
+          </div>
+
+          <div th:if="${nextPolicy != null}" class="flex-grow text-right md:border-l border-zinc-300 md:pl-8">
+            <p class="font-body text-zinc-600 text-sm mb-3">
+              다음 등급인 <span class="font-bold text-on-surface" th:text="${nextPolicy.bgpGr}">PREMIUM</span>까지 아래 조건 중 하나만 달성하세요!
+            </p>
+            <div class="flex gap-8 justify-end">
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">남은 구매 횟수</p>
+                <p class="font-headline text-xl font-black text-on-surface"><span th:text="${neededCnt}">5</span>건</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">남은 구매 금액</p>
+                <p class="font-headline text-xl font-black text-on-surface">
+                  <span th:text="${#numbers.formatInteger(neededAmt, 0, 'COMMA')}">500,000</span>원
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div th:if="${nextPolicy == null}" class="flex-grow text-right md:border-l border-zinc-300 md:pl-8">
+            <p class="font-body text-primary font-bold text-lg">최고 등급에 도달하셨습니다. 모든 혜택을 누리세요!</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <th:block th:each="policy, stat : ${policyList}">
+            <div th:replace="~{fragments/buyerGrade/grade :: tierCard(
+      ${policy.bgpGr},
+      'workspace_premium',
+      ${policy.bgpDes}
+    )}"></div>
+          </th:block>
+        </div>
+
+      </div>
+    </div>
   </section>
+  <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}"
+          type="text/javascript"
+          th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}"></script>
+
   <script inline="javascript">
     /* 전역 스코프에 안전하게 등록 */
     window.openBenefitsModal = function() {
@@ -269,6 +336,68 @@
       if (event.target === bModal) closeBenefitsModal();
       if (event.target === wModal) closeWithdrawalModal();
     };
+  </script>
+  <script inline="javascript">
+    (function() {
+      function initMap() {
+        const container = document.getElementById('map');
+        const addressElement = document.getElementById('targetAddress');
+
+        if (!container || !addressElement) return;
+
+        const address = addressElement.innerText.trim();
+        if (!address || address === 'Address') return;
+
+        // 여기서 load를 호출해야 비로소 services(주소검색 도구)가 준비됩니다.
+        kakao.maps.load(function() {
+          console.log("✅ 카카오 맵 엔진 구동 완료! 주소 검색 시작:", address);
+
+          const options = {
+            center: new kakao.maps.LatLng(37.566826, 126.978656), // 임시 중심점
+            level: 3
+          };
+          const map = new kakao.maps.Map(container, options);
+          const geocoder = new kakao.maps.services.Geocoder(); // 이제 작동합니다!
+
+          geocoder.addressSearch(address, function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+              // 마커 생성 및 지도 중심 이동
+              new kakao.maps.Marker({
+                map: map,
+                position: coords
+              });
+              map.setCenter(coords);
+
+              // "위치 정보 로딩 중..." 가림막 제거
+              const placeholder = container.querySelector('.absolute');
+              if (placeholder) placeholder.style.display = 'none';
+
+              // 레이아웃 보정 (렌더링 깨짐 방지)
+              setTimeout(() => {
+                map.relayout();
+                map.setCenter(coords);
+              }, 300);
+            } else {
+              console.warn("지도 주소 검색 실패:", status);
+              container.innerHTML = `<div class='flex items-center justify-center h-full text-[10px] text-secondary'>지도 검색 실패: 정확한 주소가 아닙니다.</div>`;
+            }
+          });
+        });
+      }
+
+      // 대기 로직: services 대신 load() 함수가 준비되었는지만 확인
+      const checkKakao = setInterval(() => {
+        if (typeof kakao !== 'undefined' && kakao.maps && typeof kakao.maps.load === 'function') {
+          clearInterval(checkKakao);
+          initMap();
+        }
+      }, 100);
+
+      // 무한 루프 방지 (3초 후 종료)
+      setTimeout(() => clearInterval(checkKakao), 3000);
+    })();
   </script>
 </th:block>
 

@@ -28,7 +28,6 @@ public class QuoteDetailResponse {
     private BigDecimal quDtFgPr;
     private BigDecimal quDtKrPr;
     private BigDecimal quDtPr;
-    private String quDtRe;
 
     public static QuoteDetailResponse from(QuoteDetail quoteDetail) {
         return QuoteDetailResponse.builder()
@@ -47,7 +46,6 @@ public class QuoteDetailResponse {
                 .quDtFgPr(quoteDetail.getQuDtFgPr())
                 .quDtKrPr(quoteDetail.getQuDtKrPr())
                 .quDtPr(quoteDetail.getQuDtPr())
-                .quDtRe(quoteDetail.getQuDtRe())
                 .build();
     }
 }

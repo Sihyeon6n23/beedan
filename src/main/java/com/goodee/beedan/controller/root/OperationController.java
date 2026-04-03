@@ -6,6 +6,7 @@ import com.goodee.beedan.repository.quote.ShippingInsuranceRepository;
 import com.goodee.beedan.repository.quote.StockInspectionRepository;
 import com.goodee.beedan.service.buyer.BuyerGradePolicyService;
 import com.goodee.beedan.service.buyer.FeePolicyService;
+import com.goodee.beedan.repository.quote.QuoteSubmitCheckRepository;
 import com.goodee.beedan.service.quote.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,7 @@ public class OperationController {
     private final ShippingRateService shippingRateService;
     private final PortCustomsRateService portCustomsRateService;
     private final DomesticDeliveryRateService domesticDeliveryRateService;
+    private final QuoteSubmitCheckRepository quoteSubmitCheckRepository;
 
     @GetMapping("/root/operation")
     public String getOperationPolicy(Model model) {
@@ -39,6 +41,7 @@ public class OperationController {
         model.addAttribute("shippingRates", shippingRateService.findAllActive());
         model.addAttribute("portCustomsRates", portCustomsRateService.findAllActive());
         model.addAttribute("deliveryRates", domesticDeliveryRateService.findAllActive());
+        model.addAttribute("submitChecks", quoteSubmitCheckRepository.findAllByQscYnTrueAndQscRqYnTrueOrderByQscSortAsc());
 
         return "root/operation/operation-policy";
     }

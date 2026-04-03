@@ -62,6 +62,13 @@ public class QuoteShipFeeService {
     }
 
     /**
+     * 견적 아이디로 배송비 전체 조회
+     */
+    public List<QuoteShipFee> findAllByQuote(Long quId) {
+        return quoteShipFeeRepository.findAllByQuId(quId);
+    }
+
+    /**
      * 공장별 배송비 조회
      */
     public QuoteShipFee findByQuoteInfoAndFactory(Long quInfoId, Long faId) {

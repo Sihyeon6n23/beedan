@@ -36,4 +36,5 @@ scheduler-setting.json
 security-policy.json
 
 ### DB ###
+data.sql
 schema.sql
