@@ -29,6 +29,7 @@ public class AuthRestController {
 
     }
 
+    // impUid반환함.
     @PostMapping("/phone-certification")
     public Mono<ResponseEntity<Map<String, Object>>> postPhoneVerification (
             @RequestBody Map<String, String> body) {
@@ -42,7 +43,7 @@ public class AuthRestController {
     public Boolean postIdDuplicateChecked(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         try {
-            memberService.getLoginId(username);
+            memberService.getMemberByUsername(username);
             return false;
         } catch (UsernameNotFoundException e) {
             System.out.println("사용가능항아이디");

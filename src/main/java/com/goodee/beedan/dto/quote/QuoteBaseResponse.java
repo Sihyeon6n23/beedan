@@ -34,7 +34,7 @@ public class QuoteBaseResponse {
                 .quRid(quoteBase.getQuRid())
                 .quStt(quoteBase.getQuStt().name())
                 .quExpDt(quoteBase.getQuExpDt())
-                .quOpenYn(quoteBase.getQuOpYn())
+                .quOpenYn(quoteBase.getQuUsOpYn())
                 .quCon(quoteBase.getQuCon())
                 .quCreDt(quoteBase.getQuCreDt())
                 .quUpdDt(quoteBase.getQuUpdDt())

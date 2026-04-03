@@ -7,6 +7,8 @@ import com.goodee.beedan.repository.quote.QuoteBaseRepository;
 import groovy.util.logging.Slf4j;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,13 @@ public class QuoteBaseService {
     }
 
     /**
+     * 전체 견적 조회
+     */
+    public List<QuoteBase> findAll() {
+        return quoteBaseRepository.findAll();
+    }
+
+    /**
      * 협상별 견적 전체 조회
      */
     public List<QuoteBase> findAllByNego(Long ngId) {
@@ -74,6 +83,10 @@ public class QuoteBaseService {
      */
     public List<QuoteBase> findAllByReceiver(Long quRid) {
         return quoteBaseRepository.findAllByQuRid(quRid);
+    }
+
+    public Page<QuoteBase> findAllByReceiver(Long quRid, Pageable pageable) {
+        return quoteBaseRepository.findAllByQuRid(quRid, pageable);
     }
 
     /**
@@ -128,13 +141,24 @@ public class QuoteBaseService {
     }
 
     /**
-     * 견적 열람 처리
+     * 운영자 열람 처리
      */
     @Transactional
-    public QuoteBase open(Long quId) {
+    public QuoteBase adminOpen(Long quId) {
         QuoteBase quoteBase = findById(quId);
-        quoteBase.opened();
-        log.info("견적 열람 처리 완료. ID: {}", quId);
+        quoteBase.adminOpened();
+        log.info("운영자 열람 처리 완료. ID: {}", quId);
+        return quoteBase;
+    }
+
+    /**
+     * 사용자 열람 처리
+     */
+    @Transactional
+    public QuoteBase userOpen(Long quId) {
+        QuoteBase quoteBase = findById(quId);
+        quoteBase.userOpened();
+        log.info("사용자 열람 처리 완료. ID: {}", quId);
         return quoteBase;
     }
 }

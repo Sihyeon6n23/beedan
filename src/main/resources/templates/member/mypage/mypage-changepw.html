@@ -33,7 +33,7 @@
                             </p>
                         </div>
 
-                        <form th:action="@{/profile/password}" method="POST" class="space-y-8">
+                        <form th:action="@{/mypage/changepw}" th:object="${passwordForm}" method="POST" class="space-y-8">
                             <div class="space-y-3">
                                 <label class="block text-xs font-bold uppercase tracking-[0.2em] text-secondary" for="current_password">현재 비밀번호</label>
                                 <div class="relative">
@@ -44,6 +44,9 @@
                                            placeholder="현재 사용 중인 비밀번호를 입력하세요"
                                            required />
                                 </div>
+                                <p th:if="${#fields.hasErrors('currentPassword')}"
+                                   th:errors="*{currentPassword}"
+                                   style="color: red;">에러 메시지</p>
                             </div>
 
                             <div class="space-y-3">
@@ -64,6 +67,9 @@
                                        class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all"
                                        placeholder="비밀번호를 다시 한 번 입력하세요"
                                        required />
+                                <p th:if="${#fields.hasErrors('confirmPassword')}"
+                                   th:errors="*{confirmPassword}"
+                                   style="color: red;">에러 메시지</p>
                             </div>
 
                             <div class="pt-4">

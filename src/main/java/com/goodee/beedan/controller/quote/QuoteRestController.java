@@ -13,6 +13,7 @@ import com.goodee.beedan.service.quote.DomesticDeliveryRateService;
 import com.goodee.beedan.service.quote.PortCustomsRateService;
 import com.goodee.beedan.service.quote.QuoteBaseService;
 import com.goodee.beedan.service.quote.QuoteDetailService;
+import com.goodee.beedan.service.quote.QuoteSubmitCheckService;
 import com.goodee.beedan.service.quote.ShippingRateService;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,6 +48,7 @@ public class QuoteRestController {
     private final FeePolicyService feePolicyService;
     private final com.goodee.beedan.repository.receiver.ReceiverRepository receiverRepository;
     private final com.goodee.beedan.repository.quote.QuoteInfoRepository quoteInfoRepository;
+    private final QuoteSubmitCheckService quoteSubmitCheckService;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -54,6 +56,20 @@ public class QuoteRestController {
             "METRO", "수도권 (인천·세종·대전)",
             "PROVINCE", "지방"
     );
+
+    // ── 사용자 견적 열람 처리 ─────────────────────────────────
+    @PostMapping("/{quId}/opened")
+    public ResponseEntity<Void> markOpened(@PathVariable Long quId) {
+        quoteBaseService.userOpen(quId);
+        return ResponseEntity.ok().build();
+    }
+
+    // ── 운영자 견적 열람 처리 ─────────────────────────────────
+    @PostMapping("/{quId}/admin-opened")
+    public ResponseEntity<Void> markAdminOpened(@PathVariable Long quId) {
+        quoteBaseService.adminOpen(quId);
+        return ResponseEntity.ok().build();
+    }
 
     // ── 국내 배달비 계산 (지역별 그룹핑) ──────────────
     @PostMapping("/delivery-fee")
@@ -115,6 +131,41 @@ public class QuoteRestController {
         }
     }
 
+    // ── 제출 체크 항목 조회 ────────────────────────────
+    @GetMapping("/submit-checks")
+    public ResponseEntity<List<QuoteSubmitCheck>> getSubmitChecks() {
+        return ResponseEntity.ok(quoteSubmitCheckService.findAllActive());
+    }
+
+    // ── 견적 제출 ─────────────────────────────────────
+    @PostMapping("/submit")
+    public ResponseEntity<Map<String, Object>> submitQuote(
+            @RequestBody SubmitRequest request) {
+        try {
+            quoteBaseService.submit(request.getQuId());
+            if (request.getChecks() != null && !request.getChecks().isEmpty()) {
+                quoteSubmitCheckService.saveCheckLog(request.getQuId(), request.getChecks());
+            }
+            return ResponseEntity.ok(Map.of(
+                    "status", "ok",
+                    "redirectUrl", "/quote/detail?quId=" + request.getQuId()
+            ));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("status", "error", "message", "제출 실패: " + e.getMessage()));
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class SubmitRequest {
+        private Long quId;
+        private Map<Long, Boolean> checks; // key: qscId, value: 동의 여부
+    }
+
     // ── 임시저장 ─────────────────────────────────────
     @PostMapping("/draft")
     public ResponseEntity<Map<String, Object>> saveDraft(
@@ -165,6 +216,12 @@ public class QuoteRestController {
                         .foreignPrice(stock.getStPr())
                         .krwTotal(item.getSubtotalKrw())
                         .receiverId(item.getRcId())
+                        .group(item.getGrp())
+                        .rcRegion(item.getRcRgn())
+                        .rcName(item.getRcNm())
+                        .rcAddress(item.getRcAdr())
+                        .rcPhone(item.getRcPhn())
+                        .rcMemo(item.getRcMemo())
                         .build();
                 quoteDetailService.save(detail);
             }
@@ -231,7 +288,7 @@ public class QuoteRestController {
                 List<EstimateItem> groupItems = entry.getValue();
 
                 String countryCode = factory != null ? factory.getFaCCd() : null;
-                String factoryName = factory != null ? factory.getFaNm() : "알 수 없음";
+                String factoryName = factory != null ? factory.getFaNm() : "알 수 없음 (큐레이터가 공급처 확인 후 재안내드립니다)";
                 String factoryCity = factory != null ? factory.getFaCty() : null;
 
                 // 그룹 내 합산
@@ -568,6 +625,13 @@ public class QuoteRestController {
             private Integer unGQn;
             private BigDecimal subtotalKrw;  // 사용자 조정 소계 (한화)
             private Long rcId;               // 수령지 ID
+            // 분할배송
+            private Integer grp;             // 그룹 인덱스 (행 번호)
+            private String rcRgn;            // 배송 지역
+            private String rcNm;             // 수령인명
+            private String rcAdr;            // 수령지 주소
+            private String rcPhn;            // 수령인 연락처
+            private String rcMemo;           // 배달 요청사항
         }
     }
 

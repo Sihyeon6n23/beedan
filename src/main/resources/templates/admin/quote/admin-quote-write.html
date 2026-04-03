@@ -1,10 +1,389 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+                ~{::title},
+                null,
+                ~{::content}
+        )}">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:fragment="title">BEEDAN | 관리자 견적 작성</title>
 </head>
-<body>
+<body th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/quote/quote-write.css}">
+<link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
+<link rel="stylesheet" th:href="@{/css/quote/exchangeRate.css}">
+<link rel="stylesheet" th:href="@{/css/quote/feeCards.css}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+<div class="page-wrapper">
 
+    <!-- Main Content -->
+    <main class="main">
+        <div class="main-content-area">
+
+            <!-- Header Section -->
+            <section class="header-section">
+                <h1 class="page-title">견적 작성</h1>
+            </section>
+
+            <!-- Status Timeline -->
+            <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
+
+            <!-- Exchange Rate Section -->
+            <div th:replace="~{fragments/quoteAndPayment/exchangeRate :: exchangeRateCard(${exchangeRates}, 0)}"></div>
+
+            <!-- Quote Manifest Section -->
+            <section class="quote-manifest">
+                <div class="manifest-header">
+                    <h2 class="manifest-id" th:text="${(ngNm != null ? ngNm : 'N/A') + (quCd != null ? quCd : '')}">협상명-QU0000</h2>
+                    <span class="manifest-count" th:text="${cartToQuote != null ? cartToQuote.items.size() + '개의 아이템' : '0개의 아이템'}">4개의 아이템</span>
+                </div>
+
+                <!-- Table -->
+                <div class="table-wrapper">
+                    <table class="quote-table">
+                        <thead>
+                        <tr>
+                            <th class="col-no">No.</th>
+                            <th class="col-product">상품</th>
+                            <th class="col-id">상품 아이디</th>
+                            <th class="col-qty">수량</th>
+                            <th class="col-spec">규격 <button type="button" class="th-info-btn">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                                <span class="th-tooltip" th:text="#{tooltip.quote.spec}"></span>
+                            </button></th>
+                            <th class="col-price-unit">공급가액 <button type="button" class="th-info-btn">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                                <span class="th-tooltip" th:text="#{tooltip.quote.priceUnit}"></span>
+                            </button></th>
+                            <th class="col-price-total">공급가 총액</th>
+                            <th class="col-subtotal">소계(세전)</th>
+                            <th class="col-tax">관세(예상) <button type="button" class="th-info-btn">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="6" r="5.25" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.25V8.25M6 3.75v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                                <span class="th-tooltip" th:text="#{tooltip.quote.tax}"></span>
+                            </button></th>
+                            <th class="col-shipping">배송지</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${cartToQuote?.items}"
+                            class="quote-row"
+                            th:attr="data-st-id=${item.stId},
+                                     data-st-pr=${item.stPr},
+                                     data-un-g-qn=${item.unGQn},
+                                     data-un-g-nm=${item.unGNm},
+                                     data-st-cur=${item.stCur},
+                                     data-hs-du-ra=${item.hsDuRa != null ? item.hsDuRa : 0}"
+                            th:data-ship-cards="${item.savedShipCardsJson}">
+                            <td class="col-no" th:text="${item.no}">1</td>
+                            <td class="col-product">
+                                <span class="product-name" th:text="${item.stNm}">ESSENTIAL OVERSIZED TEE</span>
+                                <span class="product-material" th:text="${item.stBrNm}">Brand</span>
+                            </td>
+                            <td class="col-id product-code" th:text="${item.stCd}">BDN-ES-001</td>
+                            <td class="col-qty">
+                                <div class="qty-control">
+                                    <button type="button" class="qty-btn qty-down" aria-label="감소">&#8722;</button>
+                                    <input type="number" class="qty-input" th:value="${item.qty}" min="1" />
+                                    <button type="button" class="qty-btn qty-up" aria-label="증가">&#43;</button>
+                                </div>
+                            </td>
+                            <td class="col-spec">
+                                <div class="spec-control">
+                                    <span class="spec-value">0</span>
+                                    <select class="spec-select">
+                                        <option th:each="ug : ${unitGroups}"
+                                                th:value="${ug.unGQn}"
+                                                th:data-ug-id="${ug.unGId}"
+                                                th:text="${ug.unGNm}"
+                                                th:selected="${ug.unGNm == item.unGNm}">다스</option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="col-price-unit text-right" th:text="${item.stCur} + ${#numbers.formatInteger(item.stPr, 3, 'COMMA')}">¥2,400</td>
+                            <td class="col-price-total text-right">
+                                <span class="total-pr-value" th:text="'¥' + ${#numbers.formatInteger(item.totalPr, 3, 'COMMA')}">¥2,400,000</span>
+                            </td>
+                            <td class="col-subtotal">
+                                <span class="subtotal-krw-total">-</span>
+                                <div class="subtotal-control">
+                                    <span class="subtotal-currency">₩</span>
+                                    <input type="text" class="subtotal-input" placeholder="자동 계산"
+                                           th:value="${item.savedSubtotalKrw != null ? #numbers.formatInteger(item.savedSubtotalKrw, 3, 'COMMA') : ''}"
+                                           th:data-user-edited="${item.savedSubtotalKrw != null ? 'true' : ''}" />
+                                    <svg class="subtotal-edit-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8.5 1.5l2 2M1 11l.7-2.8L9 1l2 2-7.2 7.2L1 11z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </td>
+                            <td class="col-tax text-right">
+                                <span class="tax-hs" th:text="${item.hsCd != null ? item.hsCd : '-'}">6201.90-0000</span>
+                                <span class="tax-rate" th:text="${item.hsDuRa != null ? #numbers.formatDecimal(item.hsDuRa * 100, 1, 'COMMA', 1, 'POINT') + '%' : '-'}">13.0%</span>
+                                <span class="tax-amount">-</span>
+                            </td>
+                            <td class="col-shipping">
+                                <button type="button" class="shipping-btn"
+                                        th:data-region="${defaultReceiver != null ? defaultReceiver.rcRgn : 'SEOUL'}"
+                                        onclick="openShippingModal(this)">
+                                    <span class="shipping-addr" th:text="${defaultReceiver != null ? defaultReceiver.rcAdr : '배송지를 선택하세요'}">배송지를 선택하세요</span>
+                                    <span class="shipping-meta"
+                                          th:text="${item.savedShipCards != null && item.savedShipCards.size() > 1
+                                              ? '분할배송 (' + item.savedShipCards.size() + '건)'
+                                              : '단일배송'}">단일배송</span>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 상품가 소계 (물품 대금 + 예상 관세) -->
+            <div class="quote-options-subtotal">
+                <div class="quote-options-subtotal-breakdown">
+                    <div class="quote-options-subtotal-row">
+                        <span class="quote-options-subtotal-row-label">물품 대금</span>
+                        <span class="quote-options-subtotal-row-value" id="qo-item-total">-</span>
+                    </div>
+                    <div class="quote-options-subtotal-row">
+                        <span class="quote-options-subtotal-row-label">예상 관세</span>
+                        <span class="quote-options-subtotal-row-value" id="qo-duty-total">-</span>
+                    </div>
+                </div>
+                <div class="quote-options-subtotal-total">
+                    <span class="quote-options-subtotal-label">상품가 소계</span>
+                    <span class="quote-options-subtotal-value" id="qo-subtotal">-</span>
+                </div>
+            </div>
+
+            <!-- Quote Options & Subtotal -->
+            <section class="quote-options-section">
+                <div class="quote-options-grid">
+                    <!-- 적하보험 카드 -->
+                    <div class="quote-options-card">
+                        <div class="quote-options-card-header">
+                            <h3 class="quote-options-card-title">적하보험 (선택)</h3>
+                        </div>
+                        <div class="quote-options-card-body">
+                            <div th:each="ins : ${insurances}" class="quote-option-item"
+                                 th:data-type="insurance" th:data-id="${ins.siId}" th:data-rate="${ins.siAm}">
+                                <label class="quote-option-row">
+                                    <input type="checkbox" class="quote-option-check qo-service-check" />
+                                    <span class="quote-option-content">
+                                        <span class="quote-option-name" th:text="${ins.siNm}">적하보험 (기본)</span>
+                                        <span class="quote-option-desc" th:text="'공급가의 ' + ${#numbers.formatDecimal(ins.siAm * 100, 1, 'COMMA', 1, 'POINT')} + '%'">공급가의 0.5%</span>
+                                    </span>
+                                    <span class="quote-option-value">-</span>
+                                </label>
+                                <button type="button" class="quote-option-toggle" th:if="${ins.siDes != null}" aria-label="설명 보기">
+                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <div class="quote-option-detail" th:if="${ins.siDes != null}">
+                                    <p th:text="${ins.siDes}"></p>
+                                </div>
+                            </div>
+                            <p class="quote-options-empty" th:if="${#lists.isEmpty(insurances)}">등록된 보험 상품이 없습니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- 품질 검사 카드 -->
+                    <div class="quote-options-card">
+                        <div class="quote-options-card-header">
+                            <h3 class="quote-options-card-title">품질 검사 (선택)</h3>
+                        </div>
+                        <div class="quote-options-card-body">
+                            <div th:each="insp : ${inspections}" class="quote-option-item"
+                                 th:data-type="inspection" th:data-id="${insp.stiId}" th:data-amount="${insp.stiAm}">
+                                <label class="quote-option-row">
+                                    <input type="checkbox" class="quote-option-check qo-service-check" />
+                                    <span class="quote-option-content">
+                                        <span class="quote-option-name" th:text="${insp.stiNm}">1차 품질 검사</span>
+                                        <span class="quote-option-desc" th:text="${insp.stiAm == 0} ? '무료' : '₩' + ${#numbers.formatInteger(insp.stiAm, 3, 'COMMA')}">무료</span>
+                                    </span>
+                                    <span class="quote-option-value" th:text="${insp.stiAm == 0} ? '₩0' : '₩' + ${#numbers.formatInteger(insp.stiAm, 3, 'COMMA')}">-</span>
+                                </label>
+                                <button type="button" class="quote-option-toggle" th:if="${insp.stiDes != null}" aria-label="설명 보기">
+                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <div class="quote-option-detail" th:if="${insp.stiDes != null}">
+                                    <p th:text="${insp.stiDes}"></p>
+                                </div>
+                            </div>
+                            <p class="quote-options-empty" th:if="${#lists.isEmpty(inspections)}">등록된 검사 항목이 없습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logistics & Procurement Fees -->
+            <div th:replace="~{fragments/quoteAndPayment/feeCards :: feeCards}"></div>
+
+            <!-- Memo -->
+            <div class="memo-section">
+                <label class="memo-label" for="quoteMemo">메모 / 특이사항</label>
+                <textarea id="quoteMemo" class="memo-textarea" placeholder="운임 조건, 포장 요청, 검수 기준 등 담당 큐레이터에게 전달할 내용을 자유롭게 입력하세요." th:text="${draftMemo != null ? draftMemo : ''}"></textarea>
+            </div>
+
+            <!-- Save Draft Button -->
+            <div class="action-center">
+                <button class="btn-save-draft" id="btnSaveDraft" th:data-qu-id="${quId}">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1h6l2 2v6H1V1zm2 0v3h4V1M3 6h4" stroke="#1a1c1c" stroke-width="1.2" stroke-linejoin="round"/>
+                    </svg>
+                    임시저장
+                </button>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-summary-card">
+                <div class="summary-background">
+                    <div class="summary-heading">총 주문 명세</div>
+
+                    <div class="summary-items">
+                        <div class="summary-item">
+                            <span class="summary-label">물품 대금 합계</span>
+                            <span class="summary-value" id="os-item-total">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">예상 운임 비용</span>
+                            <span class="summary-value" id="os-logistics">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">구매 대행 수수료</span>
+                            <span class="summary-value" id="os-procurement">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">예상 세액 합계</span>
+                            <span class="summary-value" id="os-tax">-</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-total-block">
+                        <span class="summary-total-label">최종 합계 (세후)</span>
+                        <span class="summary-total-value" id="os-grand-total">-</span>
+                    </div>
+
+                    <button class="btn-submit" id="btnOpenSubmitModal">
+                        견적 요청서 제출
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 8h10M9 4l4 4-4 4" stroke="#705e00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <p class="summary-disclaimer">
+                        본 견적 금액은 현재 환율 및 물류 상황을 반영한 예상치이며<br />
+                        최종 청구 금액과는 약 ±2% 내외의 차이가 발생할 수 있습니다
+                    </p>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="btn-pdf">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="#1a1c1c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        PDF 다운로드
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- ===== 배송지 모달 ===== -->
+<div class="modal-overlay" id="modal-shipping" role="dialog" aria-modal="true">
+    <div class="modal shipping-modal">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <span class="modal-tag">배송 설정</span>
+                <h2 class="modal-title">배송지 및 배송 옵션</h2>
+            </div>
+            <button class="modal-close" onclick="closeShippingModal()" aria-label="닫기">&#10005;</button>
+        </div>
+        <div class="modal-body">
+            <div class="ship-type-section">
+                <p class="modal-section-label">배송 유형</p>
+                <div class="ship-type-toggle">
+                    <button type="button" class="ship-type-btn ship-type-btn--active" data-type="single">단일배송</button>
+                    <button type="button" class="ship-type-btn" data-type="split">분할배송</button>
+                </div>
+                <p class="ship-type-desc" id="shipTypeDesc">모든 상품을 하나의 배송지로 발송합니다.</p>
+            </div>
+            <div class="ship-addr-section">
+                <p class="modal-section-label">수령지 정보</p>
+                <div class="ship-addr-list" id="shipAddrList"></div>
+                <button type="button" class="ship-addr-add-btn" id="shipAddrAddBtn" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    배송지 추가
+                </button>
+            </div>
+            <div class="modal-divider"></div>
+            <div class="ship-fee-section">
+                <p class="modal-section-label">예상 국내 배달비</p>
+                <div id="smRegionGroups"></div>
+                <div class="ship-fee-row ship-fee-total">
+                    <span class="ship-fee-label">배달비 합계 (<span id="smCount">0</span>건)</span>
+                    <span class="ship-fee-value" id="smTotal">-</span>
+                </div>
+            </div>
+        </div>
+        <div class="shipping-modal-footer">
+            <button type="button" class="btn-shipping-cancel" onclick="closeShippingModal()">취소</button>
+            <button type="button" class="btn-shipping-confirm" onclick="confirmShipping()">적용</button>
+        </div>
+    </div>
+</div>
+
+<!-- 임시저장 복원 데이터 (JS용) -->
+<span id="js-draft-data"
+      th:data-si-id="${draftSiId != null ? draftSiId : ''}"
+      th:data-sti-id="${draftStiId != null ? draftStiId : ''}" style="display:none"></span>
+<span id="js-default-region"
+      th:data-region="${defaultReceiver != null && defaultReceiver.rcRgn != null ? defaultReceiver.rcRgn : 'SEOUL'}"
+      th:data-name="${defaultReceiver != null ? defaultReceiver.rcNm : ''}"
+      th:data-addr="${defaultReceiver != null ? defaultReceiver.rcAdr : ''}"
+      th:data-rcid="${defaultReceiver != null ? defaultReceiver.rcId : ''}" style="display:none"></span>
+<select id="js-domestic-regions" style="display:none">
+    <option th:each="dr : ${domesticRates}" th:value="${dr.ddrRgn}" th:data-am="${dr.ddrAm}" th:data-eam="${dr.ddrEAm != null ? dr.ddrEAm : 0}">지역</option>
+</select>
+<!-- ===== 제출 확인 모달 ===== -->
+<div class="modal-overlay" id="modal-submit-confirm" role="dialog" aria-modal="true">
+    <div class="modal submit-confirm-modal">
+        <div class="modal-header">
+            <div class="modal-header-left">
+                <h2 class="modal-title" th:text="#{submit.title}">견적 요청서 제출</h2>
+            </div>
+            <button class="modal-close" id="btnCloseSubmitModal" aria-label="닫기">&#10005;</button>
+        </div>
+        <div class="modal-body">
+            <div class="submit-section" id="submit-required-section" style="display:none">
+                <p class="submit-section-label">확인 사항 <span class="submit-required-tag">(필수)</span></p>
+                <div class="submit-checklist" id="submit-required-list"></div>
+            </div>
+            <div class="submit-section" id="submit-optional-section" style="display:none">
+                <p class="submit-section-label">알림 설정 <span class="submit-optional-tag">(선택)</span></p>
+                <div class="submit-checklist" id="submit-optional-list"></div>
+            </div>
+            <label class="submit-final-agree">
+                <input type="checkbox" id="chkSubmitAgree" disabled />
+                <span th:text="#{submit.finalAgree}">위 필수 사항을 모두 확인하였으며, 견적 요청서를 제출합니다.</span>
+            </label>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" id="btnCancelSubmit" th:text="#{submit.btn.cancel}">취소</button>
+            <button type="button" class="btn-confirm" id="btnConfirmSubmit" disabled th:text="#{submit.btn.confirm}">제출하기</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/quote/quote-write.js}"></script>
 </body>
 </html>

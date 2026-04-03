@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Negotiation Overview', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 협상 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'negotiation-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/quote/negotiation-list.css}">
+
+    <section class="ng-page ng-list-page">
+        <!-- Header -->
+        <header class="ng-shell ng-shell--header">
+            <div class="ng-shell__heading">
+                <span class="ng-kicker">Negotiation Overview</span>
+                <h2 class="ng-title">협상 목록</h2>
+            </div>
+            <div class="ng-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Toolbar -->
+        <section class="ng-shell ng-shell--toolbar" aria-label="협상 목록 필터">
+            <div class="ng-toolbar">
+                <div class="ng-toolbar__filters">
+                    <div class="ng-filter-set" data-filter-group="status">
+                        <a class="ng-filter is-active" href="#">전체</a>
+                        <a class="ng-filter" href="#">진행중</a>
+                        <a class="ng-filter" href="#">종료</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- List -->
+        <section class="ng-shell ng-shell--list">
+            <div class="ng-list-head">
+                <div>협상 정보</div>
+                <div class="ng-sortable is-active" data-sort="status" data-dir="asc">
+                    상태 <span class="ng-sort-icon">▼</span>
+                </div>
+                <div class="ng-sortable" data-sort="latestUpdate" data-dir="desc">
+                    최근 업데이트 <span class="ng-sort-icon">▼</span>
+                </div>
+                <div class="ng-sortable" data-sort="ngCreDt" data-dir="desc">
+                    시작일 <span class="ng-sort-icon">▼</span>
+                </div>
+            </div>
+
+            <div class="ng-list-body">
+                <th:block th:each="ng : ${negotiations}">
+                    <a th:href="@{/quote/negotiation/detail(ngId=${ng.ngId})}"
+                       class="ng-row"
+                       th:classappend="(${ng.ongoing} ? '' : ' ng-row--closed') + (${ng.hasUnread} ? ' ng-row--featured' : '')"
+                       th:data-status="${ng.ongoing} ? '0' : '1'"
+                       th:data-latest-update="${ng.latestUpdate}"
+                       th:data-ng-cre-dt="${ng.ngCreDt}">
+                        <div class="ng-row__primary">
+                            <span th:if="${ng.hasUnread}" class="ng-row__dot"></span>
+                            <span th:unless="${ng.hasUnread}" class="ng-row__dot ng-row__dot--empty"></span>
+                            <div class="ng-row__text">
+                                <h2>
+                                    <span th:text="${ng.ngNm}">QU0000</span>
+                                    <small th:text="'견적 ' + ${ng.quoteCount} + '건'">견적 0건</small>
+                                </h2>
+                            </div>
+                        </div>
+                        <div class="ng-row__status">
+                            <span class="ng-badge"
+                                  th:classappend="${ng.ongoing} ? ' ng-badge--ongoing' : ' ng-badge--closed'"
+                                  th:text="${ng.ongoing} ? '진행중' : '종료'">상태</span>
+                        </div>
+                        <div class="ng-row__time">
+                            <span th:text="${ng.latestUpdate != null ? #temporals.format(ng.latestUpdate, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
+                        </div>
+                        <div class="ng-row__time">
+                            <span th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
+                        </div>
+                    </a>
+                </th:block>
+
+                <div class="ng-empty-state"
+                     th:if="${#lists.isEmpty(negotiations)}">
+                    <strong>표시할 협상이 없습니다.</strong>
+                    <p>아직 진행한 협상이 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pagination -->
+        <footer class="ng-shell ng-shell--pagination" th:if="${totalPages >= 1}">
+            <div class="ng-pagination">
+                <a class="ng-page-button ng-page-button--wide"
+                   th:if="${currentPage > 1}"
+                   th:href="@{/quote/negotiation/list(page=${currentPage - 1})}">Prev</a>
+                <span class="ng-page-button ng-page-button--wide is-disabled"
+                      th:if="${currentPage <= 1}">Prev</span>
+
+                <th:block th:each="label, stat : ${pageLabels}">
+                    <a class="ng-page-button"
+                       th:classappend="${stat.count == currentPage} ? ' is-current' : ''"
+                       th:href="@{/quote/negotiation/list(page=${stat.count})}"
+                       th:text="${label}">01</a>
+                </th:block>
+
+                <a class="ng-page-button ng-page-button--wide"
+                   th:if="${currentPage < totalPages}"
+                   th:href="@{/quote/negotiation/list(page=${currentPage + 1})}">Next</a>
+                <span class="ng-page-button ng-page-button--wide is-disabled"
+                      th:if="${currentPage >= totalPages}">Next</span>
+            </div>
+        </footer>
+    </section>
+
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const listBody = document.querySelector('.ng-list-body');
+        const sortHeaders = document.querySelectorAll('.ng-sortable');
+
+        function toCamel(s) {
+            return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
+        }
+
+        function sortRows(key, dir) {
+            const rows = Array.from(listBody.querySelectorAll('.ng-row'));
+            rows.sort(function (a, b) {
+                // 상태 정렬 시 2차 정렬로 최근 업데이트 적용
+                if (key === 'status') {
+                    const sa = a.dataset.status || '';
+                    const sb = b.dataset.status || '';
+                    var cmp = dir === 'asc' ? sa.localeCompare(sb) : sb.localeCompare(sa);
+                    if (cmp !== 0) return cmp;
+                    // 같은 상태 내에서는 최근 업데이트 내림차순
+                    var ua = a.dataset.latestUpdate || '';
+                    var ub = b.dataset.latestUpdate || '';
+                    return ub.localeCompare(ua);
+                }
+                const va = a.dataset[key] || '';
+                const vb = b.dataset[key] || '';
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            });
+            rows.forEach(function (r) { listBody.appendChild(r); });
+        }
+
+        sortHeaders.forEach(function (header) {
+            header.addEventListener('click', function () {
+                const sortKey = toCamel(header.dataset.sort);
+                var dir = header.dataset.dir;
+
+                if (header.classList.contains('is-active')) {
+                    dir = dir === 'desc' ? 'asc' : 'desc';
+                } else {
+                    sortHeaders.forEach(function (h) { h.classList.remove('is-active'); });
+                    header.classList.add('is-active');
+                }
+                header.dataset.dir = dir;
+                header.querySelector('.ng-sort-icon').textContent = dir === 'desc' ? '▼' : '▲';
+
+                sortRows(sortKey, dir);
+            });
+        });
+
+        // 필터
+        var filters = document.querySelectorAll('.ng-filter-set[data-filter-group="status"] .ng-filter');
+        var emptyState = document.querySelector('.ng-empty-state');
+
+        function filterRows(status) {
+            var rows = listBody.querySelectorAll('.ng-row');
+            var visibleCount = 0;
+            rows.forEach(function (row) {
+                if (status === 'all') {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    var match = row.dataset.status === status;
+                    row.style.display = match ? '' : 'none';
+                    if (match) visibleCount++;
+                }
+            });
+            if (emptyState) {
+                emptyState.style.display = visibleCount === 0 ? '' : 'none';
+            }
+        }
+
+        filters.forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                filters.forEach(function (f) { f.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+
+                var text = btn.textContent.trim();
+                if (text === '진행중') filterRows('0');
+                else if (text === '종료') filterRows('1');
+                else filterRows('all');
+            });
+        });
+
+        // 초기 정렬: 상태(진행중→종료) + 최근 업데이트순
+        sortRows('status', 'asc');
+    });
+    </script>
+</th:block>
+</html>

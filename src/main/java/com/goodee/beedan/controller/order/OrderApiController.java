@@ -16,73 +16,66 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/test/orders")
+@RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderApiController {
     private final OrderService orderService;
-    private final ShipmentService shipmentService;
-    private final NotificationService notificationService;
 
     @PostMapping
-    public ResponseEntity<OrderDto> createOrder(){
-        OrderDto orderDto = OrderDto.builder()
-                .ordBaseMsg("테스트용")
-                .ordBaseAdr("서울시 강남구 테헤란로 123")
-                .ordBaseAdrDt("101동 202호")
-                .ordBaseRcvNm("홍길동")
-                .ordBaseNo("0000222224444")
-                .build();
-        orderService.createOrder(1L, orderDto);
+    public ResponseEntity<OrderDto> createOrder(@AuthenticationPrincipal MemberUserDetails userDetails,
+                                                @RequestBody OrderDto orderDto){
+        Long memId = userDetails.getMemberId();
 
-        OrderDto dto = orderService.getOrderDetail(6L,1L);
+        orderService.createOrder(memId, orderDto);
 
-        return ResponseEntity.ok(dto);
+        Long createdOrdId = orderService.createOrder(memId, orderDto);
+
+        OrderDto ordResponseDto = orderService.getOrderDetail(createdOrdId, memId);
+
+        return ResponseEntity.ok(ordResponseDto);
     }
 
-    @GetMapping("/{id}/list")
-    public ResponseEntity<List<OrderDto>> getOrders(@PathVariable("id") Long memId){
-        List<OrderDto> orderList = orderService.getOrderList(memId);
+    @GetMapping("/list")
+    public ResponseEntity<List<OrderDto>> getOrders(@AuthenticationPrincipal MemberUserDetails userDetails){
+        List<OrderDto> orderList = orderService.getOrderList(userDetails.getMemberId());
 
         return ResponseEntity.ok(orderList);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDto> getOrderDetail(@PathVariable("id") Long ordId) {
-        OrderDto orderDetail = orderService.getOrderDetail(ordId, 1L); // 테스트용 하드 코딩
+    public ResponseEntity<OrderDto> getOrderDetail(@PathVariable("id") Long ordId,
+                                                   @AuthenticationPrincipal MemberUserDetails userDetails) {
+        OrderDto orderDetail = orderService.getOrderDetail(ordId, userDetails.getMemberId());
 
         return ResponseEntity.ok(orderDetail);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<OrderDto> updateOrderDetail(@PathVariable("id") Long ordId) {
-        OrderDto dto = OrderDto.builder()
-                .ordBaseAdr("경기도 안양시")
-                .ordBaseAdrDt("201동 505호")
-                .ordBaseMsg("배송전 연락 바랍니다.")
-                .build();
+    public ResponseEntity<OrderDto> updateOrderDetail(@PathVariable("id") Long ordId,
+                                                      @AuthenticationPrincipal MemberUserDetails userDetails,
+                                                      @RequestBody OrderDto orderDto) {
+        Long memId = userDetails.getMemberId();
+        orderService.updateOrder(ordId, memId, orderDto); // 테스트용 하드 코딩
 
-        orderService.updateOrder(ordId, 1L, dto); // 테스트용 하드 코딩
-
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, 1L));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, memId));
     }
 
     @PatchMapping("/{id}/admin") // 배송 상태 변경
     public ResponseEntity<OrderDto> updateOrderStatus(@PathVariable("id") Long ordId,
-                                                      @RequestParam("status") OrderStatus newStatus) {
+                                                      @RequestParam("newStatus") OrderStatus newStatus,
+                                                      @AuthenticationPrincipal MemberUserDetails userDetails) {
         orderService.updateOrderStatus(ordId, newStatus);
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, 1L));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<OrderDto> cancelOrder(@PathVariable("id") Long ordId) {
-        /*if(userDetails.getAuthorities().equals("ROLE_ADMIN")) {
-            orderService.updateOrderStatus(ordId, OrderStatus.CANCELLED);
-            return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemId()));
-        }
-         */
-        orderService.cancelOrder(ordId, 1L);
+    public ResponseEntity<OrderDto> cancelOrder(@PathVariable("id") Long ordId,
+                                                @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Long memId = userDetails.getMemberId();
 
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, 1L));
+        orderService.cancelOrder(ordId, memId);
+
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, memId));
     }
 
 }

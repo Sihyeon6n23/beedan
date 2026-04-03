@@ -331,6 +331,10 @@
   text-align: center;
 }
 
+.admin-chat-list-head > div:first-child {
+  padding-left: calc(12px + 0.85rem);
+}
+
 .admin-chat-row__owner .is-warning {
   color: var(--color-error);
   font-style: italic;

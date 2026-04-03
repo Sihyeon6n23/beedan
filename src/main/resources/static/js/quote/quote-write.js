@@ -257,6 +257,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var defaultRegion = rcEl ? (rcEl.dataset.region || 'SEOUL') : 'SEOUL';
     var defaultReceiverName = rcEl ? (rcEl.dataset.name || '') : '';
     var defaultReceiverAddr = rcEl ? (rcEl.dataset.addr || '') : '';
+    var rowShipMap = {}; // key: row index, value: { type: 'single'|'split', cards: [...] }
+
+    // 임시저장 복원: data-ship-cards → rowShipMap
+    rows.forEach(function (row, idx) {
+        var json = row.dataset.shipCards;
+        if (json) {
+            try {
+                var cards = JSON.parse(json);
+                if (cards && cards.length > 1) {
+                    rowShipMap[idx] = { type: 'split', cards: cards };
+                } else if (cards && cards.length === 1) {
+                    rowShipMap[idx] = { type: 'single', cards: cards };
+                }
+            } catch (e) { /* 파싱 실패 무시 */ }
+        }
+    });
 
     // ── 예상 운임 비용 조회 ─────────────────────────────
     var feeDebounceTimer = null;
@@ -309,11 +325,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
 
-        // 배송지 지역 코드 수집 (shipCards가 세팅되어 있으면 사용, 아니면 백엔드가 기본 수령지 사용)
+        // 배송지 지역 코드 수집 (rowShipMap에서 전체 행의 배송지 취합)
         var shipRegions = [];
-        if (shipCards.length > 0) {
-            shipCards.forEach(function (c) { shipRegions.push(c.region || defaultRegion); });
-        }
+        rows.forEach(function (row, idx) {
+            var data = rowShipMap[idx];
+            if (data && data.cards.length > 0) {
+                data.cards.forEach(function (c) { shipRegions.push(c.region || defaultRegion); });
+            } else {
+                shipRegions.push(defaultRegion);
+            }
+        });
 
         fetch('/api/quote/estimate-fees', {
             method: 'POST',
@@ -446,80 +467,104 @@ document.addEventListener('DOMContentLoaded', function () {
     // 초기 로딩 — estimate-fees 한 번으로 모든 값 채움 (국내 배달비 포함)
     doFetchEstimateFees();
 
-    // ── 임시저장 ─────────────────────────────────────
+    // ── 폼 데이터 수집 (임시저장 / 제출 공통) ────────────
+    function collectDraftData() {
+        var saveDraftBtn = document.getElementById('btnSaveDraft');
+        var quId = saveDraftBtn ? parseInt(saveDraftBtn.dataset.quId) : null;
+
+        var items = [];
+        rows.forEach(function (row, rowIdx) {
+            var stId = parseInt(row.dataset.stId);
+            var qty = parseInt(row.querySelector('.qty-input').value) || 1;
+            var specSelect = row.querySelector('.spec-select');
+            var selectedOption = specSelect ? specSelect.options[specSelect.selectedIndex] : null;
+            var subtotalInput = row.querySelector('.subtotal-input');
+            var subtotalKrw = parseFloat((subtotalInput.value || '').replace(/,/g, '')) || 0;
+            var rcIdEl = document.getElementById('js-default-region');
+            var rcId = rcIdEl ? (parseInt(rcIdEl.dataset.rcid) || null) : null;
+
+            var unGId = selectedOption ? parseInt(selectedOption.dataset.ugId) || null : null;
+            var unGNm = specSelect ? specSelect.options[specSelect.selectedIndex].text : null;
+            var unGQn = specSelect ? parseInt(specSelect.value) || 1 : 1;
+
+            var shipData = rowShipMap[rowIdx];
+            if (shipData && shipData.type === 'split' && shipData.cards.length > 1) {
+                // 분할배송: 카드별로 아이템 분리
+                var perQty = subtotalKrw / qty;
+                var usedSubtotal = 0;
+                shipData.cards.forEach(function (card, ci) {
+                    var cardSubtotal;
+                    if (ci === shipData.cards.length - 1) {
+                        cardSubtotal = Math.round(subtotalKrw - usedSubtotal);
+                    } else {
+                        cardSubtotal = Math.round(perQty * card.qty);
+                        usedSubtotal += cardSubtotal;
+                    }
+                    items.push({
+                        stId: stId, qty: card.qty,
+                        unGId: unGId, unGNm: unGNm, unGQn: unGQn,
+                        subtotalKrw: cardSubtotal, rcId: rcId,
+                        grp: rowIdx,
+                        rcRgn: card.region || defaultRegion,
+                        rcNm: card.name || '',
+                        rcAdr: card.addr || '',
+                        rcPhn: card.phone || '',
+                        rcMemo: card.memo || ''
+                    });
+                });
+            } else {
+                // 단일배송
+                var singleCard = (shipData && shipData.cards.length > 0) ? shipData.cards[0] : null;
+                items.push({
+                    stId: stId, qty: qty,
+                    unGId: unGId, unGNm: unGNm, unGQn: unGQn,
+                    subtotalKrw: subtotalKrw, rcId: rcId,
+                    grp: rowIdx,
+                    rcRgn: singleCard ? singleCard.region : defaultRegion,
+                    rcNm: singleCard ? singleCard.name : defaultReceiverName,
+                    rcAdr: singleCard ? singleCard.addr : defaultReceiverAddr,
+                    rcPhn: singleCard ? singleCard.phone : '',
+                    rcMemo: singleCard ? singleCard.memo : ''
+                });
+            }
+        });
+
+        var memo = document.getElementById('quoteMemo')
+            ? document.getElementById('quoteMemo').value : '';
+        var selectedSiId = null;
+        document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
+            if (item.querySelector('.qo-service-check').checked) selectedSiId = parseInt(item.dataset.id) || null;
+        });
+        var selectedStiId = null;
+        document.querySelectorAll('.quote-option-item[data-type="inspection"]').forEach(function (item) {
+            if (item.querySelector('.qo-service-check').checked) selectedStiId = parseInt(item.dataset.id) || null;
+        });
+
+        return { quId: quId, items: items, memo: memo, siId: selectedSiId, stiId: selectedStiId };
+    }
+
+    function saveDraft() {
+        var payload = collectDraftData();
+        var headers = { 'Content-Type': 'application/json' };
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        return fetch('/api/quote/draft', {
+            method: 'POST', headers: headers, body: JSON.stringify(payload)
+        }).then(function (res) { return res.json(); });
+    }
+
+    // ── 임시저장 버튼 ─────────────────────────────────
     var saveDraftBtn = document.getElementById('btnSaveDraft');
     if (saveDraftBtn) {
         saveDraftBtn.addEventListener('click', function () {
-            var quId = parseInt(saveDraftBtn.dataset.quId);
-            if (!quId) { alert('견적 ID가 없습니다.'); return; }
-
-            var items = [];
-            rows.forEach(function (row, idx) {
-                var stId = parseInt(row.dataset.stId);
-                var qty = parseInt(row.querySelector('.qty-input').value) || 1;
-                var specSelect = row.querySelector('.spec-select');
-                var selectedOption = specSelect ? specSelect.options[specSelect.selectedIndex] : null;
-
-                // 사용자 조정 소계
-                var subtotalInput = row.querySelector('.subtotal-input');
-                var subtotalKrw = parseFloat((subtotalInput.value || '').replace(/,/g, '')) || 0;
-
-                // 수령지 ID (기본 수령지)
-                var rcIdEl = document.getElementById('js-default-region');
-                var rcId = rcIdEl ? (parseInt(rcIdEl.dataset.rcid) || null) : null;
-
-                items.push({
-                    stId: stId,
-                    qty: qty,
-                    unGId: selectedOption ? parseInt(selectedOption.dataset.ugId) || null : null,
-                    unGNm: specSelect ? specSelect.options[specSelect.selectedIndex].text : null,
-                    unGQn: specSelect ? parseInt(specSelect.value) || 1 : 1,
-                    subtotalKrw: subtotalKrw,
-                    rcId: rcId
-                });
-            });
-
-            var memo = document.getElementById('quoteMemo')
-                ? document.getElementById('quoteMemo').value : '';
-
-            // 선택한 보험/검사 ID
-            var selectedSiId = null;
-            document.querySelectorAll('.quote-option-item[data-type="insurance"]').forEach(function (item) {
-                if (item.querySelector('.qo-service-check').checked) selectedSiId = parseInt(item.dataset.id) || null;
-            });
-            var selectedStiId = null;
-            document.querySelectorAll('.quote-option-item[data-type="inspection"]').forEach(function (item) {
-                if (item.querySelector('.qo-service-check').checked) selectedStiId = parseInt(item.dataset.id) || null;
-            });
-
-            var headers = { 'Content-Type': 'application/json' };
-            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
-
+            if (!collectDraftData().quId) { alert('견적 ID가 없습니다.'); return; }
             saveDraftBtn.disabled = true;
             saveDraftBtn.textContent = '저장 중...';
-
-            fetch('/api/quote/draft', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify({
-                    quId: quId,
-                    items: items,
-                    memo: memo,
-                    siId: selectedSiId,
-                    stiId: selectedStiId
-                })
-            })
-            .then(function (res) { return res.json(); })
+            saveDraft()
             .then(function (data) {
-                if (data.status === 'ok') {
-                    alert('임시저장 완료');
-                } else {
-                    alert('저장 실패: ' + (data.message || ''));
-                }
+                if (data.status === 'ok') { alert('임시저장 완료'); }
+                else { alert('저장 실패: ' + (data.message || '')); }
             })
-            .catch(function (e) {
-                alert('저장 실패: ' + e.message);
-            })
+            .catch(function (e) { alert('저장 실패: ' + e.message); })
             .finally(function () {
                 saveDraftBtn.disabled = false;
                 saveDraftBtn.innerHTML =
@@ -529,6 +574,157 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
+
+    // ── 제출 확인 모달 ─────────────────────────────────
+    (function () {
+        var overlay = document.getElementById('modal-submit-confirm');
+        var finalChk = document.getElementById('chkSubmitAgree');
+        var btnConfirm = document.getElementById('btnConfirmSubmit');
+        if (!overlay || !finalChk || !btnConfirm) return;
+
+        var requiredList = document.getElementById('submit-required-list');
+        var optionalList = document.getElementById('submit-optional-list');
+        var requiredSection = document.getElementById('submit-required-section');
+        var optionalSection = document.getElementById('submit-optional-section');
+        var checkItemsLoaded = false;
+
+        function updateFinalState() {
+            var requiredChecks = overlay.querySelectorAll('.chk-required');
+            var allChecked = Array.prototype.every.call(requiredChecks, function (c) { return c.checked; });
+            finalChk.disabled = !allChecked;
+            if (!allChecked) {
+                finalChk.checked = false;
+                btnConfirm.disabled = true;
+            }
+        }
+
+        function renderCheckItems(items) {
+            requiredList.innerHTML = '';
+            optionalList.innerHTML = '';
+            var hasRequired = false;
+            var hasOptional = false;
+
+            items.forEach(function (item) {
+                var label = document.createElement('label');
+                var input = document.createElement('input');
+                var span = document.createElement('span');
+
+                input.type = 'checkbox';
+                input.dataset.id = item.qscId;
+
+                if (item.qscRqYn) {
+                    label.className = 'submit-check-item required';
+                    input.className = 'chk-required';
+                    span.textContent = item.qscDes;
+                    input.addEventListener('change', updateFinalState);
+                    requiredList.appendChild(label);
+                    hasRequired = true;
+                } else {
+                    label.className = 'submit-check-item optional';
+                    input.className = 'chk-optional';
+                    if (item.qscKey) input.dataset.key = item.qscKey;
+                    if (item.qscDfltYn) input.defaultChecked = true;
+                    span.textContent = item.qscDes;
+                    optionalList.appendChild(label);
+                    hasOptional = true;
+                }
+
+                label.appendChild(input);
+                label.appendChild(span);
+            });
+
+            requiredSection.style.display = hasRequired ? '' : 'none';
+            optionalSection.style.display = hasOptional ? '' : 'none';
+            checkItemsLoaded = true;
+        }
+
+        function loadAndOpenModal() {
+            if (checkItemsLoaded) {
+                resetAndOpen();
+                return;
+            }
+            fetch('/api/quote/submit-checks')
+                .then(function (res) { return res.json(); })
+                .then(function (items) {
+                    renderCheckItems(items);
+                    resetAndOpen();
+                })
+                .catch(function () {
+                    alert('체크 항목을 불러올 수 없습니다.');
+                });
+        }
+
+        function resetAndOpen() {
+            overlay.querySelectorAll('.chk-required').forEach(function (c) { c.checked = false; });
+            overlay.querySelectorAll('.chk-optional').forEach(function (c) {
+                c.checked = c.defaultChecked;
+            });
+            finalChk.checked = false;
+            finalChk.disabled = true;
+            btnConfirm.disabled = true;
+            overlay.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSubmitModal() {
+            overlay.classList.remove('is-open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('btnOpenSubmitModal').addEventListener('click', loadAndOpenModal);
+        document.getElementById('btnCloseSubmitModal').addEventListener('click', closeSubmitModal);
+        document.getElementById('btnCancelSubmit').addEventListener('click', closeSubmitModal);
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeSubmitModal();
+        });
+
+        // 최종 동의 → 제출 버튼
+        finalChk.addEventListener('change', function () {
+            btnConfirm.disabled = !finalChk.checked;
+        });
+
+        btnConfirm.addEventListener('click', function () {
+            if (!finalChk.checked) return;
+            // 체크 항목 수집 (필수 + 선택 모두)
+            var checks = {};
+            overlay.querySelectorAll('.chk-required, .chk-optional').forEach(function (c) {
+                if (c.dataset.id) checks[c.dataset.id] = c.checked;
+            });
+            var draftData = collectDraftData();
+            if (!draftData.quId) { alert('견적 ID가 없습니다.'); return; }
+
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = '제출 중...';
+
+            // 1) 데이터 저장 → 2) 상태 변경 + 체크 로그
+            saveDraft()
+            .then(function (draftRes) {
+                if (draftRes.status !== 'ok') {
+                    throw new Error(draftRes.message || '데이터 저장 실패');
+                }
+                var headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+                return fetch('/api/quote/submit', {
+                    method: 'POST', headers: headers,
+                    body: JSON.stringify({ quId: draftData.quId, checks: checks })
+                }).then(function (res) { return res.json(); });
+            })
+            .then(function (data) {
+                if (data.status === 'ok' && data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert('제출 실패: ' + (data.message || ''));
+                    btnConfirm.disabled = false;
+                    btnConfirm.textContent = '제출하기';
+                }
+            })
+            .catch(function (e) {
+                alert('제출 실패: ' + e.message);
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = '제출하기';
+            });
+        });
+    })();
 
     // ── 배송지 모달 ──────────────────────────────────
 
@@ -557,12 +753,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.overflow = 'hidden';
 
         var row = btn.closest('.quote-row');
+        var rowIdx = Array.prototype.indexOf.call(rows, row);
         totalItemQty = parseInt(row.querySelector('.qty-input').value) || 1;
 
-        var meta = btn.querySelector('.shipping-meta');
-        currentShipType = (meta && meta.textContent.indexOf('분할') >= 0) ? 'split' : 'single';
-
-        if (currentShipType === 'single' || shipCards.length === 0) {
+        // rowShipMap에서 복원
+        if (rowShipMap[rowIdx]) {
+            currentShipType = rowShipMap[rowIdx].type;
+            shipCards = JSON.parse(JSON.stringify(rowShipMap[rowIdx].cards));
+        } else {
+            currentShipType = 'single';
             shipCards = [{ qty: totalItemQty, region: defaultRegion, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
         }
 
@@ -580,6 +779,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.confirmShipping = function () {
         if (currentShippingBtn) {
+            var row = currentShippingBtn.closest('.quote-row');
+            var rowIdx = Array.prototype.indexOf.call(rows, row);
+            // rowShipMap에 저장
+            rowShipMap[rowIdx] = { type: currentShipType, cards: JSON.parse(JSON.stringify(shipCards)) };
+
             var meta = currentShippingBtn.querySelector('.shipping-meta');
             if (meta) {
                 meta.textContent = currentShipType === 'split'

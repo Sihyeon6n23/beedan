@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Entity
 @Getter
@@ -21,13 +22,15 @@ public class QuoteBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long quId;
+    private String quCd; // 견적 코드
     private Long ngId;  // 협상 아이디
     private Long quSid; // 송신자 아이디
     private Long quRid; // 수신자 아이디
     @Enumerated(EnumType.STRING)
     private QuoteStatus quStt;  // 견적 상태
     private LocalDateTime quExpDt;  // 만료 시간
-    private Boolean quOpYn;   // 열람 여부
+    private Boolean quAdOpYn;   // 운영자 열람 여부
+    private Boolean quUsOpYn;   // 사용자 열람 여부
     private String quCon;   // 답변 내용
     @CreatedDate
     private LocalDateTime quCreDt;
@@ -40,11 +43,13 @@ public class QuoteBase {
             Long senderId,
             Long receiverId
     ){
+        this.quCd = "QU" + (System.currentTimeMillis() % 10000);
         this.ngId = negoId;
         this.quSid = senderId;
         this.quRid = receiverId;
         this.quStt = QuoteStatus.TEMP_SAVE;
-        this.quOpYn = false;
+        this.quAdOpYn = false;
+        this.quUsOpYn = false;
     }
 
     public void submit(){
@@ -64,8 +69,12 @@ public class QuoteBase {
         this.quStt = QuoteStatus.EXPIRED;
     }
 
-    public void opened() {
-        this.quOpYn = true;
+    public void adminOpened() {
+        this.quAdOpYn = true;
+    }
+
+    public void userOpened() {
+        this.quUsOpYn = true;
     }
 
     public boolean isExpired() {
