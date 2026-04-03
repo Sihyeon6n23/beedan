@@ -35,12 +35,10 @@ public class Shipment {
     private LocalDateTime shUpdDt;
     private Boolean shCanYn;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="ord_base_id")
     private Order order;
 
-    private Boolean sh_can_yn;
     private String shRcvNm;
     private String shAdr;
     private String shAdrDt;

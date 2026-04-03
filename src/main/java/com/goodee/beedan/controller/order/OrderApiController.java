@@ -9,6 +9,10 @@ import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +30,6 @@ public class OrderApiController {
                                                 @RequestBody OrderDto orderDto){
         Long memId = userDetails.getMemberId();
 
-        orderService.createOrder(memId, orderDto);
-
         Long createdOrdId = orderService.createOrder(memId, orderDto);
 
         OrderDto ordResponseDto = orderService.getOrderDetail(createdOrdId, memId);
@@ -36,8 +38,10 @@ public class OrderApiController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<OrderDto>> getOrders(@AuthenticationPrincipal MemberUserDetails userDetails){
-        List<OrderDto> orderList = orderService.getOrderList(userDetails.getMemberId());
+    public ResponseEntity<Page<OrderDto>> getOrders(
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable){
+        Page<OrderDto> orderList = orderService.getOrderList(userDetails.getMemberId(), pageable);
 
         return ResponseEntity.ok(orderList);
     }

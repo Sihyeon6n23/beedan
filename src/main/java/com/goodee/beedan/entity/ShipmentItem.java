@@ -10,10 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "SHIPMENT_ITEM")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data @Builder
+@NoArgsConstructor @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class ShipmentItem {
     @Id
@@ -31,4 +29,7 @@ public class ShipmentItem {
 
     @Column(name = "sh_qn")
     private Integer shQn;
+
+    @Column(name = "ord_item_nm")
+    private String ordItmNm;
 }

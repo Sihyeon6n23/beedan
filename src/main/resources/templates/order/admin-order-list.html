@@ -129,29 +129,27 @@
                 </div>
             </div>
 
-            <footer class="admin-chat-shell admin-chat-shell--pagination" th:if="${orders.totalPages > 0}">
-                <div class="admin-chat-pagination"
-                     th:with="currentPage=${orders.number}, totalPages=${orders.totalPages}, startPage=${(currentPage / 5) * 5}, endPage=${(startPage + 4 < totalPages) ? startPage + 4 : totalPages - 1}">
+            <footer class="admin-chat-shell admin-chat-shell--pagination">
+                <p class="page-info">
+                    Page [[${orders.number + 1}]] of [[${orders.totalPages}]] (Total [[${orders.totalElements}]] orders)
+                </p>
 
-                    <a th:if="${orders.hasPrevious()}"
-                       class="admin-chat-page-button admin-chat-page-button--wide"
-                       th:href="@{/admin/order/list(page=${orders.number - 1})}">Prev</a>
-                    <span th:unless="${orders.hasPrevious()}"
-                          class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
+                <div class="page-numbers">
+                    <a th:href="@{/admin/order/list(page=${orders.number - 1})}"
+                       th:classappend="${!orders.hasPrevious()} ? 'disabled'"
+                       class="page-btn">이전</a>
 
-                    <th:block th:if="${totalPages > 0}">
-                        <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}"
-                           class="admin-chat-page-button"
-                           th:classappend="${pageNumber == orders.number} ? ' is-current' : ''"
-                           th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
-                           th:href="@{/admin/order/list(page=${pageNumber})}">01</a>
+                    <th:block th:with="start=${(orders.number/5)*5}, end=${(start + 4 < orders.totalPages) ? start + 4 : orders.totalPages - 1}">
+                        <a th:each="page : ${#numbers.sequence(start, end)}"
+                           th:href="@{/admin/order/list(page=${page})}"
+                           th:text="${page + 1}"
+                           th:classappend="${page == orders.number} ? 'active'"
+                           class="page-number-btn"></a>
                     </th:block>
 
-                    <a th:if="${orders.hasNext()}"
-                       class="admin-chat-page-button admin-chat-page-button--wide"
-                       th:href="@{/admin/order/list(page=${orders.number + 1})}">Next</a>
-                    <span th:unless="${orders.hasNext()}"
-                          class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
+                    <a th:href="@{/admin/order/list(page=${orders.number + 1})}"
+                       th:classappend="${!orders.hasNext()} ? 'disabled'"
+                       class="page-btn">다음</a>
                 </div>
             </footer>
         </section>

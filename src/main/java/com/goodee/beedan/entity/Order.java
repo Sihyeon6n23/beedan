@@ -16,10 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
-@Builder
-@RequiredArgsConstructor
-@AllArgsConstructor
+@Data @Builder
+@RequiredArgsConstructor @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "ORDER_BASE")
 public class Order {
@@ -48,6 +46,7 @@ public class Order {
     private LocalDateTime ordBaseUpdDt;
     @Column(name = "ord_base_tt_am", precision = 18, scale = 0)
     private BigDecimal ordBaseTtAm; // 주문 총 금액
+
     @ManyToOne
     @JoinColumn(name = "mem_id")
     private Member member;
@@ -59,5 +58,4 @@ public class Order {
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
-
 }

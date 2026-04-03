@@ -1,5 +1,6 @@
 package com.goodee.beedan.service.member;
 
+import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
@@ -153,5 +154,10 @@ public class MemberService {
 
         tokenEntity.useToken();
         return tokenEntity.getMember();
+    }
+
+    private Boolean checkMemberAuthority(Long memId){
+        Member member = memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("일치하는 관리자가 없습니다."));
+        return member.getMemAut().equals(MemberAuthority.ADMIN);
     }
 }

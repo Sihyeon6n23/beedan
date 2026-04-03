@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 
 @Data @Builder
 public class ShipmentItemDto {
-    private BigDecimal shQn;
-    private Long sh_id;
+    private Long shItemId;
+    private String ordItmNm;
+    private Integer shQn;
+    private Long prodId;
 }
