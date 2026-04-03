@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ACCOUNT', 'Profile Settings', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | SNS 연동 관리</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('account', 'profile-edit')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <main class="ml-64 pt-24 pb-12 px-12 min-h-screen bg-background">
+        <div class="max-w-5xl mx-auto">
+
+            <section class="pt-10 mb-12 flex flex-col md:flex-row justify-between items-end gap-8">
+                <div class="max-w-2xl">
+                    <span class="text-primary font-black tracking-widest text-xs uppercase mb-2 block">ACCOUNT OVERVIEW</span>
+                    <h1 class="font-headline text-3xl md:text-5xl font-extrabold tracking-tighter text-on-surface mb-4 uppercase leading-none">
+                        SNS Integration
+                    </h1>
+                    <p class="font-body text-secondary max-w-sm text-lg opacity-80">
+                        회원님의 보안 수준을 높이고 간편한 로그인을 위해 SNS 계정 연동 정보를 관리하십시오.
+                    </p>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-12 gap-12">
+
+                <div class="col-span-12 lg:col-span-8">
+                    <div class="bg-surface-container-lowest p-10 border-l-[6px] border-primary shadow-chat-shell">
+
+                        <div class="space-y-3">
+                            <div class="bg-surface-container-low border border-stone-100 p-6 flex items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group">
+                                <div class="flex items-center space-x-6">
+                                    <div class="w-12 h-12 bg-[#FEE500] flex items-center justify-center sharp-edge">
+                                        <span class="material-symbols-outlined text-[#3C1E1E]" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-headline font-bold text-lg tracking-tight text-on-surface">Kakao</h3>
+                                        <div class="flex items-center mt-1">
+                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2"></span>
+                                            <span th:text="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? '연결됨' : '연결 안 됨'"
+                                                  th:classappend="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? 'text-green-700' : 'text-neutral-500'"
+                                                  class="text-[10px] font-black uppercase tracking-widest"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:replace="~{::snsButton('KAKAO')}"></div>
+                            </div>
+
+                            <div class="bg-surface-container-low border border-stone-100 p-6 flex items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group">
+                                <div class="flex items-center space-x-6">
+                                    <div class="w-12 h-12 bg-[#03C75A] flex items-center justify-center sharp-edge text-white font-black text-xl font-headline">N</div>
+                                    <div>
+                                        <h3 class="font-headline font-bold text-lg tracking-tight text-on-surface">Naver</h3>
+                                        <div class="flex items-center mt-1">
+                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'NAVER'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2"></span>
+                                            <span th:text="${snsIntegrateResponse?.snsTp == 'NAVER'} ? '연결됨' : '연결 안 됨'"
+                                                  th:classappend="${snsIntegrateResponse?.snsTp == 'NAVER'} ? 'text-green-700' : 'text-neutral-500'"
+                                                  class="text-[10px] font-black uppercase tracking-widest"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:replace="~{::snsButton('NAVER')}"></div>
+                            </div>
+
+                            <div class="bg-surface-container-low border border-stone-100 p-6 flex items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group">
+                                <div class="flex items-center space-x-6">
+                                    <div class="w-12 h-12 border border-neutral-100 bg-white flex items-center justify-center sharp-edge">
+                                        <span class="material-symbols-outlined text-[#EA4335]">language</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-headline font-bold text-lg tracking-tight text-on-surface">Google</h3>
+                                        <div class="flex items-center mt-1">
+                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2"></span>
+                                            <span th:text="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? '연결됨' : '연결 안 됨'"
+                                                  th:classappend="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? 'text-green-700' : 'text-neutral-500'"
+                                                  class="text-[10px] font-black uppercase tracking-widest"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div th:replace="~{::snsButton('GOOGLE')}"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-12 pt-8 border-t border-outline-variant grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-headline font-bold text-xs uppercase tracking-widest text-primary mb-3">보안 안내</h4>
+                                <p class="text-secondary font-body text-xs leading-relaxed opacity-70">
+                                    연동된 계정은 본인 인증 용도로만 사용되며, 해제 시 간편 로그인이 즉시 중단됩니다.
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="font-headline font-bold text-xs uppercase tracking-widest text-primary mb-3">도움말</h4>
+                                <p class="text-secondary font-body text-xs leading-relaxed opacity-70">
+                                    이메일 주소가 동일한 플랫폼 연동을 권장하며, 비밀번호는 해당 SNS 플랫폼에서 관리됩니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-4">
+                    <div class="mypage-edit-profile-page__sidebar-stack">
+                        <div class="bg-primary-container p-8 shadow-sm">
+                            <h3 class="font-headline text-lg font-black uppercase tracking-tight text-on-primary-container mb-4">SNS 연동 가이드</h3>
+                            <ul class="space-y-4 text-sm font-medium text-on-primary-container">
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">key</span>
+                                    <span>한 번의 클릭으로 빠르고 안전하게 로그인할 수 있습니다.</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">sync_alt</span>
+                                    <span>다른 플랫폼으로 변경하려면 기존 연동을 먼저 해제해야 합니다.</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">lock</span>
+                                    <span>BEEDAN은 고객님의 SNS 비밀번호를 절대 저장하지 않습니다.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        function disconnectSns() {
+            if(confirm("정말로 SNS 연동을 해제하시겠습니까? 해제 후에는 SNS 계정으로 로그인할 수 없습니다.")) {
+                location.href = "/mypage/sns/disconnect";
+            }
+        }
+    </script>
+
+    <script>
+        let integrateBtnKAKAO = document.getElementById("KAKAO");
+        integrateBtnKAKAO.addEventListener('click', () => {
+            loginWithKakao();
+        })
+        function loginWithKakao() {
+            const clientID = 'YOUR_REST_API_KEY';
+            const redirectUri = encodeURIComponent('http://localhost:8080/auth/kakao/callback');
+            // OIDC를 위해 scope에 openid를 반드시 포함합니다.
+            const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientID}&redirect_uri=${redirectUri}&response_type=code&scope=openid`;
+            window.open(kakaoAuthUrl);
+        }
+    </script>
+
+</th:block>
+
+<th:block th:fragment="snsButton(providerName)">
+    <button th:if="${snsIntegrateResponse?.connected == true && snsIntegrateResponse?.provider == providerName}"
+            type="button"
+            onclick="disconnectSns()"
+            class="bg-on-surface text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 sharp-edge hover:opacity-90 transition-all">
+        연결해제
+    </button>
+
+    <a th:if="${snsIntegrateResponse?.connected != true}"
+       th:id="${providerName}Btn"
+       class="bg-primary-container text-on-primary-container font-black text-xs uppercase tracking-widest px-8 py-3 sharp-edge hover:bg-primary-fixed-dim transition-all shadow-sm">
+
+        연결하기
+
+    </a>
+
+    <button th:if="${snsIntegrateResponse?.connected == true && snsIntegrateResponse?.provider != providerName}"
+            type="button"
+            onclick="alert('이미 다른 SNS 계정이 연동되어 있습니다.')"
+            class="bg-surface-container-highest text-neutral-400 text-[10px] font-black uppercase tracking-widest px-6 py-3 sharp-edge cursor-not-allowed opacity-50">
+        이용불가
+    </button>
+</th:block>
+</html>

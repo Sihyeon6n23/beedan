@@ -13,6 +13,8 @@ import com.goodee.beedan.service.buyer.BuyerGradePolicyService;
 import com.goodee.beedan.service.buyer.BuyerService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.MypageService;
+import com.goodee.beedan.service.member.SnsIntegrateService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +47,7 @@ public class MypageController {
     private final BuyerRepository buyerRepository;
     private final MypageService mypageService;
     private final PortOneService portOneService;
+    private final SnsIntegrateService snsIntegrateService;
 
     @Value("${kakao.map.appkey}")
     private String kakaoAppKey;
@@ -61,7 +64,9 @@ public class MypageController {
 
     @GetMapping("/detail")
     public String getDetail(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) return "redirect:/login";
+//        if (userDetails == null) return "redirect:/auth/signin";
+        // 임시코드
+        if (userDetails == null) return "redirect:/dev";
 
         String memberLgnId = userDetails.getUsername();
         Member member = memberService.getMemberByUsername(memberLgnId);
@@ -215,6 +220,31 @@ public class MypageController {
             return "redirect:/mypage/modify";
         }
     }
+
+    @GetMapping("/sns")
+    public String getSns(Model model,
+                                  Principal principal) {
+        Member member = memberService.getMemberByUsername(principal.getName());
+        model.addAttribute("member", member);
+        return "/member/mypage/mypage-sns";
+    }
+
+
+
+    @GetMapping("/sns/integrate")
+    public String getSnsIntegrate(Model model,
+                                  Principal principal) {
+        Member member = memberService.getMemberByUsername(principal.getName());
+        model.addAttribute("member", member);
+
+        if (!snsIntegrateService.isSnsIntegrate(member)) {
+            log.info("{}의 연동정보가 이미 존재합니다.", member.getMemNm());
+            return "redirect:/mypage/sns";
+        }
+
+        return "/member/mypage/mypage-sns-integrate";
+    }
+
 
     @PostMapping("/withdrawal")
     public String postWithdrawal(Principal principal) {
