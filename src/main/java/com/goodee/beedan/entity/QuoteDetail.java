@@ -44,8 +44,15 @@ public class QuoteDetail {
     @Column(precision = 18, scale = 0)
     private BigDecimal quDtPr;      // 원화 합계
 
-    private String quDtRe;  // 비고
     private Long rcId;  // 수령지 ID
+
+    // 분할배송
+    private Integer quDtGrp;      // 그룹 인덱스 (같은 grp = 같은 테이블 행)
+    private String quDtRcRgn;     // 배송 지역
+    private String quDtRcNm;      // 수령인명
+    private String quDtRcAdr;     // 수령지 주소
+    private String quDtRcPhn;     // 수령인 연락처
+    private String quDtRcMemo;    // 배달 요청사항
 
     @Builder
     public QuoteDetail(
@@ -62,7 +69,13 @@ public class QuoteDetail {
             Integer unitGroupQuantity,
             BigDecimal foreignPrice,
             BigDecimal krwTotal,
-            Long receiverId
+            Long receiverId,
+            Integer group,
+            String rcRegion,
+            String rcName,
+            String rcAddress,
+            String rcPhone,
+            String rcMemo
     ){
         this.quInfoId = quoteInfoId;
         this.quId = quoteId;
@@ -78,6 +91,12 @@ public class QuoteDetail {
         this.quDtFgPr = foreignPrice;
         this.quDtPr = krwTotal;
         this.rcId = receiverId;
+        this.quDtGrp = group;
+        this.quDtRcRgn = rcRegion;
+        this.quDtRcNm = rcName;
+        this.quDtRcAdr = rcAddress;
+        this.quDtRcPhn = rcPhone;
+        this.quDtRcMemo = rcMemo;
     }
 
     public void calculateKrwPrice(BigDecimal exchangeRate){

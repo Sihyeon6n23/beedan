@@ -133,7 +133,7 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 min-w-0 min-h-[600px]">
+    <div class="flex-1 min-w-0 min-h-screen">
         <!-- Breadcrumbs & Title -->
         <nav class="mb-4">
             <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
@@ -166,70 +166,10 @@
         </div>
 
         <!-- 상품 영역 -->
-        <div id="product-area">
-            <!-- 상품 없을 때 -->
-            <div th:if="${page.isEmpty()}" id="empty-state" class="flex flex-col items-center justify-center py-40 text-secondary">
-                <span class="material-symbols-outlined text-6xl mb-4">inventory_2</span>
-                <p class="text-sm tracking-widest uppercase">No products available</p>
-            </div>
-
-            <!-- Product Grid -->
-            <div id="product-grid" th:unless="${page.isEmpty()}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
-                <div th:each="item : ${page.content}" class="group cursor-pointer" th:onclick="'location.href=\'/stock/detail/' + ${item.stId} + '\''">
-                    <div class="relative mb-6 overflow-hidden bg-white w-full aspect-[4/5]">
-                        <img th:if="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
-                             th:src="${item.stImgUrl}"
-                             th:alt="${item.stNm}"
-                             class="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"/>
-                        <div th:unless="${item.stImgUrl != null and !item.stImgUrl.isEmpty()}"
-                             class="w-full h-full flex items-center justify-center bg-surface-container">
-                            <span class="material-symbols-outlined text-5xl text-on-surface-variant">image_not_supported</span>
-                        </div>
-                        <div class="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/5 transition-colors duration-300"></div>
-                        <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase flex items-center justify-between px-4">
-                            <span>Go to Details</span>
-                            <span type="button" class="heart-btn cursor-pointer" th:data-st-id="${item.stId}" onclick="toggleHeart(this); event.stopPropagation();">
-                                <span class="material-symbols-outlined text-[20px] transition-colors"
-                                      th:data-filled="${item.wished}"
-                                      th:classappend="${item.wished} ? 'text-red-500' : 'text-on-primary-container hover:text-red-500'"
-                                      th:style="${item.wished} ? 'font-variation-settings: \'FILL\' 1' : 'font-variation-settings: \'FILL\' 0'">favorite</span>
-                            </span>
-                        </button>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase" th:text="${item.stBrNm}"></p>
-                        <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight" th:text="${item.stNm}"></h2>
-                        <p class="font-headline font-bold text-sm text-on-surface mt-2"
-                           th:text="${item.stCur + ' ' + (item.stCur == '₩' ? #numbers.formatInteger(item.stPr, 1, 'COMMA') : #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT'))}"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div id="product-area"></div>
 
         <!-- Pagination -->
-        <div id="pagination" class="mt-24 flex justify-center items-center gap-4">
-            <th:block th:if="${page.totalPages > 1}"
-                       th:with="startPage=${T(java.lang.Math).max(0, page.number - 4)},
-                                endPage=${T(java.lang.Math).min(page.totalPages - 1, startPage + 9)}">
-                <a th:href="${mode == 'wishlist' ? '/wishlist?page=' + (page.number - 1) : '/stock/list?page=' + (page.number - 1)}"
-                   th:classappend="${page.first} ? 'pointer-events-none opacity-30' : ''"
-                   class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                </a>
-                <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                   th:href="${mode == 'wishlist' ? '/wishlist?page=' + i : '/stock/list?page=' + i}"
-                   th:text="${i + 1}"
-                   th:classappend="${i == page.number} ? 'text-on-surface border-b-4 border-primary-container' : 'text-neutral-400 hover:text-on-surface'"
-                   class="w-12 h-12 flex items-center justify-center font-headline font-extrabold text-xs transition-colors">
-                </a>
-                <a th:href="${mode == 'wishlist' ? '/wishlist?page=' + (page.number + 1) : '/stock/list?page=' + (page.number + 1)}"
-                   th:classappend="${page.last} ? 'pointer-events-none opacity-30' : ''"
-                   class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4">
-                    Next
-                    <span class="material-symbols-outlined text-sm">chevron_right</span>
-                </a>
-            </th:block>
-        </div>
+        <div id="pagination" class="mt-24 flex justify-center items-center gap-4"></div>
     </div>
 
 </div>
@@ -440,7 +380,11 @@
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => loadProducts(0), 300);
     });
+
+    loadProducts(0);
 })();
+
+
 </script>
 
 </body>

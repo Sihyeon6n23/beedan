@@ -49,6 +49,4 @@ public class QuoteDetailRequest {
 
     @NotNull(message = "외화 단가는 필수입니다")
     private BigDecimal quDtFgPr;            // 외화 단가
-
-    private String quDtRe;                  // 비고
 }

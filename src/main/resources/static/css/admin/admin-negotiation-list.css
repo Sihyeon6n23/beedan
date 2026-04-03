@@ -165,29 +165,81 @@ main > div {
 }
 
 /* Column widths */
-.ang-table .col-check { width: 40px; }
-.ang-table .col-ng-id { width: 130px; text-align: left; }
-.ang-table .col-ng-name { width: 220px; text-align: left; }
+.ang-table .col-ng-id { width: 170px; text-align: left; }
 .ang-table .col-member { width: 160px; text-align: left; }
 .ang-table .col-quote-count { width: 70px; }
 .ang-table .col-status { width: 80px; }
+.ang-table .col-latest-update { width: 120px; }
 .ang-table .col-start-date { width: 100px; }
-.ang-table .col-end-date { width: 100px; }
-.ang-table .col-action { width: 80px; }
 
 .ang-table td.col-ng-id {
     font-weight: 700;
     font-size: 0.75rem;
+    position: relative;
 }
 
-.ang-table td.col-ng-name {
-    text-align: left;
+/* Unread dot */
+.ang-unread-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #e53935;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
 }
 
-.ng-name-text {
-    font-weight: 600;
-    font-size: 0.8rem;
+/* Unread row highlight */
+/* Row interaction */
+.ang-table tbody tr {
+    cursor: pointer;
+}
+
+.ang-table tbody tr:hover {
+    outline: 2px solid rgba(255, 215, 0, 0.5);
+    outline-offset: -2px;
+}
+
+.ang-row--unread {
+    background: rgba(255, 215, 0, 0.06);
+}
+
+/* Closed row (종료) */
+.ang-row--closed {
+    background: #ffffff;
+    color: #aaaaaa;
+}
+
+.ang-row--closed td {
+    color: #aaaaaa;
+}
+
+.ang-row--closed .member-name,
+.ang-row--closed .member-company {
+    color: #aaaaaa;
+}
+
+/* Sortable headers */
+.ang-sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ang-sortable:hover {
+    background: #e8e8e8;
     color: var(--ang-text-main);
+}
+
+.ang-sortable.is-active {
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--ang-gold-dark);
+}
+
+.ang-sort-icon {
+    font-size: 9px;
+    vertical-align: middle;
+    margin-left: 2px;
 }
 
 /* Member cell */
@@ -232,32 +284,6 @@ main > div {
 }
 
 /* Action buttons */
-.ang-action-group {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.ang-btn-view {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 14px;
-    font-size: 10px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    text-transform: uppercase;
-    transition: all 0.15s ease;
-    background: var(--ang-text-main);
-    color: #ffffff;
-}
-
-.ang-btn-view:hover {
-    background: #333333;
-}
-
 /* Pagination */
 .ang-pagination-wrapper {
     display: flex;
@@ -301,8 +327,13 @@ main > div {
     color: var(--ang-gold-dark);
 }
 
-.ang-page-btn:hover:not(.active) {
+.ang-page-btn:hover:not(.active):not(:disabled) {
     background: #d5d5d5;
+}
+
+.ang-page-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
 }
 
 /* Responsive */

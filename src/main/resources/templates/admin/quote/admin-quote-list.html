@@ -28,16 +28,16 @@
         <!-- Filter & Search -->
         <section class="aq-toolbar">
             <div class="aq-search-wrapper">
-                <input type="text" placeholder="견적 ID, 회원명, 협상명으로 검색">
+                <input type="text" id="aqSearchInput" placeholder="견적코드, 회원명, 협상명으로 검색">
                 <span class="material-symbols-outlined">search</span>
             </div>
             <div class="aq-filter-set">
-                <button class="aq-filter is-active">전체</button>
-                <button class="aq-filter">임시저장</button>
-                <button class="aq-filter">제출완료</button>
-                <button class="aq-filter">승인</button>
-                <button class="aq-filter">거절</button>
-                <button class="aq-filter">만료</button>
+                <button class="aq-filter is-active" data-filter="all">전체</button>
+                <button class="aq-filter" data-filter="TEMP_SAVE">임시저장</button>
+                <button class="aq-filter" data-filter="SUBMITTED">대기중</button>
+                <button class="aq-filter" data-filter="APPROVED">승인</button>
+                <button class="aq-filter" data-filter="REJECTED">거절</button>
+                <button class="aq-filter" data-filter="EXPIRED">만료</button>
             </div>
         </section>
 
@@ -46,22 +46,32 @@
             <table class="aq-table">
                 <thead>
                 <tr>
-                    <th class="col-check"><input type="checkbox"></th>
-                    <th class="col-id">견적 ID</th>
+                    <th class="col-id">견적코드</th>
                     <th class="col-member">회원명</th>
                     <th class="col-negotiation">협상명</th>
                     <th class="col-items">품목수</th>
                     <th class="col-status">상태</th>
-                    <th class="col-amount">금액</th>
-                    <th class="col-date">발행일</th>
-                    <th class="col-action">관리</th>
+                    <th class="col-date aq-sortable is-active" data-sort="quUpdDt" data-dir="desc">
+                        최근 업데이트 <span class="aq-sort-icon">▼</span>
+                    </th>
+                    <th class="col-date aq-sortable" data-sort="quCreDt" data-dir="desc">
+                        발행일 <span class="aq-sort-icon">▼</span>
+                    </th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="aqTableBody">
                 <th:block th:each="q : ${quotes}">
-                    <tr>
-                        <td class="col-check"><input type="checkbox"></td>
-                        <td class="col-id" th:text="${q.quId}">1</td>
+                    <tr th:data-qu-id="${q.quId}"
+                        th:data-qu-upd-dt="${q.quUpdDt}"
+                        th:data-qu-cre-dt="${q.quCreDt}"
+                        th:data-status="${q.quStt}"
+                        th:data-search="${(q.quCd != null ? q.quCd : '') + ' ' + q.ngNm + ' ' + q.memNm + ' ' + q.memBizTtl}"
+                        th:class="(${q.quStt == 'REJECTED' or q.quStt == 'EXPIRED'} ? 'aq-row--closed' : '') + ' ' + (${!q.quOpYn} ? 'aq-row--unread' : '')"
+                        style="cursor:pointer">
+                        <td class="col-id">
+                            <span th:text="${q.quCd}">QU0000</span>
+                            <span th:if="${!q.quOpYn}" class="aq-unread-dot"></span>
+                        </td>
                         <td class="col-member">
                             <span class="member-name" th:text="${q.memNm}">회원명</span>
                             <span class="member-company" th:text="${q.memBizTtl}">회사명</span>
@@ -72,27 +82,18 @@
                             <span class="aq-badge"
                                   th:classappend="'aq-badge--' + ${q.quStt.toLowerCase()}"
                                   th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
-                                             q.quStt == 'SUBMITTED' ? '제출완료' :
+                                             q.quStt == 'SUBMITTED' ? '대기중' :
                                              q.quStt == 'APPROVED' ? '승인' :
                                              q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
                         </td>
-                        <td class="col-amount"
-                            th:if="${q.totalAmount != null}"
-                            th:text="'₩' + ${#numbers.formatInteger(q.totalAmount, 3, 'COMMA')}">₩0</td>
-                        <td class="col-amount aq-amount--pending"
-                            th:if="${q.totalAmount == null}">산출 중</td>
                         <td class="col-date"
-                            th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">2026.03.15</td>
-                        <td class="col-action">
-                            <div class="aq-action-group">
-                                <a th:href="@{/admin/quote/detail(quId=${q.quId})}" class="aq-btn-view">VIEW</a>
-                                <a th:href="@{/admin/quote/write(quId=${q.quId})}" class="aq-btn-edit">EDIT</a>
-                            </div>
-                        </td>
+                            th:text="${q.quUpdDt != null ? #temporals.format(q.quUpdDt, 'yyyy.MM.dd') : '-'}">-</td>
+                        <td class="col-date"
+                            th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">-</td>
                     </tr>
                 </th:block>
-                <tr th:if="${#lists.isEmpty(quotes)}">
-                    <td colspan="9" style="text-align:center; padding:3rem; color:#78716c;">
+                <tr id="aqEmptyRow" th:if="${#lists.isEmpty(quotes)}">
+                    <td colspan="7" style="text-align:center; padding:3rem; color:#78716c;">
                         표시할 견적이 없습니다.
                     </td>
                 </tr>
@@ -109,5 +110,166 @@
             </div>
         </footer>
     </section>
+
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const tbody = document.getElementById('aqTableBody');
+        const sortHeaders = document.querySelectorAll('.aq-sortable');
+        const searchInput = document.getElementById('aqSearchInput');
+        const filterBtns = document.querySelectorAll('.aq-filter');
+
+        let currentFilter = 'all';
+        let currentSearch = '';
+        const PAGE_SIZE = 20;
+        let currentPage = 0;
+
+        // ── 정렬 ──
+        function toCamel(s) {
+            return s.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
+        }
+
+        function sortRows(key, dir) {
+            const rows = Array.from(tbody.querySelectorAll('tr:not(#aqEmptyRow)'));
+            rows.sort(function (a, b) {
+                const va = a.dataset[key] || '';
+                const vb = b.dataset[key] || '';
+                return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+            });
+            rows.forEach(function (r) { tbody.appendChild(r); });
+        }
+
+        sortHeaders.forEach(function (header) {
+            header.addEventListener('click', function () {
+                const sortKey = toCamel(header.dataset.sort);
+                let dir = header.dataset.dir;
+
+                if (header.classList.contains('is-active')) {
+                    dir = dir === 'desc' ? 'asc' : 'desc';
+                } else {
+                    sortHeaders.forEach(function (h) { h.classList.remove('is-active'); });
+                    header.classList.add('is-active');
+                }
+                header.dataset.dir = dir;
+                header.querySelector('.aq-sort-icon').textContent = dir === 'desc' ? '▼' : '▲';
+
+                sortRows(sortKey, dir);
+                currentPage = 0;
+                renderPage();
+            });
+        });
+
+        // 초기 정렬
+        sortRows('quUpdDt', 'desc');
+        renderPage();
+
+        // ── 필터 + 검색 + 페이지네이션 ──
+        function getFilteredRows() {
+            var rows = Array.from(tbody.querySelectorAll('tr:not(#aqEmptyRow)'));
+            return rows.filter(function (row) {
+                var status = row.dataset.status || '';
+                var searchText = (row.dataset.search || '').toLowerCase();
+                var matchFilter = currentFilter === 'all' || status === currentFilter;
+                var matchSearch = currentSearch === '' || searchText.includes(currentSearch);
+                return matchFilter && matchSearch;
+            });
+        }
+
+        function applyFilterAndSearch() {
+            currentPage = 0;
+            renderPage();
+        }
+
+        function renderPage() {
+            var allRows = Array.from(tbody.querySelectorAll('tr:not(#aqEmptyRow)'));
+            var filtered = getFilteredRows();
+            var totalItems = filtered.length;
+            var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+            if (currentPage >= totalPages) currentPage = totalPages - 1;
+
+            var start = currentPage * PAGE_SIZE;
+            var end = Math.min(start + PAGE_SIZE, totalItems);
+            var pageItems = filtered.slice(start, end);
+
+            allRows.forEach(function (r) { r.style.display = 'none'; });
+            pageItems.forEach(function (r) { r.style.display = ''; });
+
+            // page info
+            var pageInfo = document.querySelector('.aq-page-info');
+            if (pageInfo) {
+                if (totalItems > 0) {
+                    pageInfo.textContent = (start + 1) + '-' + end + ' of ' + totalItems + ' 건';
+                } else {
+                    pageInfo.textContent = '총 0 건';
+                }
+            }
+
+            // page numbers
+            var nums = document.querySelector('.aq-page-numbers');
+            if (nums) {
+                var html = '';
+                html += '<button class="aq-page-btn" ' + (currentPage === 0 ? 'disabled' : '') + ' data-page="prev"><span class="material-symbols-outlined" style="font-size:18px">chevron_left</span></button>';
+
+                var maxPages = 10;
+                var startPage = Math.max(0, currentPage - 4);
+                var endPage = Math.min(totalPages - 1, startPage + maxPages - 1);
+                if (endPage - startPage < maxPages - 1) startPage = Math.max(0, endPage - maxPages + 1);
+
+                for (var i = startPage; i <= endPage; i++) {
+                    html += '<button class="aq-page-btn ' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + (i + 1) + '</button>';
+                }
+
+                html += '<button class="aq-page-btn" ' + (currentPage >= totalPages - 1 ? 'disabled' : '') + ' data-page="next"><span class="material-symbols-outlined" style="font-size:18px">chevron_right</span></button>';
+                nums.innerHTML = html;
+
+                nums.querySelectorAll('.aq-page-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var p = btn.dataset.page;
+                        if (p === 'prev') currentPage--;
+                        else if (p === 'next') currentPage++;
+                        else currentPage = parseInt(p);
+                        renderPage();
+                    });
+                });
+            }
+        }
+
+        filterBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                filterBtns.forEach(function (b) { b.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+                currentFilter = btn.dataset.filter;
+                applyFilterAndSearch();
+            });
+        });
+
+        searchInput.addEventListener('input', function () {
+            currentSearch = searchInput.value.trim().toLowerCase();
+            applyFilterAndSearch();
+        });
+
+        // ── CSRF 토큰 ──
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // ── 행 클릭 → 열람 처리 + 상세 페이지 이동 ──
+        tbody.addEventListener('click', function (e) {
+            if (e.target.closest('button, a')) return;
+            var row = e.target.closest('tr');
+            if (row && row.dataset.quId) {
+                if (row.classList.contains('aq-row--unread')) {
+                    var headers = {};
+                    headers[csrfHeader] = csrfToken;
+                    fetch('/api/quote/' + row.dataset.quId + '/admin-opened', {
+                        method: 'POST', headers: headers
+                    });
+                    row.classList.remove('aq-row--unread');
+                    var dot = row.querySelector('.aq-unread-dot');
+                    if (dot) dot.remove();
+                }
+                window.location.href = '/admin/quote/detail?quId=' + row.dataset.quId;
+            }
+        });
+    });
+    </script>
 </th:block>
 </html>

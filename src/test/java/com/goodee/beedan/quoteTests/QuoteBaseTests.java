@@ -46,7 +46,8 @@ class QuoteBaseTests {
         log.info("송신자 아이디   : {}", created.getQuSid());
         log.info("수신자 아이디   : {}", created.getQuRid());
         log.info("견적 상태       : {}", created.getQuStt());
-        log.info("열람 여부       : {}", created.getQuOpYn());
+        log.info("사용자 열람 여부 : {}", created.getQuUsOpYn());
+        log.info("운영자 열람 여부 : {}", created.getQuAdOpYn());
         log.info("수정 가능 여부  : {}", created.isEditable());
         log.info("만료 여부       : {}", created.isExpired());
 
@@ -60,7 +61,7 @@ class QuoteBaseTests {
         log.info("협상1 견적 수   : {}개", allByNego.size());
         allByNego.forEach(q ->
                 log.info("  └── ID: {}, 상태: {}, 열람: {}",
-                        q.getQuId(), q.getQuStt(), q.getQuOpYn()));
+                        q.getQuId(), q.getQuStt(), q.getQuUsOpYn()));
 
         List<QuoteBase> tempSaves = quoteBaseService
                 .findAllByNegoAndStatus(1L, QuoteStatus.TEMP_SAVE);
@@ -81,10 +82,10 @@ class QuoteBaseTests {
 
         // ── 4. 열람 처리 ──────────────────────────────
         log.info("========== 4. 열람 처리 ==========");
-        log.info("열람 전         : {}", created.getQuOpYn());
+        log.info("사용자 열람 전  : {}", created.getQuUsOpYn());
 
-        quoteBaseService.open(created.getQuId());
-        log.info("열람 후         : {}", created.getQuOpYn());
+        quoteBaseService.userOpen(created.getQuId());
+        log.info("사용자 열람 후  : {}", created.getQuUsOpYn());
 
         // ── 5. 거절 흐름 ──────────────────────────────
         log.info("========== 5. 거절 흐름 ==========");

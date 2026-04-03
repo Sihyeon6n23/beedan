@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class UtilitySettingDto {
 
+    // 1. 날씨 정보 dto
     @JsonProperty("weather_location_list")
     private List<WeatherLocation> weatherLocationList;
 
@@ -19,4 +20,12 @@ public class UtilitySettingDto {
         @JsonProperty("region")
         private String region;
     }
+
+    // 2. 뉴스 키워드
+    @JsonProperty("news_keyword_left")
+    private String newsKeywordLeft;
+
+    @JsonProperty("news_keyword_right")
+    private String newsKeywordRight;
+
 }
