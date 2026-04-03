@@ -412,10 +412,10 @@ main > div {
 }
 
 .aqd-memo__content {
-    background: var(--aqd-surface);
-    border-left: 3px solid var(--aqd-gold);
+    background: var(--aqd-white);
+    border: 1px solid var(--aqd-border);
     padding: 20px 24px;
-    font-size: 13px;
+    font-size: 15px;
     color: var(--aqd-text-main);
     line-height: 1.7;
 }
@@ -480,7 +480,7 @@ main > div {
 .aqd-btn--approve {
     background: var(--aqd-gold);
     color: var(--aqd-gold-dark);
-    flex: 1;
+    flex: 4;
 }
 
 .aqd-btn--approve:hover {
@@ -490,7 +490,7 @@ main > div {
 .aqd-btn--reject {
     background: #fde8e8;
     color: #c53030;
-    flex: 1;
+    flex: 2;
 }
 
 .aqd-btn--reject:hover {
@@ -517,6 +517,145 @@ main > div {
     background: #fafaf7;
 }
 
+/* Rejection banner */
+.aqd-rejection-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: baseline;
+}
+
+.aqd-rejection-tag {
+    color: #991b1b;
+    font-weight: 800;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+}
+
+.aqd-rejection-title {
+    color: #991b1b;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.aqd-rejection-reason {
+    width: 100%;
+    color: #991b1b;
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Services */
+.aqd-services {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aqd-services__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.aqd-service-card {
+    background: var(--aqd-white);
+    border: 1px solid var(--aqd-border);
+}
+
+.aqd-service-card__header {
+    padding: 12px 20px;
+    background: var(--aqd-surface);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--aqd-text-muted);
+    border-bottom: 1px solid var(--aqd-border);
+}
+
+.aqd-service-card__body {
+    padding: 16px 20px;
+}
+
+.aqd-service-card__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--aqd-text-main);
+}
+
+/* Rewrite button */
+.aqd-btn--rewrite {
+    background: #fef3c7;
+    color: #92400e;
+    flex: 4;
+}
+
+.aqd-btn--rewrite:hover {
+    background: #fde68a;
+}
+
+/* Cancel button */
+.aqd-btn--cancel {
+    background: var(--aqd-surface);
+    color: var(--aqd-text-muted);
+}
+
+.aqd-btn--cancel:hover {
+    background: var(--aqd-border);
+}
+
+/* Reject confirm */
+.aqd-btn--reject-confirm {
+    background: #c53030;
+    color: #ffffff;
+}
+
+.aqd-btn--reject-confirm:hover {
+    background: #9b2c2c;
+}
+
+/* Reject form */
+.aqd-reject-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--aqd-border);
+}
+
+.aqd-reject-form__label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--aqd-text-main);
+}
+
+.aqd-reject-form__textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--aqd-border);
+    font-size: 13px;
+    font-family: var(--aqd-font-body);
+    color: var(--aqd-text-main);
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+}
+
+.aqd-reject-form__textarea:focus {
+    border-color: var(--aqd-border-mid);
+}
+
+.aqd-reject-form__actions {
+    display: flex;
+    gap: 10px;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
     .aqd-title {
@@ -524,6 +663,10 @@ main > div {
     }
 
     .aqd-cost-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .aqd-services__grid {
         grid-template-columns: 1fr;
     }
 

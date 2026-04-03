@@ -79,10 +79,46 @@ public class QuoteInfo {
         this.quInfoDsrDt = desiredDate;
     }
 
-    public void updateDraft(String memo, Long insuranceId, Long inspectionId) {
+    public void updateDraft(String memo, Long insuranceId, Long inspectionId, BigDecimal grandTotal) {
         this.quInfoPs = memo;
         this.siId = insuranceId;
         this.stiId = inspectionId;
+        if (grandTotal != null) {
+            this.quInfoTp = grandTotal;
+        }
+    }
+
+    public void updateExchangeRate(String currencyCode, BigDecimal exchangeRate) {
+        this.quInfoCurCd = currencyCode;
+        this.quInfoExcRt = exchangeRate;
+    }
+
+    public void updateFeeInfo(
+            BigDecimal serviceFee,
+            BigDecimal serviceFeeRate,
+            BigDecimal serviceFeeAmount,
+            BigDecimal domesticFee,
+            BigDecimal domesticExtraFee,
+            BigDecimal intShipFee,
+            BigDecimal domShipFee,
+            BigDecimal totalShipFee,
+            BigDecimal totalTax,
+            BigDecimal discountedTotal,
+            Long bgpId,
+            Long fpId
+    ) {
+        this.quInfoSrvFe = serviceFee;
+        this.quInfoSrvFeR = serviceFeeRate;
+        this.quInfoSrvFeAm = serviceFeeAmount;
+        this.quInfoDdAm = domesticFee;
+        this.quInfoDdExAm = domesticExtraFee;
+        this.quInfoIntShiFe = intShipFee;
+        this.quInfoDomShiFe = domShipFee;
+        this.quInfoTtlShiFe = totalShipFee;
+        this.quInfoTax = totalTax;
+        this.quInfoDisTp = discountedTotal;
+        this.bgpId = bgpId;
+        this.fpId = fpId;
     }
 
     public void calculateServiceFee(

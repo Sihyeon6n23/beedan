@@ -108,6 +108,40 @@ public class QuoteDetail {
                 .setScale(0, RoundingMode.HALF_UP);
     }
 
+    public void updateFrom(
+            Integer stockQuantity,
+            String stockName,
+            Long factoryId,
+            String factoryName,
+            Long unitGroupId,
+            String unitGroupName,
+            Integer unitGroupQuantity,
+            BigDecimal foreignPrice,
+            BigDecimal krwTotal,
+            Long receiverId,
+            String rcRegion,
+            String rcName,
+            String rcAddress,
+            String rcPhone,
+            String rcMemo
+    ) {
+        this.quDtQn = stockQuantity;
+        this.stNm = stockName;
+        this.faId = factoryId;
+        this.faNm = factoryName;
+        this.unGId = unitGroupId;
+        this.unGNm = unitGroupName;
+        this.quUQn = unitGroupQuantity;
+        this.quDtFgPr = foreignPrice;
+        this.quDtPr = krwTotal;
+        this.rcId = receiverId;
+        this.quDtRcRgn = rcRegion;
+        this.quDtRcNm = rcName;
+        this.quDtRcAdr = rcAddress;
+        this.quDtRcPhn = rcPhone;
+        this.quDtRcMemo = rcMemo;
+    }
+
     public Long getFactoryId(){
         return this.faId;
     }

@@ -15,7 +15,6 @@
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/admin/admin-quote-detail.css}">
     <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
-    <link rel="stylesheet" th:href="@{/css/quote/feeCards.css}">
 
     <section class="aqd-container">
 
@@ -74,10 +73,11 @@
         </div>
 
         <!-- 거절 사유 배너 -->
-        <div class="rejection-banner" th:if="${quoteBase.quStt.name() == 'REJECTED'}" style="background:#fef2f2; border:1px solid #fecaca; padding:1.2rem 1.5rem; margin-bottom:1.5rem; display:flex; gap:0.75rem; align-items:flex-start;">
-            <div style="color:#991b1b; font-weight:700; font-size:0.8rem;">REJECTED</div>
-            <p th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '거절 사유가 기재되지 않았습니다.'}"
-               style="color:#991b1b; font-size:0.85rem; margin:0;">거절 사유</p>
+        <div class="aqd-rejection-banner" th:if="${quoteBase.quStt.name() == 'REJECTED'}">
+            <span class="aqd-rejection-tag">REJECTED</span>
+            <span class="aqd-rejection-title">견적이 거절되었습니다</span>
+            <p class="aqd-rejection-reason"
+               th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '거절 사유가 기재되지 않았습니다.'}">거절 사유</p>
         </div>
 
         <!-- Quote Manifest Table -->
@@ -124,11 +124,26 @@
             </div>
         </section>
 
-        <!-- Logistics & Procurement Fee Cards -->
-        <div th:if="${quoteInfo != null}"
-             th:replace="~{fragments/quoteAndPayment/feeCards :: feeCards}"></div>
+        <!-- 부가 서비스 -->
+        <section class="aqd-services" th:if="${insuranceName != null || inspectionName != null}">
+            <div class="aqd-section-label">부가 서비스</div>
+            <div class="aqd-services__grid">
+                <div class="aqd-service-card" th:if="${insuranceName != null}">
+                    <div class="aqd-service-card__header">적하보험</div>
+                    <div class="aqd-service-card__body">
+                        <span class="aqd-service-card__value" th:text="${insuranceName}">-</span>
+                    </div>
+                </div>
+                <div class="aqd-service-card" th:if="${inspectionName != null}">
+                    <div class="aqd-service-card__header">품질 검사</div>
+                    <div class="aqd-service-card__body">
+                        <span class="aqd-service-card__value" th:text="${inspectionName}">-</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <!-- Cost Summary Section -->
+        <!-- 비용 명세 요약 -->
         <section class="aqd-cost-summary" th:if="${quoteInfo != null}">
             <div class="aqd-cost-summary__heading">
                 <span class="aqd-cost-summary__title">비용 명세 요약</span>
@@ -136,10 +151,22 @@
             </div>
             <div class="aqd-cost-cards">
                 <div class="aqd-cost-card">
-                    <div class="aqd-cost-card__label">운송 비용 합계</div>
+                    <div class="aqd-cost-card__label">품목 소계</div>
                     <div class="aqd-cost-card__amount"
-                         th:text="${quoteInfo.quInfoTtlShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA') : '-'}">-</div>
-                    <div class="aqd-cost-card__desc">국제 운임 + 국내 배송비</div>
+                         th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA') : '-'}">-</div>
+                    <div class="aqd-cost-card__desc">전체 품목 한화 합계</div>
+                </div>
+                <div class="aqd-cost-card">
+                    <div class="aqd-cost-card__label">국제 운임</div>
+                    <div class="aqd-cost-card__amount"
+                         th:text="${quoteInfo.quInfoIntShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoIntShiFe, 3, 'COMMA') : '-'}">-</div>
+                    <div class="aqd-cost-card__desc">해외 → 국내 운송비</div>
+                </div>
+                <div class="aqd-cost-card">
+                    <div class="aqd-cost-card__label">국내 배송비</div>
+                    <div class="aqd-cost-card__amount"
+                         th:text="${quoteInfo.quInfoDomShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoDomShiFe, 3, 'COMMA') : '-'}">-</div>
+                    <div class="aqd-cost-card__desc">국내 배송 + 도서산간 추가비</div>
                 </div>
                 <div class="aqd-cost-card">
                     <div class="aqd-cost-card__label">
@@ -165,79 +192,88 @@
             </div>
         </section>
 
-        <!-- Memo -->
+        <!-- 메모 / 특이사항 -->
         <section class="aqd-memo" th:if="${quoteInfo != null && quoteInfo.quInfoPs != null && !quoteInfo.quInfoPs.isEmpty()}">
-            <div class="aqd-section-label">메모</div>
+            <div class="aqd-section-label">메모 / 특이사항</div>
             <div class="aqd-memo__content" th:text="${quoteInfo.quInfoPs}">메모 내용</div>
         </section>
 
-        <!-- Final Payment -->
+        <!-- 최종 결제 금액 + 관리자 액션 -->
         <section class="aqd-final">
             <div class="aqd-final__payment">
                 <span class="aqd-final__label">최종 결제 금액</span>
                 <span class="aqd-final__amount"
-                      th:text="${quoteInfo != null && quoteInfo.quInfoTp != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTp, 3, 'COMMA') : '산출 중'}">산출 중</span>
+                      th:text="${quoteInfo != null and quoteInfo.quInfoTp != null and quoteInfo.quInfoTp.longValue() > 0 ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTp.longValue(), 3, 'COMMA') : '산출 중'}">산출 중</span>
                 <span class="aqd-final__note">INC. VAT &amp; DELIVERY</span>
             </div>
             <div class="aqd-final__actions">
-                <button class="aqd-btn aqd-btn--edit" th:onclick="'location.href=\'/admin/quote/write?quId=' + ${quoteBase.quId} + '\''">견적 수정</button>
+                <button class="aqd-btn aqd-btn--approve"
+                        th:if="${quoteBase.quStt.name() == 'SUBMITTED'}"
+                        id="btnApprove"
+                        th:data-qu-id="${quoteBase.quId}">승인</button>
+                <button class="aqd-btn aqd-btn--rewrite"
+                        th:if="${quoteBase.quStt.name() == 'SUBMITTED'}"
+                        th:onclick="'location.href=\'/admin/quote/write?quId=' + ${quoteBase.quId} + '\''">견적 거절 후 재작성</button>
+                <button class="aqd-btn aqd-btn--reject"
+                        th:if="${quoteBase.quStt.name() == 'SUBMITTED'}"
+                        id="btnReject"
+                        th:data-qu-id="${quoteBase.quId}">거절</button>
+            </div>
+            <!-- 거절 사유 입력 -->
+            <div class="aqd-reject-form" id="rejectForm" style="display:none;">
+                <label class="aqd-reject-form__label">거절 사유를 입력하세요</label>
+                <textarea class="aqd-reject-form__textarea" id="rejectReason" rows="4" placeholder="거절 사유를 입력해주세요..."></textarea>
+                <div class="aqd-reject-form__actions">
+                    <button class="aqd-btn aqd-btn--reject-confirm" id="btnRejectConfirm">거절 확인</button>
+                    <button class="aqd-btn aqd-btn--cancel" id="btnRejectCancel">취소</button>
+                </div>
             </div>
         </section>
 
     </section>
 
-    <!-- feeCard.js 데이터 전달 -->
     <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {
-        var shipFees = /*[[${shipFees}]]*/ [];
-        var quoteInfo = /*[[${quoteInfo}]]*/ null;
-        var factoryItemCounts = /*[[${factoryItemCounts}]]*/ {};
-        var itemTotalKrw = /*[[${itemTotalKrw}]]*/ 0;
-        var buyerGrade = /*[[${buyerGrade}]]*/ 'STANDARD';
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        if (!quoteInfo || typeof updateFeeCards !== 'function') return;
-
-        var shippingDiscountRate = 0;
-        if (shipFees.length > 0 && shipFees[0].qsfDscR) {
-            shippingDiscountRate = parseFloat(shipFees[0].qsfDscR) || 0;
+        // 승인
+        var btnApprove = document.getElementById('btnApprove');
+        if (btnApprove) {
+            btnApprove.addEventListener('click', function () {
+                if (!confirm('이 견적을 승인하시겠습니까?')) return;
+                var quId = btnApprove.dataset.quId;
+                var headers = {'Content-Type': 'application/json'};
+                headers[csrfHeader] = csrfToken;
+                fetch('/api/quote/' + quId + '/approve', {
+                    method: 'POST', headers: headers
+                }).then(function () { location.reload(); });
+            });
         }
 
-        var factories = shipFees.map(function (sf) {
-            return {
-                factoryName: sf.qsfFaNm,
-                factoryCity: sf.qsfFaNm,
-                countryCode: sf.qsfFaCCd,
-                transportType: sf.qsfTrspTy,
-                sizeType: null,
-                itemCount: factoryItemCounts[sf.faId] || 0,
-                totalDozen: sf.qsfUnQn || 0,
-                shippingFee: sf.qsfSrAm,
-                portFee: sf.qsfPrtAm,
-                customsFee: sf.qsfCstAm,
-                hsCodeFee: sf.qsfHsCd,
-                insuranceFee: sf.qsfInsYn ? sf.qsfInsAm : 0,
-                cifAmount: sf.qsfCifAm,
-                dutyRate: sf.qsfDtyR,
-                dutyAmount: sf.qsfDty,
-                vatAmount: sf.qsfVat,
-                subtotal: sf.qsfTtl
-            };
-        });
-
-        updateFeeCards({
-            factories: factories,
-            shippingDiscountRate: shippingDiscountRate,
-            totalItemAmountKrw: parseFloat(itemTotalKrw) || 0,
-            serviceFee: quoteInfo.quInfoSrvFe || 0,
-            serviceFeeRate: quoteInfo.quInfoSrvFeR || 0,
-            serviceFeeAmount: quoteInfo.quInfoSrvFeAm || 0,
-            domesticFee: quoteInfo.quInfoDmsFe || 0,
-            insuranceName: quoteInfo.siNm || null,
-            insuranceFee: quoteInfo.quInfoInsAm || 0,
-            inspectionName: quoteInfo.stiNm || null,
-            inspectionFee: quoteInfo.quInfoStiAm || 0,
-            buyerGrade: buyerGrade
-        });
+        // 거절 폼 토글
+        var btnReject = document.getElementById('btnReject');
+        var rejectForm = document.getElementById('rejectForm');
+        if (btnReject && rejectForm) {
+            btnReject.addEventListener('click', function () {
+                rejectForm.style.display = rejectForm.style.display === 'none' ? '' : 'none';
+            });
+            document.getElementById('btnRejectCancel').addEventListener('click', function () {
+                rejectForm.style.display = 'none';
+            });
+            document.getElementById('btnRejectConfirm').addEventListener('click', function () {
+                var reason = document.getElementById('rejectReason').value.trim();
+                if (!reason) { alert('거절 사유를 입력해주세요.'); return; }
+                var quId = btnReject.dataset.quId;
+                var headers = {'Content-Type': 'application/json'};
+                headers[csrfHeader] = csrfToken;
+                fetch('/api/quote/' + quId + '/reject', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({reason: reason})
+                }).then(function () { location.reload(); });
+            });
+        }
     });
     </script>
 </th:block>

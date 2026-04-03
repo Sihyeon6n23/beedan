@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.admin;
 
+import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.dto.quote.CartToQuoteDto;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository;
@@ -110,7 +111,7 @@ public class AdminQuoteController {
 
         // 상태별 카운트
         Map<String, Long> statusCounts = new LinkedHashMap<>();
-        for (com.goodee.beedan.common.constant.QuoteStatus s : com.goodee.beedan.common.constant.QuoteStatus.values()) {
+        for (QuoteStatus s : QuoteStatus.values()) {
             statusCounts.put(s.name(), quoteList.stream().filter(q -> q.getQuStt() == s).count());
         }
 
@@ -242,6 +243,20 @@ public class AdminQuoteController {
                     .map(BuyerGradePolicy::getBgpGr).orElse("STANDARD");
         }
 
+        // 보험/검사 이름
+        String insuranceName = null;
+        String inspectionName = null;
+        if (quoteInfo != null) {
+            if (quoteInfo.getSiId() != null) {
+                insuranceName = shippingInsuranceRepository.findById(quoteInfo.getSiId())
+                        .map(ShippingInsurance::getSiNm).orElse(null);
+            }
+            if (quoteInfo.getStiId() != null) {
+                inspectionName = stockInspectionRepository.findById(quoteInfo.getStiId())
+                        .map(StockInspection::getStiNm).orElse(null);
+            }
+        }
+
         model.addAttribute("quoteBase", quoteBase);
         model.addAttribute("negotiation", negotiation);
         model.addAttribute("member", member);
@@ -253,6 +268,8 @@ public class AdminQuoteController {
         model.addAttribute("itemTotalKrw", itemTotalKrw);
         model.addAttribute("buyerGrade", buyerGrade);
         model.addAttribute("activeStep", activeStep);
+        model.addAttribute("insuranceName", insuranceName);
+        model.addAttribute("inspectionName", inspectionName);
         return "admin/quote/admin-quote-detail";
     }
 
