@@ -18,7 +18,7 @@ public class RequirementListDto {
     private LocalDateTime reqCreDt;
 
 
-    // 필요한 멤버 추가 정보 (이름, 상태)
+    // 필요한 멤버 추가 정보
     private String memNm;
     private String memStt;
     private String memBizTtl;

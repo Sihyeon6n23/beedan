@@ -69,8 +69,8 @@ public class RequirementService {
                 .reqPerYn(requirement.getReqPerYn())
                 .reqRepYn(requirement.getReqRepYn())
                 .reqCreDt(requirement.getReqCreDt())
-                .memNm(requirement.getMember().getMemNm())
                 .memStt(requirement.getMember().getMemStt())
+                .memNm(requirement.getMember().getMemNm())
                 .memBizTtl(requirement.getMember().getMemBizTtl())
                 .build();
     }
