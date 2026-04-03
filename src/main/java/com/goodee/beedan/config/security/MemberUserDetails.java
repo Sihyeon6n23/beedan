@@ -19,6 +19,7 @@ public class MemberUserDetails implements UserDetails {
     private List<SimpleGrantedAuthority> authorities;
     private String displayName;
     private Long memberId;
+    private String bizName;
 
     private String accountStatus;
     private Long loginTryCount;
@@ -27,9 +28,11 @@ public class MemberUserDetails implements UserDetails {
     public MemberUserDetails (Member member) {
         this.username = member.getMemLgnId();
         this.displayName = member.getMemNm(); // 그 대신 displayName으로 회원의 이름을 저장
+        this.bizName = member.getMemBizTtl(); // 사업자명 추가
         this.password = member.getMemLgnPw();
         this.memberId = member.getMemId(); // 나중에 게시글을 작성하거나 수정할 때는 멤버 아이디가 필요하므로 memberId 필드를 추가
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + member.getMemAut().name()));
+
 
         this.accountStatus = member.getMemStt();
         this.loginTryCount = member.getMemLgnTr();
