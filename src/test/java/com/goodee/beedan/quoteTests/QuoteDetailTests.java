@@ -46,7 +46,7 @@ class QuoteDetailTests {
                 .unGNm("다스")
                 .quUQn(5)
                 .quDtFgPr(new BigDecimal("3200.0000"))
-                .quDtRe("긴급 주문")
+                //.quDtRe("긴급 주문")
                 .build();
 
         QuoteDetail created = quoteDetailService.create(createRequest);
