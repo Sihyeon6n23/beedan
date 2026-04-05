@@ -394,12 +394,13 @@ async function viewFullOrderList(memberId, page = 0) {
                 <table class="fragment-table">
                     <thead>
                         <tr>
-                            <th>Order ID</th>
-                            <th>Placement Date</th>
-                            <th>Product Summary</th>
-                            <th class="text-right">Total Amount</th>
-                            <th class="text-center">Status</th>
-                            <th></th>
+                            <th>주문번호</th>
+                            <th>주문일자</th>
+                            <th>주문품목</th>
+                            <th>배송지/수령자</th>
+                            <th class="text-center">총금액</th>
+                            <th class="text-center">상태</th>
+                            <th class="text-center">관리</th>
                         </tr>
                     </thead>
                     <tbody id="orderListBody">
@@ -434,19 +435,38 @@ async function viewFullOrderList(memberId, page = 0) {
                 <tr>
                     <td class="order-id">#${order.ordBaseNo}</td>
                     <td class="order-date">${dateStr}</td>
+
                     <td class="order-summary">
                         <strong>${order.ordSummaryNm || '상품 정보 없음'}</strong><br>
-                        <span>${order.ordBaseAdr || '-'}</span>
                     </td>
+
+                    <td class="order-address">
+                        <p>${order.ordBaseAdr}</p>
+                        <p>${order.ordBaseRcvNm}</p>
+                    </td>
+
                     <td class="order-amount text-right">${amount}원</td>
+
                     <td class="order-status text-center">
                         <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                     </td>
+
                     <td class="action-cell">
-                        <button class="btn-icon" onclick="window.open('/order/detail?id=${order.ordBaseId}', '_blank')">
-                            <span class="material-symbols-outlined">more_horiz</span>
-                        </button>
+                        <div class="admin-action-wrapper">
+                            <select class="status-update-select" onchange="updateOrderStatus(${order.ordBaseId}, this.value)">
+                                <option value="" disabled selected>상태 변경</option>
+                                <option value="PREPARING">상품준비</option>
+                                <option value="DELIVERING">배송중</option>
+                                <option value="DELIVERED">배송완료</option>
+                                <option value="CANCELED">주문취소</option>
+                            </select>
+
+                            <button class="btn-icon-sm" onclick="window.open('/api/member/order, '_blank')" title="상태변경">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                        </div>
                     </td>
+
                 </tr>
             `;
         }).join('');

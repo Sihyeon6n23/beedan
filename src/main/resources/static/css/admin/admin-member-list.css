@@ -493,9 +493,10 @@ main > div {
 .fragment-table td { padding: 20px 24px; border-bottom: 1px solid #f4f4f5; }
 .order-id { font-weight: bold; font-size: 14px; color: #18181b; }
 .order-date { color: #71717a; font-size: 14px; }
-.order-summary strong { color: #18181b; font-size: 14px; display: block; margin-bottom: 4px; }
+.order-summary strong { color: #18181b; font-size: 14px;}
 .order-summary span { color: #a1a1aa; font-size: 10px; font-weight: bold; text-transform: uppercase; }
 .order-amount { font-weight: bold; font-size: 14px; color: #18181b; }
+.order-address {  color: #71717a; font-size: 13px}
 
 /* 정렬 및 뱃지 */
 .text-right { text-align: right; }
@@ -505,3 +506,51 @@ main > div {
 .badge-yellow { background-color: rgba(255,215,0,0.2); color: #705d00; border-color: #705d00; }
 .badge-green { background-color: #f0fdf4; color: #15803d; border-color: #16a34a; }
 .btn-icon { background: none; border: none; cursor: pointer; color: #a3a3a3; }
+
+
+.action-cell {
+    white-space: nowrap;
+    width: 150px;
+}
+
+.admin-action-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* 상태 변경 셀렉트 박스 스타일 */
+.status-update-select {
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 12px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.status-update-select:hover {
+    border-color: #ffd700;
+    background-color: #fff;
+}
+
+/* 작은 아이콘 버튼 */
+.btn-icon-sm {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #999;
+}
+
+.btn-icon-sm:hover {
+    color: #333;
+}
+
+.btn-icon-sm .material-symbols-outlined {
+    font-size: 18px;
+}
