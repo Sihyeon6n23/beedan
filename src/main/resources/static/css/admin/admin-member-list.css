@@ -216,15 +216,6 @@ main > div {
     background-color: #333333;
 }
 
-/* Edit 버튼 */
-.btn-edit {
-    background-color: #e2e2e2;
-    color: #1a1c1c !important; /* a 태그 기본 파란색 링크 덮어쓰기 */
-}
-.btn-edit:hover {
-    background-color: #d1d1d1;
-}
-
 /* --- 7. 페이지네이션 --- */
 .pagination-wrapper {
     display: flex;
@@ -313,8 +304,12 @@ main > div {
     position: relative;
 }
 .modal-top-line {
-    height: 6px;
-    background-color: rgba(255, 215, 0, 1); /* 포인트 노란색 */
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0; /* 위아래 꽉 차게 */
+    width: 6px; /* 두께 */
+    background-color: rgba(255, 215, 0, 1);
 }
 
 /* --- 헤더 --- */
@@ -376,7 +371,12 @@ main > div {
 .tracking-timeline { margin-top: 15px; border-left: 2px solid #e2e2e2; padding-left: 15px; }
 .timeline-item { margin-bottom: 10px; display: flex; flex-direction: column; }
 .timeline-item.active { border-left: 2px solid #ffd700; margin-left: -17px; padding-left: 15px; }
-.shipping-address { margin-top: 20px; }
+.shipping-address {margin-top: 20px;}
+.address-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 .icon-yellow { color: #ffd700; font-size: 16px; vertical-align: middle; }
 
 /* --- 문의 내역 특화 --- */

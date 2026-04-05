@@ -170,20 +170,4 @@ public class MemberService {
         return member.getMemAut().equals(MemberAuthority.ADMIN);
     }
 
-    @Transactional(readOnly = true) // 읽기 전용 트랜잭션으로 성능 향상
-    public Page<MemberListDto> getAllMembers(Pageable pageable) {
-        // .stream()을 빼고 Page가 제공하는 .map()을 바로 사용합니다.
-        return memberRepository.findAll(pageable)
-                .map(member -> MemberListDto.builder()
-                        .memId(member.getMemId())
-                        .memLgnId(member.getMemLgnId())
-                        .memNm(member.getMemNm())
-                        .memBizNo(member.getMemBizNo())
-                        .memBizTtl(member.getMemBizTtl())
-                        .memCeoNm(member.getMemCeoNm())
-                        .memBizAdr(member.getMemBizAdr())
-                        .memStt(member.getMemStt())
-                        .build()
-                );
-    }
 }

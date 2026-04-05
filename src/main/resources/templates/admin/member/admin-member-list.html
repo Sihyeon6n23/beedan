@@ -95,7 +95,6 @@
                     </div>
                 </section>
 
-
                 <section class="admin-chat-shell admin-chat-shell--list">
                     <div class="admin-chat-list-head" aria-hidden="true">
                         <div style="text-align: center;">아이디 / 이름</div>
@@ -111,6 +110,65 @@
                 </section>
             </section>
 
+
+            <div id="memberDetailModal" class="modal-overlay hidden">
+                <div class="modal-container">
+                    <div class="modal-top-line"></div>
+
+                    <header class="modal-header">
+                        <div class="header-info">
+                            <div class="meta-row">
+                                <span class="member-id"></span>
+                                <span class="dot-divider"></span>
+                                <span class="join-date"></span>
+                            </div>
+                            <h2 class="member-name"></h2>
+                        </div>
+                        <button class="btn-close-modal" onclick="closeMemberModal()">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </header>
+
+                    <div id="modalContentArea" class="modal-body">
+
+                        <section class="modal-col col-order">
+                            <div class="col-header">
+                                <h3>주문 목록</h3>
+                                <span class="material-symbols-outlined">receipt_long</span>
+                            </div>
+                            <div class="col-content"></div>
+                            <div class="col-footer">
+                                <button class="btn-outline-yellow">전체 주문 목록 조회</button>
+                            </div>
+                        </section>
+
+                        <section class="modal-col col-shipping">
+                            <div class="col-header bg-gray">
+                                <h3>배송 목록</h3>
+                                <span class="material-symbols-outlined">local_shipping</span>
+                            </div>
+                            <div class="col-content"></div>
+                            <div class="col-footer">
+                                <button class="btn-solid-black">전체 배송 목록 조회</button>
+                            </div>
+                        </section>
+
+                        <section class="modal-col col-inquiry">
+                            <div class="col-header">
+                                <h3>문의 목록</h3>
+                                <span class="material-symbols-outlined">support_agent</span>
+                            </div>
+                            <div class="col-content"></div>
+                            <div class="col-footer">
+                                <button class="btn-solid-yellow">전체 문의 내역 조회</button>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+
+    <script th:src="@{/js/admin/member/list.js}"></script>
 </th:block>
 </body>
 </html>

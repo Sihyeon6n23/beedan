@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     List<Shipment> findByOrder_OrdBaseIdOrderByShCreDtDesc(Long ordBaseId);
+
+    List<Shipment> findTop2ByOrder_Member_MemIdOrderByShCreDtDesc(Long memId);
 }
