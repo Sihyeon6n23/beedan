@@ -1,15 +1,21 @@
 package com.goodee.beedan.controller.member;
 
 import com.goodee.beedan.dto.member.BizDto;
+import com.goodee.beedan.dto.member.sns.MessageResponse;
+import com.goodee.beedan.dto.member.sns.SnsDisconnectRequest;
+import com.goodee.beedan.dto.member.sns.SnsIntegrateResponse;
+import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.member.MemberService;
+import com.goodee.beedan.service.member.SnsIntegrateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -19,6 +25,8 @@ public class AuthRestController {
     private final BizValidateService bizValidateService;
     private final PortOneService portOneService;
     private final MemberService memberService;
+    private final SnsIntegrateService snsIntegrateService;
+
     @PostMapping("/biz-validation")
     public Mono<ResponseEntity<Map<String, Object>>> postBizValidation (
              @RequestBody BizDto bizDto) {
@@ -51,10 +59,19 @@ public class AuthRestController {
         }
     }
 
-    @GetMapping("/kakao/callback")
-    public String getSnsIntegrateCallback() {
+    @PostMapping("/disconnectSns")
+    public Mono<ResponseEntity<MessageResponse>> postDisconnectSns(Principal principal) {
+        Member member = memberService.getMemberByUsername(principal.getName());
+        SnsDisconnectRequest snsDisconnectRequest = snsIntegrateService.getSnsDisconnectRequest(member);
 
-        return "/mypage/sns";
+        return snsIntegrateService.disconnect(snsDisconnectRequest)
+                .map(message -> {
+                    MessageResponse response =  MessageResponse.builder()
+                            .message(message)
+                            .redirectPath("/mypage/sns")
+                            .build();
+
+                    return ResponseEntity.ok(response);
+                });
     }
-
 }
