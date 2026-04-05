@@ -2,206 +2,83 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('INQUIRY MANAGEMENT', 'NEW INQUIRY', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('MY PAGE', 'Inquiry Management', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | NEW REQUIREMENT</title>
+<title th:fragment="title">BEEDAN | 문의 작성</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('inquiry','inquiry-write')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/requirement/require-write.css}">
-    <!-- TinyMCE (GPL, CDN) -->
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
 
-    <section class="admin-chat-page admin-chat-list-page" style="max-width:1280px;">
-        <!-- Header -->
-        <header class="admin-chat-shell admin-chat-shell--header">
-            <div class="admin-chat-shell__heading">
-                <span class="admin-chat-kicker">New Requirement</span>
-                <h2 class="admin-chat-title">상품 요청 작성</h2>
+    <section class="inquiry-page inquiry-write-page">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">New Inquiry</span>
+                <h2 class="inquiry-title">문의 작성</h2>
             </div>
-            <div class="admin-chat-shell__rule"><span></span></div>
+            <div class="inquiry-shell__rule"><span></span></div>
         </header>
 
-        <!-- Form -->
-        <form id="req-form" class="req-write__form" enctype="multipart/form-data">
-            <!-- 제목 -->
-            <div class="req-field">
-                <label class="req-field__label" for="reqTtl">제목 <em>*</em></label>
-                <input class="req-field__input" type="text" id="reqTtl" name="reqTtl"
-                       placeholder="요청하실 상품명 또는 요청 제목을 입력하세요" required>
-            </div>
-
-            <!-- 회사명 / 이름 -->
-            <div class="req-field--row">
-                <div class="req-field">
-                    <label class="req-field__label" for="memBizTtl">회사명</label>
-                    <input class="req-field__input" type="text" id="memBizTtl" name="memBizTtl"
-                           th:value="${#authentication.principal.bizName}" placeholder="회사(상호)명" readonly>
-                </div>
-                <div class="req-field">
-                    <label class="req-field__label" for="memNm">이름</label>
-                    <input class="req-field__input" type="text" id="memNm" name="memNm"
-                           th:value="${#authentication.principal.displayName}" placeholder="작성자 이름" readonly>
-                </div>
-            </div>
-
-            <!-- 내용 (에디터) -->
-            <div class="req-field">
-                <label class="req-field__label">내용 <em>*</em></label>
-                <textarea id="editor" name="reqCon"
-                          placeholder="요청하실 상품의 상세 내용을 작성해주세요 (브랜드, 사이즈, 색상, 수량 등)"></textarea>
-            </div>
-
-            <!-- 참고 URL / 희망가격 -->
-            <div class="req-field--row">
-                <div class="req-field">
-                    <label class="req-field__label" for="reqRef">참고 URL</label>
-                    <input class="req-field__input" type="url" id="reqRef" name="reqRef"
-                           placeholder="https://example.com/product">
-                    <span class="req-field__hint">상품 참고 링크가 있다면 입력해주세요</span>
-                </div>
-                <div class="req-field">
-                    <label class="req-field__label" for="reqPr">희망 가격</label>
-                    <div class="req-field__price-wrap">
-                        <input class="req-field__input" type="number" id="reqPr" name="reqPr"
-                               placeholder="0" min="0">
-                        <span class="req-field__price-unit">KRW</span>
+        <section class="inquiry-write-panel">
+            <form class="inquiry-write-form"
+                  id="inquiry-write-form"
+                  th:action="@{/inquiry/write}"
+                  th:object="${inquiryBoardCreateDto}"
+                  method="post"
+                  enctype="multipart/form-data">
+                <div class="inquiry-write-form__stack">
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdTtl">문의 제목 <em>*</em></label>
+                        <input class="inquiry-write-field__input"
+                               type="text"
+                               id="brdTtl"
+                               th:field="*{brdTtl}"
+                               maxlength="100"
+                               required>
                     </div>
-                    <span class="req-field__hint">대략적인 희망 매입 단가를 입력해주세요</span>
-                </div>
-            </div>
 
-            <!-- 파일 첨부 -->
-            <div class="req-field">
-                <label class="req-field__label">첨부 파일</label>
-                <div class="req-upload">
-                    <div class="req-upload__zone" id="upload-zone">
-                        <span class="material-symbols-outlined req-upload__zone-icon">cloud_upload</span>
-                        <p class="req-upload__zone-text">
-                            파일을 여기에 드래그하거나 <strong>클릭하여 업로드</strong>
-                        </p>
-                        <input class="req-upload__input" type="file" id="fileInput" name="files" multiple
-                               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdCon">문의 내용 <em>*</em></label>
+                        <textarea id="brdCon"
+                                  class="inquiry-write-field__editor"
+                                   th:field="*{brdCon}"></textarea>
                     </div>
-                    <div class="req-upload__list" id="file-list"></div>
-                </div>
-                <span class="req-field__hint">이미지, PDF, 문서 파일 (최대 10MB)</span>
-            </div>
 
-            <!-- 버튼 -->
-            <div class="req-write__actions">
-                <button type="submit" class="req-btn req-btn--draft" name="action" value="DRAFT">임시 저장</button>
-                <button type="submit" class="req-btn req-btn--primary" name="action" value="SUBMITTED">요청 제출</button>
-            </div>
-        </form>
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label">첨부 파일</label>
+                        <div class="inquiry-upload" data-inquiry-upload>
+                            <div class="inquiry-upload__zone" data-upload-zone>
+                                <span class="material-symbols-outlined inquiry-upload__icon">cloud_upload</span>
+                                <p class="inquiry-upload__text">
+                                    파일을 여기에 끌어다 놓거나 <strong>클릭해서 업로드</strong>
+                                </p>
+                                <input class="inquiry-upload__input"
+                                       type="file"
+                                       id="inquiryFiles"
+                                       name="files"
+                                       multiple
+                                       data-upload-input
+                                       accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                            </div>
+                            <div class="inquiry-upload__list" data-upload-list></div>
+                        </div>
+</div>
+                </div>
+
+                <div class="inquiry-write-form__actions">
+                    <a class="inquiry-outline-button" th:href="@{/inquiry/list}">취소</a>
+                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary">등록</button>
+                </div>
+            </form>
+        </section>
     </section>
 
-    <script>
-        (function() {
-            // --- CSRF ---
-            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
-
-            // --- TinyMCE Editor ---
-            tinymce.init({
-                selector: '#editor',
-                height: 380,
-                language: 'ko_KR',
-                menubar: false,
-                plugins: 'lists link table wordcount preview',
-                toolbar: 'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
-                         'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
-                block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
-                font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
-                placeholder: '요청하실 상품의 상세 내용을 작성해주세요 (브랜드, 사이즈, 색상, 수량 등)',
-                content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
-                branding: false,
-                promotion: false,
-                license_key: 'gpl'
-            });
-
-            // --- File Upload ---
-            var uploadZone = document.getElementById('upload-zone');
-            var fileInput = document.getElementById('fileInput');
-            var fileList = document.getElementById('file-list');
-            var selectedFiles = [];
-
-            uploadZone.addEventListener('click', function() {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', function() {
-                addFiles(this.files);
-                this.value = '';
-            });
-
-            uploadZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.classList.add('is-dragover');
-            });
-
-            uploadZone.addEventListener('dragleave', function() {
-                this.classList.remove('is-dragover');
-            });
-
-            uploadZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.classList.remove('is-dragover');
-                addFiles(e.dataTransfer.files);
-            });
-
-            function addFiles(files) {
-                for (var i = 0; i < files.length; i++) {
-                    selectedFiles.push(files[i]);
-                }
-                renderFileList();
-            }
-
-            function removeFile(index) {
-                selectedFiles.splice(index, 1);
-                renderFileList();
-            }
-
-            function renderFileList() {
-                fileList.innerHTML = selectedFiles.map(function(file, i) {
-                    var size = (file.size / 1024).toFixed(1) + ' KB';
-                    return '<div class="req-upload__item">' +
-                        '<span class="req-upload__item-name">' +
-                            '<span class="material-symbols-outlined">description</span>' +
-                            file.name + ' <small style="color:var(--color-outline);margin-left:0.4rem;">(' + size + ')</small>' +
-                        '</span>' +
-                        '<button type="button" class="req-upload__item-remove" onclick="window.__removeFile(' + i + ')">&times;</button>' +
-                    '</div>';
-                }).join('');
-            }
-
-            window.__removeFile = removeFile;
-
-            // --- Form Submit ---
-            document.getElementById('req-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                // TinyMCE 내용을 textarea에 동기화
-                tinymce.triggerSave();
-
-                var formData = new FormData(this);
-                // 기존 file input 데이터 제거 후 selectedFiles로 교체
-                formData.delete('files');
-                for (var i = 0; i < selectedFiles.length; i++) {
-                    formData.append('files', selectedFiles[i]);
-                }
-
-                var headers = { 'Content-Type': 'multipart/form-data' };
-                if (csrfToken) headers[csrfHeader] = csrfToken;
-
-                // TODO: 백엔드 API 연동 시 URL 변경
-                alert('제출 준비 완료 (백엔드 API 연동 필요)');
-            });
-        })();
-    </script>
+    <script defer th:src="@{/js/board/inquiry.js}"></script>
 </th:block>
 </html>
