@@ -3,6 +3,8 @@ package com.goodee.beedan.service.admin;
 import com.goodee.beedan.dto.admin.MemberEditRequest;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
+import com.goodee.beedan.dto.order.ShipmentDto;
+import com.goodee.beedan.dto.order.ShipmentItemDto;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.entity.Shipment;
@@ -20,10 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AdminMemberService {
     private final MemberRepository memberRepository;
     private final MemberEditRequestToMemberMapper memberMapper;
@@ -32,16 +34,14 @@ public class AdminMemberService {
 
     @Transactional
     public void updateMember(MemberEditRequest request) {
-        // 1. 기존 데이터 조회
-        Member member = memberRepository.findById(request.getId())
-                .orElseThrow(() -> new EntityNotFoundException("회원 없음"));
+        Member member = memberRepository.findById(request.getId()).orElseThrow(() -> new EntityNotFoundException("회원 없음"));
 
         memberMapper.updateMemberFromDto(request, member);
     }
 
     @Transactional(readOnly = true)
     public Page<MemberListDto> getAllMembers(Pageable pageable) {
-        return memberRepository.findAll(pageable)
+        return memberRepository.findAllUsers(pageable)
                 .map(member -> MemberListDto.builder()
                         .memId(member.getMemId())
                         .memLgnId(member.getMemLgnId())
@@ -54,7 +54,6 @@ public class AdminMemberService {
                         .build()
                 );
     }
-
 
     @Transactional(readOnly = true)
     public MemberSummaryDto getMemberSummary(Long memberId) {
@@ -106,10 +105,32 @@ public class AdminMemberService {
                 .build();
     }
 
-    /*private MemberSummaryDto.ShipmentSummaryDto toShipmentSummaryDto(Shipment shipment) {
-        // TODO: 17Track 등 외부 API 연동 시, 여기서 trackingNumber를 기반으로
-        // 최신 타임라인(trackingDetails) 데이터를 가져와 덧붙이는 로직을 추가할 수 있습니다.
+    @Transactional(readOnly = true)
+    public Page<ShipmentDto> getShipmentList(Long memId,Pageable pageable){
+        Page<Shipment> shipments = shipmentRepository.findByMemberId(memId, pageable);
+        return  shipments.map(this::mapToShipmentDto);
+    }
 
+    private ShipmentDto mapToShipmentDto(Shipment shipment){
+        return ShipmentDto.builder()
+                .shId(shipment.getShId())
+                .shCarCd(shipment.getShCarCd())
+                .shStt(shipment.getShStt())
+                .shCreDt(shipment.getShCreDt())
+                .shTraNo(shipment.getShTraNo())
+                .shRcvNm(shipment.getShRcvNm())
+                .shAdr(shipment.getShAdr())
+                .shAdrDt(shipment.getShAdrDt())
+                .items(shipment.getShipmentItems().stream()
+                        .map(item -> ShipmentItemDto.builder()
+                                .ordItmNm(item.getOrdItmNm())
+                                .shQn(item.getShQn())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    /*private MemberSummaryDto.ShipmentSummaryDto toShipmentSummaryDto(Shipment shipment) {
         return MemberSummaryDto.ShipmentSummaryDto.builder()
                 .statusName(shipment.getShipmentStatus().name()) // Enum 한글명 매핑 필요
                 .trackingNumber(shipment.getTrackingNumber())

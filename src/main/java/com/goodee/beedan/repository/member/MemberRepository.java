@@ -1,7 +1,10 @@
 package com.goodee.beedan.repository.member;
 
 import com.goodee.beedan.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,4 +16,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Boolean existsByMemLgnId(String memLgnId);
     Optional<Member> findByMemNmAndMemEml(String MemNm, String MemEml);
     Optional<Member> findByMemLgnIdAndMemEml(String MemLgnId, String MemEml);
+
+    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER'")
+    Page<Member> findAllUsers(Pageable pageable);
 }

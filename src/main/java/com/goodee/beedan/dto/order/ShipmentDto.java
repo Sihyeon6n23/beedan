@@ -20,7 +20,6 @@ public class ShipmentDto {
     private ShipmentStatus shStt;
     private LocalDateTime shCreDt;
     private LocalDateTime shUpdDt;
-
     private Long ordBaseId;
 
     private Boolean shCanYn;

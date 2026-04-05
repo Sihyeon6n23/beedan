@@ -9,6 +9,8 @@ import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +24,13 @@ public class ShipmentService {
     private final OrderRepository orderRepository;
 
     @Transactional(readOnly = true)
-    public List<ShipmentDto> getShipmentList(Long memId, Long ordId) {
+    public Page<ShipmentDto> getShipmentList(Long memId, Long ordId, Pageable pageable) {
         Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
         if (!order.getMember().getMemId().equals(memId)) throw new IllegalArgumentException("본인의 주문 배송 목록만 조회할 수 있습니다.");
 
-        return shipmentRepository.findByOrder_OrdBaseIdOrderByShCreDtDesc(ordId).stream()
-                .filter(sh -> !sh.getShCanYn())
-                .map(this::mapToShipmentDto)
-                .toList();
+        Page<Shipment> shipmentPage = shipmentRepository.findByOrder_OrdBaseIdOrderByShCreDtDesc(ordId, pageable);
+        return shipmentPage.map(this::mapToShipmentDto);
     }
 
     @Transactional(readOnly = true)
