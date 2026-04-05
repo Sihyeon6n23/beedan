@@ -67,7 +67,7 @@ public class InquiryBoardService {
     private InquiryBoardListDto mapToInquiryBoardListDto(Board inquiryBoard) {
         // 문의 작성자 조회
         Member member = memberRepository.findById(inquiryBoard.getMemId())
-                .orElseGet(Member::new);
+                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 문의 답글 조회
         Optional<Board> replyBoard = boardRepository
                 .findByBrdPrnIdAndBrdTyAndBrdDelYnFalse(inquiryBoard.getBrdId(), BoardType.INQUIRY_ANSWER);
@@ -98,7 +98,7 @@ public class InquiryBoardService {
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 문의글입니다."));
         // 문의 작성자 정보 조회
         Member member = memberRepository.findById(inquiryBoard.getMemId())
-                .orElseGet(Member::new);
+                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 문의 답글 단일 조회
         Optional<Board> replyBoard = boardRepository
                 .findByBrdPrnIdAndBrdTyAndBrdDelYnFalse(brdId, BoardType.INQUIRY_ANSWER);
@@ -132,7 +132,7 @@ public class InquiryBoardService {
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 문의글입니다."));
         // 문의 작성자 정보 조회
         Member member = memberRepository.findById(inquiryBoard.getMemId())
-                .orElseGet(Member::new);
+                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 문의 답글 단일 조회
         Optional<Board> replyBoard = boardRepository
                 .findByBrdPrnIdAndBrdTyAndBrdDelYnFalse(brdId, BoardType.INQUIRY_ANSWER);
@@ -162,7 +162,7 @@ public class InquiryBoardService {
 
     private InquiryReplyDto mapToInquiryReplyDto(Board replyBoard) {
         Member admin = memberRepository.findById(replyBoard.getMemId())
-                .orElseGet(Member::new);
+                .orElseThrow(() -> new IllegalArgumentException("답변 작성자 정보를 찾을 수 없습니다."));
 
         boolean edited = replyBoard.getBrdUpdDt() != null
                 && !replyBoard.getBrdUpdDt().equals(replyBoard.getBrdCreDt());

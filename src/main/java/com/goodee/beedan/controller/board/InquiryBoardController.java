@@ -8,9 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -58,7 +56,7 @@ public class InquiryBoardController {
         return "/board/inquiry/inquiry-detail";
     }
 
-    // 사용자 문의 작성
+    // 사용자 문의 작성 화면
     @GetMapping("/write")
     public String writeInquiry(Model model) {
         model.addAttribute("inquiryBoardCreateDto", new InquiryBoardCreateDto());
@@ -66,7 +64,17 @@ public class InquiryBoardController {
         return "/board/inquiry/inquiry-write";
     }
 
-    // 사용자 문의 수정
+    // 사용자 문의 작성 처리
+    @PostMapping("/write")
+    public String writeInquiry(@ModelAttribute InquiryBoardCreateDto inquiryBoardCreateDto,
+                               @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Long brdId = inquiryBoardService
+                .createInquiryBoard(userDetails.getMemberId(), inquiryBoardCreateDto);
+
+        return "redirect:/inquiry/detail?id=" + brdId;
+    }
+
+    // 사용자 문의 수정 화면
     @GetMapping("/edit")
     public String editInquiry(Model model,
                        @RequestParam("id") Long brdId,
@@ -83,5 +91,15 @@ public class InquiryBoardController {
         model.addAttribute("inquiryBoardEditDto", inquiryBoardEditDto);
 
         return "/board/inquiry/inquiry-edit";
+    }
+
+    // 사용자 문의 수정 처리
+    @PostMapping("/edit")
+    public String editInquiry(@RequestParam("id") Long brdId,
+                              @ModelAttribute InquiryBoardEditDto inquiryBoardEditDto,
+                              @AuthenticationPrincipal MemberUserDetails userDetails) {
+        inquiryBoardService.updateInquiryBoard(brdId, userDetails.getMemberId(), inquiryBoardEditDto);
+
+        return "redirect:/inquiry/detail?id=" + brdId;
     }
 }
