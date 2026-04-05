@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.admin;
 
+import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
 import com.goodee.beedan.dto.order.OrderDto;
@@ -13,10 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @lombok.extern.slf4j.Slf4j
 @RestController
@@ -35,26 +35,41 @@ public class AdminMemberApiController {
         return ResponseEntity.ok(memberListDtos);
     }
 
-    @GetMapping("/{memberId}/summary")
-    public ResponseEntity<MemberSummaryDto> getMemberSummary(@PathVariable Long memberId) {
-        MemberSummaryDto summaryDto = adminMemberService.getMemberSummary(memberId);
+    @GetMapping("/{memId}/summary")
+    public ResponseEntity<MemberSummaryDto> getMemberSummary(@PathVariable Long memId) {
+        MemberSummaryDto summaryDto = adminMemberService.getMemberSummary(memId);
 
         return ResponseEntity.ok(summaryDto);
     }
 
-    @GetMapping("/order/{memberId}")
+    @GetMapping("/order/{memId}")
     public ResponseEntity<Page<OrderDto>> getMemberOrders(
-            @PathVariable Long memberId,
+            @PathVariable Long memId,
             @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<OrderDto> orderList = orderService.getOrderList(memberId, pageable);
+        Page<OrderDto> orderList = orderService.getOrderList(memId, pageable);
         return ResponseEntity.ok(orderList);
     }
 
-    @GetMapping("/shipment/{memberId}")
+    @PatchMapping("/order/{memId}/status")
+    public ResponseEntity<Page<OrderDto>> updateOrderStatus(
+            @PathVariable("memId") Long memId,
+            @RequestBody Map<String, Object> orderData, // ordBaseId, OrderStatus
+            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Long ordId = Long.valueOf(orderData.get("ordBaseId").toString());
+        OrderStatus ordStt = OrderStatus.valueOf(orderData.get("ordBaseStt").toString());
+
+        orderService.updateOrderStatus(ordId, ordStt);
+
+        Page<OrderDto> orderList = orderService.getOrderList(memId, pageable);
+        return ResponseEntity.ok(orderList);
+    }
+
+    @GetMapping("/shipment/{memId}")
     public ResponseEntity<Page<ShipmentDto>> getMemberShipments(
-            @PathVariable Long memberId,
+            @PathVariable Long memId,
             @PageableDefault(size = 10, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ShipmentDto> shipmentList = adminMemberService.getShipmentList(memberId, pageable);
+        Page<ShipmentDto> shipmentList = adminMemberService.getShipmentList(memId, pageable);
 
         return ResponseEntity.ok(shipmentList);
     }

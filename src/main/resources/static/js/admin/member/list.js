@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// =============================== 상수 영역 =================================
+// =============================== 기본 목록 템플릿 =================================
 
 const DASHBOARD_TEMPLATE = `
     <section class="modal-col col-order">
@@ -157,14 +157,14 @@ function renderPagination(pageData) {
 
 // =============================== 모달 제어 영역 (Refactored) =================================
 
-function openMemberModal(memberId) {
+function openMemberModal(memId) {
     const modal = document.getElementById('memberDetailModal');
     modal.classList.remove('hidden');
 
-    modal.setAttribute('data-current-member-id', memberId);
+    modal.setAttribute('data-current-member-id', memId);
 
     setupDashboardLayout();
-    initModalData(memberId);
+    initModalData(memId);
 }
 
 function setupDashboardLayout() {
@@ -172,8 +172,8 @@ function setupDashboardLayout() {
     contentArea.innerHTML = DASHBOARD_TEMPLATE;
 }
 
-function initModalData(memberId) {
-    fetch(`/api/admin/member/${memberId}/summary`)
+function initModalData(memId) {
+    fetch(`/api/admin/member/${memId}/summary`)
         .then(response => {
             if (!response.ok) throw new Error("회원 상세 정보를 불러오지 못했습니다.");
             return response.json();
@@ -187,7 +187,7 @@ function initModalData(memberId) {
             renderModalShipments(data.recentShipments);
             renderModalInquiries(data.recentInquiries);
 
-            updateModalFooterButtons(memberId);
+            updateModalFooterButtons(memId);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -203,12 +203,12 @@ function closeMemberModal() {
 function restoreDashboard() {
     const modal = document.getElementById('memberDetailModal');
 
-    const memberId = modal.getAttribute('data-current-member-id');
+    const memId = modal.getAttribute('data-current-member-id');
 
-    if (memberId) {
+    if (memId) {
         setupDashboardLayout();
 
-        initModalData(memberId);
+        initModalData(memId);
     } else {
         console.error("회원 ID를 찾을 수 없어 대시보드를 복구할 수 없습니다.");
     }
@@ -316,14 +316,14 @@ function renderModalInquiries(inquiries) {
 
 // =============================== 모달 상세 목록 조회 영역 =================================
 
-function updateModalFooterButtons(memberId) {
+function updateModalFooterButtons(memId) {
     const orderBtn = document.querySelector('.col-order .btn-outline-yellow');
     const shippingBtn = document.querySelector('.col-shipping .btn-solid-black');
     const inquiryBtn = document.querySelector('.col-inquiry .btn-solid-yellow');
 
-    if(orderBtn) orderBtn.setAttribute('onclick', `viewFullOrderList('${memberId}', 0)`);
-    if(shippingBtn) shippingBtn.setAttribute('onclick', `viewFullShipmentList('${memberId}', 0)`);
-    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullList('/api/admin/inquiry/${memberId}', '전체 문의 내역')`);
+    if(orderBtn) orderBtn.setAttribute('onclick', `viewFullOrderList('${memId}', 0)`);
+    if(shippingBtn) shippingBtn.setAttribute('onclick', `viewFullShipmentList('${memId}', 0)`);
+    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullList('/api/admin/inquiry/${memId}', '전체 문의 내역')`);
 }
 
 async function viewFullList(url, title) {
@@ -374,7 +374,7 @@ function getOrderBadgeTheme(status) {
     }
 }
 
-async function viewFullOrderList(memberId, page = 0) {
+async function viewFullOrderList(memId, page = 0) {
     const contentArea = document.getElementById('modalContentArea');
 
     contentArea.innerHTML = `
@@ -413,7 +413,7 @@ async function viewFullOrderList(memberId, page = 0) {
     `;
 
     try {
-        const url = `/api/admin/member/order/${memberId}?page=${page}`;
+        const url = `/api/admin/member/order/${memId}?page=${page}`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -453,7 +453,7 @@ async function viewFullOrderList(memberId, page = 0) {
 
                     <td class="action-cell">
                         <div class="admin-action-wrapper">
-                            <select class="status-update-select" onchange="updateOrderStatus(${order.ordBaseId}, this.value)">
+                            <select id="status-select-${order.ordBaseId}" class="status-update-select">
                                 <option value="" disabled selected>상태 변경</option>
                                 <option value="PREPARING">상품준비</option>
                                 <option value="DELIVERING">배송중</option>
@@ -461,7 +461,7 @@ async function viewFullOrderList(memberId, page = 0) {
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm" onclick="window.open('/api/member/order, '_blank')" title="상태변경">
+                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate(${order.ordBaseId})" title="상태변경">
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
@@ -480,18 +480,19 @@ async function viewFullOrderList(memberId, page = 0) {
         paginationHtml += `<div class="fragment-pagination">`;
 
         if (!data.first) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memberId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
+            paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memId}', ${data.number - 1})">
+                <span class="material-symbols-outlined">chevron_left</span></button>`;
         } else {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
         }
 
         for (let i = 0; i < data.totalPages; i++) {
             const activeClass = (i === data.number) ? 'active' : '';
-            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullOrderList('${memberId}', ${i})">${i + 1}</button>`;
+            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullOrderList('${memId}', ${i})">${i + 1}</button>`;
         }
 
         if (!data.last) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memberId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
+            paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
         } else {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
         }
@@ -522,7 +523,7 @@ function getShipmentBadgeTheme(status) {
     }
 }
 
-async function viewFullShipmentList(memberId, page = 0) {
+async function viewFullShipmentList(memId, page = 0) {
     const contentArea = document.getElementById('modalContentArea');
 
     contentArea.innerHTML = `
@@ -557,7 +558,7 @@ async function viewFullShipmentList(memberId, page = 0) {
     `;
 
     try {
-        const url = `/api/admin/member/shipment/${memberId}?page=${page}`;
+        const url = `/api/admin/member/shipment/${memId}?page=${page}`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -611,7 +612,7 @@ async function viewFullShipmentList(memberId, page = 0) {
 
         // Prev
         if (!data.first) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memberId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
+            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
         } else {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
         }
@@ -619,12 +620,12 @@ async function viewFullShipmentList(memberId, page = 0) {
         // Pages
         for (let i = 0; i < data.totalPages; i++) {
             const activeClass = (i === data.number) ? 'active' : '';
-            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullShipmentList('${memberId}', ${i})">${i + 1}</button>`;
+            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullShipmentList('${memId}', ${i})">${i + 1}</button>`;
         }
 
         // Next
         if (!data.last) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memberId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
+            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
         } else {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
         }
@@ -635,5 +636,44 @@ async function viewFullShipmentList(memberId, page = 0) {
     } catch (error) {
         console.error("배송 데이터 로드 에러:", error);
         document.getElementById('shipmentListBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: red; padding: 30px;">데이터 로드에 실패했습니다.</td></tr>`;
+    }
+}
+
+// =============================== 주문 상태 수정 영역 =================================
+
+/**
+ * edit 버튼 클릭 시 주문 상태 변경 요청 전송
+ */
+async function submitOrderStatusUpdate(orderId) {
+    const selectElement = document.getElementById(`status-select-${orderId}`);
+    const newStatus = selectElement.value;
+    const memberId = document.getElementById('memberDetailModal').getAttribute('data-current-member-id');
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/api/admin/member/order/${memberId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({
+                ordBaseId: orderId,
+                ordBaseStt: newStatus
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('상태 업데이트에 실패했습니다.');
+        }
+
+        alert('주문 상태가 성공적으로 변경되었습니다.');
+
+        viewFullOrderList(memberId, 0);
+
+    } catch (error) {
+        console.error('Update Error:', error);
+        alert(error.message);
     }
 }
