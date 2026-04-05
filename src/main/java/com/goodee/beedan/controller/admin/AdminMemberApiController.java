@@ -5,8 +5,10 @@ import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.dto.order.ShipmentDto;
+import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.service.admin.AdminMemberService;
 import com.goodee.beedan.service.order.OrderService;
+import com.goodee.beedan.service.order.TrackingService;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@lombok.extern.slf4j.Slf4j
 @RestController
 @RequestMapping("/api/admin/member")
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ import java.util.Map;
 public class AdminMemberApiController {
     private final AdminMemberService adminMemberService;
     private final OrderService orderService;
+    private final TrackingService trackingService;
 
     @GetMapping("/list")
     public ResponseEntity<Page<MemberListDto>> getMemberList(
@@ -74,4 +76,9 @@ public class AdminMemberApiController {
         return ResponseEntity.ok(shipmentList);
     }
 
+    @GetMapping("/shipment/{shId}/track")
+    public ResponseEntity<TrackingResponseDto> getTracking(@PathVariable("shId") Long shId) {
+        TrackingResponseDto result = trackingService.getTrackingInfo(shId);
+        return ResponseEntity.ok(result);
+    }
 }

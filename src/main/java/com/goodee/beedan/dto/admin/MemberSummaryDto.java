@@ -5,14 +5,14 @@ import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter @Builder
+@AllArgsConstructor
 public class MemberSummaryDto {
     private String memLgnId;
     private LocalDateTime memCreDt;
@@ -44,11 +44,16 @@ public class MemberSummaryDto {
         private String shAdrDt;
     }
 
-    @Getter @Builder
-    public static class TrackingDetailDto { // 현재 미구현(api와 연동 확인 후 추가해야 할 듯)
-        private String location;
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TrackingDetailDto {
         private String time;
+        private String status;
+        private String description;
     }
+
 
     @Getter @Builder
     public static class InquirySummaryDto {

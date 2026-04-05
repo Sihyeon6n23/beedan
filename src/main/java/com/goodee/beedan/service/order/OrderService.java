@@ -59,6 +59,7 @@ public class OrderService {
         
         return mapToOrderDto(order);
     }
+
     @Transactional
     public void updateOrder(Long ordId, Long memId, OrderDto dto) {
         Order order = orderRepository.findById(ordId)

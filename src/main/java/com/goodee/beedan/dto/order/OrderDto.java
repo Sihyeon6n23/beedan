@@ -21,7 +21,6 @@ public class OrderDto {
     private String ordBaseMsg;
     private String ordBaseNo; // 주문 번호 QU + 4글자
     private BigDecimal ordBaseTtAm;
-    @Enumerated(EnumType.STRING)
     private OrderStatus ordBaseStt;
     private LocalDateTime ordBaseCreDt;
 
@@ -56,6 +55,22 @@ public class OrderDto {
         private String shAdrDt;
         private String shMsg;
         private List<ShipmentItemResponseDto> shipmentItems;
+
+        public String getShCarNm() {
+            if (this.shCarCd == null || this.shCarCd.isEmpty()) {
+                return "미정";
+            }
+            switch (this.shCarCd) {
+                case "kr.cjlogistics": return "CJ대한통운";
+                case "kr.epost":       return "우체국택배";
+                case "kr.hanjin":      return "한진택배";
+                case "kr.lotteglogis": return "롯데택배";
+                case "kr.logen":       return "로젠택배";
+                case "kr.cvsnet":      return "GS25 편의점택배";
+                case "kr.cupost":      return "CU 편의점택배";
+                default:               return this.shCarCd;
+            }
+        }
     }
 
     @Data @Builder

@@ -554,3 +554,53 @@ main > div {
 .btn-icon-sm .material-symbols-outlined {
     font-size: 18px;
 }
+
+
+.tracking-summary-card {
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.tracking-timeline-list {
+    position: relative;
+    padding-left: 40px;
+    list-style: none;
+}
+
+.tracking-timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 20px; top: 0; bottom: 0;
+    width: 2px; background: #eee;
+}
+
+.timeline-step {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: -26px; top: 5px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #ddd;
+    border: 3px solid #fff;
+    z-index: 1;
+}
+
+.timeline-step.active::before {
+    background: #FFD700; /* 활성화 색상 */
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.step-time { font-size: 12px; color: #999; }
+.step-content strong { font-size: 15px; color: #333; }
+.step-content p { font-size: 13px; color: #666; margin-top: 5px; }

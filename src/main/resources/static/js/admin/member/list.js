@@ -261,9 +261,11 @@ function renderModalShipments(shipments) {
 
         html += `
             <div class="shipping-card border-yellow">
-                <span class="shipping-status">배송 정보 (${sttName})</span>
-                <h4 class="tracking-number">${shipment.shTraNo || '운송장 미등록'}</h4>
-                <span class="tracking-label">운송장 번호</span>
+                <span class="shipping-status">배송 상태: ${sttName}</span>
+
+                <span class="tracking-label">
+                    <p class="tracking-number">운송장 번호: ${shipment.shTraNo || '운송장 미등록'}</p>
+                </span>
 
                 <div class="tracking-timeline">
                     <div class="timeline-item active">
@@ -271,15 +273,17 @@ function renderModalShipments(shipments) {
                         <span class="time">-</span>
                     </div>
                 </div>
+
+                <div class="shipping-address">
+                    <h5>배송지</h5>
+                    <div class="address-content">
+                        <span class="material-symbols-outlined icon-yellow">location_on</span>
+                        <span class="address-text">${shipment.shAdr || '주소 정보 없음'}</span>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="shipping-address">
-                <h5>Destination Address</h5>
-                <div class="address-content">
-                    <span class="material-symbols-outlined icon-yellow">location_on</span>
-                    <span class="address-text">${shipment.shAdr || '주소 정보 없음'}</span>
-                </div>
-            </div>
         `;
     });
     container.innerHTML = html;
@@ -515,7 +519,7 @@ function getShipmentBadgeTheme(status) {
         case 'DELIVERING':
             return { text: '배송중', badgeClass: 'badge-yellow' };
         case 'SHIPPING':
-            return { text: '통관 진행중', badgeClass: 'badge-yellow' };
+            return { text: '통관진행', badgeClass: 'badge-yellow' };
         case 'DELIVERED':
             return { text: '배송완료', badgeClass: 'badge-green' };
         default:
@@ -546,6 +550,7 @@ async function viewFullShipmentList(memId, page = 0) {
                             <th>배송물품</th>
                             <th>배송지 / 배송현황</th>
                             <th class="text-center">상태</th>
+                            <th class="text-center">관리</th>
                         </tr>
                     </thead>
                     <tbody id="shipmentListBody">
@@ -585,18 +590,25 @@ async function viewFullShipmentList(memId, page = 0) {
 
             return `
                 <tr>
-                    <td class="shipment-id">#${shipment.shTraNo}</td>
+                    <td class="shipment-id">${shipment.shCarCd || '택배사 미정'}${shipment.shTraNo || ''}</td>
                     <td class="shipment-date">${dateStr}</td>
+
                     <td class="shipment-summary">
                         <strong>${shipment.shRcvNm || '수령인 없음'}</strong><br>
                         <span>${itemSummary}</span>
                     </td>
+
                     <td class="shipment-summary">
                         <strong>${shipment.shAdr || '-'}</strong><br>
-                        <span style="color:#666;">${shipment.shCarCd || '택배사 미정'} ${shipment.shTraNo || ''}</span>
+                        <strong>${shipment.shAdrDt || '-'}</strong>
                     </td>
+
                     <td class="order-status text-center">
                         <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
+                    </td>
+
+                    <td>
+                        <button class="btn-edit" onclick="shipmentDetail(${shipment.shId}, ${memId}, ${data.number})">상세보기</button>
                     </td>
                 </tr>
             `;
@@ -641,9 +653,6 @@ async function viewFullShipmentList(memId, page = 0) {
 
 // =============================== 주문 상태 수정 영역 =================================
 
-/**
- * edit 버튼 클릭 시 주문 상태 변경 요청 전송
- */
 async function submitOrderStatusUpdate(orderId) {
     const selectElement = document.getElementById(`status-select-${orderId}`);
     const newStatus = selectElement.value;
@@ -675,5 +684,88 @@ async function submitOrderStatusUpdate(orderId) {
     } catch (error) {
         console.error('Update Error:', error);
         alert(error.message);
+    }
+}
+
+// =========================== 배송 현황 조회 ==============================
+
+async function shipmentDetail(shId, memId, page) {
+    const contentArea = document.getElementById('modalContentArea');
+
+    contentArea.innerHTML = `
+        <div class="order-history-fragment">
+            <div class="fragment-top">
+                <button class="btn-go-back" onclick="viewFullShipmentList(${memId}, ${page})">
+                    <span class="material-symbols-outlined">arrow_back</span> 목록으로 돌아가기
+                </button>
+                <div class="title-row">
+                    <h2 class="fragment-title">TRACKING Details</h2>
+                </div>
+            </div>
+
+            <div class="tracking-content-wrapper">
+                <div id="trackingSummary" class="tracking-summary-card">
+                    <p style="text-align:center; color:#666;">배송 데이터를 불러오는 중입니다...</p>
+                </div>
+                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;">
+                    </div>
+            </div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`/api/admin/member/shipment/${shId}/track`);
+        if (!response.ok) throw new Error("서버와 통신 중 문제가 발생했습니다.");
+
+        const data = await response.json();
+
+        document.getElementById('trackingSummary').innerHTML = `
+            <div class="summary-info" style="display:flex; justify-content:space-between; width:100%;">
+                <div style="flex:1;">
+                    <span style="font-size:12px; color:#888;">택배사</span>
+                    <div style="font-weight:bold; font-size:16px;">${data.carrierName}</div>
+                </div>
+                <div style="flex:1;">
+                    <span style="font-size:12px; color:#888;">송장번호</span>
+                    <div style="font-weight:bold; font-size:16px; color:#0056b3;">${data.trackingNumber}</div>
+                </div>
+                <div style="flex:1; text-align:right;">
+                    <span style="font-size:12px; color:#888;">현재 상태</span>
+                    <div style="font-weight:bold; font-size:16px; color:#d9534f;">${data.statusText}</div>
+                </div>
+            </div>
+        `;
+
+        const timelineArea = document.getElementById('trackingTimeline');
+
+        if (!data.details || data.details.length === 0) {
+            timelineArea.innerHTML = `
+                <div style="text-align:center; padding: 40px; color:#888; background:#f8f9fa; border-radius:8px;">
+                    <span class="material-symbols-outlined" style="font-size:40px; color:#ccc; margin-bottom:10px;">local_shipping</span>
+                    <p style="margin:0;">아직 택배사에 배송 정보가 등록되지 않았거나,<br>유효하지 않은 송장 번호입니다.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 정상 데이터가 있을 때 타임라인 렌더링
+        let html = '<ul class="tracking-timeline-list">';
+        data.details.forEach((item, index) => {
+            const activeClass = (index === 0) ? 'active' : '';
+            html += `
+                <li class="timeline-step ${activeClass}">
+                    <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
+                    <div class="step-content">
+                        <strong>${item.status}</strong>
+                        <p>${item.description}</p>
+                    </div>
+                </li>`;
+        });
+        html += '</ul>';
+        timelineArea.innerHTML = html;
+
+    } catch (error) {
+        document.getElementById('trackingSummary').innerHTML = `<p style="color:red; text-align:center;">오류: ${error.message}</p>`;
+        document.getElementById('trackingTimeline').innerHTML = '';
     }
 }

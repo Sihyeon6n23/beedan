@@ -130,13 +130,4 @@ public class AdminMemberService {
                 .build();
     }
 
-    /*private MemberSummaryDto.ShipmentSummaryDto toShipmentSummaryDto(Shipment shipment) {
-        return MemberSummaryDto.ShipmentSummaryDto.builder()
-                .statusName(shipment.getShipmentStatus().name()) // Enum 한글명 매핑 필요
-                .trackingNumber(shipment.getTrackingNumber())
-                .destinationAddress(shipment.getDestinationAddress())
-                .trackingDetails(Collections.emptyList()) // 외부 API 연동 전까지 빈 리스트
-                .build();
-    }*/
-
 }

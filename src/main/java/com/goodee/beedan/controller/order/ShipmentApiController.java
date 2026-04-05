@@ -2,6 +2,8 @@ package com.goodee.beedan.controller.order;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.ShipmentDto;
+import com.goodee.beedan.dto.order.TrackingResponseDto;
+import com.goodee.beedan.service.order.TrackingService;
 import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShipmentApiController {
     private final ShipmentService shipmentService;
+    private final TrackingService trackingService;
 
     @GetMapping("/list")
     public ResponseEntity<Page<ShipmentDto>> getShipmentList(
@@ -66,5 +69,12 @@ public class ShipmentApiController {
 
         return ResponseEntity.ok(shipmentDto);
     }
+
+    @GetMapping("/{shId}/track")
+    public ResponseEntity<TrackingResponseDto> getTrackingInfo(@PathVariable("shId") Long shId) {
+        TrackingResponseDto result = trackingService.getTrackingInfo(shId);
+        return ResponseEntity.ok(result);
+    }
+
 
 }
