@@ -12,9 +12,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NoticeBoardCreateDto {
+public class NoticeBoardRequestDto {
+    private Long brdId; // 수정 시 사용
     private String brdTtl;
     private String brdCon;
     private Boolean brdFixYn;
-    private List<MultipartFile> files;
+    private List<MultipartFile> newFiles; // 신규 첨부 파일
+    private List<Long> deleteFileIds;     // 삭제할 파일 PK 리스트
 }

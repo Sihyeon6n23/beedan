@@ -32,12 +32,12 @@ public class InquiryBoardService {
         Pageable pageable = PageRequest.of(searchDto.getPage(), searchDto.getSize());
 
         Page<Board> userInquiryBoards = boardRepository.findUserInquiryBoards(
-                        BoardType.INQUIRY,
-                        memId,
-                        searchDto.getBrdInqStt(),
-                        searchDto.getKeyword(),
-                        pageable
-                );
+                BoardType.INQUIRY,
+                memId,
+                searchDto.getBrdInqStt(),
+                searchDto.getKeyword(),
+                pageable
+        );
 
         return userInquiryBoards.map(this::mapToInquiryBoardListDto);
     }
@@ -74,7 +74,7 @@ public class InquiryBoardService {
 
     private InquiryBoardListDto mapToInquiryBoardListDto(Board inquiryBoard) {
         // 문의 작성자 조회
-        Member member = memberRepository.findById(inquiryBoard.getMemId())
+        Member member = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 문의 답글 조회
         Optional<Board> replyBoard = boardRepository
@@ -102,10 +102,10 @@ public class InquiryBoardService {
     public InquiryBoardDetailDto getUserInquiryBoardDetail(Long brdId, Long memId) {
         // 본인이 작성한 문의 단일 조회
         Board inquiryBoard = boardRepository
-                .findByBrdIdAndBrdTyAndMemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
+                .findByBrdIdAndBrdTyAndMember_MemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 문의글입니다."));
         // 문의 작성자 정보 조회
-        Member member = memberRepository.findById(inquiryBoard.getMemId())
+        Member member = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 문의 답글 단일 조회
         Optional<Board> replyBoard = boardRepository
@@ -141,7 +141,7 @@ public class InquiryBoardService {
                 .findByBrdIdAndBrdTyAndBrdDelYnFalse(brdId, BoardType.INQUIRY)
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 문의글입니다."));
         // 문의 작성자 정보 조회
-        Member member = memberRepository.findById(inquiryBoard.getMemId())
+        Member member = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 문의 답글 단일 조회
         Optional<Board> replyBoard = boardRepository
@@ -149,7 +149,7 @@ public class InquiryBoardService {
 
         InquiryReplyDto replyDto = replyBoard.map(this::mapToInquiryReplyDto)
                 .orElse(null);
-        boolean canEditReply = replyBoard.map(reply -> reply.getMemId().equals(memAdId))
+        boolean canEditReply = replyBoard.map(reply -> reply.getMember().getMemId().equals(memAdId))
                 .orElse(false);
 
         return InquiryBoardDetailDto.builder()
@@ -171,7 +171,7 @@ public class InquiryBoardService {
     }
 
     private InquiryReplyDto mapToInquiryReplyDto(Board replyBoard) {
-        Member admin = memberRepository.findById(replyBoard.getMemId())
+        Member admin = memberRepository.findById(replyBoard.getMember().getMemId())
                 .orElseThrow(() -> new IllegalArgumentException("답변 작성자 정보를 찾을 수 없습니다."));
 
         boolean edited = replyBoard.getBrdUpdDt() != null
@@ -197,12 +197,15 @@ public class InquiryBoardService {
             throw new IllegalArgumentException("문의 내용을 입력해 주세요.");
         }
 
+        Member member = memberRepository.findById(memId)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
         Board inquiryBoard = Board.builder()
                 .brdTy(BoardType.INQUIRY)
                 .brdTtl(inquiryBoardCreateDto.getBrdTtl().trim())
                 .brdCon(inquiryBoardCreateDto.getBrdCon().trim())
                 .brdInqStt(InquiryStatus.RECEIVED)
-                .memId(memId)
+                .member(member)
                 .build();
 
         Board savedBoard = boardRepository.save(inquiryBoard);
@@ -214,7 +217,7 @@ public class InquiryBoardService {
     public void updateInquiryBoard(Long brdId, Long memId, InquiryBoardEditDto inquiryBoardEditDto) {
         // 본인 문의 조회
         Board inquiryBoard = boardRepository
-                .findByBrdIdAndBrdTyAndMemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
+                .findByBrdIdAndBrdTyAndMember_MemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 문의글입니다."));
 
         if (inquiryBoard.getBrdInqStt() != InquiryStatus.RECEIVED) {
@@ -240,7 +243,7 @@ public class InquiryBoardService {
     public void cancelInquiryBoard(Long brdId, Long memId) {
         // 본인 문의 조회
         Board inquiryBoard = boardRepository
-                .findByBrdIdAndBrdTyAndMemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
+                .findByBrdIdAndBrdTyAndMember_MemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 문의글입니다."));
 
         if (inquiryBoard.getBrdInqStt() != InquiryStatus.RECEIVED) {
@@ -273,12 +276,15 @@ public class InquiryBoardService {
             throw new IllegalArgumentException("답변 내용을 입력해 주세요.");
         }
 
+        Member admin = memberRepository.findById(memAdId)
+                .orElseThrow(() -> new IllegalArgumentException("관리자 정보를 찾을 수 없습니다."));
+
         Board replyBoard = Board.builder()
                 .brdTy(BoardType.INQUIRY_ANSWER)
                 .brdTtl(inquiryBoard.getBrdTtl())
                 .brdCon(inquiryReplySaveDto.getBrdCon().trim())
                 .brdPrnId(brdId)
-                .memId(memAdId)
+                .member(admin)
                 .build();
         // 답글 저장
         Board savedReplyBoard = boardRepository.save(replyBoard);
@@ -289,13 +295,13 @@ public class InquiryBoardService {
 
         // 웹 알림
         notificationService.createNotification(
-                inquiryBoard.getMemId(),
+                inquiryBoard.getMember().getMemId(),
                 NotificationType.INQUIRY_ANSWER_CREATE,
                 inquiryBoard.getBrdId()
         );
 
         // 답글을 단 문의의 회원 정보 조회
-        Member inquiryMember = memberRepository.findById(inquiryBoard.getMemId())
+        Member inquiryMember = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 메일 알림 (인자값 때문에 일단 비활성화)
 //        mailService.sendMail(
@@ -317,7 +323,7 @@ public class InquiryBoardService {
                 .findByBrdIdAndBrdTyAndBrdDelYnFalse(brdId, BoardType.INQUIRY_ANSWER)
                 .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 답변입니다."));
 
-        if (!replyBoard.getMemId().equals(memAdId)) {
+        if (!replyBoard.getMember().getMemId().equals(memAdId)) {
             throw new IllegalStateException("본인이 작성한 답변만 수정할 수 있습니다.");
         }
 
@@ -341,13 +347,13 @@ public class InquiryBoardService {
 
         // 웹 알림
         notificationService.createNotification(
-                inquiryBoard.getMemId(),
+                inquiryBoard.getMember().getMemId(),
                 NotificationType.INQUIRY_ANSWER_UPDATE,
                 inquiryBoard.getBrdId()
         );
 
         // 답글을 단 문의의 회원 정보 조회
-        Member inquiryMember = memberRepository.findById(inquiryBoard.getMemId())
+        Member inquiryMember = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
         // 메일 알림 (인자값 때문에 일단 비활성화)
 //        mailService.sendMail(

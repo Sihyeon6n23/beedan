@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="display(list)">
+    <div th:if="${not #lists.isEmpty(list)}" class="inquiry-detail-files mt-8 p-4 bg-zinc-50 border border-zinc-200 rounded">
+        <h4 class="text-sm font-bold mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-zinc-400">attach_file</span> 첨부파일
+        </h4>
+        <ul class="flex flex-col gap-2">
+            <li th:each="file : ${list}">
+                <a th:href="@{/api/files/download/{id}(id=${file.uuid})}" class="text-sm text-secondary hover:underline flex items-center gap-1">
+                    <span th:text="${file.fileNm}">파일명.pdf</span>
+                    <small class="text-zinc-400" th:text="'(' + ${file.fileSz} + ' bytes)'"></small>
+                </a>
+            </li>
+        </ul>
+    </div>
+</th:block>
+</html>

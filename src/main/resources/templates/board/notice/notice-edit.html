@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN PAGE', 'Notice Management', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 공지사항 수정</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+
+    <section class="inquiry-page inquiry-write-page">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">Edit Notice</span>
+                <h2 class="inquiry-title">공지사항 수정</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-write-panel">
+            <form class="inquiry-write-form" id="inquiry-edit-form"
+                  th:action="@{/notice/update}" th:object="${noticeDto}"
+                  method="post" enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{brdId}">
+
+                <div class="inquiry-write-form__stack">
+                    <div class="inquiry-write-field" th:if="${#authorization.expression('hasRole(''ROOT'')')}">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" th:field="*{brdFixYn}" class="w-4 h-4 accent-primary">
+                            <span class="text-sm font-bold text-secondary">이 게시글을 상단에 고정합니다.</span>
+                        </label>
+                    </div>
+                    <input type="hidden" th:unless="${#authorization.expression('hasRole(''ROOT'')')}" th:field="*{brdFixYn}">
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdTtl">공지 제목 <em>*</em></label>
+                        <input class="inquiry-write-field__input" type="text" id="brdTtl" th:field="*{brdTtl}" required>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdCon">공지 내용 <em>*</em></label>
+                        <textarea id="brdCon" class="inquiry-write-field__editor" th:field="*{brdCon}"></textarea>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label">첨부 파일</label>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${existingFiles}, isMultiple=true)}"></div>
+                    </div>
+                </div>
+
+                <div class="inquiry-write-form__actions">
+                    <a class="inquiry-outline-button" th:href="@{/notice/detail(id=*{brdId})}">취소</a>
+                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary">수정 완료</button>
+                </div>
+            </form>
+        </section>
+    </section>
+
+    <script th:replace="~{fragments/editor/tinymce-config :: config('#brdCon')}"></script>
+</th:block>
+</html>
