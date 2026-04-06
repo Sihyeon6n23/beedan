@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'REQUIREMENT DETAIL', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | REQUIREMENT DETAIL</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('stock','stock-require')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/requirement/require-write.css}">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <section class="admin-chat-page admin-chat-list-page" style="max-width:1280px;">
+        <!-- Header -->
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Requirement Detail</span>
+                <h2 class="admin-chat-title">상품 요청 상세</h2>
+            </div>
+            <div class="admin-chat-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Detail -->
+        <div th:object="${require}" class="req-write__form">
+            <input type="hidden" th:value="*{reqId}" id="reqId">
+
+            <!-- 제목 -->
+            <div class="req-field">
+                <label class="req-field__label">제목</label>
+                <div class="req-field__input" style="background:#f5f5f5;cursor:default;" th:text="*{reqTtl}"></div>
+            </div>
+
+            <!-- 회사명 / 이름 -->
+            <div class="req-field--row">
+                <div class="req-field">
+                    <label class="req-field__label">회사명</label>
+                    <div class="req-field__input" style="background:#f5f5f5;cursor:default;" th:text="*{memBizTtl}"></div>
+                </div>
+                <div class="req-field">
+                    <label class="req-field__label">이름</label>
+                    <div class="req-field__input" style="background:#f5f5f5;cursor:default;" th:text="*{memNm}"></div>
+                </div>
+            </div>
+
+            <!-- 내용 -->
+            <div class="req-field">
+                <label class="req-field__label">내용</label>
+                <div class="req-field__input" style="background:#f5f5f5;cursor:default;min-height:260px;overflow-y:auto;" th:utext="*{reqCnt}"></div>
+            </div>
+
+            <!-- 참고 URL / 희망가격 -->
+            <div class="req-field--row">
+                <div class="req-field">
+                    <label class="req-field__label">참고 URL</label>
+                    <div class="req-field__input" style="background:#f5f5f5;cursor:default;">
+                        <a th:if="*{reqRef != null and !reqRef.isEmpty()}" th:href="*{reqRef}" th:text="*{reqRef}" target="_blank" style="color:#705d00;text-decoration:underline;"></a>
+                        <span th:if="*{reqRef == null or reqRef.isEmpty()}" style="color:var(--color-outline);">-</span>
+                    </div>
+                </div>
+                <div class="req-field">
+                    <label class="req-field__label">희망 가격</label>
+                    <div class="req-field__input" style="background:#f5f5f5;cursor:default;">
+                        <span th:if="*{reqPr != null}" th:text="*{reqCur} + ' ' + *{reqPr}"></span>
+                        <span th:if="*{reqPr == null}" style="color:var(--color-outline);">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 승인 여부 -->
+            <div class="req-field">
+                <label class="req-field__label">승인 여부</label>
+                <div class="req-field__input" style="background:#f5f5f5;cursor:default;">
+                    <!-- DRAFT 상태 -->
+                    <span th:if="*{reqStt == 'DRAFT'}" style="color:var(--color-secondary);font-weight:700;">임시 저장</span>
+                    <!-- SUBMITTED + 답변 없음 -->
+                    <span th:if="*{reqStt == 'SUBMITTED' and (reqPerYn == null or reqRepYn == null or !reqRepYn)}" style="color:var(--color-secondary);font-weight:700;">대기중</span>
+                    <!-- 승인 -->
+                    <span th:if="*{reqStt == 'SUBMITTED' and reqRepYn != null and reqRepYn and reqPerYn != null and reqPerYn}" style="color:#b8960c;font-weight:700;">승인</span>
+                    <!-- 반려 -->
+                    <span th:if="*{reqStt == 'SUBMITTED' and reqRepYn != null and reqRepYn and reqPerYn != null and !reqPerYn}" style="color:#ba1a1a;font-weight:700;">반려</span>
+                </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="req-write__actions">
+                <!-- DRAFT: 수정, 삭제, 제출 -->
+                <th:block th:if="*{reqStt == 'DRAFT'}">
+                    <a th:href="@{/require/write(reqId=*{reqId})}" class="req-btn req-btn--draft" style="text-decoration:none;">수정</a>
+                    <button type="button" id="btn-delete" class="req-btn req-btn--draft" style="border-color:#ba1a1a;color:#ba1a1a;">삭제</button>
+                    <button type="button" id="btn-submit" class="req-btn req-btn--primary">제출</button>
+                </th:block>
+                <!-- SUBMITTED: 등록 취소 -->
+                <th:block th:if="*{reqStt == 'SUBMITTED'}">
+                    <button type="button" id="btn-cancel" class="req-btn req-btn--draft" style="border-color:#ba1a1a;color:#ba1a1a;">등록 취소</button>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    (function() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+        if (csrfToken) axios.defaults.headers.common[csrfHeader] = csrfToken;
+
+        const reqId = document.getElementById('reqId').value;
+
+        // DRAFT 삭제
+        var btnDelete = document.getElementById('btn-delete');
+        if (btnDelete) {
+            btnDelete.addEventListener('click', function() {
+                if (!confirm('삭제하시겠습니까?')) return;
+                axios.delete('/api/require/' + reqId)
+                    .then(function() {
+                        alert('삭제되었습니다.');
+                        location.href = '/require/list';
+                    })
+                    .catch(function(err) {
+                        console.error('삭제 실패:', err);
+                        alert('삭제에 실패했습니다.');
+                    });
+            });
+        }
+
+        // DRAFT → 제출
+        var btnSubmit = document.getElementById('btn-submit');
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', function() {
+                if (!confirm('제출하시겠습니까? 제출 후에는 수정할 수 없습니다.')) return;
+                axios.post('/api/require/' + reqId + '/submit')
+                    .then(function() {
+                        alert('제출되었습니다.');
+                        location.href = '/require/list';
+                    })
+                    .catch(function(err) {
+                        console.error('제출 실패:', err);
+                        alert('제출에 실패했습니다.');
+                    });
+            });
+        }
+
+        // SUBMITTED → 등록 취소
+        var btnCancel = document.getElementById('btn-cancel');
+        if (btnCancel) {
+            btnCancel.addEventListener('click', function() {
+                if (!confirm('등록을 취소하시겠습니까?')) return;
+                axios.post('/api/require/' + reqId + '/cancel')
+                    .then(function() {
+                        alert('등록이 취소되었습니다.');
+                        location.href = '/require/list';
+                    })
+                    .catch(function(err) {
+                        console.error('등록 취소 실패:', err);
+                        alert('등록 취소에 실패했습니다.');
+                    });
+            });
+        }
+    })();
+    </script>
+</th:block>
+</html>

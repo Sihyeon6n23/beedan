@@ -14,6 +14,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/cart")
@@ -24,13 +26,11 @@ public class CartController {
     // 장바구니 목록 (페이지 네이션 적용)
     @GetMapping
     public String getCartItems(
-            @PageableDefault(page = 0, size = 5, sort = "caId", direction = Sort.Direction.DESC)
-            Pageable pageable,
             @AuthenticationPrincipal MemberUserDetails userDetails,
             Model model) {
         Long memId = userDetails != null ? userDetails.getMemberId() : null;
-        Page<CartDto> page = cartService.findByMemId(memId, pageable);
-        model.addAttribute("page", page);
+        List<CartDto> list = cartService.findByMemId(memId);
+        model.addAttribute("itemList", list);
         return "cart/cart";
     }
 }

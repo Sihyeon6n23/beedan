@@ -172,14 +172,14 @@ public class StockService {
 
     // 요청 상품 등록 (수동)
     @Transactional
-    public void saveManual(NewStockForm newStockForm, String imgUrl) {
+    public Long saveManual(NewStockForm newStockForm) {
         Brand brand = brandRepository.findByBrNm(newStockForm.getBrNm())
                 .orElseGet(() -> brandRepository.save(Brand.builder().brNm(newStockForm.getBrNm()).build()));
 
         Category category = categoryRepository.findByCatNm(newStockForm.getCatNm())
                 .orElseGet(() -> categoryRepository.save(Category.builder().catNm(newStockForm.getCatNm()).build()));
 
-        stockRepository.save(Stock.builder()
+        Stock save = stockRepository.save(Stock.builder()
                 .stCd(newStockForm.getStCd())
                 .stNm(newStockForm.getStNm())
                 .brId(brand.getBrId())
@@ -188,7 +188,6 @@ public class StockService {
                 .stCatNm(category.getCatNm())
                 .stPr(newStockForm.getStPr())
                 .stCur(newStockForm.getStCur())
-                .stImgUrl(imgUrl)
                 .stReqMemId(newStockForm.getStReqMemId())
                 .stExpYn(true)
                 .stUseYn(true)
@@ -200,6 +199,9 @@ public class StockService {
                 .stWisCnt(null)
                 .stPurCnt(null)
                 .build());
+
+        return save.getStId();
+
     }
 
     // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개)
