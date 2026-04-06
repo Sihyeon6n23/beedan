@@ -2,12 +2,10 @@ package com.goodee.beedan.devUtils;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.service.notification.NotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import java.security.Principal;
 
 @ControllerAdvice
 public class GlobalControllerAdvice {

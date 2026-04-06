@@ -63,8 +63,8 @@
                 <div class="admin-chat-toolbar__filters">
                     <div class="admin-chat-filter-set" data-filter-group="status">
                         <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
-                        <a class="admin-chat-filter" href="#" data-status="SUBMITTED">미확인</a>
-                        <a class="admin-chat-filter" href="#" data-status="ANSWERED">읽음</a>
+                        <a class="admin-chat-filter" href="#" data-status="UNREAD">미읽음</a>
+                        <a class="admin-chat-filter" href="#" data-status="READ">읽음</a>
                     </div>
                 </div>
 
@@ -79,36 +79,13 @@
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-body" id="require-list-body">
                 <div id="notiPageContent">
-
-                    <ul class="data-list-container !border-0">
-                        <li th:each="noti : ${notifications}"
-                            th:id="'noti-item-' + ${noti.notiId}"
-                            th:style="${noti.notiReaYn == false ? 'border-left: 4px solid var(--pub-primary);' : 'border-left: 4px solid transparent;'}"
-                            class="noti-row data-list-item flex items-center p-6 border-b border-[var(--pub-border)] last:border-0 hover:bg-[var(--pub-bg-main)] transition-all cursor-pointer group"
-                            th:onclick="|handleAction('read', ${noti.notiId}, this)|">
-
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <strong class="noti-title text-base text-[var(--pub-text-main)] truncate" th:style="${noti.notiReaYn == false ? 'font-weight:700' : 'font-weight:500; opacity:0.6;'}">[[${noti.notiTtl}]]</strong>
-                                    <span th:id="'noti-badge-' + ${noti.notiId}" th:if="${noti.notiReaYn == false}" class="noti-badge status-badge !m-0" style="background:var(--pub-primary); color:var(--pub-text-main);">NEW</span>
-                                </div>
-
-                                <p class="text-sm text-[var(--pub-text-sub)] line-clamp-1 mb-2" th:text="${noti.notiCon}">내용</p>
-
-                                <span class="text-[11px] text-[var(--pub-text-muted)] font-medium"
-                                      th:text="${#temporals.format(noti.notiCreDt, 'yyyy-MM-dd HH:mm')}">날짜</span>
-                            </div>
-
-                            <button type="button" class="close-btn ml-6 p-2 opacity-30 group-hover:opacity-100 hover:text-red-500 transition-all" th:onclick="|event.stopPropagation(); handleAction('delete', ${noti.notiId}, this)|">
-                                <span class="material-symbols-outlined text-[20px]">close</span>
-                            </button>
-                        </li>
-                    </ul>
-
+                    <!-- JavaScript로 동적 로딩 -->
                 </div>
             </div>
         </section>
 
     </section>
+
+    <script src="/js/notification/notification-list.js"></script>
 </th:block>
 </html>
