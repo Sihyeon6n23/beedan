@@ -31,8 +31,9 @@ public class AdminMemberApiController {
 
     @GetMapping("/list")
     public ResponseEntity<Page<MemberListDto>> getMemberList(
+            @RequestParam(required = false, defaultValue = "ALL") String status,
             @PageableDefault(size = 10, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable){
-        Page<MemberListDto> memberListDtos =  adminMemberService.getAllMembers(pageable);
+        Page<MemberListDto> memberListDtos = adminMemberService.getMembersByStatus(status, pageable);
 
         return ResponseEntity.ok(memberListDtos);
     }

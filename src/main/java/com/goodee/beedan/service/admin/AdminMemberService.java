@@ -56,10 +56,34 @@ public class AdminMemberService {
                         .memBizNo(member.getMemBizNo())
                         .memBizTtl(member.getMemBizTtl())
                         .memCeoNm(member.getMemCeoNm())
+                        .memCreDt(member.getMemCreDt())
                         .memBizAdr(member.getMemBizAdr())
                         .memStt(member.getMemStt())
                         .build()
                 );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberListDto> getMembersByStatus(String status, Pageable pageable) {
+        Page<Member> members;
+        if ("ALL".equals(status)) {
+            members = memberRepository.findAllUsers(pageable);
+        } else {
+            members = memberRepository.findUsersByStatus(status, pageable);
+        }
+
+        return members.map(member -> MemberListDto.builder()
+                .memId(member.getMemId())
+                .memLgnId(member.getMemLgnId())
+                .memNm(member.getMemNm())
+                .memBizNo(member.getMemBizNo())
+                .memBizTtl(member.getMemBizTtl())
+                .memCeoNm(member.getMemCeoNm())
+                .memCreDt(member.getMemCreDt())
+                .memBizAdr(member.getMemBizAdr())
+                .memStt(member.getMemStt())
+                .build()
+        );
     }
 
     @Transactional(readOnly = true)

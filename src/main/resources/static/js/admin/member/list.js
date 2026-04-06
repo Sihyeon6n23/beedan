@@ -59,12 +59,9 @@ function loadMemberList(page) {
 
     const params = new URLSearchParams({
         page: page,
-        size: 10
+        size: 10,
+        status: status
     });
-
-    if (status && status !== 'ALL') {
-        params.append('status', status);
-    }
 
     fetch(`/api/admin/member/list?${params.toString()}`)
         .then(response => {

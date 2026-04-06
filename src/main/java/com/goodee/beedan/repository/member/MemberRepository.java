@@ -19,4 +19,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query("SELECT m FROM Member m WHERE m.memAut = 'USER'")
     Page<Member> findAllUsers(Pageable pageable);
+
+    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status")
+    Page<Member> findUsersByStatus(String status, Pageable pageable);
 }
