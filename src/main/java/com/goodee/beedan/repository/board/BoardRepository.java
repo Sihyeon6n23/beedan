@@ -40,7 +40,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         SELECT b FROM Board b
         WHERE b.brdTy = :brdTy
           AND b.brdDelYn = false
-          AND b.memId = :memId
+          AND b.member.memId = :memId
           AND (:brdInqStt IS NULL OR b.brdInqStt = :brdInqStt)
           AND (:keyword IS NULL OR b.brdTtl LIKE %:keyword%)
         ORDER BY b.brdCreDt DESC
@@ -56,7 +56,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     // 관리자 전체 문의 목록 (문의 + 삭제X + 제목/회사 상호명 검색 + 상태 필터 + 내 답변 여부)
     @Query("""
         SELECT b FROM Board b
-        JOIN Member m ON b.memId = m.memId
+        JOIN b.member m
         WHERE b.brdTy = :brdTy
           AND b.brdDelYn = false
           AND (:brdInqStt IS NULL OR b.brdInqStt = :brdInqStt)
@@ -80,7 +80,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     // 관리자 본인 답글 문의 목록 (내가 답글을 작성한 문의 + 제목/회사 상호명 검색 + 상태 필터)
     @Query("""
         SELECT b FROM Board b
-        JOIN Member m ON b.memId = m.memId
+        JOIN b.member m
         WHERE b.brdTy = :brdTy
           AND b.brdDelYn = false
           AND EXISTS (
@@ -88,7 +88,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
               FROM Board r
               WHERE r.brdPrnId = b.brdId
                 AND r.brdTy = :ansbrdTy
-                AND r.memId = :memAdId
+                AND r.member.memId = :memAdId
                 AND r.brdDelYn = false
           )
           AND (:brdInqStt IS NULL OR b.brdInqStt = :brdInqStt)
@@ -112,7 +112,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     );
 
     // 사용자 상세
-    Optional<Board> findByBrdIdAndBrdTyAndMemIdAndBrdDelYnFalse(Long brdId, BoardType brdTy, Long memId);
+    Optional<Board> findByBrdIdAndBrdTyAndMember_MemIdAndBrdDelYnFalse(Long brdId, BoardType brdTy, Long memId);
 
     // 관리자 상세 (공통 메서드 부분에)
 //    Optional<Board> findByBrdIdAndBrdTyAndBrdDelYnFalse(Long brdId, BoardType brdTy);
