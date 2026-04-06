@@ -42,12 +42,71 @@ document.addEventListener("DOMContentLoaded", function () {
   var currentTopicName = null;
   var currentChatRoomId = null;
   var currentChatRoomStatus = null;
+  var stompClient = null;
+  var roomSubscription = null;
+  var wsConnected = false;
   var pendingChatRoom = null;
   var currentViewName = "chatbot";
   var isAuthenticated = widget.dataset.authenticated === "true";
   var loginUrl = widget.dataset.loginUrl || "/auth/signin";
   var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
   var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
+
+  function connectMemberChatSocket() {
+      if (!window.StompJs) {
+        return;
+      }
+
+      // 소켓이 없으면 새로 연결
+      if (!stompClient) {
+        stompClient = new StompJs.Client({
+          brokerURL: "ws://" + window.location.host + "/ws",
+          reconnectDelay: 5000,
+          debug: function () {}
+        });
+
+        // 연결 성공하면 현재 방 구독 함수 호출
+        stompClient.onConnect = function () {
+          wsConnected = true;
+          subscribeCurrentChatRoom();
+        };
+
+        stompClient.onWebSocketClose = function () {
+          wsConnected = false;
+        };
+
+        stompClient.onStompError = function (frame) {
+          console.error(frame);
+        };
+
+        stompClient.activate();
+        return;
+      }
+
+      // 이미 연결돼 있으면 현재 방만 다시 구독
+      if (wsConnected) {
+        subscribeCurrentChatRoom();
+      }
+  }
+
+  // 채팅방 구독
+  function subscribeCurrentChatRoom() {
+      if (!stompClient || !wsConnected || !currentChatRoomId) {
+        return;
+      }
+
+      // 기존 구독방이 있다면 구독 취소
+      if (roomSubscription) {
+        roomSubscription.unsubscribe();
+      }
+
+      // 현재 채팅방 구독
+      roomSubscription = stompClient.subscribe("/sub/chat/rooms/" + currentChatRoomId, function (frame) {
+        var message = JSON.parse(frame.body); // 서버가 보내주는 JSON 문자열을 (JSON 형식의) JS 객체로 변환
+        appendMemberChatMessage(message); // 화면에 메시지 추가
+        loadMemberChatRooms(); // 목록 갱신
+      });
+  }
 
   // 위젯 런처 미읽음 배지 표시 상태 반영
   function setLauncherUnreadBadgeVisible(isVisible) {
@@ -828,7 +887,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then(function (chatRoomDetail) {
-        renderMemberChatRoomDetail(chatRoomDetail);
+        renderMemberChatRoomDetail(chatRoomDetail); // -> currentChatRoomId 세팅
+        connectMemberChatSocket(); // currentChatRoomId 기준으로 구독
         return loadMemberChatRooms().then(function () {
           setPanelOpen(true);
           setView("chat-room");
@@ -874,7 +934,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then(function (message) {
         chatRoomMessageInput.value = "";
-        appendMemberChatMessage(message);
+//        appendMemberChatMessage(message); // HTTP 기반 일 때 사용(WebSocket 없을때)
         chatRoomMessageInput.focus();
         return loadMemberChatRooms();
       })

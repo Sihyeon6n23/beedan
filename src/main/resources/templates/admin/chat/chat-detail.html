@@ -16,7 +16,7 @@
     <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
       <section class="admin-chat-page admin-chat-detail-page"
-               th:attr="data-chat-status=${chatRoomDetail.chRoStt.name()}, data-room-id=${chatRoomDetail.chRoId}, data-admin-name=${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}, data-member-name=${chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록'}, data-can-write=${chatRoomDetail.canWrite}">
+               th:attr="data-chat-status=${chatRoomDetail.chRoStt.name()}, data-room-id=${chatRoomDetail.chRoId}, data-admin-name=${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}, data-member-biz-name=${chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록'}, data-member-name=${chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록'}, data-can-write=${chatRoomDetail.canWrite}">
         <section class="admin-chat-shell admin-chat-shell--detail-board">
             <header class="admin-chat-detail-topbar">
                 <div class="admin-chat-detail-topbar__side">
@@ -63,7 +63,7 @@
                               th:each="message, messageStat : ${chatRoomDetail.messages}">
                         <article class="admin-chat-detail-message"
                                  style="animation-delay: [[${messageStat.index * 45}]]ms;"
-                                  th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message--admin' : ' admin-chat-detail-message--client'">
+                                 th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message--admin' : ' admin-chat-detail-message--client'">
                             <div class="admin-chat-detail-message__avatar"
                                  th:if="${message.chMsSenTy.name() != 'ADMIN'}">
                                 <span class="material-symbols-outlined">corporate_fare</span>
@@ -72,9 +72,6 @@
                             <div class="admin-chat-detail-message__content">
                                 <div class="admin-chat-detail-message__meta"
                                      th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__meta--admin' : ''">
-                                    <th:block th:if="${message.chMsSenTy.name() == 'ADMIN'}">
-                                        <strong th:text="${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}">담당자</strong>
-                                    </th:block>
                                     <th:block th:unless="${message.chMsSenTy.name() == 'ADMIN'}">
                                         <strong th:text="${(chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록') + ' · ' + (chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록')}">상호명 · 이름</strong>
                                     </th:block>
@@ -144,6 +141,7 @@
         <div th:replace="~{fragments/chat/admin-close-modal :: closeConfirmModal}"></div>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs/bundles/stomp.umd.min.js"></script>
     <script defer th:src="@{/js/chat/admin-chat.js}"></script>
 </th:block>
 </html>

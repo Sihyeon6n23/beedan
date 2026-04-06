@@ -36,7 +36,7 @@ public class SnsIntegrate {
     @UpdateTimestamp
     private LocalDateTime snsUpdDt;
 
-    private Boolean snsCanYn = false;
+    private Boolean snsCanYn;
 
     // 외래키 제약 조건을 제외한 1:N 연관관계 설정
     @ManyToOne(fetch = FetchType.LAZY)

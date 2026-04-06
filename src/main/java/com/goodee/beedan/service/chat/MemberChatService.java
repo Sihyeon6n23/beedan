@@ -31,6 +31,7 @@ public class MemberChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomReadStatusRepository chatRoomReadStatusRepository;
     private final ChatbotService chatbotService;
+    private final ChatRealtimeService chatRealtimeService;
 
     // 챗봇 상담 연결 시 최상위 1차 질의명을 제목으로 사용해 채팅방 생성 또는 기존 활성방 반환
     public ChatRoomOpenResultDto openChatRoomFromChatbot(Long topicId, Long memId) {
@@ -234,7 +235,12 @@ public class MemberChatService {
             chatRoomReadStatusRepository.save(adminReadStatus);
         }
 
-        return mapToMemberChatMessageDto(savedMessage);
+        // 엔티티 -> Dto 변환
+        MemberChatMessageDto memberChatMessageDto = mapToMemberChatMessageDto(savedMessage);
+        // 채팅방 구독자들에게 실시간으로 메시지를 뿌림
+        chatRealtimeService.publishMessage(chRoId, memberChatMessageDto);
+
+        return memberChatMessageDto;
     }
 
     // 회원 본인 채팅방을 사용자 종료 상태로 변경
