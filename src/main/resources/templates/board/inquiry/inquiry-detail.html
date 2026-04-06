@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="${isAdmin}
+          ? ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame(
+                  'COMMUNICATIONS',
+                  'Inquiry Management',
+                  ~{admin/admin-sidebar :: sidebar('inquiry', 'inquiry-list')}
+              )},
+              ~{::content}
+          )}
+          : ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame(
+                  'MY PAGE',
+                  'Inquiry Management',
+                  ~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'inquiry-list')}
+              )},
+              ~{::content}
+          )}">
+
+<title th:fragment="title">BEEDAN | 문의 상세</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+
+    <section class="inquiry-page inquiry-detail-page" th:attr="data-inquiry-id=${inquiryBoardDetail.brdId}">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">Inquiry Detail</span>
+                <h2 class="inquiry-title">문의 상세</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-detail-layout">
+            <article class="inquiry-detail-article">
+                <div class="inquiry-detail-article__utility">
+                    <a class="inquiry-detail-back"
+                       th:href="${isAdmin} ? @{/admin/inquiry/list} : @{/inquiry/list}">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        <span>목록으로</span>
+                    </a>
+                </div>
+
+                <div class="inquiry-detail-article__head">
+                    <div class="inquiry-detail-article__title-row">
+                        <h3 class="inquiry-detail-article__title" th:text="${inquiryBoardDetail.brdTtl}">문의 제목</h3>
+                        <span class="inquiry-badge"
+                              th:text="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).RECEIVED ? '접수' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).IN_PROGRESS ? '처리중' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).ANSWERED ? '답변완료' : '취소'}"
+                              th:classappend="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).RECEIVED ? ' inquiry-badge--received' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).IN_PROGRESS ? ' inquiry-badge--progress' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).ANSWERED ? ' inquiry-badge--answered' : ' inquiry-badge--cancelled'}">접수</span>
+                    </div>
+
+                    <div class="inquiry-detail-article__meta">
+                        <span th:text="${inquiryBoardDetail.memBizTtl}">(주)회사명</span>
+                        <span th:text="${inquiryBoardDetail.memNm}">홍길동</span>
+                        <span th:text="${#temporals.format(inquiryBoardDetail.brdCreDt, 'yyyy.MM.dd')}">2026.04.05</span>
+                    </div>
+                </div>
+
+                <div class="inquiry-detail-article__body">
+                    <div class="inquiry-detail-article__content" th:utext="${inquiryBoardDetail.brdCon}">문의 내용</div>
+                </div>
+
+                <div class="inquiry-detail-article__footer" th:if="${!isAdmin and (inquiryBoardDetail.canEdit or inquiryBoardDetail.canCancel)}">
+                    <div class="inquiry-detail-actions">
+                        <a class="inquiry-detail-action inquiry-detail-action--primary"
+                           th:if="${inquiryBoardDetail.canEdit}"
+                           th:href="@{/inquiry/edit(id=${inquiryBoardDetail.brdId})}">문의 수정</a>
+
+                        <button type="button"
+                                class="inquiry-detail-action"
+                                th:if="${inquiryBoardDetail.canCancel}"
+                                th:attr="data-inquiry-cancel-id=${inquiryBoardDetail.brdId}">문의 취소</button>
+                    </div>
+                </div>
+
+                <div class="inquiry-detail-article__footer" th:if="${isAdmin and (inquiryBoardDetail.canUpdateStatus or inquiryBoardDetail.canCancel)}">
+                    <div class="inquiry-detail-actions">
+                        <button type="button"
+                                class="inquiry-detail-action inquiry-detail-action--primary"
+                                th:if="${inquiryBoardDetail.canUpdateStatus}"
+                                th:attr="data-inquiry-progress-id=${inquiryBoardDetail.brdId}">처리 시작</button>
+
+                        <button type="button"
+                                class="inquiry-detail-action"
+                                th:if="${inquiryBoardDetail.canCancel}"
+                                th:attr="data-inquiry-admin-cancel-id=${inquiryBoardDetail.brdId}">문의 취소</button>
+                    </div>
+                </div>
+            </article>
+
+            <section class="inquiry-detail-note"
+                     th:if="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).CANCELLED and !#strings.isEmpty(inquiryBoardDetail.brdCanRe)}">
+                <strong>취소 사유</strong>
+                <p th:text="${#strings.isEmpty(inquiryBoardDetail.brdCanRe) ? '취소 사유가 등록되지 않았습니다.' : inquiryBoardDetail.brdCanRe}">취소 사유</p>
+            </section>
+
+            <section class="inquiry-detail-reply">
+                <div class="inquiry-detail-reply__header">
+                    <div class="inquiry-detail-reply__title-row">
+                        <h3>답변</h3>
+                        <span class="inquiry-kicker inquiry-kicker--reply">Reply</span>
+                    </div>
+                    <button type="button"
+                            class="inquiry-detail-action inquiry-detail-action--primary"
+                            th:if="${isAdmin and inquiryBoardDetail.reply == null and inquiryBoardDetail.canAnswer}"
+                            th:attr="data-inquiry-reply-create-id=${inquiryBoardDetail.brdId}">답변 작성</button>
+                    <button type="button"
+                            class="inquiry-detail-action"
+                            th:if="${isAdmin and inquiryBoardDetail.reply != null and inquiryBoardDetail.canEditReply}"
+                            th:attr="data-inquiry-reply-edit-id=${inquiryBoardDetail.reply.brdId}">답변 수정</button>
+                </div>
+
+                <div class="inquiry-detail-reply__body" th:if="${inquiryBoardDetail.reply != null}" data-reply-existing-body>
+                    <div class="inquiry-detail-reply__display" data-reply-display>
+                        <div class="inquiry-detail-reply__meta">
+                            <strong>BEEDAN</strong>
+                            <span th:text="${#temporals.format(inquiryBoardDetail.reply.brdCreDt, 'yyyy.MM.dd')}">2026.04.05</span>
+                            <span th:if="${inquiryBoardDetail.reply.edited}">(수정됨)</span>
+                        </div>
+                        <div class="inquiry-detail-reply__content" th:utext="${inquiryBoardDetail.reply.brdCon}">답변 내용</div>
+                    </div>
+                    <div class="inquiry-detail-inline-form is-hidden" data-reply-edit-form>
+                        <div class="inquiry-detail-inline-form__editor">
+                            <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-edit-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
+                            <p class="inquiry-detail-inline-form__error is-hidden" data-reply-edit-error>답변 내용을 입력해 주세요.</p>
+                        </div>
+                        <div class="inquiry-detail-inline-form__actions-wrap">
+                            <div class="inquiry-detail-inline-form__actions">
+                                <button type="button" class="inquiry-detail-action" data-reply-edit-cancel>취소</button>
+                                <button type="button" class="inquiry-detail-action inquiry-detail-action--primary" data-reply-edit-submit th:attr="data-inquiry-reply-edit-id=${inquiryBoardDetail.reply.brdId}">적용</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inquiry-detail-reply__body"
+                     th:if="${isAdmin and inquiryBoardDetail.reply == null and inquiryBoardDetail.canAnswer}">
+                    <div class="inquiry-detail-empty" data-reply-create-empty>
+                        <strong>답변을 등록해 주세요.</strong>
+                    </div>
+                    <div class="inquiry-detail-inline-form is-hidden" data-reply-create-form>
+                        <div class="inquiry-detail-inline-form__editor">
+                            <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-create-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
+                            <p class="inquiry-detail-inline-form__error is-hidden" data-reply-create-error>답변 내용을 입력해 주세요.</p>
+                        </div>
+                        <div class="inquiry-detail-inline-form__actions-wrap">
+                            <div class="inquiry-detail-inline-form__actions">
+                                <button type="button" class="inquiry-detail-action" data-reply-create-cancel>취소</button>
+                                <button type="button" class="inquiry-detail-action inquiry-detail-action--primary" data-reply-create-submit th:attr="data-inquiry-reply-create-id=${inquiryBoardDetail.brdId}">등록</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inquiry-detail-empty"
+                     th:if="${inquiryBoardDetail.reply == null and (!isAdmin or !inquiryBoardDetail.canAnswer)}">
+                    <strong th:if="${isAdmin}"
+                            th:text="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).CANCELLED ? '취소된 문의입니다.' : '아직 등록된 답변이 없습니다.'}">아직 등록된 답변이 없습니다.</strong>
+                    <strong th:unless="${isAdmin}"
+                            th:text="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).RECEIVED ? '문의가 접수되어 확인을 기다리고 있습니다.' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).IN_PROGRESS ? '문의 내용을 확인하고 있습니다.' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).CANCELLED ? '취소된 문의입니다.' : '등록된 답변이 없습니다.'}">등록된 답변이 없습니다.</strong>
+                </div>
+            </section>
+        </section>
+
+        <section class="inquiry-modal is-hidden" data-inquiry-modal="confirm" aria-hidden="true">
+            <div class="inquiry-modal__backdrop" data-inquiry-modal-close></div>
+            <div class="inquiry-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="inquiry-confirm-modal-title">
+                <div class="inquiry-modal__header">
+                    <div class="inquiry-modal__accent"></div>
+                    <div class="inquiry-modal__icon inquiry-modal__icon--framed">
+                        <span class="material-symbols-outlined">priority_high</span>
+                    </div>
+                </div>
+
+                <div class="inquiry-modal__body">
+                    <h2 id="inquiry-confirm-modal-title" class="inquiry-modal__title" data-inquiry-modal-title>확인</h2>
+                    <div class="inquiry-modal__content-stack inquiry-modal__content-stack--dense">
+                        <p class="inquiry-modal__lead" data-inquiry-modal-lead>작업별 안내 문구가 여기에 표시됩니다.</p>
+                        <p class="inquiry-modal__description" data-inquiry-modal-description>버튼을 누르면 상황에 맞는 설명으로 바뀝니다.</p>
+                    </div>
+                </div>
+
+                <div class="inquiry-modal__actions">
+                    <button type="button" class="inquiry-modal__primary" data-inquiry-modal-confirm>확인</button>
+                    <button type="button" class="inquiry-modal__secondary" data-inquiry-modal-close>취소</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="inquiry-modal is-hidden" data-inquiry-modal="form" aria-hidden="true">
+            <div class="inquiry-modal__backdrop" data-inquiry-modal-close></div>
+            <div class="inquiry-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="inquiry-form-modal-title">
+                <div class="inquiry-modal__header">
+                    <div class="inquiry-modal__accent"></div>
+                    <div class="inquiry-modal__icon inquiry-modal__icon--framed">
+                        <span class="material-symbols-outlined">edit_note</span>
+                    </div>
+                </div>
+
+                <div class="inquiry-modal__body">
+                    <h2 id="inquiry-form-modal-title" class="inquiry-modal__title" data-inquiry-form-title>입력</h2>
+                    <div class="inquiry-modal__content-stack">
+                        <p class="inquiry-modal__lead" data-inquiry-form-lead>입력 작업에 맞는 안내 문구가 여기에 표시됩니다.</p>
+                        <p class="inquiry-modal__description" data-inquiry-form-description>버튼을 누르면 상황에 맞는 설명으로 바뀝니다.</p>
+                        <textarea class="inquiry-modal__textarea" rows="7" data-inquiry-form-textarea></textarea>
+                        <p class="inquiry-modal__error is-hidden" data-inquiry-form-error>내용을 입력해 주세요.</p>
+                    </div>
+                </div>
+
+                <div class="inquiry-modal__actions">
+                    <button type="button" class="inquiry-modal__primary" data-inquiry-form-submit>적용</button>
+                    <button type="button" class="inquiry-modal__secondary" data-inquiry-modal-close>취소</button>
+                </div>
+            </div>
+        </section>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+    <script defer th:src="@{/js/board/inquiry.js}"></script>
+</th:block>
+</html>

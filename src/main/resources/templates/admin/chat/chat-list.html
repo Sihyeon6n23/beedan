@@ -18,7 +18,7 @@
     <section class="admin-chat-page admin-chat-list-page">
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
-                <span class="admin-chat-kicker">Customer Conversations</span>
+                <span class="admin-chat-kicker">Chat List</span>
                 <h2 class="admin-chat-title">채팅 상담 관리</h2>
             </div>
             <div class="admin-chat-shell__rule">
@@ -128,6 +128,10 @@
                     </a>
                 </th:block>
 
+                <th:block th:if="${#lists.size(chatRooms) < 5}"
+                          th:each="spacer : ${#numbers.sequence(1, 5 - #lists.size(chatRooms))}">
+                    <div class="admin-chat-row-spacer" aria-hidden="true"></div>
+                </th:block>
                 <div class="admin-chat-empty-state"
                      th:if="${#lists.isEmpty(chatRooms)}">
                     <strong>표시할 채팅방이 없습니다.</strong>
@@ -137,13 +141,12 @@
         </section>
 
         <!-- 페이지네이션 -->
-        <footer class="admin-chat-shell admin-chat-shell--pagination"
-                th:if="${chatRoomPage.totalPages > 0}">
+        <footer class="admin-chat-shell admin-chat-shell--pagination">
             <div class="admin-chat-pagination">
-                <a th:if="${chatRoomPage.hasPrevious()}"
+                <a th:if="${chatRoomPage.totalPages > 0 and chatRoomPage.hasPrevious()}"
                    class="admin-chat-page-button admin-chat-page-button--wide"
                    th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number - 1})}">Prev</a>
-                <span th:unless="${chatRoomPage.hasPrevious()}"
+                <span th:unless="${chatRoomPage.totalPages > 0 and chatRoomPage.hasPrevious()}"
                       class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
 
                 <th:block th:if="${chatRoomPage.totalPages > 0}"
@@ -154,10 +157,13 @@
                        th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${pageNumber})}">01</a>
                 </th:block>
 
-                <a th:if="${chatRoomPage.hasNext()}"
+                <span th:if="${chatRoomPage.totalPages == 0}"
+                      class="admin-chat-page-button is-current is-disabled">01</span>
+
+                <a th:if="${chatRoomPage.totalPages > 0 and chatRoomPage.hasNext()}"
                    class="admin-chat-page-button admin-chat-page-button--wide"
                    th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number + 1})}">Next</a>
-                <span th:unless="${chatRoomPage.hasNext()}"
+                <span th:unless="${chatRoomPage.totalPages > 0 and chatRoomPage.hasNext()}"
                       class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
             </div>
         </footer>
