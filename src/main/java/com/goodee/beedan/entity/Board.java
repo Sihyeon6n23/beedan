@@ -71,9 +71,9 @@ public class Board {
     @Column(name = "brd_del_yn")
     private Boolean brdDelYn;
 
-    // 외래키(FK) 연관관계 매핑을 할 수도 있지만, 식별자만 들고 있는 방식
-    @Column(name = "mem_id", nullable = false)
-    private Long memId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mem_id", nullable = false)
+    private Member member; // Member 객체 자체를 참조
 
     @PrePersist
     public void prePersist() {
