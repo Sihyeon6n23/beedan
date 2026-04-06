@@ -5,13 +5,11 @@ import com.goodee.beedan.entity.Member;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
-public class SnsIntegrateResponse {
-    // 타입, 연결시기, 연결여부
+public class SnsDisconnectRequest {
+    // SNS 타입과 시리얼번호, 어떤 멤버가 연결해제하려고 하는지
     private String snsTp;
-    private LocalDateTime snsConDt;
-    private boolean connected;
+    private String snsSeNo;
+    private Member member;
 }

@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -53,7 +54,8 @@ public class FileService {
      */
 
     // 파일 저장 요청
-    public void saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+    public List<String> saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+        List<String> fullPath = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
 
@@ -71,7 +73,7 @@ public class FileService {
                 throw new IllegalIdentifierException("파일 이름이 없습니다.");
             }
 
-            uploadToDisk(file, uuid, ext);
+            fullPath.add(uploadToDisk(file, uuid, ext));
 
             FileUpload fileUpload = FileUpload.builder()
                     .fileNm(originalName)
@@ -88,6 +90,7 @@ public class FileService {
 
             fileRepository.save(fileUpload);
         }
+        return fullPath;
     }
     // 물리파일 다운로드 서비스
     public FileDownloadDto prepareDownload(Long fileId) {
@@ -177,9 +180,10 @@ public class FileService {
     }
 
     // 물리파일 저장
-    private void uploadToDisk(MultipartFile file, String uuid, String ext) throws IOException {
+    private String uploadToDisk(MultipartFile file, String uuid, String ext) throws IOException {
         Path fullPath = Paths.get(uploadPath, getDatePath(), uuid + "." + ext);
         file.transferTo(fullPath.toFile());
+        return fullPath.toString();
     }
 
     // 물리 파일 삭제

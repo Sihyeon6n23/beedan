@@ -2,6 +2,8 @@ package com.goodee.beedan.entity;
 
 import com.goodee.beedan.common.constant.SnsType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,8 +14,10 @@ import java.time.LocalDateTime;
 @Table(name = "sns_integrate", indexes = {
         @Index(name = "idx_sns_integrate_mem_id", columnList = "mem_id")
 })
-@Data // Getter, Setter, RequiredArgsConstructor, ToString, EqualsAndHashCode 포함
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SnsIntegrate {
 
     @Id
