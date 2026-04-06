@@ -1,5 +1,6 @@
 package com.goodee.beedan.service.requirement;
 
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.dto.requirement.RequireForm;
 import com.goodee.beedan.dto.requirement.RequirementListDto;
 import com.goodee.beedan.entity.Requirement;
@@ -7,6 +8,7 @@ import com.goodee.beedan.entity.RequirementReply;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.requirement.RequirementRepository;
 import com.goodee.beedan.repository.requirement.RequirementReplyRepository;
+import com.goodee.beedan.service.notification.NotificationService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class RequirementService {
     private final RequirementRepository requirementRepository;
     private final RequirementReplyRepository requirementReplyRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     // 제출 완료된, 삭제되지 않은 요청서 전부 조회 (관리자용)
     public Page<RequirementListDto> findAllForAdmin(String status, Pageable pageable) {
@@ -179,6 +182,12 @@ public class RequirementService {
         r.setReqPerYn(perYn);
         r.setReqUpdDt(LocalDateTime.now());
         requirementRepository.save(r);
+
+        // 웹 알림 서비스
+        notificationService.createNotification(
+                r.getMemId(),
+                perYn ? NotificationType.REQUIREMENT_APPROVE : NotificationType.REQUIREMENT_REJECT,
+                reqId);
     }
 
     // 답변 수정
@@ -196,6 +205,8 @@ public class RequirementService {
         r.setReqPerYn(perYn);
         r.setReqUpdDt(LocalDateTime.now());
         requirementRepository.save(r);
+
+        notificationService.createNotification(r.getMemId(), NotificationType.REQUIREMENT_CHANGE, reply.getReqId());
     }
 
     // 삭제 (논리 삭제)

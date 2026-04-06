@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminRequirementApiController {
 
     private final RequirementService requirementService;
-    private final NotificationService notificationService;
+
 
     @GetMapping("/list")
     public Page<RequirementListDto> list(
@@ -32,9 +32,6 @@ public class AdminRequirementApiController {
     @PostMapping("/{reqId}/reply")
     public void saveReply(@PathVariable Long reqId, @RequestBody RequireForm form) {
         requirementService.saveReply(reqId, form.getReqRepTtl(), form.getReqRepCon(), form.getReqRepPerYn());
-//        if(form.getReqRepPerYn()) {
-//            notificationService.createNotificationForRequirementReply(form.getMemId(), );
-//        }
     }
 
     // 답변 수정
