@@ -14,7 +14,9 @@
                     <circle cx="4.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
                     <circle cx="16.5" cy="13.5" r="1.5" stroke="#1a1c1c" stroke-width="1.5"/>
                 </svg>
-                <h3 class="fee-card-title">예상 운임 비용</h3>
+                <h3 class="fee-card-title" id="fc-logistics-title">예상 운임 비용</h3>
+                <button type="button" class="btn-factory-input" id="btnFactoryInput"
+                        style="display:none" onclick="event.stopPropagation(); openModal('factory-input')">공급처 입력</button>
             </div>
             <div class="fee-items">
                 <!-- 공장별 그룹 — JS가 동적 렌더링 -->
@@ -70,7 +72,7 @@
             <div class="modal-header">
                 <div class="modal-header-left">
                     <span class="modal-tag">운송 비용 상세</span>
-                    <h2 class="modal-title">예상 운임 비용</h2>
+                    <h2 class="modal-title" id="md-logistics-title">예상 운임 비용</h2>
                 </div>
                 <button class="modal-close" onclick="closeModal('logistics')" aria-label="닫기">&#10005;</button>
             </div>
@@ -100,6 +102,10 @@
                 <div class="modal-note">
                     <span class="modal-note-icon">&#9888;</span>
                     <p>운임 금액은 현재 선사 고시 요율 기준이며 출항 시점의 시황에 따라 ±5% 내외로 변동될 수 있습니다. 최종 금액은 선하증권(B/L) 발행 시 확정됩니다.</p>
+                </div>
+                <!-- admin 운임 적용 버튼 -->
+                <div class="modal-admin-apply" id="md-admin-apply" style="display:none;">
+                    <button type="button" class="btn-confirm" id="btnApplyManualFees">운임 적용</button>
                 </div>
             </div>
         </div>
@@ -163,6 +169,29 @@
                     <span class="modal-note-icon">&#8505;</span>
                     <p>서비스 수수료는 최종 인보이스 기준 공급가에 재산출되어 청구됩니다. 품질 검사 결과 불량률이 5%를 초과할 경우 추가 검수 비용이 발생할 수 있습니다.</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: 공급처 입력 (관리자 전용) ===== -->
+    <div class="modal-overlay" id="modal-factory-input" role="dialog" aria-modal="true">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-tag">공급처 정보</span>
+                    <h2 class="modal-title">공급처 입력</h2>
+                </div>
+                <button class="modal-close" onclick="closeModal('factory-input')" aria-label="닫기">&#10005;</button>
+            </div>
+            <div class="modal-body">
+                <p class="factory-input-desc">공급처(공장) 정보가 등록되지 않은 브랜드 목록입니다.</p>
+                <div id="factory-input-list">
+                    <!-- JS가 동적 렌더링 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('factory-input')">닫기</button>
+                <button type="button" class="btn-confirm" id="btnFactoryInputConfirm">적용</button>
             </div>
         </div>
     </div>

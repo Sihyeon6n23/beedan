@@ -59,6 +59,7 @@ public class OrderService {
         
         return mapToOrderDto(order);
     }
+
     @Transactional
     public void updateOrder(Long ordId, Long memId, OrderDto dto) {
         Order order = orderRepository.findById(ordId)
@@ -79,11 +80,15 @@ public class OrderService {
         if (dto.getOrdBaseRcvNm() != null) order.setOrdBaseRcvNm(dto.getOrdBaseRcvNm());
         if (dto.getOrdBaseMsg() != null) order.setOrdBaseMsg(dto.getOrdBaseMsg());
     }
+
     @Transactional
     public void updateOrderStatus(Long ordId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+        Order order = orderRepository.findById(ordId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. ID: " + ordId));
 
-        if(order.getOrdBaseStt() == OrderStatus.CANCELLED) {
+        if (order.getOrdBaseStt() == newStatus) return; // 같은 상태 선택시 상태 변경 방지
+
+        if (order.getOrdBaseStt() == OrderStatus.CANCELED) {
             throw new IllegalStateException("취소된 주문의 상태는 변경할 수 없습니다.");
         }
 
@@ -99,7 +104,7 @@ public class OrderService {
         if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
             throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
         }
-        order.setOrdBaseStt(OrderStatus.CANCELLED);
+        order.setOrdBaseStt(OrderStatus.CANCELED);
         order.getShipments().forEach(sh -> sh.setShCanYn(true));
     }
 

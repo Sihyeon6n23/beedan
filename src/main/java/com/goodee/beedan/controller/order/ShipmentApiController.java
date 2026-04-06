@@ -2,8 +2,14 @@ package com.goodee.beedan.controller.order;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.ShipmentDto;
+import com.goodee.beedan.dto.order.TrackingResponseDto;
+import com.goodee.beedan.service.order.TrackingService;
 import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,13 +23,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShipmentApiController {
     private final ShipmentService shipmentService;
+    private final TrackingService trackingService;
 
     @GetMapping("/list")
-    public ResponseEntity<List<ShipmentDto>> getShipmentList(
+    public ResponseEntity<Page<ShipmentDto>> getShipmentList(
             @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestParam(name = "ordId") Long ordId){
-
-        List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(userDetails.getMemberId(), ordId);
+            @RequestParam(name = "ordId") Long ordId,
+            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable){
+        Page<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(userDetails.getMemberId(), ordId, pageable);
 
         return ResponseEntity.ok(shipmentDtoList);
     }
@@ -62,5 +69,12 @@ public class ShipmentApiController {
 
         return ResponseEntity.ok(shipmentDto);
     }
+
+    @GetMapping("/{shId}/track")
+    public ResponseEntity<TrackingResponseDto> getTrackingInfo(@PathVariable("shId") Long shId) {
+        TrackingResponseDto result = trackingService.getTrackingInfo(shId);
+        return ResponseEntity.ok(result);
+    }
+
 
 }

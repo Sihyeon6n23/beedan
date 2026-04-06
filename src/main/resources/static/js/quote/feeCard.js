@@ -4,6 +4,22 @@
    ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── admin 감지 + 제목 변경 ───────────────────────
+    var isAdmin = !!document.getElementById('js-is-admin');
+    if (isAdmin) {
+        var titleEl = document.getElementById('fc-logistics-title');
+        if (titleEl) titleEl.textContent = '운임 비용';
+        var mdTitleEl = document.getElementById('md-logistics-title');
+        if (mdTitleEl) mdTitleEl.textContent = '운임 비용';
+        var applyBtn = document.getElementById('md-admin-apply');
+        if (applyBtn) applyBtn.style.display = '';
+    }
+
+    // admin 수동 입력값 저장소 (key: factory index)
+    window._adminFeeOverrides = window._adminFeeOverrides || {};
+    // 마지막 updateFeeCards 호출 인자 보관 (재호출용)
+    var _lastFeeCardsArgs = null;
+
     // ── 모달 열기 / 닫기 ─────────────────────────────
     window.openModal = function (type) {
         var overlay = document.getElementById('modal-' + type);
@@ -134,9 +150,68 @@ document.addEventListener('DOMContentLoaded', function () {
         insuranceInfo = insuranceInfo || { name: null, rate: 0 };
         domesticData = domesticData || null;
 
+        // 인자 보관 (admin 운임 적용 시 재호출용)
+        _lastFeeCardsArgs = { data: data, itemTotalKrw: itemTotalKrw, dest: dest, insuranceExtra: insuranceExtra, inspectionExtra: inspectionExtra, domesticFee: domesticFee, insuranceInfo: insuranceInfo, domesticData: domesticData };
+
+        // ── 기존 견적 운임 데이터로 오버라이드 초기화 (재작성/복원 시) ──
+        if (window._prevShipFees && window._prevShipFees.length > 0 && data.factories) {
+            data.factories.forEach(function (f, idx) {
+                var prev = null;
+                for (var i = 0; i < window._prevShipFees.length; i++) {
+                    var ps = window._prevShipFees[i];
+                    if (ps.qsfFaNm === f.factoryName && ps.qsfFaCCd === f.countryCode) { prev = ps; break; }
+                    if (!ps.qsfFaNm && !f.factoryName) { prev = ps; break; }
+                }
+                if (prev && !window._adminFeeOverrides[idx]) {
+                    window._adminFeeOverrides[idx] = {
+                        shippingFee: prev.qsfSrAm || 0,
+                        portFee: prev.qsfPrtAm || 0,
+                        customsFee: prev.qsfCstAm || 0,
+                        hsCodeFee: prev.qsfHsCd || 0
+                    };
+                    f.shippingFee = prev.qsfSrAm || 0;
+                    f.portFee = prev.qsfPrtAm || 0;
+                    f.customsFee = prev.qsfCstAm || 0;
+                    f.hsCodeFee = prev.qsfHsCd || 0;
+
+                    // CIF/관세/부가세도 기존 값으로 패치
+                    f.cifAmount = prev.qsfCifAm || 0;
+                    f.dutyAmount = prev.qsfDty || 0;
+                    f.vatAmount = prev.qsfVat || 0;
+                    f.insuranceFee = prev.qsfInsYn ? (prev.qsfInsAm || 0) : 0;
+                    f.subtotal = prev.qsfTtl || 0;
+                }
+            });
+
+            // logisticsTotal 등 합계도 재계산
+            var newLogistics = 0, newDuty = 0, newVat = 0;
+            data.factories.forEach(function (f) {
+                newLogistics += (f.subtotal || 0);
+                newDuty += (f.dutyAmount || 0);
+                newVat += (f.vatAmount || 0);
+            });
+            data.logisticsTotal = newLogistics;
+            data.dutyAmount = newDuty;
+            data.vatAmount = newVat;
+
+            window._prevShipFees = null; // 한 번만 적용
+        }
+
         // ── 공장별 그룹 렌더링 ──
         var shippingRate = parseFloat(data.shippingDiscountRate) || 0;
         renderFactoryGroups(data.factories, shippingRate, data.buyerGrade || '');
+
+        // ── 관리자: 공급처 미등록 감지 → 버튼 표시 ──
+        var isAdmin = !!document.getElementById('js-is-admin');
+        var unknownFactories = (data.factories || []).filter(function (f) {
+            return !f.countryCode;
+        });
+        var btnFactoryInput = document.getElementById('btnFactoryInput');
+        if (btnFactoryInput) {
+            btnFactoryInput.style.display = (isAdmin && unknownFactories.length > 0) ? '' : 'none';
+        }
+        // 미등록 공장 데이터 보관 (모달 렌더링용)
+        window._unknownFactories = unknownFactories;
 
         // ── 카드 총계 ──
         // 국내 운임 (건수 포함 + 할인)
@@ -250,6 +325,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     mdShippingVal = fmt(f.shippingFee);
                 }
 
+                // admin 오버라이드 확인
+                var ov = window._adminFeeOverrides[idx] || {};
+                var ovShip = ov.shippingFee != null ? ov.shippingFee : f.shippingFee;
+                var ovPort = ov.portFee != null ? ov.portFee : f.portFee;
+                var ovCust = ov.customsFee != null ? ov.customsFee : f.customsFee;
+                var ovHs = ov.hsCodeFee != null ? ov.hsCodeFee : f.hsCodeFee;
+
+                // admin 편집 가능 필드 vs 읽기 전용
+                var shippingHtml, portHtml, customsHtml, hsHtml;
+                if (isAdmin) {
+                    shippingHtml = '<input type="text" class="admin-fee-input" data-idx="' + idx + '" data-field="shippingFee" value="' + Math.round(ovShip || 0) + '" />';
+                    portHtml = '<input type="text" class="admin-fee-input" data-idx="' + idx + '" data-field="portFee" value="' + Math.round(ovPort || 0) + '" />';
+                    customsHtml = '<input type="text" class="admin-fee-input" data-idx="' + idx + '" data-field="customsFee" value="' + Math.round(ovCust || 0) + '" />';
+                    hsHtml = '<input type="text" class="admin-fee-input" data-idx="' + idx + '" data-field="hsCodeFee" value="' + Math.round(ovHs || 0) + '" />';
+                } else {
+                    shippingHtml = mdShippingVal;
+                    portHtml = fmt(f.portFee);
+                    customsHtml = fmt(f.customsFee);
+                    hsHtml = fmt(f.hsCodeFee);
+                }
+
                 section.innerHTML =
                     '<div class="modal-divider"></div>' +
                     '<div>' +
@@ -261,14 +357,16 @@ document.addEventListener('DOMContentLoaded', function () {
                             '<div class="modal-detail-row"><span class="modal-row-key">운송 수단' + tipBtn(tips.transport) + '</span><span class="modal-row-val">' + (transportNames[f.transportType] || f.transportType || '-') + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">운임 기준' + tipBtn(tips.basis) + '</span><span class="modal-row-val">CIF 부산항</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">적용 규모' + tipBtn(tips.sizeType) + '</span><span class="modal-row-val">' + (sizeNames[f.sizeType] || '-') + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">해외 운임' + tipBtn(tips.shippingFee) + '</span><span class="modal-row-val">' + mdShippingVal + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">항만/통관/HS' + tipBtn(tips.portFee) + '</span><span class="modal-row-val">' + fmt(portCustoms) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">해외 운임' + tipBtn(tips.shippingFee) + '</span><span class="modal-row-val">' + shippingHtml + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">항만비' + tipBtn(tips.portFee) + '</span><span class="modal-row-val">' + portHtml + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">통관비</span><span class="modal-row-val">' + customsHtml + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">HS 신고비</span><span class="modal-row-val">' + hsHtml + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">보험' + tipBtn(tips.insurance) + '</span><span class="modal-row-val">' + fmt(f.insuranceFee) + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">CIF' + tipBtn(tips.cif) + '</span><span class="modal-row-val">' + fmt(f.cifAmount) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">CIF' + tipBtn(tips.cif) + '</span><span class="modal-row-val admin-cif-val" data-idx="' + idx + '">' + fmt(f.cifAmount) + '</span></div>' +
                             '<div class="modal-detail-row"><span class="modal-row-key">관세율' + tipBtn(tips.dutyRate) + '</span><span class="modal-row-val">' + (f.dutyRate ? (f.dutyRate * 100).toFixed(1) + '%' : '-') + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">관세' + tipBtn(tips.duty) + '</span><span class="modal-row-val">' + fmt(f.dutyAmount) + '</span></div>' +
-                            '<div class="modal-detail-row"><span class="modal-row-key">부가세' + tipBtn(tips.vat) + '</span><span class="modal-row-val">' + fmt(f.vatAmount) + '</span></div>' +
-                            '<div class="modal-detail-row row-subtotal"><span class="modal-row-key">출발지 소계</span><span class="modal-row-val">' + fmt(f.subtotal) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">관세' + tipBtn(tips.duty) + '</span><span class="modal-row-val admin-duty-val" data-idx="' + idx + '">' + fmt(f.dutyAmount) + '</span></div>' +
+                            '<div class="modal-detail-row"><span class="modal-row-key">부가세' + tipBtn(tips.vat) + '</span><span class="modal-row-val admin-vat-val" data-idx="' + idx + '">' + fmt(f.vatAmount) + '</span></div>' +
+                            '<div class="modal-detail-row row-subtotal"><span class="modal-row-key">출발지 소계</span><span class="modal-row-val admin-subtotal-val" data-idx="' + idx + '">' + fmt(f.subtotal) + '</span></div>' +
                         '</div>' +
                         rateTableHtml +
                     '</div>';
@@ -285,6 +383,49 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!wasActive) btn.classList.add('is-active');
                 });
             });
+
+            // admin 수동 입력 이벤트 바인딩
+            if (isAdmin) {
+                modalBody.querySelectorAll('.admin-fee-input').forEach(function (input) {
+                    input.addEventListener('change', function () {
+                        var fidx = parseInt(input.dataset.idx);
+                        var field = input.dataset.field;
+                        var val = parseInt(input.value.replace(/[^\d]/g, '')) || 0;
+                        input.value = val;
+
+                        // 오버라이드 저장
+                        if (!window._adminFeeOverrides[fidx]) window._adminFeeOverrides[fidx] = {};
+                        window._adminFeeOverrides[fidx][field] = val;
+
+                        // 해당 공장의 관세/부가세 재계산
+                        var f = data.factories[fidx];
+                        if (!f) return;
+                        var ov = window._adminFeeOverrides[fidx];
+                        var ship = ov.shippingFee != null ? ov.shippingFee : (f.shippingFee || 0);
+                        var port = ov.portFee != null ? ov.portFee : (f.portFee || 0);
+                        var cust = ov.customsFee != null ? ov.customsFee : (f.customsFee || 0);
+                        var hs = ov.hsCodeFee != null ? ov.hsCodeFee : (f.hsCodeFee || 0);
+                        var ins = f.insuranceFee || 0;
+                        var supply = f.supplySubtotal || 0;
+
+                        var newCif = supply + ship + ins;
+                        var dutyRate = f.dutyRate || 0.13;
+                        var newDuty = Math.round(newCif * dutyRate);
+                        var newVat = Math.round((newCif + newDuty) * 0.10);
+                        var newSubtotal = ship + port + cust + hs + ins + newDuty + newVat;
+
+                        // 화면 갱신
+                        var cifEl = modalBody.querySelector('.admin-cif-val[data-idx="' + fidx + '"]');
+                        var dutyEl = modalBody.querySelector('.admin-duty-val[data-idx="' + fidx + '"]');
+                        var vatEl = modalBody.querySelector('.admin-vat-val[data-idx="' + fidx + '"]');
+                        var subEl = modalBody.querySelector('.admin-subtotal-val[data-idx="' + fidx + '"]');
+                        if (cifEl) cifEl.textContent = fmt(newCif);
+                        if (dutyEl) dutyEl.textContent = fmt(newDuty);
+                        if (vatEl) vatEl.textContent = fmt(newVat);
+                        if (subEl) subEl.textContent = fmt(newSubtotal);
+                    });
+                });
+            }
         }
 
         // ── 대행 수수료 모달 상세 ──
@@ -311,4 +452,228 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? '적용: ' + fmtPeriod(data.serviceFeeEffFrom, data.serviceFeeEffTo) : '';
         }
     };
+
+    // ── 공급처 입력 모달 렌더링 ──────────────────────
+    function renderFactoryInputModal() {
+        var list = document.getElementById('factory-input-list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        var unknowns = window._unknownFactories || [];
+        if (unknowns.length === 0) {
+            list.innerHTML = '<p style="color:var(--color-text-muted);">미등록 공급처가 없습니다.</p>';
+            return;
+        }
+
+        // 테이블 행에서 브랜드 정보 추출 (stId → 브랜드명)
+        var rows = document.querySelectorAll('.quote-row');
+        var brandMap = {};
+        rows.forEach(function (row) {
+            var stId = row.dataset.stId;
+            var brandEl = row.querySelector('.product-material');
+            var nameEl = row.querySelector('.product-name');
+            var brand = brandEl ? brandEl.textContent.trim() : '알 수 없음';
+            var name = nameEl ? nameEl.textContent.trim() : '';
+            if (!brandMap[brand]) {
+                brandMap[brand] = { brand: brand, products: [] };
+            }
+            brandMap[brand].products.push({ stId: stId, name: name });
+        });
+
+        // 미등록 공장에 연결된 브랜드 목록 (countryCode === null)
+        Object.keys(brandMap).forEach(function (brandKey) {
+            var info = brandMap[brandKey];
+            var card = document.createElement('div');
+            card.className = 'factory-input-card';
+
+            var productList = info.products.map(function (p) {
+                return '<span class="factory-input-product">' + p.name + '</span>';
+            }).join('');
+
+            card.innerHTML =
+                '<div class="factory-input-card-header">' +
+                    '<span class="factory-input-brand">' + info.brand + '</span>' +
+                    '<span class="factory-input-count">' + info.products.length + '개 상품</span>' +
+                '</div>' +
+                '<div class="factory-input-products">' + productList + '</div>' +
+                '<div class="factory-input-fields">' +
+                    '<div class="factory-input-row">' +
+                        '<label class="factory-input-label">공장명</label>' +
+                        '<input type="text" class="factory-input-text" data-field="name" placeholder="공장명을 입력하세요" />' +
+                    '</div>' +
+                    '<div class="factory-input-row">' +
+                        '<label class="factory-input-label">국가 코드</label>' +
+                        '<select class="factory-input-select" data-field="country">' +
+                            '<option value="">선택</option>' +
+                            '<option value="JP">일본 (JP)</option>' +
+                            '<option value="CN">중국 (CN)</option>' +
+                            '<option value="VN">베트남 (VN)</option>' +
+                            '<option value="TW">대만 (TW)</option>' +
+                            '<option value="TH">태국 (TH)</option>' +
+                            '<option value="ID">인도네시아 (ID)</option>' +
+                            '<option value="US">미국 (US)</option>' +
+                        '</select>' +
+                    '</div>' +
+                    '<div class="factory-input-row">' +
+                        '<label class="factory-input-label">도시</label>' +
+                        '<input type="text" class="factory-input-text" data-field="city" placeholder="도시명 (선택)" />' +
+                    '</div>' +
+                '</div>';
+
+            list.appendChild(card);
+        });
+    }
+
+    // 모달 열릴 때 렌더링
+    var origOpen = window.openModal;
+    window.openModal = function (type) {
+        if (type === 'factory-input') renderFactoryInputModal();
+        origOpen(type);
+    };
+
+    // ── 공급처 입력 적용 버튼 ────────────────────────
+    var btnConfirm = document.getElementById('btnFactoryInputConfirm');
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', function () {
+            var cards = document.querySelectorAll('#factory-input-list .factory-input-card');
+            var requests = [];
+
+            cards.forEach(function (card) {
+                var name = card.querySelector('[data-field="name"]').value.trim();
+                var country = card.querySelector('[data-field="country"]').value;
+                var city = card.querySelector('[data-field="city"]').value.trim();
+
+                if (!name || !country) return;
+
+                // 이 브랜드에 해당하는 stId 목록 추출
+                var brandName = card.querySelector('.factory-input-brand').textContent;
+                var stIds = [];
+                document.querySelectorAll('.quote-row').forEach(function (row) {
+                    var brandEl = row.querySelector('.product-material');
+                    if (brandEl && brandEl.textContent.trim() === brandName) {
+                        stIds.push(parseInt(row.dataset.stId));
+                    }
+                });
+
+                requests.push({ stIds: stIds, name: name, countryCode: country, city: city || null });
+            });
+
+            if (requests.length === 0) {
+                alert('공장명과 국가 코드를 입력해주세요.');
+                return;
+            }
+
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = '저장 중...';
+
+            var csrfMeta = document.querySelector('meta[name="_csrf"]');
+            var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+            var headers = { 'Content-Type': 'application/json' };
+            if (csrfHeaderMeta && csrfMeta) {
+                headers[csrfHeaderMeta.content] = csrfMeta.content;
+            }
+
+            fetch('/api/quote/factory', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requests)
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.status === 'ok') {
+                    closeModal('factory-input');
+                    // estimate-fees 재호출하여 운임 재계산
+                    if (typeof doFetchEstimateFees === 'function') {
+                        doFetchEstimateFees();
+                    }
+                } else {
+                    alert('저장 실패: ' + (data.message || ''));
+                }
+            })
+            .catch(function (e) {
+                alert('저장 실패: ' + e.message);
+            })
+            .finally(function () {
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = '적용';
+            });
+        });
+    }
+
+    // ── admin "운임 적용" 버튼 ───────────────────────
+    var btnApplyManual = document.getElementById('btnApplyManualFees');
+    if (btnApplyManual && isAdmin) {
+        btnApplyManual.addEventListener('click', function () {
+            if (!_lastFeeCardsArgs || !_lastFeeCardsArgs.data || !_lastFeeCardsArgs.data.factories) return;
+
+            var data = _lastFeeCardsArgs.data;
+            var overrides = window._adminFeeOverrides || {};
+
+            // lastEstimateData의 factories를 수동 값으로 패치
+            data.factories.forEach(function (f, idx) {
+                var ov = overrides[idx];
+                if (!ov) return;
+
+                if (ov.shippingFee != null) f.shippingFee = ov.shippingFee;
+                if (ov.portFee != null) f.portFee = ov.portFee;
+                if (ov.customsFee != null) f.customsFee = ov.customsFee;
+                if (ov.hsCodeFee != null) f.hsCodeFee = ov.hsCodeFee;
+
+                // CIF 재계산 (상품가 + 운임 + 보험)
+                var supply = f.supplySubtotal || 0;
+                var ship = f.shippingFee || 0;
+                var ins = f.insuranceFee || 0;
+                f.cifAmount = supply + ship + ins;
+
+                // 관세/부가세 재계산 (그룹 CIF × 대표 관세율 — 근사치, 정확한 안분은 서버에서)
+                var dutyRate = f.dutyRate || 0.13;
+                f.dutyAmount = Math.round(f.cifAmount * dutyRate);
+                f.vatAmount = Math.round((f.cifAmount + f.dutyAmount) * 0.10);
+
+                // 소계 재계산
+                f.subtotal = ship + (f.portFee || 0) + (f.customsFee || 0) + (f.hsCodeFee || 0)
+                    + ins + f.dutyAmount + f.vatAmount;
+            });
+
+            // logisticsTotal 재계산
+            var newLogistics = 0;
+            var newDuty = 0;
+            var newVat = 0;
+            data.factories.forEach(function (f) {
+                newLogistics += (f.subtotal || 0);
+                newDuty += (f.dutyAmount || 0);
+                newVat += (f.vatAmount || 0);
+            });
+            data.logisticsTotal = newLogistics;
+            data.dutyAmount = newDuty;
+            data.vatAmount = newVat;
+
+            // updateFeeCards 재호출
+            var a = _lastFeeCardsArgs;
+            updateFeeCards(data, a.itemTotalKrw, a.dest, a.insuranceExtra, a.inspectionExtra, a.domesticFee, a.insuranceInfo, a.domesticData);
+
+            // quote-write.js의 lastEstimateData도 갱신
+            if (typeof window.lastEstimateData !== 'undefined') {
+                window.lastEstimateData = data;
+            }
+
+            // 총 주문 명세 갱신 (quote-write.js의 grandTotal 재계산)
+            var totalTax = newDuty + newVat;
+            var intShipOnly = newLogistics - totalTax;
+            var sdRate = parseFloat(data.shippingDiscountRate) || 0;
+            var logisticsRaw = intShipOnly + (a.insuranceExtra || 0) + (a.domesticFee || 0);
+            var logisticsDiscounted = sdRate > 0 ? Math.round(logisticsRaw * (1 - sdRate)) : logisticsRaw;
+            var procurementVal = (data.procurementTotal || 0) + (a.inspectionExtra || 0);
+            var grandTotal = (a.itemTotalKrw || 0) + logisticsDiscounted + procurementVal + totalTax;
+
+            var gtEl = document.getElementById('os-grand-total');
+            if (gtEl) gtEl.textContent = grandTotal > 0 ? '₩' + Math.round(grandTotal).toLocaleString('ko-KR') : '-';
+            var logEl = document.getElementById('os-logistics');
+            if (logEl) logEl.textContent = logisticsDiscounted > 0 ? '₩' + Math.round(logisticsDiscounted).toLocaleString('ko-KR') : '-';
+            var taxEl = document.getElementById('os-tax');
+            if (taxEl) taxEl.textContent = totalTax > 0 ? '₩' + Math.round(totalTax).toLocaleString('ko-KR') : '-';
+
+            closeModal('logistics');
+        });
+    }
 });
