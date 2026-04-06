@@ -31,6 +31,17 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("UPDATE Board b SET b.brdVstCnt = b.brdVstCnt + 1 WHERE b.brdId = :brdId AND b.brdTy = :brdTy AND b.brdDelYn = false")
     int increaseViewCount(@Param("brdId") Long brdId, @Param("brdTy") BoardType brdTy);
     // ===============================================================
+    // 고정글 목록 (최신순)
+    List<Board> findByBrdTyAndBrdFixYnTrueAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType brdTy);
+
+    // 일반글 페이징 (최신순)
+    Page<Board> findByBrdTyAndBrdFixYnFalseAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType brdTy, Pageable pageable);
+
+    // 이전글 (현재 ID보다 작으면서 가장 큰 ID)
+    Optional<Board> findFirstByBrdIdLessThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdDesc(Long brdId, BoardType brdTy);
+
+    // 다음글 (현재 ID보다 크면서 가장 작은 ID)
+    Optional<Board> findFirstByBrdIdGreaterThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdAsc(Long brdId, BoardType brdTy);
 
 
     // ===============================================================
@@ -46,11 +57,11 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         ORDER BY b.brdCreDt DESC
     """)
     Page<Board> findUserInquiryBoards(
-        @Param("brdTy") BoardType brdTy,
-        @Param("memId") Long memId,
-        @Param("brdInqStt") InquiryStatus brdInqStt,
-        @Param("keyword") String keyword,
-        Pageable pageable
+            @Param("brdTy") BoardType brdTy,
+            @Param("memId") Long memId,
+            @Param("brdInqStt") InquiryStatus brdInqStt,
+            @Param("keyword") String keyword,
+            Pageable pageable
     );
 
     // 관리자 전체 문의 목록 (문의 + 삭제X + 제목/회사 상호명 검색 + 상태 필터 + 내 답변 여부)
@@ -71,10 +82,10 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
           b.brdUpdDt DESC
     """)
     Page<Board> findAdminInquiryBoards(
-        @Param("brdTy") BoardType brdTy,
-        @Param("brdInqStt") InquiryStatus brdInqStt,
-        @Param("keyword") String keyword,
-        Pageable pageable
+            @Param("brdTy") BoardType brdTy,
+            @Param("brdInqStt") InquiryStatus brdInqStt,
+            @Param("keyword") String keyword,
+            Pageable pageable
     );
 
     // 관리자 본인 답글 문의 목록 (내가 답글을 작성한 문의 + 제목/회사 상호명 검색 + 상태 필터)
@@ -103,12 +114,12 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         b.brdUpdDt DESC
     """)
     Page<Board> findInquiryBoardsAnsweredByAdmin(
-        @Param("brdTy") BoardType brdTy,
-        @Param("ansbrdTy") BoardType ansbrdTy,
-        @Param("memAdId") Long memAdId,
-        @Param("brdInqStt") InquiryStatus brdInqStt,
-        @Param("keyword") String keyword,
-        Pageable pageable
+            @Param("brdTy") BoardType brdTy,
+            @Param("ansbrdTy") BoardType ansbrdTy,
+            @Param("memAdId") Long memAdId,
+            @Param("brdInqStt") InquiryStatus brdInqStt,
+            @Param("keyword") String keyword,
+            Pageable pageable
     );
 
     // 사용자 상세

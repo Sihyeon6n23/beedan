@@ -270,4 +270,9 @@ public class FileService {
             }
         }
     }
+
+    public int getFileCount(RefDto refDto) {
+        if (refDto == null || refDto.getRefNo() == null) return 0;
+        return fileRepository.countByRefDto(refDto);
+    }
 }

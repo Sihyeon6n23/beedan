@@ -32,12 +32,12 @@ public class InquiryBoardService {
         Pageable pageable = PageRequest.of(searchDto.getPage(), searchDto.getSize());
 
         Page<Board> userInquiryBoards = boardRepository.findUserInquiryBoards(
-                        BoardType.INQUIRY,
-                        memId,
-                        searchDto.getBrdInqStt(),
-                        searchDto.getKeyword(),
-                        pageable
-                );
+                BoardType.INQUIRY,
+                memId,
+                searchDto.getBrdInqStt(),
+                searchDto.getKeyword(),
+                pageable
+        );
 
         return userInquiryBoards.map(this::mapToInquiryBoardListDto);
     }

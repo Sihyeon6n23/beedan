@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Notice Management', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 공지사항 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notice','notice-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+
+    <section class="inquiry-page inquiry-list-page">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">Notice Board</span>
+                <h2 class="inquiry-title">공지사항</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-shell inquiry-shell--toolbar">
+            <div class="inquiry-toolbar">
+                <div class="inquiry-toolbar__actions" style="margin-left: auto;">
+                    <form class="inquiry-search-form" method="get" th:action="@{/notice/list}">
+                        <input type="text" name="keyword" th:value="${keyword}" class="inquiry-search-form__input" placeholder="제목 검색">
+                        <button type="submit" class="inquiry-search-form__submit">조회</button>
+                    </form>
+                    <a th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')}"
+                       th:href="@{/notice/write}" class="inquiry-action-link">
+                        <span class="material-symbols-outlined">edit_square</span>
+                        <span>공지 작성</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="inquiry-shell inquiry-shell--list">
+            <div class="inquiry-list-head" aria-hidden="true">
+                <div style="flex: 2;">제목</div>
+                <div>작성자</div>
+                <div>조회수</div>
+                <div>등록일</div>
+            </div>
+
+            <div class="inquiry-list-body">
+                <a th:each="fixed : ${fixedNotices}" th:href="@{/notice/detail(id=${fixed.brdId})}"
+                   class="inquiry-row inquiry-row--featured">
+                    <div class="inquiry-row__primary" style="flex: 2;">
+                        <span class="inquiry-badge inquiry-badge--received" style="margin-right: 10px;">공지</span>
+                        <h2 th:text="${fixed.brdTtl}">고정 공지 제목</h2>
+                        <span th:if="${fixed.fileCnt > 0}" th:text="'[' + ${fixed.fileCnt} + ']'" style="color: #e74c3c; font-size: 0.9em; margin-left: 5px;"></span>
+                    </div>
+                    <div class="inquiry-row__company">
+                        <span th:text="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')} ? ${fixed.memNm} : '관리자'">작성자</span>
+                    </div>
+                    <div class="inquiry-row__status">
+                        <span th:text="${fixed.brdHit}">0</span>
+                    </div>
+                    <div class="inquiry-row__time">
+                        <span th:text="${#temporals.format(fixed.brdCreDt, 'yyyy.MM.dd')}">날짜</span>
+                    </div>
+                </a>
+
+                <a th:each="board : ${boardPage.content}" th:href="@{/notice/detail(id=${board.brdId})}" class="inquiry-row">
+                    <div class="inquiry-row__primary" style="flex: 2;">
+                        <h2 th:text="${board.brdTtl}">일반 공지 제목</h2>
+                        <span th:if="${board.fileCnt > 0}" th:text="'[' + ${board.fileCnt} + ']'" style="color: #e74c3c; font-size: 0.9em; margin-left: 5px;"></span>
+                    </div>
+                    <div class="inquiry-row__company">
+                        <span th:text="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')} ? ${board.memNm} : '관리자'">작성자</span>
+                    </div>
+                    <div class="inquiry-row__status">
+                        <span th:text="${board.brdHit}">0</span>
+                    </div>
+                    <div class="inquiry-row__time">
+                        <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">날짜</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <footer class="inquiry-shell inquiry-shell--pagination">
+            <div class="inquiry-pagination" th:replace="~{fragments/pagination :: paging(${boardPage})}"></div>
+        </footer>
+    </section>
+</th:block>
+</html>
