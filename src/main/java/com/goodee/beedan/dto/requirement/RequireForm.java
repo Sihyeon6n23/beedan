@@ -18,4 +18,10 @@ public class RequireForm {
     private String reqStt;
     private Boolean reqPerYn;
     private Boolean reqRepYn;
+
+    // 답변 정보
+    private Long reqRepId;
+    private String reqRepTtl;
+    private String reqRepCon;
+    private Boolean reqRepPerYn;
 }
