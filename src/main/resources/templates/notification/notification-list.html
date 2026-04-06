@@ -2,68 +2,113 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('알림 목록', 'notification', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('알림 목록', 'notifications', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 알림 센터</title>
+<title th:fragment="title">BEEDAN | 알림 목록</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notification', 'notification-list')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Notification', 'Notification-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
-    <main class="noti-page-container">
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <h1 class="text-3xl font-extrabold text-[var(--pub-text-main)] tracking-tight">알림 목록</h1>
-                <p class="text-sm text-[var(--pub-text-sub)] mt-2 font-medium">실시간으로 전달된 주요 소식들을 확인하세요.</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" onclick="handleAction('readAll')" class="btn-noti-all">모두 읽음</button>
-                <button type="button" onclick="handleAction('deleteAll')" class="btn-noti-delete">전체 삭제</button>
+    <style>
+        <style>
+        .admin-chat-shell--toolbar {
+         display: flex;
+         justify-content: space-between; /* 좌우 끝으로 배치 */
+         align-items: center;
+         padding: 10px 16px;
+         border-bottom: 1px solid var(--pub-bg-sub);
+     }
+
+     .admin-chat-toolbar__filters {
+         display: flex;
+         gap: 12px;
+     }
+
+     .flex.items-center.gap-2 {
+         display: flex;
+         align-items: center;
+         gap: 8px; /* 버튼 사이 8px 간격 */
+     }
+
+     .admin-chat-filter {
+         text-decoration: none;
+         font-size: 13px;
+         color: var(--pub-text-sub);
+     }
+
+     .admin-chat-filter.is-active {
+         font-weight: bold;
+         color: var(--pub-primary);
+     }
+    </style>
+
+    <section class="admin-chat-page admin-chat-list-page order-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Notification History</span>
+                <h2 class="admin-chat-title">알림 목록</h2>
+
+                <div class="admin-chat-shell__rule">
+                    <span></span>
+                </div>
             </div>
         </header>
 
-        <section class="bg-[var(--pub-bg-card)] rounded-2xl border border-[var(--pub-border)] shadow-sm overflow-hidden">
-            <div id="notiPageContent">
-                <ul class="data-list-container !border-0">
-                    <li th:each="noti : ${notifications}"
-                        th:id="'noti-item-' + ${noti.notiId}"
-                        th:style="${noti.notiReaYn == false ? 'border-left: 4px solid var(--pub-primary);' : 'border-left: 4px solid transparent;'}"
-                        class="noti-row data-list-item flex items-center p-6 border-b border-[var(--pub-border)] last:border-0 hover:bg-[var(--pub-bg-main)] transition-all cursor-pointer group"
-                        th:onclick="|handleAction('read', ${noti.notiId}, this)|">
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="알림 목록 필터">
+            <div class="admin-chat-toolbar">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                        <a class="admin-chat-filter" href="#" data-status="SUBMITTED">미확인</a>
+                        <a class="admin-chat-filter" href="#" data-status="ANSWERED">읽음</a>
+                    </div>
+                </div>
 
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <strong class="noti-title text-base text-[var(--pub-text-main)] truncate"
-                                        th:style="${noti.notiReaYn == false ? 'font-weight:700' : 'font-weight:500; opacity:0.6;'}">
-                                    [[${noti.notiTtl}]]
-                                </strong>
-                                <span th:id="'noti-badge-' + ${noti.notiId}"
-                                      th:if="${noti.notiReaYn == false}"
-                                      class="noti-badge status-badge !m-0"
-                                      style="background:var(--pub-primary); color:var(--pub-text-main);">NEW</span>
-                            </div>
-                            <p class="text-sm text-[var(--pub-text-sub)] line-clamp-1 mb-2" th:text="${noti.notiCon}">내용</p>
-                            <span class="text-[11px] text-[var(--pub-text-muted)] font-medium"
-                                  th:text="${#temporals.format(noti.notiCreDt, 'yyyy-MM-dd HH:mm')}">날짜</span>
-                        </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="handleAction('readAll')" class="btn-noti-all">모두 읽음</button>
+                    <button type="button" onclick="handleAction('deleteAll')" class="btn-noti-delete">전체 삭제</button>
+                </div>
 
-                        <button type="button" class="close-btn ml-6 p-2 opacity-30 group-hover:opacity-100 hover:text-red-500 transition-all"
-                                th:onclick="|event.stopPropagation(); handleAction('delete', ${noti.notiId}, this)|">
-                            <span class="material-symbols-outlined text-[20px]">close</span>
-                        </button>
-                    </li>
-                </ul>
             </div>
         </section>
-    </main>
 
-    <script>
-        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-    </script>
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-body" id="require-list-body">
+                <div id="notiPageContent">
 
+                    <ul class="data-list-container !border-0">
+                        <li th:each="noti : ${notifications}"
+                            th:id="'noti-item-' + ${noti.notiId}"
+                            th:style="${noti.notiReaYn == false ? 'border-left: 4px solid var(--pub-primary);' : 'border-left: 4px solid transparent;'}"
+                            class="noti-row data-list-item flex items-center p-6 border-b border-[var(--pub-border)] last:border-0 hover:bg-[var(--pub-bg-main)] transition-all cursor-pointer group"
+                            th:onclick="|handleAction('read', ${noti.notiId}, this)|">
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <strong class="noti-title text-base text-[var(--pub-text-main)] truncate" th:style="${noti.notiReaYn == false ? 'font-weight:700' : 'font-weight:500; opacity:0.6;'}">[[${noti.notiTtl}]]</strong>
+                                    <span th:id="'noti-badge-' + ${noti.notiId}" th:if="${noti.notiReaYn == false}" class="noti-badge status-badge !m-0" style="background:var(--pub-primary); color:var(--pub-text-main);">NEW</span>
+                                </div>
+
+                                <p class="text-sm text-[var(--pub-text-sub)] line-clamp-1 mb-2" th:text="${noti.notiCon}">내용</p>
+
+                                <span class="text-[11px] text-[var(--pub-text-muted)] font-medium"
+                                      th:text="${#temporals.format(noti.notiCreDt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                            </div>
+
+                            <button type="button" class="close-btn ml-6 p-2 opacity-30 group-hover:opacity-100 hover:text-red-500 transition-all" th:onclick="|event.stopPropagation(); handleAction('delete', ${noti.notiId}, this)|">
+                                <span class="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </section>
+
+    </section>
 </th:block>
 </html>
