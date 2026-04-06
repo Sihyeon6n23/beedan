@@ -25,7 +25,12 @@ public class UserRequirementController {
     }
 
     @GetMapping("/write")
-    public String writeRequirement(@ModelAttribute("require") RequireForm requireForm) {
+    public String writeRequirement(@RequestParam(required = false) Long reqId, Model model) {
+        if (reqId != null) {
+            model.addAttribute("require", requirementService.getRequireForm(reqId));
+        } else {
+            model.addAttribute("require", new RequireForm());
+        }
         return "member/requirement/require-write";
     }
 
@@ -41,6 +46,7 @@ public class UserRequirementController {
     public String requireDetail(@RequestParam Long id, Model model) {
         RequireForm form = requirementService.getRequireForm(id);
         model.addAttribute("require", form);
+        model.addAttribute("isAdmin", false);
         return "member/requirement/require-detail";
     }
 

@@ -3,8 +3,10 @@ package com.goodee.beedan.service.requirement;
 import com.goodee.beedan.dto.requirement.RequireForm;
 import com.goodee.beedan.dto.requirement.RequirementListDto;
 import com.goodee.beedan.entity.Requirement;
+import com.goodee.beedan.entity.RequirementReply;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.requirement.RequirementRepository;
+import com.goodee.beedan.repository.requirement.RequirementReplyRepository;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.time.LocalDateTime;
 public class RequirementService {
 
     private final RequirementRepository requirementRepository;
+    private final RequirementReplyRepository requirementReplyRepository;
     private final MemberRepository memberRepository;
 
     // 제출 완료된, 삭제되지 않은 요청서 전부 조회 (관리자용)
@@ -92,23 +95,39 @@ public class RequirementService {
 
 
     public Long draftRequirement(Long memberId, RequireForm requireForm) {
-        String memNm = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다.")).getMemNm();
-        String memBizTtl = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다.")).getMemBizTtl();
+        Requirement requirement;
 
-        Requirement requirement = Requirement.builder()
-                .memId(memberId)
-                .memNm(memNm)
-                .memBizTtl(memBizTtl)
-                .reqTtl(requireForm.getReqTtl())
-                .reqCon(requireForm.getReqCnt())
-                .reqRef(requireForm.getReqRef())
-                .reqPr(requireForm.getReqPr())
-                .reqCur(requireForm.getReqCur())
-                .reqStt("DRAFT")
-                .reqRepYn(false)
-                .reqCreDt(LocalDateTime.now())
-                .reqDelYn(false)
-                .build();
+        if (requireForm.getReqId() != null) {
+            // 기존 DRAFT 수정
+            requirement = requirementRepository.findById(requireForm.getReqId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+            requirement.setReqTtl(requireForm.getReqTtl());
+            requirement.setReqCon(requireForm.getReqCnt());
+            requirement.setReqRef(requireForm.getReqRef());
+            requirement.setReqPr(requireForm.getReqPr());
+            requirement.setReqCur(requireForm.getReqCur());
+            requirement.setReqUpdDt(LocalDateTime.now());
+
+        } else {
+            // 신규 DRAFT 생성
+            String memNm = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다.")).getMemNm();
+            String memBizTtl = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다.")).getMemBizTtl();
+
+            requirement = Requirement.builder()
+                    .memId(memberId)
+                    .memNm(memNm)
+                    .memBizTtl(memBizTtl)
+                    .reqTtl(requireForm.getReqTtl())
+                    .reqCon(requireForm.getReqCnt())
+                    .reqRef(requireForm.getReqRef())
+                    .reqPr(requireForm.getReqPr())
+                    .reqCur(requireForm.getReqCur())
+                    .reqStt("DRAFT")
+                    .reqRepYn(false)
+                    .reqCreDt(LocalDateTime.now())
+                    .reqDelYn(false)
+                    .build();
+        }
 
         return requirementRepository.save(requirement).getReqId();
     }
@@ -130,7 +149,53 @@ public class RequirementService {
         form.setReqStt(r.getReqStt());
         form.setReqPerYn(r.getReqPerYn());
         form.setReqRepYn(r.getReqRepYn());
+
+        // 답변 정보
+        requirementReplyRepository.findByReqId(reqId).ifPresent(rep -> {
+            form.setReqRepId(rep.getReqRepId());
+            form.setReqRepTtl(rep.getReqRepTtl());
+            form.setReqRepCon(rep.getReqRepCon());
+            form.setReqRepPerYn(rep.getReqRepPerYn());
+        });
+
         return form;
+    }
+
+    // 답변 작성
+    public void saveReply(Long reqId, String ttl, String con, Boolean perYn) {
+        Requirement r = requirementRepository.findById(reqId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+
+        RequirementReply reply = RequirementReply.builder()
+                .reqId(reqId)
+                .reqRepTtl(ttl)
+                .reqRepCon(con)
+                .reqRepPerYn(perYn)
+                .reqRepCreDt(LocalDateTime.now())
+                .build();
+        requirementReplyRepository.save(reply);
+
+        r.setReqRepYn(true);
+        r.setReqPerYn(perYn);
+        r.setReqUpdDt(LocalDateTime.now());
+        requirementRepository.save(r);
+    }
+
+    // 답변 수정
+    public void updateReply(Long repId, String ttl, String con, Boolean perYn) {
+        RequirementReply reply = requirementReplyRepository.findById(repId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 답변입니다."));
+        reply.setReqRepTtl(ttl);
+        reply.setReqRepCon(con);
+        reply.setReqRepPerYn(perYn);
+        reply.setReqRepUpdDt(LocalDateTime.now());
+        requirementReplyRepository.save(reply);
+
+        Requirement r = requirementRepository.findById(reply.getReqId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+        r.setReqPerYn(perYn);
+        r.setReqUpdDt(LocalDateTime.now());
+        requirementRepository.save(r);
     }
 
     // 삭제 (논리 삭제)
@@ -154,7 +219,7 @@ public class RequirementService {
     public void cancelRequirement(Long reqId) {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
-        r.setReqDelYn(true);
+        r.setReqStt("DRAFT");
         requirementRepository.save(r);
     }
 

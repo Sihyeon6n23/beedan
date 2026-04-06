@@ -1,6 +1,8 @@
 package com.goodee.beedan.controller.requirement;
 
+import com.goodee.beedan.dto.requirement.RequireForm;
 import com.goodee.beedan.dto.requirement.RequirementListDto;
+import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.requirement.RequirementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -8,10 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminRequirementApiController {
 
     private final RequirementService requirementService;
+    private final NotificationService notificationService;
 
     @GetMapping("/list")
     public Page<RequirementListDto> list(
@@ -26,5 +26,20 @@ public class AdminRequirementApiController {
             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC,"reqId"));
         return requirementService.findAllForAdmin(status, pageable);
+    }
+
+    // 답변 작성
+    @PostMapping("/{reqId}/reply")
+    public void saveReply(@PathVariable Long reqId, @RequestBody RequireForm form) {
+        requirementService.saveReply(reqId, form.getReqRepTtl(), form.getReqRepCon(), form.getReqRepPerYn());
+//        if(form.getReqRepPerYn()) {
+//            notificationService.createNotificationForRequirementReply(form.getMemId(), );
+//        }
+    }
+
+    // 답변 수정
+    @PutMapping("/reply/{repId}")
+    public void updateReply(@PathVariable Long repId, @RequestBody RequireForm form) {
+        requirementService.updateReply(repId, form.getReqRepTtl(), form.getReqRepCon(), form.getReqRepPerYn());
     }
 }

@@ -76,7 +76,7 @@ public class FileService {
                 throw new IllegalIdentifierException("파일 이름이 없습니다.");
             }
 
-            fullPath.add(uploadToDisk(file, uuid, ext));
+            uploadToDisk(file, uuid, ext);
 
             // FileListDto 생성 및 추가
             fileListDtoList.add(FileListDto.builder()
