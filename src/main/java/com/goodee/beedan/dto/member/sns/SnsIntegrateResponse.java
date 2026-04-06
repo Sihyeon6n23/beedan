@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class SnsIntegrateResponse {
     // 타입, 연결시기, 연결여부
-    private SnsType snsTp;
+    private String snsTp;
     private LocalDateTime snsConDt;
     private boolean connected;
 }

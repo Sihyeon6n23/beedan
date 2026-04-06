@@ -60,8 +60,9 @@ public class AdminInquiryBoardRestController {
     // 관리자 문의 상태 수정
     @PatchMapping("/{id}/status")
     public void updateInquiryStatus(@PathVariable("id") Long brdId,
+                                    @AuthenticationPrincipal MemberUserDetails userDetails,
                                     @RequestParam("status") InquiryStatus inquiryStatus,
                                     @RequestParam(value = "brdCanRe", required = false) String brdCanRe) {
-        inquiryBoardService.updateInquiryStatus(brdId, inquiryStatus, brdCanRe);
+        inquiryBoardService.updateInquiryStatus(brdId, userDetails.getMemberId(), inquiryStatus, brdCanRe);
     }
 }

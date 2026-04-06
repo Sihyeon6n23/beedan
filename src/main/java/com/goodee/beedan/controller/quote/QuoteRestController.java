@@ -92,6 +92,57 @@ public class QuoteRestController {
         return ResponseEntity.ok().build();
     }
 
+    // ── 공급처(공장) 등록 (관리자) ─────────────────────
+    @PostMapping("/factory")
+    public ResponseEntity<Map<String, Object>> registerFactory(
+            @RequestBody List<FactoryRegisterRequest> requests) {
+        try {
+            int created = 0;
+            for (FactoryRegisterRequest req : requests) {
+                if (req.getStIds() == null || req.getStIds().isEmpty()) continue;
+                if (req.getCountryCode() == null || req.getCountryCode().isEmpty()) continue;
+
+                // stId → brId 추출 (중복 제거)
+                Set<Long> brIds = new HashSet<>();
+                for (Long stId : req.getStIds()) {
+                    Stock stock = stockRepository.findById(stId).orElse(null);
+                    if (stock != null && stock.getBrId() != null) {
+                        brIds.add(stock.getBrId());
+                    }
+                }
+
+                for (Long brId : brIds) {
+                    // 해당 브랜드에 이미 활성 공장이 있으면 스킵
+                    List<Factory> existing = factoryRepository.findAllByBrIdAndFaYnTrue(brId);
+                    if (!existing.isEmpty()) continue;
+
+                    Factory factory = Factory.builder()
+                            .brId(brId)
+                            .faNm(req.getName())
+                            .faCCd(req.getCountryCode())
+                            .faCty(req.getCity())
+                            .faYn(true)
+                            .build();
+                    factoryRepository.save(factory);
+                    created++;
+                }
+            }
+            return ResponseEntity.ok(Map.of("status", "ok", "created", created));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("status", "error", "message", e.getMessage()));
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class FactoryRegisterRequest {
+        private List<Long> stIds;  // 해당 브랜드의 상품 ID 목록
+        private String name;       // 공장명
+        private String countryCode; // 국가 코드
+        private String city;       // 도시
+    }
+
     // ── 국내 배달비 계산 (지역별 그룹핑) ──────────────
     @PostMapping("/delivery-fee")
     public ResponseEntity<DeliveryFeeResponse> calculateDeliveryFee(
@@ -163,6 +214,13 @@ public class QuoteRestController {
     public ResponseEntity<Map<String, Object>> submitQuote(
             @RequestBody SubmitRequest request) {
         try {
+            // 재작성인 경우 기존 견적 거절 처리
+            if (request.getFromQuId() != null) {
+                String reason = request.getRejectReason() != null && !request.getRejectReason().isEmpty()
+                        ? request.getRejectReason() : "견적 거절 후 재작성";
+                quoteBaseService.reject(request.getFromQuId(), reason);
+            }
+
             quoteBaseService.submit(request.getQuId());
             if (request.getChecks() != null && !request.getChecks().isEmpty()) {
                 quoteSubmitCheckService.saveCheckLog(request.getQuId(), request.getChecks());
@@ -184,6 +242,8 @@ public class QuoteRestController {
     @NoArgsConstructor
     public static class SubmitRequest {
         private Long quId;
+        private Long fromQuId; // 재작성 시 원본 견적 ID (거절 처리 대상)
+        private String rejectReason; // 재작성 시 거절 사유
         private Map<Long, Boolean> checks; // key: qscId, value: 동의 여부
     }
 
@@ -266,16 +326,9 @@ public class QuoteRestController {
 
             quoteInfo = quoteInfoRepository.save(quoteInfo);
 
-            // 2. QuoteDetail + QuoteShipFee merge (기존 항목 유지, 수정/추가/삭제)
+            // 2. QuoteDetail merge (기존 항목 유지, 수정/추가/삭제)
             List<QuoteDetail> existingDetails = quoteDetailService.findAllByQuote(request.getQuId());
             Set<Long> processedDetailIds = new HashSet<>();
-
-            List<QuoteShipFee> existingShipFees = quoteShipFeeRepository.findAllByQuId(request.getQuId());
-            Set<Long> processedShipFeeIds = new HashSet<>();
-
-            // 환율 (QuoteShipFee 계산용)
-            var latestRates = exchangeRateService.findAllLatest();
-            BigDecimal exchangeRate = !latestRates.isEmpty() ? latestRates.get(0).getErRa() : BigDecimal.ONE;
 
             // 보험 여부 + 보험율
             boolean insured = request.getSiId() != null;
@@ -296,6 +349,13 @@ public class QuoteRestController {
             if (request.getFeeInfo() != null && request.getFeeInfo().getShippingDiscountRate() != null) {
                 shippingDiscountRate = request.getFeeInfo().getShippingDiscountRate();
             }
+
+            // 2-1. QuoteDetail 저장 + 공장별 그룹핑 준비
+            Map<Long, Factory> factoryMap = new LinkedHashMap<>();
+            Map<Long, Integer> factoryDozenMap = new LinkedHashMap<>();
+            Map<Long, BigDecimal> factorySupplyMap = new LinkedHashMap<>();
+            // 품목별 (공급가, 관세율) 리스트 — 안분 계산용
+            Map<Long, List<BigDecimal[]>> factoryItemDetails = new LinkedHashMap<>();
 
             for (DraftRequest.DraftItem item : request.getItems()) {
                 Stock stock = stockRepository.findById(item.getStId()).orElse(null);
@@ -354,16 +414,65 @@ public class QuoteRestController {
                 }
                 quoteDetailService.save(detail);
 
-                // 품목별 묶음(다스) 수 계산
+                // 공장별 그룹핑 데이터 누적
+                Long faKey = factory != null ? factory.getFaId() : -1L;
+                if (factory != null) factoryMap.putIfAbsent(faKey, factory);
+
+                // 다스 수 합산
                 int dozen = 0;
                 if (item.getUnGQn() != null && item.getUnGQn() > 0 && item.getQty() != null) {
                     dozen = (int) Math.ceil((double) item.getQty() / item.getUnGQn());
                 }
+                factoryDozenMap.merge(faKey, dozen, Integer::sum);
 
-                // QuoteShipFee: 기존 항목 매칭 (faId) → 있으면 reset+recalc, 없으면 insert
-                Long faId = factory != null ? factory.getFaId() : null;
+                // 공급가 합산
+                BigDecimal itemKrw = item.getSubtotalKrw() != null ? item.getSubtotalKrw() : BigDecimal.ZERO;
+                factorySupplyMap.merge(faKey, itemKrw, BigDecimal::add);
+
+                // 품목별 관세율 + 공급가 보관 (안분 계산용)
+                BigDecimal dutyRate = new BigDecimal("0.13");
+                try {
+                    if (stock.getCatId() != null) {
+                        var hsCode = hsCodeRepository.findByCatId(stock.getCatId()).orElse(null);
+                        if (hsCode != null && hsCode.getHsDuRa() != null) {
+                            dutyRate = hsCode.getHsDuRa();
+                        }
+                    }
+                } catch (Exception ignored) {}
+                factoryItemDetails.computeIfAbsent(faKey, k -> new ArrayList<>())
+                        .add(new BigDecimal[]{ itemKrw, dutyRate });
+            }
+
+            // 요청에 없는 기존 QuoteDetail 삭제
+            existingDetails.stream()
+                    .filter(d -> !processedDetailIds.contains(d.getQuDtId()))
+                    .forEach(d -> quoteDetailService.delete(d.getQuDtId()));
+
+            // 2-2. QuoteShipFee: 공장별 그룹 단위로 생성 (estimate-fees와 동일)
+            List<QuoteShipFee> existingShipFees = quoteShipFeeRepository.findAllByQuId(request.getQuId());
+            Set<Long> processedShipFeeIds = new HashSet<>();
+
+            // admin 수동 오버라이드 맵 (factoryIndex → ManualShipFee)
+            Map<Integer, DraftRequest.ManualShipFee> manualMap = new HashMap<>();
+            if (request.getManualShipFees() != null) {
+                for (DraftRequest.ManualShipFee msf : request.getManualShipFees()) {
+                    if (msf.getFactoryIndex() != null) manualMap.put(msf.getFactoryIndex(), msf);
+                }
+            }
+
+            int factoryIdx = 0;
+            for (Map.Entry<Long, Integer> entry : factoryDozenMap.entrySet()) {
+                Long faKey = entry.getKey();
+                int groupDozen = entry.getValue();
+                BigDecimal groupSupply = factorySupplyMap.getOrDefault(faKey, BigDecimal.ZERO);
+                Factory factory = factoryMap.get(faKey);
+                Long faId = faKey == -1L ? null : faKey;
                 String countryCode = factory != null ? factory.getFaCCd() : null;
 
+                // 품목별 안분 데이터
+                List<BigDecimal[]> itemDetails = factoryItemDetails.getOrDefault(faKey, Collections.emptyList());
+
+                // 기존 ShipFee 매칭 (faId)
                 QuoteShipFee shipFee = existingShipFees.stream()
                         .filter(sf -> Objects.equals(sf.getFaId(), faId)
                                 && !processedShipFeeIds.contains(sf.getQsfId()))
@@ -373,7 +482,7 @@ public class QuoteRestController {
                 if (shipFee != null) {
                     shipFee.resetForRecalculation(
                             factory != null ? factory.getFaNm() : null,
-                            countryCode, "SEA", dozen
+                            countryCode, "SEA", groupDozen
                     );
                     processedShipFeeIds.add(shipFee.getQsfId());
                 } else {
@@ -385,68 +494,85 @@ public class QuoteRestController {
                             .factoryName(factory != null ? factory.getFaNm() : null)
                             .factoryCountryCode(countryCode)
                             .transportType("SEA")
-                            .totalDozen(dozen)
+                            .totalDozen(groupDozen)
                             .build();
                 }
 
                 // 해외 운임
                 BigDecimal shippingFee = BigDecimal.ZERO;
-                try {
-                    if (countryCode != null) {
-                        var sr = shippingRateService.findByCCdAndTransportType(
-                                countryCode, com.goodee.beedan.common.constant.TransportType.SEA);
-                        shippingFee = sr.getApplicableAmount(dozen);
-                    }
-                } catch (Exception ignored) {}
-                shipFee.setShippingFee(shippingFee);
-
-                // 항만/통관/HS
-                BigDecimal portFee = BigDecimal.ZERO, customsFee = BigDecimal.ZERO, hsCodeFee = BigDecimal.ZERO;
                 String sizeType = "SMALL";
                 try {
                     if (countryCode != null) {
                         var sr = shippingRateService.findByCCdAndTransportType(
-                                countryCode, com.goodee.beedan.common.constant.TransportType.SEA);
-                        sizeType = sr.getSizeType(dozen);
+                                countryCode, TransportType.SEA);
+                        shippingFee = sr.getApplicableAmount(groupDozen);
+                        sizeType = sr.getSizeType(groupDozen);
                     }
                 } catch (Exception ignored) {}
+                // admin 수동 오버라이드 적용
+                DraftRequest.ManualShipFee manual = manualMap.get(factoryIdx);
+                if (manual != null) {
+                    if (manual.getShippingFee() != null) shippingFee = manual.getShippingFee();
+                    shipFee.overrideShippingFee(shippingFee, "관리자 수동 입력");
+                } else {
+                    shipFee.setShippingFee(shippingFee);
+                }
+
+                // 항만/통관/HS
+                BigDecimal portFee = BigDecimal.ZERO, customsFee = BigDecimal.ZERO, hsCodeFee = BigDecimal.ZERO;
                 try { portFee = portCustomsRateService.findActiveByType("PORT").getApplicableAmount(sizeType); } catch (Exception ignored) {}
                 try { customsFee = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception ignored) {}
                 try { hsCodeFee = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception ignored) {}
+                if (manual != null) {
+                    if (manual.getPortFee() != null) portFee = manual.getPortFee();
+                    if (manual.getCustomsFee() != null) customsFee = manual.getCustomsFee();
+                    if (manual.getHsCodeFee() != null) hsCodeFee = manual.getHsCodeFee();
+                }
                 shipFee.setPortCustomsFee(portFee, customsFee, hsCodeFee);
 
-                // 보험
-                BigDecimal itemKrw = item.getSubtotalKrw() != null ? item.getSubtotalKrw() : BigDecimal.ZERO;
-                if (insured && itemKrw.compareTo(BigDecimal.ZERO) > 0) {
-                    shipFee.setInsurance(itemKrw.multiply(insuranceRate).setScale(0, java.math.RoundingMode.HALF_UP));
+                // 보험 (그룹 공급가 기준)
+                if (insured && groupSupply.compareTo(BigDecimal.ZERO) > 0) {
+                    shipFee.setInsurance(groupSupply.multiply(insuranceRate).setScale(0, RoundingMode.HALF_UP));
                 }
 
-                // CIF + 관세/부가세
-                shipFee.calculateCif(itemKrw);
+                // CIF (그룹 공급가 기준)
+                shipFee.calculateCif(groupSupply);
 
-                // 관세율 (HS Code에서)
-                BigDecimal dutyRate = new BigDecimal("0.13"); // 기본 13%
-                try {
-                    if (stock.getCatId() != null) {
-                        var hsCode = hsCodeRepository.findByCatId(stock.getCatId()).orElse(null);
-                        if (hsCode != null && hsCode.getHsDuRa() != null) {
-                            dutyRate = hsCode.getHsDuRa();
-                        }
-                    }
-                } catch (Exception ignored) {}
-                shipFee.calculateDutyAndVat(dutyRate);
+                // 관세/부가세: 품목별 운임·보험 안분 후 개별 CIF 기준으로 계산
+                BigDecimal grpDutyTotal = BigDecimal.ZERO;
+                BigDecimal grpVatTotal = BigDecimal.ZERO;
+                BigDecimal grpInsAm = shipFee.getQsfInsAm() != null ? shipFee.getQsfInsAm() : BigDecimal.ZERO;
+                BigDecimal representativeDutyRate = new BigDecimal("0.13");
+
+                for (BigDecimal[] detail : itemDetails) {
+                    BigDecimal itemSupply = detail[0];
+                    BigDecimal itemDutyRate = detail[1];
+                    representativeDutyRate = itemDutyRate; // 마지막 품목의 관세율 (표시용)
+
+                    BigDecimal ratio = groupSupply.compareTo(BigDecimal.ZERO) > 0
+                            ? itemSupply.divide(groupSupply, 10, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
+                    BigDecimal itemShipping = shippingFee.multiply(ratio).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemIns = grpInsAm.multiply(ratio).setScale(0, RoundingMode.HALF_UP);
+
+                    BigDecimal itemCif = itemSupply.add(itemShipping).add(itemIns);
+                    BigDecimal itemDuty = itemCif.multiply(itemDutyRate).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemVat = itemCif.add(itemDuty).multiply(new BigDecimal("0.10")).setScale(0, RoundingMode.HALF_UP);
+
+                    grpDutyTotal = grpDutyTotal.add(itemDuty);
+                    grpVatTotal = grpVatTotal.add(itemVat);
+                }
+                shipFee.setDutyAndVat(representativeDutyRate, grpDutyTotal, grpVatTotal);
 
                 // 할인율 적용 + 합계
                 shipFee.applyDiscount(shippingDiscountRate);
                 shipFee.calculateTotal();
 
                 quoteShipFeeRepository.save(shipFee);
+                factoryIdx++;
             }
 
-            // 3. 요청에 없는 기존 항목만 삭제 (사용자가 제거한 품목)
-            existingDetails.stream()
-                    .filter(d -> !processedDetailIds.contains(d.getQuDtId()))
-                    .forEach(d -> quoteDetailService.delete(d.getQuDtId()));
+            // 요청에 없는 기존 QuoteShipFee 삭제
             existingShipFees.stream()
                     .filter(sf -> !processedShipFeeIds.contains(sf.getQsfId()))
                     .forEach(sf -> quoteShipFeeRepository.delete(sf));
@@ -531,9 +657,7 @@ public class QuoteRestController {
                     }
                 }
 
-                BigDecimal avgDutyRate = dutyRateCount > 0
-                        ? dutyRateSum.divide(BigDecimal.valueOf(dutyRateCount), 4, RoundingMode.HALF_UP)
-                        : new BigDecimal("0.13");
+                // (avgDutyRate는 아래 품목별 안분에서 개별 적용)
 
                 // 해외 운임
                 BigDecimal grpShipping = BigDecimal.ZERO;
@@ -566,20 +690,42 @@ public class QuoteRestController {
                 try { grpCustoms = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception ignored) {}
                 try { grpHsCode = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception ignored) {}
 
-                // 보험
+                // 보험 (그룹 전체)
                 BigDecimal grpInsurance = BigDecimal.ZERO;
                 if (insured && groupSupply.compareTo(BigDecimal.ZERO) > 0) {
                     grpInsurance = groupSupply.multiply(insuranceRate).setScale(0, RoundingMode.HALF_UP);
                 }
 
-                // CIF
-                BigDecimal grpCif = groupSupply.add(grpShipping).add(grpInsurance);
+                // 관세/부가세: 품목별 운임·보험 안분 후 개별 CIF 기준으로 계산
+                BigDecimal grpCif = BigDecimal.ZERO;
+                BigDecimal grpDuty = BigDecimal.ZERO;
+                BigDecimal grpVat = BigDecimal.ZERO;
 
-                // 관세
-                BigDecimal grpDuty = grpCif.multiply(avgDutyRate).setScale(0, RoundingMode.HALF_UP);
+                for (EstimateItem gi : groupItems) {
+                    BigDecimal itemSupply = gi.getSupplyKrw() != null ? gi.getSupplyKrw() : BigDecimal.ZERO;
+                    // 상품가액 비율로 운임·보험 안분
+                    BigDecimal ratio = groupSupply.compareTo(BigDecimal.ZERO) > 0
+                            ? itemSupply.divide(groupSupply, 10, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
+                    BigDecimal itemShipping = grpShipping.multiply(ratio).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemInsurance = grpInsurance.multiply(ratio).setScale(0, RoundingMode.HALF_UP);
 
-                // 부가세
-                BigDecimal grpVat = grpCif.add(grpDuty).multiply(new BigDecimal("0.10")).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemCif = itemSupply.add(itemShipping).add(itemInsurance);
+                    grpCif = grpCif.add(itemCif);
+
+                    BigDecimal itemDutyRate = (gi.getDutyRate() != null && gi.getDutyRate().compareTo(BigDecimal.ZERO) > 0)
+                            ? gi.getDutyRate() : new BigDecimal("0.13");
+                    BigDecimal itemDuty = itemCif.multiply(itemDutyRate).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemVat = itemCif.add(itemDuty).multiply(new BigDecimal("0.10")).setScale(0, RoundingMode.HALF_UP);
+
+                    grpDuty = grpDuty.add(itemDuty);
+                    grpVat = grpVat.add(itemVat);
+                }
+
+                // 대표 관세율 (표시용, 실제 계산은 품목별)
+                BigDecimal avgDutyRateDisplay = dutyRateCount > 0
+                        ? dutyRateSum.divide(BigDecimal.valueOf(dutyRateCount), 4, RoundingMode.HALF_UP)
+                        : new BigDecimal("0.13");
 
                 // 그룹 소계
                 BigDecimal grpSubtotal = grpShipping.add(grpPort).add(grpCustoms).add(grpHsCode)
@@ -600,7 +746,7 @@ public class QuoteRestController {
                         .hsCodeFee(grpHsCode)
                         .insuranceFee(grpInsurance)
                         .cifAmount(grpCif)
-                        .dutyRate(avgDutyRate)
+                        .dutyRate(avgDutyRateDisplay)
                         .dutyAmount(grpDuty)
                         .vatAmount(grpVat)
                         .subtotal(grpSubtotal)
@@ -841,6 +987,17 @@ public class QuoteRestController {
         private Long stiId;         // 선택한 검사 ID
         private BigDecimal grandTotal; // 최종 금액
         private DraftFeeInfo feeInfo;  // 비용 정보
+        private List<ManualShipFee> manualShipFees; // admin 수동 운임 오버라이드
+
+        @Getter
+        @NoArgsConstructor
+        public static class ManualShipFee {
+            private Integer factoryIndex;
+            private BigDecimal shippingFee;
+            private BigDecimal portFee;
+            private BigDecimal customsFee;
+            private BigDecimal hsCodeFee;
+        }
 
         @Getter
         @NoArgsConstructor

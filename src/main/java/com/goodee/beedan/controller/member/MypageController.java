@@ -4,6 +4,7 @@ import com.goodee.beedan.dto.buyer.BuyerGradePolicyResponse;
 import com.goodee.beedan.dto.member.PasswordChangeDto;
 import com.goodee.beedan.dto.member.PhoneVerificationDto;
 import com.goodee.beedan.dto.member.mypage.UpdateMemberRequest;
+import com.goodee.beedan.dto.member.sns.SnsIntegrateResponse;
 import com.goodee.beedan.entity.Buyer;
 import com.goodee.beedan.entity.BuyerGradePolicy;
 import com.goodee.beedan.entity.Member;
@@ -223,26 +224,11 @@ public class MypageController {
 
     @GetMapping("/sns")
     public String getSns(Model model,
-                                  Principal principal) {
+                         Principal principal) {
         Member member = memberService.getMemberByUsername(principal.getName());
-        model.addAttribute("member", member);
+        SnsIntegrateResponse snsIntegrateResponse = snsIntegrateService.getSnsIntegrateResponse(member);
+        model.addAttribute("snsIntegrateResponse", snsIntegrateResponse);
         return "/member/mypage/mypage-sns";
-    }
-
-
-
-    @GetMapping("/sns/integrate")
-    public String getSnsIntegrate(Model model,
-                                  Principal principal) {
-        Member member = memberService.getMemberByUsername(principal.getName());
-        model.addAttribute("member", member);
-
-        if (!snsIntegrateService.isSnsIntegrate(member)) {
-            log.info("{}의 연동정보가 이미 존재합니다.", member.getMemNm());
-            return "redirect:/mypage/sns";
-        }
-
-        return "/member/mypage/mypage-sns-integrate";
     }
 
 

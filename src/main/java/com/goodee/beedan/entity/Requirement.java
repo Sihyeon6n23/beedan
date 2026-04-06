@@ -4,6 +4,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -21,10 +22,14 @@ public class Requirement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long reqId;
+    public Long memId;
+    public String memNm;
+    public String memBizTtl;
     public String reqTtl;
     public String reqCon;
     public String reqRef;
-    public String reqPr;
+    public BigDecimal reqPr;
+    public String reqCur;
     public String reqStt;
     public Boolean reqRepYn;
     public Boolean reqPerYn;
@@ -32,8 +37,6 @@ public class Requirement {
     public LocalDateTime reqUpdDt;
     public Boolean reqDelYn;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mem_id")
-    public Member member;
+
 
 }

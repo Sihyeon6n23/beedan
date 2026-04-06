@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 // 문의 목록 검색 조건용
 public class InquiryBoardSearchDto {
-    private String keyword;         // 검색용 키워드
-    private InquiryStatus brdInqStt;          // 문의 상태
+    private String keyword;             // 검색용 키워드
+    private InquiryStatus brdInqStt;    // 문의 상태
     private String memBizTtl;
-    private Boolean myAnsweredOnly; // 내 답글 여부
+    private Boolean myAnsweredOnly;     // 내 답글 여부
     private int page;
     private int size;
 }
