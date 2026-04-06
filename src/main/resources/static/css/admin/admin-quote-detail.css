@@ -97,6 +97,11 @@ main > div {
     color: #c53030;
 }
 
+.aqd-badge--paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 .aqd-header__title {
     display: flex;
     flex-direction: column;
@@ -345,12 +350,20 @@ main > div {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    transition: opacity 0.15s;
 }
+.aqd-cost-summary:hover { opacity: 0.85; }
 
 .aqd-cost-summary__heading {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+.aqd-cost-summary__hint {
+    font-size: 11px;
+    color: var(--aqd-text-light);
+    font-weight: 500;
 }
 
 .aqd-cost-summary__title {
@@ -371,8 +384,8 @@ main > div {
 
 .aqd-cost-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
 }
 
 .aqd-cost-card {
@@ -681,4 +694,33 @@ main > div {
     .aqd-final__amount {
         font-size: 32px;
     }
+}
+
+/* ============================================================
+   Notice Banner (공통)
+   ============================================================ */
+.aqd-notice-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fafafa;
+    border-left: 3px solid #a0a0a0;
+    padding: 20px 24px;
+}
+.aqd-notice-banner svg { flex-shrink: 0; margin-top: 2px; }
+.aqd-notice-text { display: flex; flex-direction: column; gap: 6px; }
+.aqd-notice-text p {
+    font-size: 13px;
+    color: #737373;
+    line-height: 20px;
+    margin: 0;
+}
+
+/* ============================================================
+   Quick Actions (PDF 등)
+   ============================================================ */
+.aqd-quick-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
 }
