@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN PAGE', 'Notice Management', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 공지사항 작성</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notice','notice-write')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+
+    <section class="inquiry-page inquiry-write-page">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">New Notice</span>
+                <h2 class="inquiry-title">공지사항 작성</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-write-panel">
+            <form class="inquiry-write-form"
+                  id="inquiry-write-form"
+                  th:action="@{/notice/write}"
+                  th:object="${boardCreateDto}"
+                  method="post"
+                  enctype="multipart/form-data">
+                <div class="inquiry-write-form__stack">
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdTtl">공지 제목 <em>*</em></label>
+                        <input class="inquiry-write-field__input"
+                               type="text"
+                               id="brdTtl"
+                               th:field="*{brdTtl}"
+                               maxlength="100"
+                               required>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdCon">공지 내용 <em>*</em></label>
+                        <textarea id="brdCon"
+                                  class="inquiry-write-field__editor"
+                                  th:field="*{brdCon}"></textarea>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label">첨부 파일</label>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${fileList}, isMultiple=true)}"></div>
+                    </div>
+                </div>
+
+                <div class="inquiry-write-form__actions">
+                    <a class="inquiry-outline-button" th:href="@{/notice/list}">취소</a>
+                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary">등록</button>
+                </div>
+            </form>
+        </section>
+    </section>
+    <script>
+        const form = document.getElementById('inquiry-write-form');
+        if (form && window.tinymce) {
+            tinymce.init({
+                selector: '#brdCon',
+                height: 420,
+                menubar: false,
+                resize: false,
+                plugins: 'lists link table wordcount preview',
+                toolbar:
+                    'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+                    'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+                block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
+                font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
+                placeholder: '공지사항 내용을 입력해 주세요.',
+                content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
+                branding: false,
+                promotion: false,
+                license_key: 'gpl'
+            });
+
+            form.addEventListener('submit', () => {
+                tinymce.triggerSave();
+            });
+        }
+    </script>
+
+</th:block>
+</html>

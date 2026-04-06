@@ -2,6 +2,7 @@ package com.goodee.beedan.service.file;
 
 import com.goodee.beedan.dto.file.FileDownloadDto;
 import com.goodee.beedan.dto.file.FileDto;
+import com.goodee.beedan.dto.file.FileListDto;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.FileUpload;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -37,7 +40,8 @@ import java.util.stream.Collectors;
 public class FileService {
     private final FileRepository fileRepository;
     private final Tika tika;
-    private final String uploadPath = "D:/beedanFileUplaod";
+    @Value("${file.upload.path}")
+    private String uploadPath;
     private final SecurityService securityService;
 
     /*
@@ -53,7 +57,8 @@ public class FileService {
      */
 
     // 파일 저장 요청
-    public void saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+    public List<FileListDto> saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+        List<FileListDto> fileListDtoList = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
 
@@ -73,6 +78,15 @@ public class FileService {
 
             uploadToDisk(file, uuid, ext);
 
+            // FileListDto 생성 및 추가
+            fileListDtoList.add(FileListDto.builder()
+                    .uuid(uuid)
+                    .originalName(originalName)
+                    .fileExt(ext)
+                    .fileSize(file.getSize())
+                    .filePat(uploadPath + "\\" + datePath)
+                    .build());
+
             FileUpload fileUpload = FileUpload.builder()
                     .fileNm(originalName)
                     .fileUuid(uuid)
@@ -88,6 +102,7 @@ public class FileService {
 
             fileRepository.save(fileUpload);
         }
+        return fileListDtoList;
     }
     // 물리파일 다운로드 서비스
     public FileDownloadDto prepareDownload(Long fileId) {
