@@ -264,3 +264,33 @@
 .flex { display: flex; }
 .gap-3 { gap: 12px; }
 .items-end { align-items: flex-end; }
+
+#unreadBadge {
+    transition: all 0.2s ease-in-out;
+    pointer-events: none; /* 아이콘 클릭에 방해되지 않도록 */
+}
+
+/* 알림 드롭다운 컨테이너 또는 정보 박스에 적용 */
+.notification-info-box {
+    max-height: 400px;    /* 원하는 최대 높이 설정 */
+    overflow-y: auto;     /* 세로 내용이 넘칠 때만 스크롤바 생성 */
+    overflow-x: hidden;   /* 가로 스크롤은 방지 */
+}
+
+/* (선택 사항) 스크롤바 디자인 커스텀 - 브라우저 기본보다 훨씬 깔끔합니다 */
+.notification-info-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-info-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-info-box::-webkit-scrollbar-thumb {
+    background: var(--pub-bg-sub, #e5e7eb); /* 배경색보다 약간 진한 색 */
+    border-radius: 10px;
+}
+
+.notification-info-box::-webkit-scrollbar-thumb:hover {
+    background: var(--pub-text-muted, #9ca3af);
+}

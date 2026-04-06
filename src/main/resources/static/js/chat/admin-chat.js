@@ -15,8 +15,12 @@
   var pendingRoomId = "";
   var detailRoomId = detailPage ? detailPage.dataset.roomId : "";
   var detailAdminName = detailPage ? detailPage.dataset.adminName : "담당자";
+  var detailMemberBizName = detailPage ? detailPage.dataset.memberBizName : "상호명 미등록";
   var detailMemberName = detailPage ? detailPage.dataset.memberName : "이름 미등록";
   var detailCanWrite = detailPage ? detailPage.dataset.canWrite === "true" : false;
+  var stompClient = null;
+  var roomSubscription = null;
+  var wsConnected = false;
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -122,12 +126,6 @@
       hour12: false
     });
 
-    var adminName = document.createElement("strong");
-    adminName.textContent = detailAdminName || "담당자";
-
-    meta.appendChild(time);
-    meta.appendChild(adminName);
-
     var bubble = document.createElement("div");
     bubble.className = "admin-chat-detail-message__bubble admin-chat-detail-message__bubble--admin";
     bubble.textContent = message.chMsCon;
@@ -145,6 +143,66 @@
       adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
     }
   }
+
+  // 메시지를 받았을 때 메시지 append
+  function appendClientMessage(message) {
+      if (!adminMessageList || !message) return;
+
+      var emptyMessage = adminMessageList.querySelector(".admin-chat-room__system--detail");
+      if (emptyMessage && emptyMessage.textContent.indexOf("메시지") !== -1) {
+        emptyMessage.remove();
+      }
+
+      var article = document.createElement("article");
+      article.className = "admin-chat-detail-message admin-chat-detail-message--client";
+
+      var avatar = document.createElement("div");
+      avatar.className = "admin-chat-detail-message__avatar";
+
+      var avatarIcon = document.createElement("span");
+      avatarIcon.className = "material-symbols-outlined";
+      avatarIcon.textContent = "corporate_fare";
+
+      avatar.appendChild(avatarIcon);
+
+      var content = document.createElement("div");
+      content.className = "admin-chat-detail-message__content";
+
+      var meta = document.createElement("div");
+      meta.className = "admin-chat-detail-message__meta";
+
+      var sender = document.createElement("strong");
+      sender.textContent = (detailMemberBizName || "상호명 미등록") + " · " + (detailMemberName || "이름 미등록");
+
+      var time = document.createElement("span");
+      var createdAt = message.chMsCreDt ? new Date(message.chMsCreDt) : new Date();
+      time.textContent = createdAt.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+
+      meta.appendChild(sender);
+
+      var bubble = document.createElement("div");
+      bubble.className = "admin-chat-detail-message__bubble";
+      bubble.textContent = message.chMsCon;
+
+      var messageTime = document.createElement("span");
+      messageTime.className = "admin-chat-detail-message__time";
+      messageTime.textContent = time.textContent;
+
+      content.appendChild(meta);
+      content.appendChild(bubble);
+      content.appendChild(messageTime);
+      article.appendChild(avatar);
+      article.appendChild(content);
+      adminMessageList.appendChild(article);
+
+      if (adminMessageScrollBody) {
+        adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
+      }
+    }
 
   modalTriggers.forEach(function (trigger) {
     trigger.addEventListener("click", function () {
@@ -208,7 +266,7 @@
     });
   }
 
-  // 관리자 메시지 전송 비동기 요청
+  // 관리자가 입력한 메시지를 전송 비동기 요청(서버에 저장 요청)
   function sendAdminChatMessage() {
     if (!detailRoomId || !adminMessageInput || !detailCanWrite) {
       return;
@@ -220,6 +278,7 @@
       return;
     }
 
+    // CSRF 헤더 포함해서 POST /api/admin/chat/rooms/{roomId}/messages 요청
     var headers = getCsrfHeaders();
     headers["Content-Type"] = "application/json";
 
@@ -237,11 +296,57 @@
       return response.json();
     }).then(function (message) {
       adminMessageInput.value = "";
-      appendAdminMessage(message);
+//      appendAdminMessage(message); // HTTP 기반 일 때 사용(WebSocket 없을때)
       adminMessageInput.focus();
     }).catch(function (error) {
       console.error(error);
     });
+  }
+
+  // 관리자가 특정 채팅방을 실시간으로 구독(관리자 실시간 수신용 + 화면 반영)
+  function connectAdminChatSocket() {
+    if (!detailPage || !detailRoomId || !window.StompJs) {
+        return;
+    }
+
+    // WebSocket/STOMP 클라이언트 생성
+    stompClient = new StompJs.Client({
+        brokerURL: "ws://" + window.location.host + "/ws",
+        reconnectDelay: 5000,
+        debug: function () {}
+    });
+
+    stompClient.onConnect = function () {
+        wsConnected = true;
+
+        if (roomSubscription) {
+            roomSubscription.unsubscribe();
+        }
+
+        // 연결 성공 시 해당 채팅방 구독
+        roomSubscription = stompClient.subscribe("/sub/chat/rooms/" + detailRoomId, function (frame) {
+            var message = JSON.parse(frame.body);
+
+            // 관리자 메시지면
+            if (message.chMsSenTy === "ADMIN") {
+                appendAdminMessage(message);
+                return;
+            }
+
+            // 사용자 메시지면
+            appendClientMessage(message);
+        });
+    };
+
+    stompClient.onWebSocketClose = function () {
+        wsConnected = false;
+    };
+
+    stompClient.onStompError = function (frame) {
+        console.error(frame);
+    };
+
+    stompClient.activate(); // 실제 연결
   }
 
   if (assignConfirmButton) {
@@ -274,6 +379,7 @@
     });
   }
 
+  // 상세 진입 시
   if (detailPage) {
     setChatState(detailPage.dataset.chatStatus || "ONGOING");
     if (adminMessageScrollBody) {
@@ -282,5 +388,7 @@
     if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING" && detailCanWrite) {
       adminMessageInput.focus();
     }
+
+    connectAdminChatSocket(); // 소켓 연결
   }
 });

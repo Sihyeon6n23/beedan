@@ -15,10 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
-@Builder
-@RequiredArgsConstructor
-@AllArgsConstructor
+@Data @Builder
+@RequiredArgsConstructor @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class Shipment {
     @Id

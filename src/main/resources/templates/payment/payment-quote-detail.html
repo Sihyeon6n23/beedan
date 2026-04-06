@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,7 +25,7 @@
                             <circle cx="10" cy="10" r="9" stroke="#4d4732" stroke-width="1.5"/>
                             <path d="M6.5 10l2.5 2.5 4.5-4.5" stroke="#4d4732" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <span>주문번호 #BD-2024-00195 확정</span>
+                        <span th:text="'주문번호 #' + ${payment != null && payment.pyPgNm != null ? payment.pyPgNm : quoteBase.quCd} + ' 확정'">주문번호 확정</span>
                     </div>
                 </div>
                 <div class="hero-right">
@@ -53,58 +53,39 @@
                             <div class="section-divider"></div>
                         </div>
                         <div class="inventory-list">
-
-                            <div class="inventory-item">
-                                <div class="inventory-thumb">
-                                    <img src="https://www.figma.com/api/mcp/asset/e1870e23-6004-4ae2-83b0-1c7c8b325abe" alt="에센셜 헤비웨이트 티셔츠" />
-                                </div>
+                            <div class="inventory-item" th:each="detail : ${details}">
                                 <div class="inventory-info">
-                                    <p class="inventory-name">에센셜 헤비웨이트 티셔츠</p>
-                                    <p class="inventory-sku">SKU: BD-WHT-01 · 화이트 · 50개 단위</p>
+                                    <p class="inventory-name" th:text="${detail.stNm}">상품명</p>
+                                    <p class="inventory-sku"
+                                       th:text="'수량: ' + ${detail.quDtQn} + '개' + (detail.unGNm != null ? ' · ' + detail.unGNm : '')">수량</p>
                                 </div>
                                 <div class="inventory-price">
-                                    <p class="inventory-amount">₩1,822,500</p>
-                                    <p class="inventory-qty">수량: 2박스</p>
+                                    <p class="inventory-amount"
+                                       th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</p>
                                 </div>
                             </div>
-
-                            <div class="inventory-item">
-                                <div class="inventory-thumb">
-                                    <img src="https://www.figma.com/api/mcp/asset/9273bbc3-056e-48b6-b7ee-621b2f53ceff" alt="스트럭처드 프렌치테리 후드티" />
-                                </div>
-                                <div class="inventory-info">
-                                    <p class="inventory-name">스트럭처드 프렌치테리 후드티</p>
-                                    <p class="inventory-sku">SKU: BD-BLK-04 · 오닉스 · 25개 단위</p>
-                                </div>
-                                <div class="inventory-price">
-                                    <p class="inventory-amount">₩3,060,750</p>
-                                    <p class="inventory-qty">수량: 1박스</p>
-                                </div>
-                            </div>
-
                         </div>
                     </section>
 
                     <!-- 배송지 -->
-                    <section class="section">
+                    <section class="section" th:if="${details != null and !details.isEmpty() and details[0].quDtRcAdr != null}">
                         <div class="section-heading">
                             <span class="section-label">배송지</span>
                             <div class="section-divider"></div>
                         </div>
                         <div class="info-card">
                             <div class="info-card-row">
-                  <span class="info-icon">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5z" stroke="#a8a29e" stroke-width="1.3" stroke-linejoin="round"/>
-                      <circle cx="8" cy="6" r="1.5" stroke="#a8a29e" stroke-width="1.3"/>
-                    </svg>
-                  </span>
+                                <span class="info-icon">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5z" stroke="#a8a29e" stroke-width="1.3" stroke-linejoin="round"/>
+                                        <circle cx="8" cy="6" r="1.5" stroke="#a8a29e" stroke-width="1.3"/>
+                                    </svg>
+                                </span>
                                 <div class="info-block">
-                                    <p class="info-company">모던 로지스틱스 허브 주식회사</p>
-                                    <p class="info-line">담당: 구매조달팀</p>
-                                    <p class="info-line">서울특별시 강남구 테헤란로 88, 402호</p>
-                                    <p class="info-line">강남구, 서울 06142</p>
-                                    <p class="info-line">대한민국</p>
+                                    <p class="info-company" th:text="${member != null ? member.memBizTtl : ''}">상호명</p>
+                                    <p class="info-line" th:if="${details[0].quDtRcNm != null}" th:text="'수령인: ' + ${details[0].quDtRcNm}">수령인</p>
+                                    <p class="info-line" th:text="${details[0].quDtRcAdr}">주소</p>
+                                    <p class="info-line" th:if="${details[0].quDtRcPhn != null}" th:text="${details[0].quDtRcPhn}">연락처</p>
                                 </div>
                             </div>
                         </div>
@@ -126,9 +107,14 @@
                                     </svg>
                                 </div>
                                 <div class="info-block">
-                                    <p class="info-company">법인 비자카드 •••• 9921</p>
-                                    <p class="info-line">거래 ID: TXN_88192301</p>
-                                    <p class="info-line">승인일시: 2024년 10월 24일 09:16</p>
+                                    <p class="info-company"
+                                       th:text="${payment != null ? (payment.pyMt.name() == 'CARD' ? '법인카드 결제' : '무통장 입금 (가상계좌)') : '결제 정보'}">결제 정보</p>
+                                    <p class="info-line" th:if="${payment != null && payment.pyPgNm != null}"
+                                       th:text="'거래 ID: ' + ${payment.pyPgNm}">거래 ID</p>
+                                    <p class="info-line" th:if="${payment != null && payment.pyPdAt != null}"
+                                       th:text="'승인일시: ' + ${#temporals.format(payment.pyPdAt, 'yyyy년 MM월 dd일 HH:mm')}">승인일시</p>
+                                    <p class="info-line" th:if="${payment != null && payment.pyStt != null}"
+                                       th:text="'상태: ' + ${payment.pyStt.name() == 'PAID' ? '결제 완료' : payment.pyStt.name() == 'CANCELLED' ? '취소됨' : payment.pyStt.name()}">상태</p>
                                 </div>
                             </div>
                         </div>
@@ -143,30 +129,39 @@
                         <div class="summary-card">
                             <div class="summary-row">
                                 <span class="summary-label">상품 소계</span>
-                                <span class="summary-val">₩4,883,250</span>
+                                <span class="summary-val"
+                                      th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA') : '-'}">₩0</span>
                             </div>
-                            <div class="summary-row">
-                                <span class="summary-label">배송비 (B2B 우선배송)</span>
-                                <span class="summary-val">₩123,750</span>
+                            <div class="summary-row" th:if="${quoteInfo != null and quoteInfo.quInfoTtlShiFe != null}">
+                                <span class="summary-label">운송 비용</span>
+                                <span class="summary-val"
+                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA')}">₩0</span>
                             </div>
-                            <div class="summary-row">
-                                <span class="summary-label">부가세 (VAT 0% · B2B 거래)</span>
-                                <span class="summary-val">₩0</span>
+                            <div class="summary-row" th:if="${quoteInfo != null and quoteInfo.quInfoSrvFeAm != null}">
+                                <span class="summary-label">큐레이션 수수료</span>
+                                <span class="summary-val"
+                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA')}">₩0</span>
+                            </div>
+                            <div class="summary-row" th:if="${quoteInfo != null and quoteInfo.quInfoTax != null}">
+                                <span class="summary-label">관세 + 부가세</span>
+                                <span class="summary-val"
+                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoTax, 3, 'COMMA')}">₩0</span>
                             </div>
                             <div class="summary-total-row">
-                                <span class="summary-total-label">최종 합계</span>
-                                <span class="summary-total-val">₩5,007,000</span>
+                                <span class="summary-total-label">최종 결제 금액</span>
+                                <span class="summary-total-val"
+                                      th:text="${payment != null and payment.pyTtAm != null ? '₩' + #numbers.formatInteger(payment.pyTtAm, 3, 'COMMA') : (quoteInfo != null and quoteInfo.quInfoTp != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTp, 3, 'COMMA') : '-')}">₩0</span>
                             </div>
                         </div>
                     </section>
 
                     <!-- 뒤로 가기 -->
                     <div class="back-link-wrap">
-                        <a href="#" class="back-link">
+                        <a th:href="@{/quote/detail(quId=${quId})}" class="back-link">
                             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M7 5H3M3 5l2.5-2.5M3 5l2.5 2.5" stroke="#705d00" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            재고 대시보드로 돌아가기
+                            견적 상세로 돌아가기
                         </a>
                     </div>
 
@@ -192,7 +187,7 @@
                             </div>
                             <div class="download-btn-text">
                                 <span class="download-btn-title">세금계산서 다운로드</span>
-                                <span class="download-btn-sub">PDF · 공식 세금계산서</span>
+                                <span class="download-btn-sub">PDF</span>
                             </div>
                             <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -207,22 +202,7 @@
                             </div>
                             <div class="download-btn-text">
                                 <span class="download-btn-title">결제 영수증 다운로드</span>
-                                <span class="download-btn-sub">PDF · 거래 영수증</span>
-                            </div>
-                            <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
-                        <button class="download-btn">
-                            <div class="download-btn-icon">
-                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M9 2v10M5 9l4 4 4-4" stroke="#705d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M2 15h14" stroke="#705d00" stroke-width="1.5" stroke-linecap="round"/>
-                                </svg>
-                            </div>
-                            <div class="download-btn-text">
-                                <span class="download-btn-title">발주서 (P.O.) 다운로드</span>
-                                <span class="download-btn-sub">PDF · 공식 발주 확인서</span>
+                                <span class="download-btn-sub">PDF</span>
                             </div>
                             <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -237,27 +217,18 @@
                         <span class="aside-label">추가 작업</span>
                     </div>
                     <div class="action-list">
-                        <button class="action-btn action-btn--primary">
+                        <a th:href="@{/quote/detail(quId=${quId})}" class="action-btn action-btn--primary">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 4h12M2 8h8M2 12h5" stroke="#705e00" stroke-width="1.4" stroke-linecap="round"/>
                             </svg>
-                            발주 내역 확인하기
-                        </button>
-                        <button class="action-btn action-btn--secondary">
+                            견적 상세 확인
+                        </a>
+                        <a th:href="@{/quote/list}" class="action-btn action-btn--secondary">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M13 3H3a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1z" stroke="#4d4732" stroke-width="1.3"/>
-                                <path d="M2 6h12" stroke="#4d4732" stroke-width="1.3"/>
-                                <path d="M5 3V1M11 3V1" stroke="#4d4732" stroke-width="1.3" stroke-linecap="round"/>
+                                <path d="M2 4h12M2 8h8M2 12h5" stroke="#4d4732" stroke-width="1.4" stroke-linecap="round"/>
                             </svg>
-                            확인 이메일 재발송
-                        </button>
-                        <button class="action-btn action-btn--secondary">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 1C4.13 1 1 4.13 1 8s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z" stroke="#4d4732" stroke-width="1.3"/>
-                                <path d="M8 5v3l2 2" stroke="#4d4732" stroke-width="1.3" stroke-linecap="round"/>
-                            </svg>
-                            배송 현황 추적
-                        </button>
+                            견적 목록으로
+                        </a>
                     </div>
                 </div>
 

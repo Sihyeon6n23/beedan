@@ -147,6 +147,12 @@ public class QuoteShipFee {
                 .add(insurance);
     }
 
+    public void setDutyAndVat(BigDecimal dutyRate, BigDecimal duty, BigDecimal vat) {
+        this.qsfDtyR = dutyRate;
+        this.qsfDty = duty;
+        this.qsfVat = vat;
+    }
+
     public void calculateDutyAndVat(BigDecimal dutyRate){
         this.qsfDtyR = dutyRate;
         this.qsfDty = this.qsfCifAm

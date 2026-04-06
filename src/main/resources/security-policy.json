@@ -1,6 +1,6 @@
 {
   "fileUploadAllowSet" : null,
-  "is_login_failure_limit_enabled" : true,
+  "is_login_failure_limit_enabled" : false,
   "max_login_failure_count" : 1,
   "is_account_lock_enabled" : true,
   "account_lock_duration_minutes" : 20,

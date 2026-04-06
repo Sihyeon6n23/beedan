@@ -33,11 +33,18 @@
                 </th:block>
             </div>
 
-            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
-                <span class="material-symbols-outlined leading-none">notifications</span>
-                <span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center ...">
+                <span class="material-symbols-outlined">notifications</span>
+
+                <span id="unreadBadge"
+                      th:classappend="${unreadCount > 0} ? '' : 'hidden'"
+                      th:text="${unreadCount > 5 ? '5+' : unreadCount}"
+                      class="absolute -top-2 -right-2 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
+                </span>
+
                 <div th:replace="~{notification/notification :: notificationDropdown}"></div>
             </div>
+
 
             <div id="wishlistIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
                 <a th:href="@{/wishlist}" class="flex items-center">
