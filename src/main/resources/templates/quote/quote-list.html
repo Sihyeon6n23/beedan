@@ -70,11 +70,7 @@
                             <span th:if="${!q.quOpYn}" class="quote-row__unread"></span>
                             <span th:if="${q.quOpYn}" class="quote-row__unread quote-row__unread--empty"></span>
                             <div class="quote-row__text">
-                                <h2>
-                                    <span th:text="${q.quCd}">QU0000</span>
-                                    <small th:text="${q.itemCount + '개 품목'}">0개 품목</small>
-                                </h2>
-                                <p th:text="${q.firstItemName != null ? q.firstItemName : '상품 정보 없음'}">상품명</p>
+                                <h2 th:text="${q.quCd}">QU0000</h2>
                             </div>
                         </div>
                         <div class="quote-row__status">

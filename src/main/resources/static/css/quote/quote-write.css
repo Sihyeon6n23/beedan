@@ -1522,3 +1522,92 @@
         letter-spacing: -1px;
     }
 }
+
+/* ============================================================
+   Rewrite Reference
+   ============================================================ */
+.rewrite-ref {
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--color-text-muted);
+    letter-spacing: -0.2px;
+}
+
+/* ============================================================
+   Admin Locked Options (적하보험 · 품질검사 수정 불가)
+   ============================================================ */
+.quote-options-locked .quote-option-row {
+    opacity: 0.55;
+    pointer-events: none;
+}
+.quote-options-locked .quote-option-toggle {
+    pointer-events: auto;
+    opacity: 1;
+}
+.quote-options-lock-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: var(--color-surface, #f5f5f5);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+}
+
+/* ============================================================
+   Rewrite Reject Reason Section (거절 사유 입력)
+   ============================================================ */
+.rewrite-reject-section {
+    background: #fdf6f6;
+    border-left: 4px solid #8b3a3a;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+}
+.rewrite-reject-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.rewrite-reject-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: #8b3a3a;
+    letter-spacing: -0.3px;
+}
+.rewrite-reject-ref {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+.rewrite-reject-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 14px 16px;
+    border: 1px solid #d4b3b3;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--color-text-primary);
+    resize: vertical;
+    font-family: var(--font-body);
+}
+.rewrite-reject-textarea:focus {
+    outline: none;
+    border-color: #8b3a3a;
+}
+
+/* ============================================================
+   Previous Memo (이전 견적 메모, 읽기전용)
+   ============================================================ */
+.memo-prev {
+    margin-bottom: 20px;
+}
+.memo-textarea--readonly {
+    background: var(--color-surface, #f5f5f5);
+    color: var(--color-text-muted);
+    cursor: default;
+    opacity: 0.75;
+    resize: none;
+}

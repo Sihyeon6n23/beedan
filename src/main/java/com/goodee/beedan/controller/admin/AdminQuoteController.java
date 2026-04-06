@@ -14,6 +14,7 @@ import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.service.exchangeRate.ExchangeRateService;
 import com.goodee.beedan.service.quote.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -161,25 +162,6 @@ public class AdminQuoteController {
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
 
-            // 협상명
-            Negotiation ng = negotiationService.findById(qb.getNgId());
-            item.put("ngNm", ng.getNgNm());
-
-            // 회원 정보
-            Member member = memberRepository.findById(ng.getMemId()).orElse(null);
-            item.put("memNm", member != null ? member.getMemNm() : "-");
-            item.put("memBizTtl", member != null ? member.getMemBizTtl() : "-");
-
-            // 품목 정보
-            List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
-            item.put("itemCount", details != null ? details.size() : 0);
-            item.put("firstItemName", details != null && !details.isEmpty()
-                    ? details.get(0).getStNm() : null);
-
-            // 총 금액
-            QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
-            item.put("totalAmount", info != null ? info.getQuInfoTp() : null);
-
             quotes.add(item);
         }
 
@@ -189,7 +171,8 @@ public class AdminQuoteController {
     }
 
     @GetMapping("/quote/detail")
-    public String quoteDetail(@RequestParam Long quId, Model model) {
+    public String quoteDetail(@RequestParam Long quId, Model model,
+                              @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         if (quoteBase == null) return "redirect:/admin/quote/list";
 
@@ -206,6 +189,7 @@ public class AdminQuoteController {
             case APPROVED -> 3;
             case REJECTED -> 2;
             case EXPIRED -> 2;
+            case PAID -> 5;
         };
 
         // 표시용 부가 데이터
@@ -236,6 +220,33 @@ public class AdminQuoteController {
             }
         }
 
+        // 국제 운임 (관세/부가세 제외) + 관세/부가세 소계
+        BigDecimal intShipFeeOnly = BigDecimal.ZERO;
+        BigDecimal totalDutyVat = BigDecimal.ZERO;
+        for (QuoteShipFee sf : shipFees) {
+            BigDecimal sfShip = sf.getQsfSrAm() != null ? sf.getQsfSrAm() : BigDecimal.ZERO;
+            BigDecimal sfPort = sf.getQsfPrtAm() != null ? sf.getQsfPrtAm() : BigDecimal.ZERO;
+            BigDecimal sfCust = sf.getQsfCstAm() != null ? sf.getQsfCstAm() : BigDecimal.ZERO;
+            BigDecimal sfHs   = sf.getQsfHsCd() != null ? sf.getQsfHsCd() : BigDecimal.ZERO;
+            BigDecimal sfIns  = (sf.getQsfInsYn() != null && sf.getQsfInsYn() && sf.getQsfInsAm() != null)
+                    ? sf.getQsfInsAm() : BigDecimal.ZERO;
+            intShipFeeOnly = intShipFeeOnly.add(sfShip).add(sfPort).add(sfCust).add(sfHs).add(sfIns);
+
+            BigDecimal sfDuty = sf.getQsfDty() != null ? sf.getQsfDty() : BigDecimal.ZERO;
+            BigDecimal sfVat  = sf.getQsfVat() != null ? sf.getQsfVat() : BigDecimal.ZERO;
+            totalDutyVat = totalDutyVat.add(sfDuty).add(sfVat);
+        }
+        BigDecimal domesticFee = quoteInfo != null && quoteInfo.getQuInfoDomShiFe() != null
+                ? quoteInfo.getQuInfoDomShiFe() : BigDecimal.ZERO;
+        BigDecimal serviceFeeAm = quoteInfo != null && quoteInfo.getQuInfoSrvFeAm() != null
+                ? quoteInfo.getQuInfoSrvFeAm() : BigDecimal.ZERO;
+        BigDecimal calculatedTotal = itemTotalKrw.add(intShipFeeOnly).add(domesticFee)
+                .add(serviceFeeAm).add(totalDutyVat);
+
+        model.addAttribute("intShipFeeOnly", intShipFeeOnly);
+        model.addAttribute("totalDutyVat", totalDutyVat);
+        model.addAttribute("calculatedTotal", calculatedTotal);
+
         // 적용 등급
         String buyerGrade = "STANDARD";
         if (quoteInfo != null && quoteInfo.getBgpId() != null) {
@@ -243,17 +254,21 @@ public class AdminQuoteController {
                     .map(BuyerGradePolicy::getBgpGr).orElse("STANDARD");
         }
 
-        // 보험/검사 이름
+        // 보험/검사 이름 + 검사 금액
         String insuranceName = null;
         String inspectionName = null;
+        BigDecimal inspectionAmount = BigDecimal.ZERO;
         if (quoteInfo != null) {
             if (quoteInfo.getSiId() != null) {
                 insuranceName = shippingInsuranceRepository.findById(quoteInfo.getSiId())
                         .map(ShippingInsurance::getSiNm).orElse(null);
             }
             if (quoteInfo.getStiId() != null) {
-                inspectionName = stockInspectionRepository.findById(quoteInfo.getStiId())
-                        .map(StockInspection::getStiNm).orElse(null);
+                var inspection = stockInspectionRepository.findById(quoteInfo.getStiId()).orElse(null);
+                if (inspection != null) {
+                    inspectionName = inspection.getStiNm();
+                    inspectionAmount = inspection.getStiAm() != null ? inspection.getStiAm() : BigDecimal.ZERO;
+                }
             }
         }
 
@@ -270,11 +285,54 @@ public class AdminQuoteController {
         model.addAttribute("activeStep", activeStep);
         model.addAttribute("insuranceName", insuranceName);
         model.addAttribute("inspectionName", inspectionName);
+        model.addAttribute("inspectionAmount", inspectionAmount);
+        model.addAttribute("isAdmin", true);
+
+        // 현재 사용자가 이 견적의 작성자인지 (작성자면 액션 버튼 숨김)
+        boolean isSender = false;
+        if (userDetails != null) {
+            Long myId = userDetails.getMemberId();
+            isSender = myId.equals(quoteBase.getQuSid())
+                    || (quoteBase.getQuSid() == null && myId.equals(quoteBase.getQuRid()));
+        }
+        model.addAttribute("isSender", isSender);
+
         return "admin/quote/admin-quote-detail";
     }
 
     @GetMapping("/quote/write")
-    public String quoteWrite(@RequestParam Long quId, Model model) {
+    public String quoteWrite(@RequestParam(required = false) Long quId,
+                             @RequestParam(required = false) Long fromQuId,
+                             @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails writerDetails,
+                             Model model) {
+
+        // 재작성 진입: fromQuId → 기존 견적에서 새 견적 생성
+        Long sourceQuId = quId; // 데이터를 로드할 원본 quId
+        if (fromQuId != null) {
+            QuoteBase oldQuote = quoteBaseService.findById(fromQuId);
+            if (oldQuote == null) return "redirect:/admin/quote/list";
+
+            // 송신자 = admin (나), 수신자 = 상대방
+            Long myId = writerDetails != null ? writerDetails.getMemberId() : null;
+            Long receiverId = oldQuote.getQuSid() != null ? oldQuote.getQuSid() : oldQuote.getQuRid();
+            // 수신자가 나와 같으면 상대방을 찾아야 함
+            if (receiverId != null && receiverId.equals(myId)) {
+                receiverId = oldQuote.getQuRid() != null ? oldQuote.getQuRid() : oldQuote.getQuSid();
+            }
+            QuoteBase newQuote = quoteBaseService.create(
+                    new com.goodee.beedan.dto.quote.QuoteBaseRequest(
+                            oldQuote.getNgId(), myId, receiverId));
+
+            quId = newQuote.getQuId();
+            sourceQuId = fromQuId;
+            model.addAttribute("rejectedReason", oldQuote.getQuCon());
+            model.addAttribute("rewriteFromQuId", fromQuId);
+            model.addAttribute("rewriteFromQuCd", oldQuote.getQuCd());
+
+        }
+
+        if (quId == null) return "redirect:/admin/quote/list";
+
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         if (quoteBase == null) return "redirect:/admin/quote/list";
 
@@ -293,9 +351,9 @@ public class AdminQuoteController {
         UnitGroup defaultUnit = unitGroups.isEmpty() ? null : unitGroups.get(0);
         model.addAttribute("unitGroups", unitGroups);
 
-        // 견적 상세 복원
-        List<QuoteDetail> savedDetails = quoteDetailService.findAllByQuote(quId);
-        QuoteInfo savedInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
+        // 견적 상세 복원 (재작성 시 원본 견적에서 로드)
+        List<QuoteDetail> savedDetails = quoteDetailService.findAllByQuote(sourceQuId);
+        QuoteInfo savedInfo = quoteInfoRepository.findByQuId(sourceQuId).orElse(null);
 
         if (savedDetails != null && !savedDetails.isEmpty()) {
             LinkedHashMap<Integer, List<QuoteDetail>> groups = new LinkedHashMap<>();
@@ -324,6 +382,12 @@ public class AdminQuoteController {
             }
         }
 
+        // 기존 운임 데이터 로드 (임시저장 복원 / 재작성 모두)
+        List<QuoteShipFee> prevShipFees = quoteShipFeeService.findAllByQuote(sourceQuId);
+        if (prevShipFees != null && !prevShipFees.isEmpty()) {
+            model.addAttribute("prevShipFees", prevShipFees);
+        }
+
         // 부가 서비스
         model.addAttribute("insurances", shippingInsuranceRepository.findAllBySiYnTrue());
         model.addAttribute("inspections", stockInspectionRepository.findAllByStiYnTrue());
@@ -341,6 +405,7 @@ public class AdminQuoteController {
             model.addAttribute("defaultReceiver", defaultReceiver);
         }
 
-        return "admin/quote/admin-quote-write";
+        model.addAttribute("isAdmin", true);
+        return "quote/quote-write";
     }
 }

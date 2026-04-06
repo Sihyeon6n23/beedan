@@ -47,9 +47,6 @@
                 <thead>
                 <tr>
                     <th class="col-id">견적코드</th>
-                    <th class="col-member">회원명</th>
-                    <th class="col-negotiation">협상명</th>
-                    <th class="col-items">품목수</th>
                     <th class="col-status">상태</th>
                     <th class="col-date aq-sortable is-active" data-sort="quUpdDt" data-dir="desc">
                         최근 업데이트 <span class="aq-sort-icon">▼</span>
@@ -65,19 +62,13 @@
                         th:data-qu-upd-dt="${q.quUpdDt}"
                         th:data-qu-cre-dt="${q.quCreDt}"
                         th:data-status="${q.quStt}"
-                        th:data-search="${(q.quCd != null ? q.quCd : '') + ' ' + q.ngNm + ' ' + q.memNm + ' ' + q.memBizTtl}"
+                        th:data-search="${q.quCd != null ? q.quCd : ''}"
                         th:class="(${q.quStt == 'REJECTED' or q.quStt == 'EXPIRED'} ? 'aq-row--closed' : '') + ' ' + (${!q.quOpYn} ? 'aq-row--unread' : '')"
                         style="cursor:pointer">
                         <td class="col-id">
                             <span th:text="${q.quCd}">QU0000</span>
                             <span th:if="${!q.quOpYn}" class="aq-unread-dot"></span>
                         </td>
-                        <td class="col-member">
-                            <span class="member-name" th:text="${q.memNm}">회원명</span>
-                            <span class="member-company" th:text="${q.memBizTtl}">회사명</span>
-                        </td>
-                        <td class="col-negotiation" th:text="${q.ngNm}">협상명</td>
-                        <td class="col-items" th:text="${q.itemCount}">0</td>
                         <td class="col-status">
                             <span class="aq-badge"
                                   th:classappend="'aq-badge--' + ${q.quStt.toLowerCase()}"

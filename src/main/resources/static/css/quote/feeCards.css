@@ -608,3 +608,130 @@
     .modal-header, .modal-body { padding-left: 24px; padding-right: 24px; }
     .modal-row-val { width: 130px; }
 }
+
+/* ============================================================
+   공급처 입력 버튼 + 모달
+   ============================================================ */
+.btn-factory-input {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #8b3a3a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    margin-left: auto;
+    white-space: nowrap;
+}
+.btn-factory-input:hover { background: #6e2e2e; }
+.factory-input-desc {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+    line-height: 22px;
+}
+.factory-input-card {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: var(--color-surface, #fafafa);
+}
+.factory-input-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.factory-input-brand {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text-primary);
+}
+.factory-input-count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+.factory-input-products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.factory-input-product {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    background: #fff;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+.factory-input-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.factory-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 140px;
+}
+.factory-input-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.3px;
+}
+.factory-input-text,
+.factory-input-select {
+    padding: 8px 10px;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    background: #fff;
+}
+.factory-input-text:focus,
+.factory-input-select:focus {
+    outline: none;
+    border-color: var(--color-gold-dark, #8a7a00);
+}
+
+/* Admin 운임 수동 입력 */
+.admin-fee-input {
+    width: 120px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: right;
+    color: var(--color-text-primary);
+    background: #fff;
+}
+.admin-fee-input:focus {
+    outline: none;
+    border-color: var(--color-gold-dark, #8a7a00);
+}
+.modal-admin-apply {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+.modal-admin-apply .btn-confirm {
+    padding: 10px 28px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: #1a1c1c;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.modal-admin-apply .btn-confirm:hover {
+    background: #333;
+}

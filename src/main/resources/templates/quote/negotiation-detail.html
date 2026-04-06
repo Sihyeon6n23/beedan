@@ -113,11 +113,7 @@
                             <span th:if="${!q.quOpYn}" class="ngd-row__dot"></span>
                             <span th:if="${q.quOpYn}" class="ngd-row__dot ngd-row__dot--empty"></span>
                             <div class="ngd-row__text">
-                                <h3>
-                                    <span th:text="${q.quCd}">QU0000</span>
-                                    <small th:text="${q.itemCount + '개 품목'}">0개 품목</small>
-                                </h3>
-                                <p th:text="${q.firstItemName != null ? q.firstItemName : '상품 정보 없음'}">상품명</p>
+                                <h3 th:text="${q.quCd}">QU0000</h3>
                             </div>
                         </div>
                         <div class="ngd-row__status">
@@ -130,11 +126,6 @@
                         </div>
                         <div class="ngd-row__time">
                             <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2026.03.12</span>
-                        </div>
-                        <div class="ngd-row__amount">
-                            <span th:if="${q.totalAmount != null}"
-                                  th:text="${#numbers.formatInteger(q.totalAmount, 3, 'COMMA') + '원'}">0원</span>
-                            <span th:if="${q.totalAmount == null}" class="ngd-row__amount--pending">산출 중</span>
                         </div>
                     </a>
                 </th:block>

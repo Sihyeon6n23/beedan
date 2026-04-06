@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── estimate-fees 결과 보관 ─────────────────────
     var lastEstimateData = null;
+    window.lastEstimateData = null; // feeCard.js에서 접근용
     var lastItemTotalKrw = 0;
     var lastDomesticFee = 0;
     var lastSelectedInsurance = 0;
@@ -290,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
         feeDebounceTimer = setTimeout(doFetchEstimateFees, 400);
     }
 
+    window.doFetchEstimateFees = doFetchEstimateFees;
     function doFetchEstimateFees(returnPromise) {
         var estimateItems = [];
         var itemTotalKrw = 0;
@@ -367,6 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // estimate 결과 보관
             lastEstimateData = data;
+            window.lastEstimateData = data;
             lastItemTotalKrw = itemTotalKrw;
 
             // 부가 서비스 금액 갱신
@@ -408,15 +411,17 @@ document.addEventListener('DOMContentLoaded', function () {
             lastSelectedInspection = selectedInspection;
             lastShippingDiscountRate = parseFloat(data.shippingDiscountRate) || 0;
 
-            // 총 주문 명세 (부가 서비스 포함 + 등급 할인 적용)
+            // 총 주문 명세 (5개 카드의 합 = 최종 금액)
             var totalTax = (data.dutyAmount || 0) + (data.vatAmount || 0);
-            var logisticsVal = (data.logisticsTotal || 0) + selectedInsurance + domesticFee;
+            // 국제 운임 = logisticsTotal - 관세/부가세 (중복 방지)
+            var intShipOnly = (data.logisticsTotal || 0) - (data.dutyAmount || 0) - (data.vatAmount || 0);
+            var logisticsVal = intShipOnly + selectedInsurance + domesticFee;
             var sdRate = parseFloat(data.shippingDiscountRate) || 0;
             if (sdRate > 0 && logisticsVal > 0) {
                 logisticsVal = Math.round(logisticsVal * (1 - sdRate));
             }
             var procurementVal = (data.procurementTotal || 0) + selectedInspection;
-            var grandTotal = itemTotalKrw + logisticsVal + procurementVal;
+            var grandTotal = itemTotalKrw + logisticsVal + procurementVal + totalTax;
 
             el('os-item-total').textContent = '₩' + formatNumber(itemTotalKrw);
             el('os-logistics').textContent = fmt(logisticsVal);
@@ -573,18 +578,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (lastEstimateData) {
             var d = lastEstimateData;
             var sdRate = lastShippingDiscountRate;
-            var logisticsRaw = (d.logisticsTotal || 0) + lastSelectedInsurance + lastDomesticFee;
-            var logisticsDiscounted = sdRate > 0 ? Math.round(logisticsRaw * (1 - sdRate)) : logisticsRaw;
             var totalTax = (d.dutyAmount || 0) + (d.vatAmount || 0);
-            var discountedTotal = lastItemTotalKrw + logisticsDiscounted + (d.procurementTotal || 0) + lastSelectedInspection;
+            // 국제 운임 = logisticsTotal - 관세/부가세 (중복 방지)
+            var intShipFee = (d.logisticsTotal || 0) - totalTax;
+            var logisticsRaw = intShipFee + lastSelectedInsurance + lastDomesticFee;
+            var logisticsDiscounted = sdRate > 0 ? Math.round(logisticsRaw * (1 - sdRate)) : logisticsRaw;
+            var discountedTotal = lastItemTotalKrw + logisticsDiscounted + (d.procurementTotal || 0) + lastSelectedInspection + totalTax;
 
             feeInfo = {
-                serviceFee: d.serviceFee || 0,
+                serviceFee: d.standardServiceFee || d.serviceFee || 0,
                 serviceFeeRate: sdRate,
-                serviceFeeAmount: d.procurementTotal || 0,
+                serviceFeeAmount: d.serviceFee || 0,
                 domesticFee: lastDomesticFee,
                 domesticExtraFee: 0,
-                intShipFee: d.logisticsTotal || 0,
+                intShipFee: intShipFee,
                 domShipFee: lastDomesticFee,
                 totalShipFee: logisticsDiscounted,
                 totalTax: totalTax,
@@ -594,7 +601,26 @@ document.addEventListener('DOMContentLoaded', function () {
             };
         }
 
-        return { quId: quId, items: items, memo: memo, siId: selectedSiId, stiId: selectedStiId, grandTotal: grandTotal, feeInfo: feeInfo };
+        // admin 수동 운임 오버라이드
+        var manualShipFees = null;
+        if (window._adminFeeOverrides && Object.keys(window._adminFeeOverrides).length > 0 && lastEstimateData && lastEstimateData.factories) {
+            manualShipFees = [];
+            lastEstimateData.factories.forEach(function (f, idx) {
+                var ov = window._adminFeeOverrides[idx];
+                if (ov) {
+                    manualShipFees.push({
+                        factoryIndex: idx,
+                        shippingFee: ov.shippingFee != null ? ov.shippingFee : null,
+                        portFee: ov.portFee != null ? ov.portFee : null,
+                        customsFee: ov.customsFee != null ? ov.customsFee : null,
+                        hsCodeFee: ov.hsCodeFee != null ? ov.hsCodeFee : null
+                    });
+                }
+            });
+            if (manualShipFees.length === 0) manualShipFees = null;
+        }
+
+        return { quId: quId, items: items, memo: memo, siId: selectedSiId, stiId: selectedStiId, grandTotal: grandTotal, feeInfo: feeInfo, manualShipFees: manualShipFees };
     }
 
     function saveDraft() {
@@ -726,7 +752,8 @@ document.addEventListener('DOMContentLoaded', function () {
             document.body.style.overflow = '';
         }
 
-        document.getElementById('btnOpenSubmitModal').addEventListener('click', loadAndOpenModal);
+        var isAdmin = !!document.getElementById('js-is-admin');
+        document.getElementById('btnOpenSubmitModal').addEventListener('click', isAdmin ? adminDirectSubmit : loadAndOpenModal);
         document.getElementById('btnCloseSubmitModal').addEventListener('click', closeSubmitModal);
         document.getElementById('btnCancelSubmit').addEventListener('click', closeSubmitModal);
         overlay.addEventListener('click', function (e) {
@@ -738,20 +765,11 @@ document.addEventListener('DOMContentLoaded', function () {
             btnConfirm.disabled = !finalChk.checked;
         });
 
-        btnConfirm.addEventListener('click', function () {
-            if (!finalChk.checked) return;
-            // 체크 항목 수집 (필수 + 선택 모두)
-            var checks = {};
-            overlay.querySelectorAll('.chk-required, .chk-optional').forEach(function (c) {
-                if (c.dataset.id) checks[c.dataset.id] = c.checked;
-            });
+        // 공통 제출 실행 함수
+        function executeSubmit(checks, onError) {
             var draftData = collectDraftData();
             if (!draftData.quId) { alert('견적 ID가 없습니다.'); return; }
 
-            btnConfirm.disabled = true;
-            btnConfirm.textContent = '제출 중...';
-
-            // 0) estimate-fees 최신화 → 1) 데이터 저장 → 2) 상태 변경 + 체크 로그
             doFetchEstimateFees()
             .then(function () { return saveDraft(); })
             .then(function (draftRes) {
@@ -762,24 +780,65 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
                 return fetch('/api/quote/submit', {
                     method: 'POST', headers: headers,
-                    body: JSON.stringify({ quId: draftData.quId, checks: checks })
+                    body: JSON.stringify({
+                        quId: draftData.quId,
+                        fromQuId: (function() {
+                            var el = document.getElementById('js-rewrite-from');
+                            return el ? parseInt(el.dataset.fromQuId) || null : null;
+                        })(),
+                        rejectReason: (function() {
+                            var el = document.getElementById('rejectReasonMemo');
+                            return el ? el.value.trim() || null : null;
+                        })(),
+                        checks: checks
+                    })
                 }).then(function (res) { return res.json(); });
             })
             .then(function (data) {
                 if (data.status === 'ok' && data.redirectUrl) {
-                    window.location.href = data.redirectUrl;
+                    var url = data.redirectUrl;
+                    if (isAdmin && url.startsWith('/quote/')) {
+                        url = '/admin' + url;
+                    }
+                    window.location.href = url;
                 } else {
                     alert('제출 실패: ' + (data.message || ''));
-                    btnConfirm.disabled = false;
-                    btnConfirm.textContent = '제출하기';
+                    if (onError) onError();
                 }
             })
             .catch(function (e) {
                 alert('제출 실패: ' + e.message);
+                if (onError) onError();
+            });
+        }
+
+        // 사용자: 모달 체크 후 제출
+        btnConfirm.addEventListener('click', function () {
+            if (!finalChk.checked) return;
+            var checks = {};
+            overlay.querySelectorAll('.chk-required, .chk-optional').forEach(function (c) {
+                if (c.dataset.id) checks[c.dataset.id] = c.checked;
+            });
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = '제출 중...';
+            executeSubmit(checks, function () {
                 btnConfirm.disabled = false;
                 btnConfirm.textContent = '제출하기';
             });
         });
+
+        // 관리자: 모달 없이 직접 제출
+        function adminDirectSubmit() {
+            var submitBtn = document.getElementById('btnOpenSubmitModal');
+            if (submitBtn.disabled) return;
+            submitBtn.disabled = true;
+            var origText = submitBtn.textContent;
+            submitBtn.textContent = '제출 중...';
+            executeSubmit({}, function () {
+                submitBtn.disabled = false;
+                submitBtn.textContent = origText;
+            });
+        }
     })();
 
     // ── 배송지 모달 ──────────────────────────────────

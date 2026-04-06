@@ -69,6 +69,10 @@ public class QuoteBase {
         this.quStt = QuoteStatus.EXPIRED;
     }
 
+    public void paid() {
+        this.quStt = QuoteStatus.PAID;
+    }
+
     public void adminOpened() {
         this.quAdOpYn = true;
     }
@@ -82,7 +86,8 @@ public class QuoteBase {
         return LocalDateTime.now().isAfter(this.quExpDt);
     }
     public boolean isEditable() {
-        return QuoteStatus.TEMP_SAVE.equals(this.quStt);
+        return QuoteStatus.TEMP_SAVE.equals(this.quStt)
+                || QuoteStatus.REJECTED.equals(this.quStt);
     }
 
 
