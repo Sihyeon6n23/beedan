@@ -27,17 +27,6 @@ public class AdminChatController {
         @RequestParam(defaultValue = "false") Boolean myAssignedOnly,
         @RequestParam(defaultValue = "0") int page,
         @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) {
-            return "redirect:/auth/signin";
-        }
-
-        // 임시 접근 방어 로직 (추후 수정 필요)
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN")
-                        || authority.getAuthority().equals("ROLE_ROOT"));
-        if (!isAdmin) {
-            return "redirect:/";
-        }
 
         AdminChatRoomSearchDto searchDto = AdminChatRoomSearchDto.builder()
                 .status(status)

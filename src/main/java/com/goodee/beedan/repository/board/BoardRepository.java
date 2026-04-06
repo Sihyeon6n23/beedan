@@ -68,7 +68,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             WHEN b.brdInqStt = 'ANSWERED' THEN 2
             ELSE 3
           END,
-          b.brdCreDt DESC
+          b.brdUpdDt DESC
     """)
     Page<Board> findAdminInquiryBoards(
         @Param("brdTy") BoardType brdTy,
@@ -100,7 +100,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             WHEN b.brdInqStt = 'ANSWERED' THEN 2
           ELSE 3
         END,
-        b.brdCreDt DESC
+        b.brdUpdDt DESC
     """)
     Page<Board> findInquiryBoardsAnsweredByAdmin(
         @Param("brdTy") BoardType brdTy,

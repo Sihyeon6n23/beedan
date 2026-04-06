@@ -794,6 +794,14 @@
   box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.12);
 }
 
+.inquiry-write-field__error {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #d64545;
+  font-weight: 600;
+}
+
 .inquiry-write-field__editor {
   min-height: 24rem;
 }
