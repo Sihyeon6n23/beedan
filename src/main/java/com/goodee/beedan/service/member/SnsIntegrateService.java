@@ -23,7 +23,7 @@ import java.util.Optional;
 public class SnsIntegrateService {
     private final SnsIntegrateRepository snsIntegrateRepository;
     private final KakaoService kakaoService;
-    private final Map<String, SnsUnlinkService> unlinkServices;
+    private final Map<String, SnsUnlinkServices> unlinkServices;
 
     public SnsIntegrateResponse getSnsIntegrateResponse(Member member) {
         return snsIntegrateRepository.findBySnsCanYnFalseAndMember(member)
@@ -64,7 +64,7 @@ public class SnsIntegrateService {
     public SnsDisconnectRequest getSnsDisconnectRequest(Member member) {
         return snsIntegrateRepository.findBySnsCanYnFalseAndMember(member)
                 .map(sns -> SnsDisconnectRequest.builder()
-                        .snsTp(sns.getSnsTp())
+                        .snsTp(sns.getSnsTp().toString())
                         .snsSeNo(sns.getSnsSeNo())
                         .member(member)
                         .build())
@@ -72,19 +72,25 @@ public class SnsIntegrateService {
     }
 
     public Mono<String> disconnect(SnsDisconnectRequest snsDisconnectRequest) {
-        SnsUnlinkService unlinkService = Optional.ofNullable(unlinkServices.get(snsDisconnectRequest.getSnsTp()))
-                        .orElseThrow(() -> new EntityNotFoundException("지원하지 않는 SNS 타입입니다."));
+        log.info("현재 주입된 SNS 서비스 목록: {}", unlinkServices.keySet());
+        log.info("요청된 SNS 타입: [{}]", snsDisconnectRequest.getSnsTp());
+
+        SnsUnlinkServices unlinkService = Optional.ofNullable(unlinkServices.get(snsDisconnectRequest.getSnsTp().toString()))
+                .orElseThrow(() -> new EntityNotFoundException("지원하지 않는 SNS 타입입니다: " + snsDisconnectRequest.getSnsTp()));
 
         return unlinkService.unlink(snsDisconnectRequest)
                 .flatMap(resultSeNo -> {
-                    if (snsDisconnectRequest.getSnsSeNo().equals(resultSeNo)) {
+                    log.info("getSnsSeNo{}", snsDisconnectRequest.getSnsSeNo());
+                    log.info("resultSeNo{}", resultSeNo);
+                    if (resultSeNo.contains(snsDisconnectRequest.getSnsSeNo())) {
                         SnsIntegrate sns = snsIntegrateRepository.findBySnsCanYnFalseAndMember(snsDisconnectRequest.getMember())
                                 .orElseThrow(() -> new EntityNotFoundException("인증 정보를 찾을 수 없습니다."));
 
                         sns.setSnsCanYn(true);
+                        snsIntegrateRepository.save(sns);
                         return Mono.just("SNS 연동을 해제했습니다.");
                     } else {
-                        return Mono.error(new RuntimeException("SNS 연동을 실패했습니다."));
+                        return Mono.error(new RuntimeException("SNS 연동 해제를 실패했습니다."));
                     }
                 });
     }

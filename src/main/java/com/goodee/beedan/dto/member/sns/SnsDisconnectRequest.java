@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class SnsDisconnectRequest {
     // SNS 타입과 시리얼번호, 어떤 멤버가 연결해제하려고 하는지
-    private SnsType snsTp;
+    private String snsTp;
     private String snsSeNo;
     private Member member;
 }

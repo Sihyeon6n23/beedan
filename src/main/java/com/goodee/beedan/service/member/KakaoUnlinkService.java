@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 @Service("KAKAO")
 @RequiredArgsConstructor
 @Slf4j
-public class KakaoUnlinkService implements SnsUnlinkService{
+public class KakaoUnlinkService implements SnsUnlinkServices {
     @Qualifier("kakaoApiClient")
     private final WebClient webClient;
 
