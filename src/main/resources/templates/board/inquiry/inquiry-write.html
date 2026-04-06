@@ -39,8 +39,8 @@
                                type="text"
                                id="brdTtl"
                                th:field="*{brdTtl}"
-                               maxlength="100"
-                               required>
+                               maxlength="100">
+                        <p class="inquiry-write-field__error is-hidden" data-inquiry-title-error>문의 제목을 입력해 주세요.</p>
                     </div>
 
                     <div class="inquiry-write-field">
@@ -48,6 +48,7 @@
                         <textarea id="brdCon"
                                   class="inquiry-write-field__editor"
                                    th:field="*{brdCon}"></textarea>
+                        <p class="inquiry-write-field__error is-hidden" data-inquiry-content-error>문의 내용을 입력해 주세요.</p>
                     </div>
 
                     <div class="inquiry-write-field">

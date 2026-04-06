@@ -127,4 +127,10 @@ public class Board {
         this.brdCanRe = cancelReason;
     }
 
+    // 답변 내용 수정 후 목록 순서 갱신용
+    public void touch(Long updMemId) {
+        this.brdUpdMemId = updMemId;
+        this.brdUpdDt = LocalDateTime.now();
+    }
+
 }

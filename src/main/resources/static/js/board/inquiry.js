@@ -129,6 +129,67 @@
       return;
     }
 
+    const titleInput = form.querySelector('#brdTtl');
+    const contentTextarea = form.querySelector('#brdCon');
+    const titleError = form.querySelector('[data-inquiry-title-error]');
+    const contentError = form.querySelector('[data-inquiry-content-error]');
+
+    const hideEditorErrors = () => {
+      titleError?.classList.add('is-hidden');
+      contentError?.classList.add('is-hidden');
+    };
+
+    const getEditorContent = () => {
+      if (window.tinymce) {
+        const editor = window.tinymce.get('brdCon');
+        if (editor) {
+          return editor.getContent({ format: 'text' }).trim();
+        }
+      }
+      return (contentTextarea?.value || '').trim();
+    };
+
+    const validateEditorForm = () => {
+      hideEditorErrors();
+
+      const titleValue = (titleInput?.value || '').trim();
+      const contentValue = getEditorContent();
+      let hasError = false;
+
+      if (!titleValue) {
+        titleError?.classList.remove('is-hidden');
+        titleInput?.focus();
+        hasError = true;
+      }
+
+      if (!contentValue) {
+        contentError?.classList.remove('is-hidden');
+        if (!hasError) {
+          const editor = window.tinymce?.get('brdCon');
+          if (editor) {
+            editor.focus();
+          } else {
+            contentTextarea?.focus();
+          }
+        }
+        hasError = true;
+      }
+
+      return !hasError;
+    };
+
+    titleInput?.addEventListener('input', () => {
+      if ((titleInput.value || '').trim()) {
+        titleError?.classList.add('is-hidden');
+      }
+    });
+
+    contentTextarea?.addEventListener('input', () => {
+      if ((contentTextarea.value || '').trim()) {
+        contentError?.classList.add('is-hidden');
+      }
+    });
+
     if (window.tinymce) {
       tinymce.init({
         selector: '#brdCon',
@@ -145,15 +206,25 @@
         content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
         branding: false,
         promotion: false,
-        license_key: 'gpl'
+        license_key: 'gpl',
+        setup: (editor) => {
+          editor.on('input change keyup setcontent', () => {
+            if (editor.getContent({ format: 'text' }).trim()) {
+              contentError?.classList.add('is-hidden');
+            }
+          });
+        }
       });
     }
 
     const uploadRoot = document.querySelector('[data-inquiry-upload]');
     if (!uploadRoot) {
-      form.addEventListener('submit', () => {
+      form.addEventListener('submit', (event) => {
         if (window.tinymce) {
           tinymce.triggerSave();
+        }
+        if (!validateEditorForm()) {
+          event.preventDefault();
         }
       });
       return;
@@ -234,11 +305,14 @@
       renderFileList();
     });
 
-    form.addEventListener('submit', () => {
+    form.addEventListener('submit', (event) => {
       if (window.tinymce) {
         tinymce.triggerSave();
       }
       syncFileInput();
+      if (!validateEditorForm()) {
+        event.preventDefault();
+      }
     });
   }
 
@@ -503,10 +577,9 @@
       <div class="inquiry-detail-reply__meta">
         <strong>BEEDAN</strong>
         <span>${String(reply.brdCreDt || '').slice(0, 10).replace(/-/g, '.')}</span>
-        
+        ${reply.edited ? '<span>(수정됨)</span>' : ''}
       </div>
     `;
-
     const renderReplyContent = (reply) => `${renderReplyMeta(reply)}<div class="inquiry-detail-reply__content">${reply.brdCon}</div>`;
 
     // 관리자 답변 작성/수정 인라인 에디터 처리
@@ -574,23 +647,35 @@
     };
 
     const ensureEditButton = (replyId) => {
-      let editButton = detailPage.querySelector('[data-inquiry-reply-edit-id]');
-      if (!editButton && replyCreateButton) {
-        editButton = document.createElement('button');
-        editButton.type = 'button';
-        editButton.className = 'inquiry-detail-action';
-        editButton.textContent = '답변 수정';
-        replyCreateButton.replaceWith(editButton);
+      const replyHeader = detailPage.querySelector('.inquiry-detail-reply__header');
+      if (!replyHeader) {
+        return null;
       }
+
+      let editButton = replyHeader.querySelector('[data-inquiry-reply-edit-id]');
+
       if (editButton) {
-        editButton.setAttribute('data-inquiry-reply-edit-id', replyId);
-        editButton.classList.remove('inquiry-detail-action--primary');
+        const freshEditButton = editButton.cloneNode(true);
+        editButton.replaceWith(freshEditButton);
+        editButton = freshEditButton;
+      } else {
+        const createButton = replyHeader.querySelector('[data-inquiry-reply-create-id]');
+        if (!createButton) {
+          return null;
+        }
+        editButton = createButton.cloneNode(true);
+        createButton.replaceWith(editButton);
       }
+
+      editButton.type = 'button';
+      editButton.className = 'inquiry-detail-action';
+      editButton.textContent = '답변 수정';
+      editButton.removeAttribute('data-inquiry-reply-create-id');
+      editButton.setAttribute('data-inquiry-reply-edit-id', replyId);
+      delete editButton.dataset.bound;
+
       return editButton;
     };
-
-    // 관리자 답변 수정 비동기 처리용 이벤트 재바인딩
-    // 첫 답변 등록 뒤 동적으로 생긴 수정 폼에도 같은 저장 로직을 다시 묶음
     const bindReplyEditFormHandlers = () => {
       const currentReplyDisplay = detailPage.querySelector('[data-reply-display]');
       const currentReplyEditForm = detailPage.querySelector('[data-reply-edit-form]');
