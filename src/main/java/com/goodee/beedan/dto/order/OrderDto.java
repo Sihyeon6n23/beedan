@@ -11,25 +11,22 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Data @Builder
+@NoArgsConstructor @AllArgsConstructor
 public class OrderDto {
     private Long ordBaseId;
     private String ordBaseRcvNm;
     private String ordBaseAdr;
     private String ordBaseAdrDt;
     private String ordBaseMsg;
-    private String ordBaseNo;
+    private String ordBaseNo; // 주문 번호 QU + 4글자
     private BigDecimal ordBaseTtAm;
-    @Enumerated(EnumType.STRING)
     private OrderStatus ordBaseStt;
     private LocalDateTime ordBaseCreDt;
 
+    private String ordSummaryNm;
     private List<ShipmentRequestDto> shipmentRequests; // 주문 생성시 이용
     private List<ShipmentResponseDto> shipmentResponses; // 주문 상세 조회용
-    private String ordSummaryNm;
 
     @Data
     public static class ShipmentRequestDto {
@@ -58,6 +55,22 @@ public class OrderDto {
         private String shAdrDt;
         private String shMsg;
         private List<ShipmentItemResponseDto> shipmentItems;
+
+        public String getShCarNm() {
+            if (this.shCarCd == null || this.shCarCd.isEmpty()) {
+                return "미정";
+            }
+            switch (this.shCarCd) {
+                case "kr.cjlogistics": return "CJ대한통운";
+                case "kr.epost":       return "우체국택배";
+                case "kr.hanjin":      return "한진택배";
+                case "kr.lotteglogis": return "롯데택배";
+                case "kr.logen":       return "로젠택배";
+                case "kr.cvsnet":      return "GS25 편의점택배";
+                case "kr.cupost":      return "CU 편의점택배";
+                default:               return this.shCarCd;
+            }
+        }
     }
 
     @Data @Builder

@@ -167,8 +167,10 @@
     let brandsList = [];
     let categoriesList = [];
 
-    // ===== 초기 로드 =====
-    loadStockList(0);
+    // ===== 초기 로드 (pageshow: bfcache 복원 시에도 input 값 반영) =====
+    window.addEventListener('pageshow', function() {
+        loadStockList(currentPage);
+    });
     loadBrandsAndCategories();
 
     // ===== 브랜드/카테고리 로드 =====

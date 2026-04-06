@@ -2,6 +2,7 @@ package com.goodee.beedan.service.member;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
+import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.Member;
@@ -14,12 +15,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -165,4 +169,5 @@ public class MemberService {
         Member member = memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("일치하는 관리자가 없습니다."));
         return member.getMemAut().equals(MemberAuthority.ADMIN);
     }
+
 }

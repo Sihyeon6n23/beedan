@@ -14,13 +14,13 @@ public interface RequirementRepository extends JpaRepository<Requirement, Long>,
         JpaSpecificationExecutor<Requirement> {
     Page<Requirement> findByReqDelYnFalseAndReqStt(String reqStt, Pageable pageable);
 
-    Page<Requirement> findByReqDelYnFalseAndMemberMemId(Long memId, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndMemId(Long memId, Pageable pageable);
 
-    Page<Requirement> findByReqDelYnFalseAndMemberMemIdAndReqStt(Long memId, String reqStt, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndMemIdAndReqStt(Long memId, String reqStt, Pageable pageable);
 
 
     Page<Requirement> findByReqDelYnFalseAndReqSttAndReqRepYn(String submitted, boolean b, Pageable pageable);
 
-    Page<Requirement> findByReqDelYnFalseAndMemberMemIdAndReqSttAndReqRepYn(Long memId, String submitted, boolean b, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(Long memId, String submitted, boolean b, Pageable pageable);
 
 }

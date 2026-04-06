@@ -19,8 +19,9 @@ public class NotificationApiController {
     private final NotificationService notificationService;
 
    @GetMapping
-    public ResponseEntity<List<NotificationDto>> getNotificationList(@AuthenticationPrincipal MemberUserDetails userDetails) {
-       List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
+    public ResponseEntity<List<NotificationDto>> getNotificationList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                                                                     @RequestParam(required = false, defaultValue = "ALL") String filter) {
+       List<NotificationDto> notificationDtoList = notificationService.getNotificationList(userDetails.getMemberId(), filter);
 
        return ResponseEntity.ok(notificationDtoList);
    }

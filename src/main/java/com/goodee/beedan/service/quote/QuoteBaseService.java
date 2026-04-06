@@ -90,6 +90,13 @@ public class QuoteBaseService {
     }
 
     /**
+     * 송신자 또는 수신자로 관련된 견적 전체 조회 (페이징)
+     */
+    public Page<QuoteBase> findAllByMember(Long memId, Pageable pageable) {
+        return quoteBaseRepository.findAllByMember(memId, pageable);
+    }
+
+    /**
      * 견적 제출
      * TEMP_SAVE 상태일 때만 가능
      */

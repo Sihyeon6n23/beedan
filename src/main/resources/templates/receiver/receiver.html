@@ -6,64 +6,150 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 배송지 정보 관리</title>
+<title th:fragment="title">BEEDAN | 배송지 관리</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Receiver', 'Insert receiver Info')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Receiver', 'Receiver Management')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
-    <main class="noti-page-container">
-        <header class="flex justify-between items-center mb-10">
-            <div>
-                <h1 class="text-3xl font-extrabold text-[var(--pub-text-main)] tracking-tight">배송지 목록</h1>
-                <p class="text-sm text-[var(--pub-text-sub)] mt-2 font-medium">다양한 배송지를 등록하여 편하게 사용하세요</p>
-            </div>
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
-            <button type="button" id="searchPostCode" class="btn-secondary px-4 whitespace-nowrap" onclick="openModal()">배송지 추가</button>
+    <style>
+        .receiver-management-list .admin-chat-list-head,
+        .receiver-management-list .admin-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(120px, 1.2fr) minmax(200px, 2fr) minmax(180px, 1.3fr) minmax(90px, 0.9fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .receiver-management-list .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .receiver-management-list .btn-delete {
+            background-color: #e2e2e2;
+            color: #1a1c1c;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .receiver-management-list .btn-delete:hover { background-color: #d1d1d1; }
+
+        .receiver-management-list .btn-edit {
+            background-color: #1a1c1c;
+            color: #ffffff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .receiver-management-list .btn-edit:hover { background-color: #333; }
+
+        .receiver-management-list .admin-chat-row__amount {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            padding-right: 10px;
+        }
+
+        .admin-chat-filter.is-active {
+          background: var(--color-primary-container);
+          border-color: var(--color-primary-container);
+          color: var(--color-on-primary-container);
+          box-shadow: 0 6px 14px rgba(26, 28, 28, 0.08);
+        }
+
+    </style>
+
+    <section class="admin-chat-page admin-chat-list-page receiver-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading"><span class="admin-chat-kicker">Receiver Info</span>
+                <h2 class="admin-chat-title">배송지 관리</h2>
+                <div class="admin-chat-shell__rule">
+                    <span></span>
+                </div>
+            </div>
         </header>
 
-        <section class="bg-[var(--pub-bg-card)] rounded-2xl border border-[var(--pub-border)] shadow-sm overflow-hidden">
-            <div id="notiPageContent">
-                <ul class="data-list-container">
-
-                </ul>
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="요청 목록 필터">
+            <div class="admin-chat-toolbar">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <button class="admin-chat-filter is-active" type="button" id="btnOpenAddForm">배송지 추가</button>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <div id="addReceiverModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" style="display: none;">
-            <div class="bg-white p-6 rounded-lg w-96">
-                <h2 class="text-xl font-bold mb-4">배송지 추가</h2>
-                <form id="addReceiverForm">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium">이름</label>
-                        <input type="text" id="rcNm" class="w-full p-2 border rounded" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium">전화번호</label>
-                        <input type="text" id="rcPhn" class="w-full p-2 border rounded" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium">주소</label>
-                        <input type="text" id="postcode" placeholder="우편번호" class="w-full p-2 border rounded mb-2" readonly>
-                        <input type="text" id="baseAddress" placeholder="기본주소" class="w-full p-2 border rounded mb-2" readonly>
-                        <input type="text" id="detailAddress" placeholder="상세주소" class="w-full p-2 border rounded mb-2">
-                        <button type="button" onclick="execDaumPostcode()" class="btn-secondary px-4">주소 검색</button>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium">메시지</label>
-                        <textarea id="rcMsg" class="w-full p-2 border rounded"></textarea>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="button" onclick="closeModal()" class="btn-secondary mr-2">취소</button>
-                        <button type="button" onclick="addReceiver()" class="btn-primary">저장</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div id="receiverFormSection" class="admin-chat-shell" style="display: none; padding: 20px; border: 1px solid #ddd; margin-bottom: 20px;">
+                <input type="hidden" id="rcId">
 
+                <h3 id="formTitle" style="margin-bottom: 15px;">배송지 등록</h3>
+
+                <div class="flex-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="rcNm" class="bd-input" style="flex: 1;" placeholder="수령자명">
+                    <input type="text" id="rcPhn" class="bd-input" style="flex: 1;" placeholder="연락처 (예: 010-1234-5678)">
+                </div>
+
+                <div class="flex-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="postcode" class="bd-input" style="flex: 1;" placeholder="우편번호" readonly>
+                    <button type="button" id="searchPostCode" class="btn-secondary" style="white-space: nowrap;">우편번호 찾기</button>
+                </div>
+
+                <div class="flex-row" style="margin-bottom: 10px;">
+                    <input type="text" id="baseAddress" class="bd-input" style="width: 100%;" placeholder="기본주소" readonly>
+                </div>
+
+                <div class="flex-row" style="margin-bottom: 15px;">
+                    <input type="text" id="detailAddress" class="bd-input" style="width: 100%;" placeholder="상세주소">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="btnSaveReceiver" class="btn-detail">저장하기</button>
+                    <button type="button" id="btnCancel" class="btn-edit">취소</button>
+                </div>
+            </div>
+
+
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>수령자 정보</div>
+                <div style="text-align: center;">배송지</div>
+                <div>도서산관여부</div>
+                <div style="text-align: center;">관리</div>
+            </div>
+
+            <div class="admin-chat-list-body" id="receiver-body">
+            </div>
+
+        </section>
+
+        <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
         <script th:src="@{/js/postcode/postcode.js}"></script>
         <script th:src="@{/js/receiver/receiver.js}"></script>
-    </main>
+    </section>
 </th:block>
 </html>

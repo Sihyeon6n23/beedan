@@ -216,15 +216,6 @@ main > div {
     background-color: #333333;
 }
 
-/* Edit 버튼 */
-.btn-edit {
-    background-color: #e2e2e2;
-    color: #1a1c1c !important; /* a 태그 기본 파란색 링크 덮어쓰기 */
-}
-.btn-edit:hover {
-    background-color: #d1d1d1;
-}
-
 /* --- 7. 페이지네이션 --- */
 .pagination-wrapper {
     display: flex;
@@ -313,8 +304,12 @@ main > div {
     position: relative;
 }
 .modal-top-line {
-    height: 6px;
-    background-color: rgba(255, 215, 0, 1); /* 포인트 노란색 */
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0; /* 위아래 꽉 차게 */
+    width: 6px; /* 두께 */
+    background-color: rgba(255, 215, 0, 1);
 }
 
 /* --- 헤더 --- */
@@ -376,7 +371,12 @@ main > div {
 .tracking-timeline { margin-top: 15px; border-left: 2px solid #e2e2e2; padding-left: 15px; }
 .timeline-item { margin-bottom: 10px; display: flex; flex-direction: column; }
 .timeline-item.active { border-left: 2px solid #ffd700; margin-left: -17px; padding-left: 15px; }
-.shipping-address { margin-top: 20px; }
+.shipping-address {margin-top: 20px;}
+.address-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 .icon-yellow { color: #ffd700; font-size: 16px; vertical-align: middle; }
 
 /* --- 문의 내역 특화 --- */
@@ -493,9 +493,10 @@ main > div {
 .fragment-table td { padding: 20px 24px; border-bottom: 1px solid #f4f4f5; }
 .order-id { font-weight: bold; font-size: 14px; color: #18181b; }
 .order-date { color: #71717a; font-size: 14px; }
-.order-summary strong { color: #18181b; font-size: 14px; display: block; margin-bottom: 4px; }
+.order-summary strong { color: #18181b; font-size: 14px;}
 .order-summary span { color: #a1a1aa; font-size: 10px; font-weight: bold; text-transform: uppercase; }
 .order-amount { font-weight: bold; font-size: 14px; color: #18181b; }
+.order-address {  color: #71717a; font-size: 13px}
 
 /* 정렬 및 뱃지 */
 .text-right { text-align: right; }
@@ -505,3 +506,101 @@ main > div {
 .badge-yellow { background-color: rgba(255,215,0,0.2); color: #705d00; border-color: #705d00; }
 .badge-green { background-color: #f0fdf4; color: #15803d; border-color: #16a34a; }
 .btn-icon { background: none; border: none; cursor: pointer; color: #a3a3a3; }
+
+
+.action-cell {
+    white-space: nowrap;
+    width: 150px;
+}
+
+.admin-action-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* 상태 변경 셀렉트 박스 스타일 */
+.status-update-select {
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 12px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.status-update-select:hover {
+    border-color: #ffd700;
+    background-color: #fff;
+}
+
+/* 작은 아이콘 버튼 */
+.btn-icon-sm {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #999;
+}
+
+.btn-icon-sm:hover {
+    color: #333;
+}
+
+.btn-icon-sm .material-symbols-outlined {
+    font-size: 18px;
+}
+
+
+.tracking-summary-card {
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.tracking-timeline-list {
+    position: relative;
+    padding-left: 40px;
+    list-style: none;
+}
+
+.tracking-timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 20px; top: 0; bottom: 0;
+    width: 2px; background: #eee;
+}
+
+.timeline-step {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: -26px; top: 5px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #ddd;
+    border: 3px solid #fff;
+    z-index: 1;
+}
+
+.timeline-step.active::before {
+    background: #FFD700; /* 활성화 색상 */
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.step-time { font-size: 12px; color: #999; }
+.step-content strong { font-size: 15px; color: #333; }
+.step-content p { font-size: 13px; color: #666; margin-top: 5px; }

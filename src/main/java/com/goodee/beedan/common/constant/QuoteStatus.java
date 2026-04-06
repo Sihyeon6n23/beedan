@@ -5,5 +5,6 @@ public enum QuoteStatus {
     SUBMITTED,
     APPROVED,
     REJECTED,
-    EXPIRED
+    EXPIRED,
+    PAID
 }

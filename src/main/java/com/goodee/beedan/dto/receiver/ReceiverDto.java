@@ -2,6 +2,7 @@ package com.goodee.beedan.dto.receiver;
 
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 
 @Data @Builder
 public class ReceiverDto {
@@ -12,5 +13,5 @@ public class ReceiverDto {
     private String rcAdr;
     private String rcAdrDt;
 
-    private Long mem_id;
+    private Long memId;
 }
