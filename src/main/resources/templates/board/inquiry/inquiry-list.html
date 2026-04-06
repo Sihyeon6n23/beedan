@@ -14,7 +14,7 @@
               ~{::title},
               ~{fragments/sidebar :: frame(
                   'MY PAGE',
-                  'Inquiry History',
+                  'Inquiry Management',
                   ~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'inquiry-list')}
               )},
               ~{::content}
@@ -28,8 +28,7 @@
     <section class="inquiry-page inquiry-list-page">
         <header class="inquiry-shell inquiry-shell--header">
             <div class="inquiry-shell__heading">
-                <span class="inquiry-kicker"
-                      th:text="${isAdmin} ? 'Inquiry Dashboard' : 'My Inquiry Boards'">Inquiry Dashboard</span>
+                <span class="inquiry-kicker">Inquiry List</span>
                 <h2 class="inquiry-title"
                     th:text="${isAdmin} ? '문의 관리' : '나의 문의 목록'">문의 관리</h2>
             </div>
@@ -114,7 +113,7 @@
                                type="text"
                                name="keyword"
                                th:value="${searchDto.keyword}"
-                               placeholder="제목 또는 회사 상호명 검색">
+                               placeholder="문의 제목 또는 회사 상호명 검색">
 
                         <button type="submit" class="inquiry-search-form__submit">조회</button>
                     </form>
@@ -156,7 +155,7 @@
                 <div>등록일</div>
             </div>
 
-            <div class="inquiry-list-body">
+            <div class="inquiry-list-body" th:classappend="${#lists.isEmpty(boardPage.content)} ? ' inquiry-list-body--empty' : ''">
                 <a th:each="board : ${boardPage.content}"
                    th:if="${isAdmin}"
                    th:href="@{/admin/inquiry/detail(id=${board.brdId})}"
@@ -225,26 +224,30 @@
                     </div>
                 </a>
 
+                <th:block th:if="${#lists.size(boardPage.content) < 10}"
+                          th:each="spacer : ${#numbers.sequence(1, 10 - #lists.size(boardPage.content))}">
+                    <div class="inquiry-row-spacer" aria-hidden="true"></div>
+                </th:block>
                 <div class="inquiry-empty-state" th:if="${#lists.isEmpty(boardPage.content)}">
                     <strong>표시할 내용이 없습니다.</strong>
-                    <p th:text="${isAdmin} ? '검색 조건에 맞는 문의가 없습니다.' : '등록한 문의가 아직 없습니다.'">빈 상태 안내</p>
+                    <p th:text="${isAdmin} ? '조건에 맞는 문의가 없습니다.' : '등록한 문의가 아직 없습니다.'">빈 상태 안내</p>
                 </div>
             </div>
         </section>
 
-        <footer class="inquiry-shell inquiry-shell--pagination"
-                th:if="${boardPage.totalPages > 0}">
+        <footer class="inquiry-shell inquiry-shell--pagination">
             <div class="inquiry-pagination">
-                <a th:if="${boardPage.hasPrevious() and isAdmin}"
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasPrevious() and isAdmin}"
                    class="inquiry-page-button inquiry-page-button--wide"
                    th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=${boardPage.number - 1}, size=${searchDto.size})}">Prev</a>
-                <a th:if="${boardPage.hasPrevious() and !isAdmin}"
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasPrevious() and !isAdmin}"
                    class="inquiry-page-button inquiry-page-button--wide"
                    th:href="@{/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, page=${boardPage.number - 1}, size=${searchDto.size})}">Prev</a>
-                <span th:unless="${boardPage.hasPrevious()}"
+                <span th:unless="${boardPage.totalPages > 0 and boardPage.hasPrevious()}"
                       class="inquiry-page-button inquiry-page-button--wide is-disabled">Prev</span>
 
-                <th:block th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}">
+                <th:block th:if="${boardPage.totalPages > 0}"
+                          th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}">
                     <a th:if="${isAdmin}"
                        class="inquiry-page-button"
                        th:classappend="${pageNumber == boardPage.number} ? ' is-current' : ''"
@@ -256,14 +259,16 @@
                        th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
                        th:href="@{/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, page=${pageNumber}, size=${searchDto.size})}">01</a>
                 </th:block>
+                <span th:unless="${boardPage.totalPages > 0}"
+                      class="inquiry-page-button is-current is-disabled">01</span>
 
-                <a th:if="${boardPage.hasNext() and isAdmin}"
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasNext() and isAdmin}"
                    class="inquiry-page-button inquiry-page-button--wide"
                    th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=${boardPage.number + 1}, size=${searchDto.size})}">Next</a>
-                <a th:if="${boardPage.hasNext() and !isAdmin}"
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasNext() and !isAdmin}"
                    class="inquiry-page-button inquiry-page-button--wide"
                    th:href="@{/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, page=${boardPage.number + 1}, size=${searchDto.size})}">Next</a>
-                <span th:unless="${boardPage.hasNext()}"
+                <span th:unless="${boardPage.totalPages > 0 and boardPage.hasNext()}"
                       class="inquiry-page-button inquiry-page-button--wide is-disabled">Next</span>
             </div>
         </footer>
@@ -272,3 +277,4 @@
     <script defer th:src="@{/js/board/inquiry.js}"></script>
 </th:block>
 </html>
+

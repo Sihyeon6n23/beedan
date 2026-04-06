@@ -39,4 +39,20 @@ public class WebClientConfig {
                 .build();
     }
 
+    @Bean
+    public WebClient kakaoAuthClient() {
+        return WebClient.builder()
+                .baseUrl("https://kauth.kakao.com") // 토큰 발급용 도메인
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
+    }
+
+    @Bean
+    public WebClient kakaoApiClient() {
+        return WebClient.builder()
+                .baseUrl("https://kapi.kakao.com") // 사용자 정보 및 기능 API 도메인
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .build();
+    }
+
 }

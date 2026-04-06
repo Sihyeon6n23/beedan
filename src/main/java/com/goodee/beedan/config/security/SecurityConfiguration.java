@@ -22,9 +22,10 @@ public class SecurityConfiguration {
         http
                 .csrf(withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/error/**").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
-                        .requestMatchers("/signup", "/**").permitAll() // 인증
+                                .requestMatchers("/error/**").permitAll()
+                                .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+                                .requestMatchers("/images/**").permitAll()
+                                .requestMatchers("/signup", "/**").permitAll() // 인증
                         //.anyRequest().authenticated() // 그 외
                 )
                 .formLogin(login -> login

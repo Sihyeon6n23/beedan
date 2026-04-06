@@ -3,6 +3,7 @@ package com.goodee.beedan.service.chat;
 import com.goodee.beedan.common.constant.ChatMessageSenderType;
 import com.goodee.beedan.common.constant.ChatRoomCloseReason;
 import com.goodee.beedan.common.constant.ChatRoomStatus;
+import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.dto.chat.AdminChatMessageDto;
 import com.goodee.beedan.dto.chat.AdminChatRoomDetailDto;
 import com.goodee.beedan.dto.chat.AdminChatRoomListDto;
@@ -32,9 +33,12 @@ public class AdminChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomReadStatusRepository chatRoomReadStatusRepository;
+    private final ChatRealtimeService chatRealtimeService;
 
     // 관리자 채팅 목록 조회 (페이징 + 상태 필터링 + 담당 필터링)
-    public Page<AdminChatRoomListDto> getAdminChatRooms(AdminChatRoomSearchDto searchDto, Long adminId) {
+    public Page<AdminChatRoomListDto> getAdminChatRooms(AdminChatRoomSearchDto searchDto, Long memAdId) {
+        validateAdminAuthority(memAdId);
+
         // 현재 페이지 번호와 페이지당 개수로 페이지 조회 조건 생성
         Pageable pageable = PageRequest.of(searchDto.getPage(), searchDto.getSize());
         Page<ChatRoom> chatRoomPage;
@@ -51,11 +55,11 @@ public class AdminChatService {
                     .findByChRoSttOrderByChRoLastMsDtDescChRoCreDtDesc(status, pageable);
         } else if (allStatus) { // 전체 상태 + 내 담당 목록
             chatRoomPage = chatRoomRepository
-                    .findByMemAdIdPriorityOrder(adminId, pageable);
+                    .findByMemAdIdPriorityOrder(memAdId, pageable);
         } else { // 특정 상태 + 내 담당 목록
             ChatRoomStatus status = ChatRoomStatus.valueOf(searchDto.getStatus()); // enum으로 변환
             chatRoomPage = chatRoomRepository
-                    .findByChRoSttAndMemAdIdOrderByChRoLastMsDtDescChRoCreDtDesc(status, adminId, pageable);
+                    .findByChRoSttAndMemAdIdOrderByChRoLastMsDtDescChRoCreDtDesc(status, memAdId, pageable);
         }
 
         return chatRoomPage.map(this::mapToAdminChatRoomListDto);
@@ -103,7 +107,9 @@ public class AdminChatService {
     }
 
     // 채팅방 시작 상태를 ONGOING으로 변경하고 담당자를 지정
-    public void startAdminChatRoom(Long chRoId, Long adminId) {
+    public void startAdminChatRoom(Long chRoId, Long memAdId) {
+        validateAdminAuthority(memAdId);
+
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(chRoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
@@ -113,7 +119,7 @@ public class AdminChatService {
             throw new IllegalStateException("상담 시작은 OPEN 상태에서만 가능합니다.");
         }
 
-        chatRoom.setMemAdId(adminId); // 담당자 지정
+        chatRoom.setMemAdId(memAdId); // 담당자 지정
         chatRoom.setChRoStt(ChatRoomStatus.ONGOING); // ONGOING 상태로 변경
         chatRoom.setChRoAsgDt(LocalDateTime.now()); // 상담 시작(배정) 시각 저장
 
@@ -124,7 +130,7 @@ public class AdminChatService {
                 .findFirstByChRoIdOrderByChMsCreDtDesc(chRoId);
 
         ChatRoomReadStatus adminReadStatus = ChatRoomReadStatus.builder()
-                .memId(adminId)
+                .memId(memAdId)
                 .chRoId(chRoId)
                 .chRoReStUnrYn(false)
                 .chMsLastId(lastMessage.map(chatMessage -> chatMessage.getChMsId()).orElse(null))
@@ -134,7 +140,9 @@ public class AdminChatService {
     }
 
     // 담당자 본인이 채팅방을 종료 처리
-    public void closeAdminChatRoom(Long chRoId, Long adminId) {
+    public void closeAdminChatRoom(Long chRoId, Long memAdId) {
+        validateAdminAuthority(memAdId);
+
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(chRoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
@@ -150,7 +158,7 @@ public class AdminChatService {
         }
 
         // 담당자 본인만 종료 가능
-        if (!chatRoom.getMemAdId().equals(adminId)) {
+        if (!chatRoom.getMemAdId().equals(memAdId)) {
             throw new IllegalStateException("담당자 본인만 상담을 종료할 수 있습니다.");
         }
 
@@ -162,7 +170,9 @@ public class AdminChatService {
     }
 
     // 담당자(관리자)가 메시지를 전송하고 읽음 상태 갱신
-    public AdminChatMessageDto sendAdminChatMessage(Long chRoId, Long adminId, String content) {
+    public AdminChatMessageDto sendAdminChatMessage(Long chRoId, Long memAdId, String content) {
+        validateAdminAuthority(memAdId);
+
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(chRoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
@@ -178,7 +188,7 @@ public class AdminChatService {
         }
 
         // 담당자 본인만 메시지 전송 가능
-        if (!chatRoom.getMemAdId().equals(adminId)) {
+        if (!chatRoom.getMemAdId().equals(memAdId)) {
             throw new IllegalStateException("담당자 본인만 메시지를 보낼 수 있습니다.");
         }
 
@@ -191,7 +201,7 @@ public class AdminChatService {
                 .chMsSenTy(ChatMessageSenderType.ADMIN)
                 .chMsCon(content.trim())
                 .chRoId(chRoId)
-                .memId(adminId)
+                .memId(memAdId)
                 .build();
 
         ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
@@ -201,9 +211,9 @@ public class AdminChatService {
 
         // 관리자 읽음 상태 갱신
         ChatRoomReadStatus adminReadStatus = chatRoomReadStatusRepository
-                .findByMemIdAndChRoId(adminId, chRoId)
+                .findByMemIdAndChRoId(memAdId, chRoId)
                 .orElseGet(() -> ChatRoomReadStatus.builder()
-                        .memId(adminId)
+                        .memId(memAdId)
                         .chRoId(chRoId)
                         .build());
 
@@ -223,11 +233,18 @@ public class AdminChatService {
         memberReadStatus.setChMsLastId(savedMessage.getChMsId()); // 마지막 메시지 갱신
         chatRoomReadStatusRepository.save(memberReadStatus);
 
-        return mapToAdminChatMessageDto(savedMessage);
+        // 엔티티 -> Dto 변환
+        AdminChatMessageDto adminChatMessageDto = mapToAdminChatMessageDto(savedMessage);
+        // 채팅방 구독자들에게 실시간으로 메시지를 뿌림
+        chatRealtimeService.publishMessage(chRoId, adminChatMessageDto);
+
+        return adminChatMessageDto;
     }
 
     // 관리자 채팅 상세 조회
     public AdminChatRoomDetailDto getAdminChatRoomDetail(Long chRoId, Long memAdId) {
+        validateAdminAuthority(memAdId);
+
         // 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(chRoId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
@@ -301,5 +318,16 @@ public class AdminChatService {
                 .chRoClsDt(chatRoom.getChRoClsDt())
                 .messages(messageDtos)
                 .build();
+    }
+
+    // 권한 검증
+    private void validateAdminAuthority(Long adminId) {
+        Member admin = memberRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("관리자 정보를 찾을 수 없습니다."));
+
+        if (!admin.getMemAut().equals(MemberAuthority.ADMIN)
+                && !admin.getMemAut().equals(MemberAuthority.ROOT)) {
+            throw new IllegalArgumentException("관리자만 사용할 수 있는 기능입니다.");
+        }
     }
 }

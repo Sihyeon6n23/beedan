@@ -2,7 +2,7 @@
 <html
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'NEW REQUIREMENT', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'Requirements', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -18,7 +18,7 @@
     <!-- TinyMCE (GPL, CDN) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
 
-    <section class="admin-chat-page admin-chat-list-page" style="max-width:1280px;">
+    <section class="admin-chat-page admin-chat-list-page" style="max-width:1080px;">
         <!-- Header -->
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
