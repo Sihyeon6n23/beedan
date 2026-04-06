@@ -125,12 +125,8 @@
 
             if (!items || items.length === 0) {
                 body.innerHTML =
-                    '<div class="admin-chat-row" style="justify-content:center;cursor:default;">' +
-                        '<div class="admin-chat-row__primary" style="justify-content:center;">' +
-                            '<div class="admin-chat-row__text" style="text-align:center;">' +
-                                '<p style="color:var(--color-secondary);">요청한 상품이 없습니다.</p>' +
-                            '</div>' +
-                        '</div>' +
+                    '<div class="admin-chat-row" style="display:flex;justify-content:center;cursor:default;">' +
+                        '<p style="color:var(--color-secondary);text-align:center;width:100%;padding:2rem 0;">요청 항목이 없습니다.</p>' +
                     '</div>';
                 return;
             }

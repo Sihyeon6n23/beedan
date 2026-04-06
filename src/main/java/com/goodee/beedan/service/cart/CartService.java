@@ -27,15 +27,18 @@ public class CartService {
     private final StockRepository stockRepository;
 
     // 장바구니 목록 (페이징 포함)
-    public Page<CartDto> findByMemId(Long memId, Pageable pageable) {
-        return cartRepository.findByMemId(memId, pageable)
-                .map(this::mapToCartDto);
+    public List<CartDto> findByMemId(Long memId) {
+        return cartRepository.findByMemId(memId)
+                .stream()
+                .map(this::mapToCartDto)
+                .toList();
     }
+
 
     // 장바구니에 추가
     public boolean addItem(Long memId, Long stId, Long qn) {
         Optional<Cart> itemExists = cartRepository.findByMemIdAndStock_StId(memId, stId);
-        if (itemExists.isPresent()){
+        if (itemExists.isPresent()) {
             return true;
         }
         Cart cart = Cart.builder()

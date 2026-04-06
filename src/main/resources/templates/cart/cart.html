@@ -115,9 +115,9 @@
             </div>
 
             <!-- Product Table -->
-            <div class="w-full overflow-x-auto">
+            <div class="w-full overflow-x-auto max-h-[640px] overflow-y-auto">
                 <table class="w-full table-fixed text-left border-collapse">
-                    <thead>
+                    <thead class="sticky top-0 z-10">
                     <tr class="bg-surface-container-low border-none">
                         <th class="py-6 px-4 w-[3%]">
                             <input type="checkbox" id="check-all" class="w-4 h-4 accent-primary cursor-pointer" />
@@ -134,12 +134,12 @@
                     <tbody class="divide-y-0">
 
                     <!-- 장바구니 목록 없을 때 -->
-                    <tr th:if="${page.isEmpty()}">
+                    <tr th:if="${itemList == null or itemList.isEmpty()}">
                         <td colspan="8" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td>
                     </tr>
 
                     <!-- 장바구니 아이템 반복 -->
-                    <tr th:each="item, stat : ${page.content}"
+                    <tr th:each="item, stat : ${itemList}"
                         class="cart-row"
                         th:data-ca-id="${item.caId}"
                         th:data-st-id="${item.stId}"
@@ -216,38 +216,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <div class="mt-12 flex justify-center items-center gap-4">
-                <th:block th:if="${page.totalPages > 1}"
-                           th:with="startPage=${T(java.lang.Math).max(0, page.number - 4)},
-                                    endPage=${T(java.lang.Math).min(page.totalPages - 1, startPage + 9)}">
-                    <a th:href="${'/cart?page=' + (page.number - 1)}"
-                       th:classappend="${page.first} ? 'pointer-events-none opacity-30' : ''"
-                       class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors">
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </a>
-                    <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
-                       th:href="${'/cart?page=' + i}"
-                       th:text="${i + 1}"
-                       th:classappend="${i == page.number} ? 'text-on-surface border-b-4 border-primary-container' : 'text-neutral-400 hover:text-on-surface'"
-                       class="w-12 h-12 flex items-center justify-center font-headline font-extrabold text-xs transition-colors">
-                    </a>
-                    <a th:href="${'/cart?page=' + (page.number + 1)}"
-                       th:classappend="${page.last} ? 'pointer-events-none opacity-30' : ''"
-                       class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4">
-                        Next
-                        <span class="material-symbols-outlined text-sm">chevron_right</span>
-                    </a>
-                </th:block>
-            </div>
-
-            <div class="mt-12 flex items-start">
-                <div class="border-l-4 border-primary-container pl-6 py-2">
-                    <p class="text-xs font-bold uppercase tracking-widest text-secondary mb-2">Purchase Note</p>
-                    <textarea class="w-full md:w-[400px] bg-surface-container-low border-none focus:bg-surface-container-lowest focus:ring-0 p-4 text-sm placeholder:italic"
-                              placeholder="Add specific procurement instructions..."></textarea>
-                </div>
-            </div>
         </div>
 
         <!-- Summary Section -->
@@ -258,7 +226,7 @@
                 <div class="space-y-6">
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-bold tracking-widest uppercase text-secondary">Items</span>
-                        <span class="font-bold" th:text="${page.totalElements} + ' items'"></span>
+                        <span class="font-bold" th:text="${itemList.size()} + ' items'"></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-bold tracking-widest uppercase text-secondary">Logistics</span>
@@ -315,8 +283,6 @@
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
     axios.defaults.headers.common[csrfHeader] = csrfToken;
 
-    let deleteTargetCaId = null;
-
     // ===== 수량 +/- =====
     document.querySelectorAll('.btn-qty-minus').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -371,31 +337,36 @@
         });
     });
 
-    // ===== 삭제 모달 =====
+    // ===== 삭제 모달 + 비동기 =====
     const modal = document.getElementById('delete-modal');
+    let deleteTargetRow = null;
 
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function() {
-            deleteTargetCaId = this.closest('.cart-row').dataset.caId;
+            deleteTargetRow = this.closest('.cart-row');
             modal.classList.remove('hidden');
         });
     });
 
     document.getElementById('delete-cancel').addEventListener('click', () => {
         modal.classList.add('hidden');
-        deleteTargetCaId = null;
+        deleteTargetRow = null;
     });
 
     document.getElementById('delete-modal-backdrop').addEventListener('click', () => {
         modal.classList.add('hidden');
-        deleteTargetCaId = null;
+        deleteTargetRow = null;
     });
 
     document.getElementById('delete-confirm').addEventListener('click', () => {
-        if (!deleteTargetCaId) return;
-        axios.delete('/api/cart/' + deleteTargetCaId)
+        if (!deleteTargetRow) return;
+        const caId = deleteTargetRow.dataset.caId;
+        axios.delete('/api/cart/' + caId)
             .then(() => {
-                location.reload();
+                deleteTargetRow.remove();
+                deleteTargetRow = null;
+                modal.classList.add('hidden');
+                updateItemCount();
             })
             .catch(err => {
                 console.error('삭제 실패:', err);
@@ -403,6 +374,20 @@
                 modal.classList.add('hidden');
             });
     });
+
+    function updateItemCount() {
+        const count = document.querySelectorAll('.cart-row').length;
+        const summaryItems = document.querySelectorAll('.space-y-6 .font-bold');
+        summaryItems.forEach(el => {
+            if (el.textContent.includes('items')) {
+                el.textContent = count + ' items';
+            }
+        });
+        if (count === 0) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '<tr><td colspan="8" class="py-20 text-center text-secondary text-sm tracking-widest uppercase">장바구니가 비어있습니다.</td></tr>';
+        }
+    }
 
     // ===== 수정사항 적용 (수량 일괄 변경) =====
     document.getElementById('btn-apply-qty').addEventListener('click', () => {
