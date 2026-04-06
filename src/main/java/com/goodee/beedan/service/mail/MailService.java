@@ -30,7 +30,7 @@ public class MailService {
                     notificationType.getDefaultTitle(), fullUrl
             );
 
-            helper.setFrom("Beedan");
+            helper.setFrom("cotowook@naver.com");
             helper.setTo(emailAddress);
             helper.setSubject(title);
             helper.setText(htmlContent, true);

@@ -18,7 +18,7 @@ public enum NotificationType {
     SHIPMENT_START("배송 시작", "상품[%s]의 배송이 시작되었습니다.", "/order/list"),
     SHIPMENT_END("배송 완료", "상품[%s]의 배송이 완료되었습니다.", "/order/list"),
 
-    PASSWORD_RESET("비밀번호 재설정 안내", "비밀번호 초기화를 위한 인증 번호가 발급되었습니다.", "/");
+    PASSWORD_RESET("비밀번호 재설정 안내", "비밀번호 초기화를 위한 인증 번호가 발급되었습니다.", "/mypage");
 
     private final String defaultTitle;
     private final String contentTemplate;

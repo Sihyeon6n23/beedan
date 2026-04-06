@@ -88,7 +88,7 @@ public class OrderService {
 
         if (order.getOrdBaseStt() == newStatus) return; // 같은 상태 선택시 상태 변경 방지
 
-        if (order.getOrdBaseStt() == OrderStatus.CANCELLED) {
+        if (order.getOrdBaseStt() == OrderStatus.CANCELED) {
             throw new IllegalStateException("취소된 주문의 상태는 변경할 수 없습니다.");
         }
 
@@ -104,7 +104,7 @@ public class OrderService {
         if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
             throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
         }
-        order.setOrdBaseStt(OrderStatus.CANCELLED);
+        order.setOrdBaseStt(OrderStatus.CANCELED);
         order.getShipments().forEach(sh -> sh.setShCanYn(true));
     }
 

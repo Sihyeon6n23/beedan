@@ -185,7 +185,7 @@ function initModalData(memId) {
 
             renderModalOrders(data.recentOrders);
             renderModalShipments(data.recentShipments);
-            renderModalInquiries(data.recentInquiries);
+            renderModalInquiries(data.recentInquiries?.content || []);
 
             updateModalFooterButtons(memId);
         })
@@ -267,18 +267,10 @@ function renderModalShipments(shipments) {
                     <p class="tracking-number">운송장 번호: ${shipment.shTraNo || '운송장 미등록'}</p>
                 </span>
 
-                <div class="tracking-timeline">
-                    <div class="timeline-item active">
-                        <span class="location">배송 준비 중</span>
-                        <span class="time">-</span>
-                    </div>
-                </div>
-
                 <div class="shipping-address">
-                    <h5>배송지</h5>
                     <div class="address-content">
                         <span class="material-symbols-outlined icon-yellow">location_on</span>
-                        <span class="address-text">${shipment.shAdr || '주소 정보 없음'}</span>
+                        <span class="address-text">배송지: ${shipment.shAdr || '주소 정보 없음'}</span>
                     </div>
                 </div>
 
@@ -289,8 +281,10 @@ function renderModalShipments(shipments) {
     container.innerHTML = html;
 }
 
-function renderModalInquiries(inquiries) {
+function renderModalInquiries(input) {
     const container = document.querySelector('.col-inquiry .col-content');
+    const inquiries = Array.isArray(input) ? input : (input?.content || []);
+
     if(!container) return;
     container.innerHTML = '';
 
@@ -299,18 +293,30 @@ function renderModalInquiries(inquiries) {
         return;
     }
 
+     const statusMap = {
+              RECEIVED: '확인대기',
+              IN_PROGRESS: '답변진행중',
+              ANSWERED: '답변완료'
+     };
+
     let html = '';
     inquiries.forEach((inquiry, index) => {
-        const isResolved = inquiry.status === 'CLOSED';
+        const statusText = statusMap[inquiry.brdInqStt] || '취소';
+        const isResolved = inquiry.brdInqStt === 'ANSWERED';
+        const dateStr = inquiry.brdCreDt ? inquiry.brdCreDt.split('T')[0] : '-';
 
         html += `
             <article class="list-item ${isResolved ? 'opacity-60' : ''}">
                 <div class="inquiry-meta">
-                    <span class="status-text ${!isResolved ? 'text-yellow' : ''}">${inquiry.statusName}</span>
-                    <span class="time">${inquiry.timeAgo}</span>
+                    <span class="status-text ${!isResolved ? 'text-yellow' : ''}">${statusText}</span>
+                    <span class="time">${dateStr}</span>
                 </div>
-                <h4 class="item-title">${inquiry.title}</h4>
-                <p class="item-desc">"${inquiry.previewText}"</p>
+
+                <h4 class="item-title" style="cursor:pointer;" onclick="location.href='/admin/inquiry/detail?${inquiry.brdId}'">
+                    ${inquiry.brdTtl}
+                </h4>
+
+                <p class="item-desc">#${inquiry.brdId}번 문의사항입니다.</p>
             </article>
             ${index < inquiries.length - 1 ? '<hr class="divider">' : ''}
         `;
@@ -327,7 +333,7 @@ function updateModalFooterButtons(memId) {
 
     if(orderBtn) orderBtn.setAttribute('onclick', `viewFullOrderList('${memId}', 0)`);
     if(shippingBtn) shippingBtn.setAttribute('onclick', `viewFullShipmentList('${memId}', 0)`);
-    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullList('/api/admin/inquiry/${memId}', '전체 문의 내역')`);
+    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullInquiryIList('/api/admin/inquiry/${memId}', '전체 문의 내역')`);
 }
 
 async function viewFullList(url, title) {
@@ -590,7 +596,7 @@ async function viewFullShipmentList(memId, page = 0) {
 
             return `
                 <tr>
-                    <td class="shipment-id">${shipment.shCarCd || '택배사 미정'}${shipment.shTraNo || ''}</td>
+                    <td class="shipment-id">${shipment.shCarNm || '택배사 미정'}-${shipment.shTraNo || ''}</td>
                     <td class="shipment-date">${dateStr}</td>
 
                     <td class="shipment-summary">

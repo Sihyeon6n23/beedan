@@ -7,7 +7,6 @@ import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
-import com.goodee.beedan.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -75,12 +74,12 @@ public class ShipmentService {
 
         boolean allCancelled = order.getShipments().stream().allMatch(Shipment::getShCanYn);
 
-        if (allCancelled) order.setOrdBaseStt(OrderStatus.CANCELLED);
+        if (allCancelled) order.setOrdBaseStt(OrderStatus.CANCELED);
         else syncOrderStatus(order);
     }
 
     private void syncOrderStatus(Order order) {
-        if (order.getOrdBaseStt() == OrderStatus.CANCELLED) return;
+        if (order.getOrdBaseStt() == OrderStatus.CANCELED) return;
 
         List<Shipment> activeShipments = order.getShipments().stream()
                 .filter(sh -> !sh.getShCanYn())

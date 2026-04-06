@@ -3,9 +3,11 @@ package com.goodee.beedan.dto.admin;
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.dto.board.InquiryBoardListDto;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,7 +22,7 @@ public class MemberSummaryDto {
 
     private List<OrderSummaryDto> recentOrders;
     private List<ShipmentSummaryDto> recentShipments;
-    private List<InquirySummaryDto> recentInquiries;
+    private Page<InquiryBoardListDto> recentInquiries;
 
     @Getter @Builder
     public static class OrderSummaryDto {
