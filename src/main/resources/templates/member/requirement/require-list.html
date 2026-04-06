@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'STOCK REQUIREMENTS', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'Requirements', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -19,7 +19,7 @@
     <section class="admin-chat-page admin-chat-list-page">
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
-                <span class="admin-chat-kicker">My Requirements</span>
+                <span class="admin-chat-kicker">Requirement List</span>
                 <h2 class="admin-chat-title">상품 요청 목록</h2>
             </div>
             <div class="admin-chat-shell__rule">
@@ -125,12 +125,8 @@
 
             if (!items || items.length === 0) {
                 body.innerHTML =
-                    '<div class="admin-chat-row" style="justify-content:center;cursor:default;">' +
-                        '<div class="admin-chat-row__primary" style="justify-content:center;">' +
-                            '<div class="admin-chat-row__text" style="text-align:center;">' +
-                                '<p style="color:var(--color-secondary);">요청한 상품이 없습니다.</p>' +
-                            '</div>' +
-                        '</div>' +
+                    '<div class="admin-chat-row" style="display:flex;justify-content:center;cursor:default;">' +
+                        '<p style="color:var(--color-secondary);text-align:center;width:100%;padding:2rem 0;">요청 항목이 없습니다.</p>' +
                     '</div>';
                 return;
             }

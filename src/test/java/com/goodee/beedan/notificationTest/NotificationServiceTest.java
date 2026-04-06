@@ -42,7 +42,7 @@ public class NotificationServiceTest {
         // given
         Long memId = 1L;
         Member member = Member.builder().memId(memId).build();
-        NotificationType type = NotificationType.INQUIRY_ANSWER;
+        NotificationType type = NotificationType.INQUIRY_ANSWER_CREATE;
         String detail = "12345번 주문";
         Long targetId = 100L;
 

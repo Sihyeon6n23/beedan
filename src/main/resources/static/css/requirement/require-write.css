@@ -65,8 +65,8 @@
 }
 
 .req-field__textarea {
-  min-height: 140px;
-  resize: vertical;
+  min-height: 260px;
+  resize: none;
 }
 
 .req-field__hint {
@@ -79,19 +79,33 @@
   position: relative;
 }
 
-.req-field__price-wrap .req-field__input {
-  padding-right: 2.5rem;
+.req-field__price-wrap {
+  display: flex;
+  gap: 0;
 }
 
-.req-field__price-unit {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+.req-field__price-wrap .req-field__input {
+  flex: 1;
+  border-right: none;
+}
+
+.req-field__price-unit-select {
+  width: 5.5rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--color-outline-variant);
+  border-left: none;
+  background: var(--color-surface-container-low);
   font-size: 13px;
   font-weight: 700;
   color: var(--color-secondary);
-  pointer-events: none;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.req-field__price-unit-select:focus {
+  outline: none;
+  border-color: #d0c6ab;
 }
 
 /* --- File Upload --- */
@@ -237,6 +251,12 @@
 
 .req-btn--primary:hover {
   box-shadow: 0 6px 14px rgba(26, 28, 28, 0.1);
+}
+
+/* --- Field Error --- */
+.field-error {
+  font-size: 0.7rem;
+  color: #dc2626;
 }
 
 /* --- Responsive --- */

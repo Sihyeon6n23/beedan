@@ -2,6 +2,7 @@ package com.goodee.beedan.service.file;
 
 import com.goodee.beedan.dto.file.FileDownloadDto;
 import com.goodee.beedan.dto.file.FileDto;
+import com.goodee.beedan.dto.file.FileListDto;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.FileUpload;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -37,23 +40,25 @@ import java.util.stream.Collectors;
 public class FileService {
     private final FileRepository fileRepository;
     private final Tika tika;
-    private final String uploadPath = "D:/beedanFileUplaod";
+    @Value("${file.upload.path}")
+    private String uploadPath;
     private final SecurityService securityService;
 
     /*
-    * RefDto: 참조타입과 참조번호 가지고 있는 DTO, 조합해서 인자로 전달
-    * saveFile : 파일 저장 서비스(인자: List<MultipartFile>, RefDto)
-    * prepareDownload : 다운로드 서비스, restController 호출주소: /api/files/download/{fileId}
-    * getFileList : 전체 파일 조회 서비스(인자: List<fileId>, 반환: List<FileDto>)
-    * getFile : 단건 파일 조회 서비스(인자: fileId, 반환: FileDto)
-    * deleteFile : 파일 단건 삭제 서비스(인자: fileId, 반환: void)
-    * deleteFilesByRef : 파일 일괄 삭제 서비스(참조타입)(인자: refDTO, 반환: void), 게시글 삭제시 사용
-    * deleteFiles : 파일 일괄 삭제 서비스(파일번호리스트)(인자: List<Long> fileIdList, 반환: void), 게시글 수정시 사용
-    * 게시글 수정시 deleteFiles와 saveFile 각각 호출해서 사용, Transaction은 호출하는 서비스에서 적용
+     * RefDto: 참조타입과 참조번호 가지고 있는 DTO, 조합해서 인자로 전달
+     * saveFile : 파일 저장 서비스(인자: List<MultipartFile>, RefDto)
+     * prepareDownload : 다운로드 서비스, restController 호출주소: /api/files/download/{fileId}
+     * getFileList : 전체 파일 조회 서비스(인자: List<fileId>, 반환: List<FileDto>)
+     * getFile : 단건 파일 조회 서비스(인자: fileId, 반환: FileDto)
+     * deleteFile : 파일 단건 삭제 서비스(인자: fileId, 반환: void)
+     * deleteFilesByRef : 파일 일괄 삭제 서비스(참조타입)(인자: refDTO, 반환: void), 게시글 삭제시 사용
+     * deleteFiles : 파일 일괄 삭제 서비스(파일번호리스트)(인자: List<Long> fileIdList, 반환: void), 게시글 수정시 사용
+     * 게시글 수정시 deleteFiles와 saveFile 각각 호출해서 사용, Transaction은 호출하는 서비스에서 적용
      */
 
     // 파일 저장 요청
-    public void saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+    public List<FileListDto> saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+        List<FileListDto> fileListDtoList = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
 
@@ -71,7 +76,16 @@ public class FileService {
                 throw new IllegalIdentifierException("파일 이름이 없습니다.");
             }
 
-            uploadToDisk(file, uuid, ext);
+            fullPath.add(uploadToDisk(file, uuid, ext));
+
+            // FileListDto 생성 및 추가
+            fileListDtoList.add(FileListDto.builder()
+                    .uuid(uuid)
+                    .originalName(originalName)
+                    .fileExt(ext)
+                    .fileSize(file.getSize())
+                    .filePat(uploadPath + "\\" + datePath)
+                    .build());
 
             FileUpload fileUpload = FileUpload.builder()
                     .fileNm(originalName)
@@ -88,6 +102,7 @@ public class FileService {
 
             fileRepository.save(fileUpload);
         }
+        return fileListDtoList;
     }
     // 물리파일 다운로드 서비스
     public FileDownloadDto prepareDownload(Long fileId) {
@@ -155,7 +170,7 @@ public class FileService {
     // 파일 일괄 삭제(참조버전)
     public void deleteFilesByRef(RefDto refDto) {
         List<Long> fileIdList = fileRepository.findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalse(
-                refDto.getRefTy(), refDto.getRefNo())
+                        refDto.getRefTy(), refDto.getRefNo())
                 .stream()
                 .map(FileUpload::getFileId)
                 .toList();
@@ -177,9 +192,10 @@ public class FileService {
     }
 
     // 물리파일 저장
-    private void uploadToDisk(MultipartFile file, String uuid, String ext) throws IOException {
+    private String uploadToDisk(MultipartFile file, String uuid, String ext) throws IOException {
         Path fullPath = Paths.get(uploadPath, getDatePath(), uuid + "." + ext);
         file.transferTo(fullPath.toFile());
+        return fullPath.toString();
     }
 
     // 물리 파일 삭제

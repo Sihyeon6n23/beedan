@@ -42,12 +42,30 @@
             </div>
         </div>
 
-        <a th:href="@{/inquiry/list}"
-           class="sidebar-menu__link"
-           th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''">
-            <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
-            <span>문의 관리</span>
-        </a>
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'inquiry'} ? 'true' : 'false'">
+                <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
+                <span>문의 관리</span>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/inquiry/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'inquiry-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    문의 목록
+                </a>
+                <a th:href="@{/inquiry/write}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'inquiry-write'} ? ' sidebar-menu__child-link--current' : ''">
+                    문의 작성
+                </a>
+            </div>
+        </div>
 
         <div class="sidebar-menu__group"
              th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__group--open' : ''">
@@ -56,17 +74,17 @@
                     th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__link--current' : ''"
                     th:attr="aria-expanded=${activeMain == 'stock'} ? 'true' : 'false'">
                 <span class="material-symbols-outlined sidebar-menu__icon">inventory_2</span>
-                <span>상품 요청</span>
+                <span>상품 관리</span>
                 <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
             </button>
 
             <div class="sidebar-menu__child-wrap">
-                <a th:href="@{/admin/stock/list}"
+                <a th:href="@{/myitem}"
                    class="sidebar-menu__child-link"
                    th:classappend="${activeSub == 'stock-my'} ? ' sidebar-menu__child-link--current' : ''">
                     내 상품
                 </a>
-                <a th:href="@{/admin/newstock}"
+                <a th:href="@{/require/list}"
                    class="sidebar-menu__child-link"
                    th:classappend="${activeSub == 'stock-require'} ? ' sidebar-menu__child-link--current' : ''">
                     상품 요청

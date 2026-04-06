@@ -2,6 +2,7 @@ package com.goodee.beedan.controller.stock;
 
 import com.goodee.beedan.dto.crawling.SelectorForm;
 import com.goodee.beedan.dto.crawling.UrlForm;
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.stock.NewStockForm;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
@@ -10,6 +11,7 @@ import com.goodee.beedan.repository.brand.BrandRepository;
 import com.goodee.beedan.repository.category.CategoryRepository;
 import com.goodee.beedan.repository.crawling.CrawlingUrlRepository;
 import com.goodee.beedan.service.crawling.CrawlingService;
+import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.stock.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,12 +26,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.FALSE;
@@ -46,6 +44,7 @@ public class NewStockController {
     private final CategoryRepository categoryRepository;
     private final CrawlingUrlRepository crawlingUrlRepository;
     private final com.goodee.beedan.service.root.SchedulerService schedulerService;
+    private final FileService fileService;
 
     @Value("${upload.stock.dir:./uploads/stock}")
     private String uploadDir;
@@ -130,27 +129,26 @@ public class NewStockController {
     @PostMapping("/manual")
     public String saveManual(NewStockForm newStockForm,
                              RedirectAttributes redirectAttributes) {
-        try {
+
             String imgUrl = null;
             MultipartFile imgFile = newStockForm.getImgFile();
-            if (imgFile != null && !imgFile.isEmpty()) {
-                String ext = imgFile.getOriginalFilename() != null
-                        ? imgFile.getOriginalFilename().substring(imgFile.getOriginalFilename().lastIndexOf('.'))
-                        : ".jpg";
-                String fileName = UUID.randomUUID() + ext;
-                Path dir = Paths.get(uploadDir);
-                Files.createDirectories(dir);
-                Files.copy(imgFile.getInputStream(), dir.resolve(fileName));
-                imgUrl = "/stock/" + fileName;
-            }
+            List<MultipartFile> files = new ArrayList<>();
+            files.add(imgFile);
 
-            stockService.saveManual(newStockForm, imgUrl);
+            Long lastId = stockService.saveManual(newStockForm);
+            RefDto refDto = RefDto.builder()
+                    .refTy("STOCK")
+                    .refNo(lastId)
+                    .build();
+        try {
+            fileService.saveFile(files, refDto);
             redirectAttributes.addFlashAttribute("message", "상품이 등록되었습니다.");
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "이미지 업로드 실패: " + e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "상품 등록 실패: " + e.getMessage());
         }
+
         redirectAttributes.addFlashAttribute("activeTab", "manual");
         return "redirect:/admin/newstock";
     }

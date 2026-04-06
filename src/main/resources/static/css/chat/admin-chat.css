@@ -1,4 +1,4 @@
-/* 관리자 채팅: 공통 페이지 레이아웃 */
+/* 관리자 채팅: 공통 ?�이지 ?�이?�웃 */
 .admin-chat-page {
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
   }
 }
 
-/* 관리자 채팅: 공통 블록과 쉘 영역 */
+/* 관리자 채팅: 공통 블록�????�역 */
 .admin-chat-shell {
   background: var(--color-surface-container-lowest);
   box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
@@ -195,7 +195,7 @@
   color: var(--color-on-background);
 }
 
-/* 관리자 채팅 목록: 페이지 전용 레이아웃 */
+/* 관리자 채팅 목록: ?�이지 ?�용 ?�이?�웃 */
 .admin-chat-list-page {
   max-width: 1220px;
 }
@@ -245,11 +245,14 @@
 }
 
 .admin-chat-list-body {
+  position: relative;
   border-top: 1px solid var(--color-surface-container-highest);
   background: #fffdf8;
 }
 
 .admin-chat-empty-state {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -270,6 +273,16 @@
 .admin-chat-empty-state p {
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+.admin-chat-row-spacer {
+  width: 100%;
+  padding: 1.1rem 1.75rem;
+  min-height: 5.6875rem;
+  visibility: hidden;
+  pointer-events: none;
+  border-bottom: 1px solid #efefef;
+  background: var(--color-surface-container-lowest);
 }
 
 .admin-chat-row {
@@ -436,7 +449,7 @@
   color: var(--color-secondary);
 }
 
-/* 관리자 채팅 상세: 페이지 전용 레이아웃 */
+/* 관리자 채팅 ?�세: ?�이지 ?�용 ?�이?�웃 */
 .admin-chat-detail-page {
   max-width: 1040px;
   padding-bottom: 1rem;
@@ -521,7 +534,7 @@
   background: var(--color-surface-container-lowest);
 }
 
-/* 관리자 채팅 상세: 헤더, 보드, 메시지, 입력 영역 */
+/* 관리자 채팅 ?�세: ?�더, 보드, 메시지, ?�력 ?�역 */
 .admin-chat-detail-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
@@ -935,7 +948,7 @@
   margin-top: 0;
 }
 
-/* 관리자 채팅: 공통 모달과 유틸리티 상태 */
+/* 관리자 채팅: 공통 모달�??�틸리티 ?�태 */
 .admin-chat-modal {
   position: fixed;
   inset: 0;
@@ -1103,7 +1116,7 @@
   display: none !important;
 }
 
-/* 관리자 채팅: 반응형 조정 */
+/* 관리자 채팅: 반응??조정 */
 @media (max-width: 900px) {
   .sidebar-frame {
     width: 100%;
