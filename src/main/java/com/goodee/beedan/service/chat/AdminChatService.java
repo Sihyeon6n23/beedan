@@ -233,7 +233,9 @@ public class AdminChatService {
         memberReadStatus.setChMsLastId(savedMessage.getChMsId()); // 마지막 메시지 갱신
         chatRoomReadStatusRepository.save(memberReadStatus);
 
+        // 엔티티 -> Dto 변환
         AdminChatMessageDto adminChatMessageDto = mapToAdminChatMessageDto(savedMessage);
+        // 채팅방 구독자들에게 실시간으로 메시지를 뿌림
         chatRealtimeService.publishMessage(chRoId, adminChatMessageDto);
 
         return adminChatMessageDto;
