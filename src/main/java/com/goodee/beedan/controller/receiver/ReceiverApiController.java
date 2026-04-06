@@ -5,6 +5,7 @@ import com.goodee.beedan.dto.receiver.ReceiverDto;
 import com.goodee.beedan.service.receiver.ReceiverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -15,26 +16,20 @@ import java.util.List;
 @RequestMapping("/api/receiver")
 @RequiredArgsConstructor
 @Slf4j
-public class
-
-ReceiverApiController {
+public class ReceiverApiController {
     private final ReceiverService receiverService;
 
     @GetMapping
-    public ResponseEntity<List<ReceiverDto>> getReceiverList(@AuthenticationPrincipal MemberUserDetails userDetails){
-        List<ReceiverDto> receiverDtoList = receiverService.getReceiverList(userDetails.getMemberId());
-
-        log.info(receiverDtoList.toString());
-
-        return ResponseEntity.ok(receiverDtoList);
+    public ResponseEntity<List<ReceiverDto>> getReceiverList(@AuthenticationPrincipal MemberUserDetails userDetails) {
+        return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReceiverDto> getReciever(
+    public ResponseEntity<ReceiverDto> getReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
-            @PathVariable("id") Long rcId){
-        ReceiverDto receiverDto = receiverService.getReceiver(userDetails.getMemberId(), rcId);
+            @PathVariable("id") Long rcId) {
 
+        ReceiverDto receiverDto = receiverService.getReceiver(userDetails.getMemberId(), rcId);
         return ResponseEntity.ok(receiverDto);
     }
 
@@ -42,28 +37,32 @@ ReceiverApiController {
     public ResponseEntity<List<ReceiverDto>> updateReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @PathVariable("id") Long rcId,
-            @RequestBody ReceiverDto receiverDto){
-        receiverService.updateReceiver(receiverDto);
+            @RequestBody ReceiverDto receiverDto) {
+        receiverDto.setRcId(rcId);
+        receiverDto.setMemId(userDetails.getMemberId());
 
+        receiverService.updateReceiver(receiverDto);
         return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ReceiverDto> deleteReceiver(
+    public ResponseEntity<List<ReceiverDto>> deleteReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
-            @PathVariable("id") Long rcId){
-        receiverService.deleteReceiver(rcId);
+            @PathVariable("id") Long rcId) {
+        receiverService.deleteReceiver(userDetails.getMemberId(), rcId);
 
-        return ResponseEntity.ok(receiverService.getReceiver(userDetails.getMemberId(), rcId));
+
+        return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 
     @PostMapping
     public ResponseEntity<List<ReceiverDto>> addReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestBody ReceiverDto receiverDto){
-        receiverDto.setMem_id(userDetails.getMemberId());
+            @RequestBody ReceiverDto receiverDto) {
+
+        receiverDto.setMemId(userDetails.getMemberId());
         receiverService.addReceiverAddr(receiverDto);
 
-        return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 }

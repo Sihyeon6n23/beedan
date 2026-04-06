@@ -5,11 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!notiIcon || !notiDropdown || !notiContent) return;
 
-    // CSRF 토큰 추출
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-    // 공통 API 요청 함수
     async function apiRequest(url, method = 'GET') {
         const headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 1. 알림 목록 로드
     function loadNotifications() {
         apiRequest('/api/notification')
             .then(data => renderNotifications(data))
@@ -33,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // 2. 화면 렌더링 (데이터 목록 디자인 적용)
     function renderNotifications(data) {
         if (!notiContent) return;
 
@@ -83,18 +79,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             case 'deleteAll':
                 url = `/api/notification`;
-                method = 'DELETE'; // 전체 삭제 API 호출
+                method = 'DELETE';
                 break;
         }
 
         if (url) {
             apiRequest(url, method)
                 .then(updatedList => {
-                    // 상단 드롭다운 갱신
                     renderNotifications(updatedList);
-                    updateUnreadCount();
+                    // updateUnreadCount();
 
-                    // [실시간 반영 로직]
                     if (type === 'read' && clickedElement) {
                         const li = clickedElement.closest('li');
                         li.style.borderLeftColor = 'transparent'; // 좌측 바 투명화
@@ -126,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // 빈 화면 처리 함수
     function checkEmptyState() {
         const container = document.querySelector('.data-list-container');
         const pageContent = document.getElementById('notiPageContent');
@@ -141,10 +134,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // [중요 수정] 알림 아이콘 클릭 (토글 및 전파 방지)
     notiIcon.addEventListener('click', function(e) {
         e.preventDefault();
-        e.stopPropagation(); // 클릭 이벤트가 document로 퍼져서 창이 바로 닫히는 것을 방지
+        e.stopPropagation();
 
         const isHidden = notiDropdown.classList.toggle('hidden');
         if (!isHidden) {
@@ -152,12 +144,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // [중요 수정] 알림창 내부 클릭 시 창이 닫히지 않도록 방지
     notiDropdown.addEventListener('click', function(e) {
         e.stopPropagation();
     });
 
-    // 이벤트 리스너: 외부 클릭 시 닫기
     document.addEventListener('click', (e) => {
         if (!notiDropdown.classList.contains('hidden')) {
             notiDropdown.classList.add('hidden');
@@ -165,21 +155,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
    function updateUnreadCount() {
-           apiRequest('/api/notification/unread-count')
-               .then(count => {
-                   const badge = document.querySelector('#notiIcon span.bg-primary');
-                   if (badge) {
-                       if (count > 0) {
-                           badge.style.setProperty('display', 'flex', 'important');
-                           badge.style.setProperty('border-radius', '999px', 'important');
-                           badge.innerText = count > 99 ? '99+' : count;
-                       } else {
-                           badge.style.setProperty('display', 'none', 'important');
-                       }
+       apiRequest('/api/notification/unread-count')
+           .then(count => {
+               const badge = document.getElementById('unreadBadge');
+               if (badge) {
+                   if (count > 0) {
+                       badge.classList.remove('hidden');
+                       badge.innerText = count > 5 ? '5+' : count;
+                   } else {
+                       badge.classList.add('hidden');
                    }
-               })
-               .catch(err => console.error("배지 업데이트 실패:", err));
-       }
+               }
+           })
+           .catch(err => console.error("배지 업데이트 실패:", err));
+   }
 
-    updateUnreadCount();
+
 });

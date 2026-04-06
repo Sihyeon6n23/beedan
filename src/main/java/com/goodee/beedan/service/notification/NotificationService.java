@@ -34,6 +34,28 @@ public class NotificationService {
         return notificationDtoList;
     }
 
+    public List<NotificationDto> getNotificationList(Long memId, String filter){
+        memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+
+        List<Notification> notifications;
+        switch (filter) {
+            case "UNREAD":
+                notifications = notificationRepository.findUnreadByMemId(memId);
+                break;
+            case "READ":
+                notifications = notificationRepository.findReadByMemId(memId);
+                break;
+            case "ALL":
+            default:
+                notifications = notificationRepository.findAllNotDeletedByMemId(memId);
+                break;
+        }
+
+        return notifications.stream()
+                .map(this::mapToNotificationDto)
+                .toList();
+    }
+
     public void createNotification(Long memId, NotificationType notiTp, Long targetId){
         Member member = memberRepositroy.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 

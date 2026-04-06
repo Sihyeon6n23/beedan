@@ -1,295 +1,172 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{::sidebar},
+          ~{fragments/sidebar :: frame('Member', 'Member Management', ~{::sidebar})},
           ~{::content}
       )}">
 <head>
-    <title>BEEDAN | 회원 관리</title>
+    <title>BEEDAN | Member Management</title>
 </head>
 <body>
 
-<aside th:fragment="sidebar">
-    <div th:replace="~{fragments/sidebar :: frame(
-        'Member Curation',
-        'onboarding',
-        ~{::side-menu}
-    )}">
-        <div th:fragment="side-menu">
-            <a href="#" class="block px-10 py-2 text-sm font-medium text-stone-600 hover:text-stone-900">회원 목록</a>
-            <a href="#" class="block px-10 py-2 text-sm font-medium text-stone-600 hover:text-stone-900">통계 보기</a>
-        </div>
-    </div>
-</aside>
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('Member', 'Member-list')}"></div>
+</th:block>
 
-
-<div th:fragment="content">
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
     <link rel="stylesheet" th:href="@{/css/admin/admin-member-list.css}">
+    <style>
+        .admin-chat-list-head,
+        .admin-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(80px, 0.9fr) minmax(120px, 2fr) minmax(80px, 1.0fr) minmax(100px, 0.9fr) minmax(90px, 1fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
 
-    <section class="admin-member-container" style="max-width: 1400px !important;">
-        <header class="hero-header">
-            <div class="header-title">
-                <p class="text-gold-sub">Member Management</p>
-                <h1>회원목록</h1>
-                <p class="text-description">회원 상태를 조회하고 수정할 수 있습니다.</p>
-            </div>
-            <button class="manage-btn">회원별 관리 페이지</button>
-        </header>
+        .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
 
-        <section class="filter-bar">
-            <div class="search-input-wrapper">
-                <input type="text" placeholder="검색어를 입력하세요.">
-                <span class="material-symbols-outlined">search</span>
-            </div>
-            <div class="filter-select">
-                <span>계정상태: 활성화</span>
-                <span class="material-symbols-outlined">expand_more</span>
-            </div>
-            <div class="filter-select">
-                <span>회사명으로 검색</span>
-                <span class="material-symbols-outlined">expand_more</span>
-            </div>
-        </section>
+        .btn-detail {
+            background-color: #e2e2e2;
+            color: #1a1c1c;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .btn-detail:hover { background-color: #d1d1d1; }
+        .btn-edit {
+            background-color: #1a1c1c;
+            color: #ffffff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .btn-edit:hover { background-color: #333; }
+    </style>
 
-        <div class="table-responsive">
-            <table class="member-table">
-                <thead>
-                <tr>
-                    <th class="col-check"><input type="checkbox"></th>
-                    <th class="col-id">Member_ID</th>
-                    <th class="col-company">회사명</th>
-                    <th class="col-owner">대표명</th>
-                    <th class="col-name">회원명</th>
-                    <th class="col-status">계정상태</th>
-                    <th class="col-date">가입일</th>
-                    <th class="col-action">상세/수정</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td class="col-check"><input type="checkbox"></td>
-                    <td class="col-id">12345890</td>
-                    <td class="col-company">(주)구디아카데미</td>
-                    <td class="col-owner">김갑한</td>
-                    <td class="col-name">홍길동</td>
-                    <td class="col-status">
-                        <span class="status-badge status-active">활성화</span>
-                    </td>
-                    <td class="col-date">2026-03-15</td>
-                    <td class="col-action">
-                        <div class="col-action-container">
-                            <button class="btn-view" onclick="openMemberModal(12345890)">VIEW</button>
-                            <a th:href="@{/admin/member/edit(id=1)}" class="btn-edit" style="text-decoration: none;">EDIT</a>
+            <section class="admin-chat-page admin-chat-list-page member-management-list">
+                <header class="admin-chat-shell admin-chat-shell--header">
+                    <div class="admin-chat-shell__heading">
+                        <span class="admin-chat-kicker">MEMBER LIST</span>
+                        <h2 class="admin-chat-title">회원 관리</h2>
+                        <div class="admin-chat-shell__rule">
+                            <span></span>
                         </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-check"><input type="checkbox"></td>
-                    <td class="col-id">12345891</td>
-                    <td class="col-company">비단건축</td>
-                    <td class="col-owner">이순신</td>
-                    <td class="col-name">강감찬</td>
-                    <td class="col-status">
-                        <span class="status-badge status-inactive">장기미접속</span>
-                    </td>
-                    <td class="col-date">2026-03-20</td>
-                    <td class="col-action">
-                        <div class="col-action-container">
-                            <button class="btn-view" onclick="openMemberModal(12345890)">VIEW</button>
-                            <a th:href="@{/admin/member/detail(id=12345890)}" class="btn-edit">EDIT</a>
+                    </div>
+                </header>
+
+                <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="요청 목록 필터">
+                    <div class="admin-chat-toolbar">
+                        <div class="admin-chat-toolbar__filters">
+                            <div class="admin-chat-filter-set" data-filter-group="status">
+                                <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                                <a class="admin-chat-filter" href="#" data-status="ACTIVE">활성</a>
+                                <a class="admin-chat-filter" href="#" data-status="LOCK">잠금</a>
+                                <a class="admin-chat-filter" href="#" data-status="PENDING">대기</a>
+                            </div>
                         </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <footer class="pagination-wrapper">
-            <p class="page-info">현재 페이지 1-5 of 1,280 명</p>
-            <div class="page-numbers">
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-            </div>
-        </footer>
-    </section>
-
-    <div id="memberDetailModal" class="modal-overlay hidden">
-        <div class="modal-container">
-            <div class="modal-top-line"></div>
-
-            <header class="modal-header">
-                <div class="header-info">
-                    <div class="meta-row">
-                        <span class="member-id">MEMBER ID: 0123456</span>
-                        <span class="dot-divider"></span>
-                        <span class="join-date">가입일: 2023-01-01</span>
                     </div>
-                    <h2 class="member-name">HONG GIL DONG</h2>
-                </div>
-                <button class="btn-close-modal" onclick="closeMemberModal()">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </header>
+                </section>
 
-            <div id="modalContentArea" class="modal-body">
-                <section class="modal-col col-order">
-                    <div class="col-header">
-                        <h3>주문 목록</h3>
-                        <span class="material-symbols-outlined">receipt_long</span>
+                <section class="admin-chat-shell admin-chat-shell--list">
+                    <div class="admin-chat-list-head" aria-hidden="true">
+                        <div style="text-align: center;">아이디 / 이름</div>
+                        <div style="text-align: center;">상호명 / 대표명</div>
+                        <div style="text-align: center;">상태</div>
+                        <div style="text-align: center;">가입일</div>
+                        <div style="text-align: center;">관리</div>
                     </div>
-                    <div class="col-content">
-                        <article class="list-item border-yellow">
-                            <span class="item-meta">주문 번호 • #77491</span>
-                            <h4 class="item-title">~ 상의 50개외 5개 품목</h4>
-                            <div class="item-footer">
-                                <span class="item-price">$12,450.00</span>
-                                <span class="badge badge-gray">배송중</span>
+
+                    <div class="admin-chat-list-body" id="memberListBody"></div>
+
+                    <footer class="admin-chat-shell admin-chat-shell--pagination" id="paginationArea"></footer>
+                </section>
+            </section>
+
+
+            <div id="memberDetailModal" class="modal-overlay hidden">
+                <div class="modal-container">
+                    <div class="modal-top-line"></div>
+
+                    <header class="modal-header">
+                        <div class="header-info">
+                            <div class="meta-row">
+                                <span class="member-id"></span>
+                                <span class="dot-divider"></span>
+                                <span class="join-date"></span>
                             </div>
-                        </article>
-                        <article class="list-item">
-                            <span class="item-meta">2023-02-01 • #77450</span>
-                            <h4 class="item-title">~ 상의 200개외 3개 품목</h4>
-                            <div class="item-footer">
-                                <span class="item-price">$4,200.00</span>
-                                <span class="badge badge-yellow">배송완료</span>
-                            </div>
-                        </article>
-                    </div>
-                    <div class="col-footer">
-                        <button class="btn-outline-yellow" onclick="loadModalContent('/api/admin/order/12345890')">
-                            전체 주문 목록 조회
+                            <h2 class="member-name"></h2>
+                        </div>
+                        <button class="btn-close-modal" onclick="closeMemberModal()">
+                            <span class="material-symbols-outlined">close</span>
                         </button>
-                    </div>
-                </section>
+                    </header>
 
-                <section class="modal-col col-shipping">
-                    <div class="col-header bg-gray">
-                        <h3>배송 목록</h3>
-                        <span class="material-symbols-outlined">local_shipping</span>
-                    </div>
-                    <div class="col-content">
-                        <div class="shipping-card border-yellow">
-                            <span class="shipping-status">배송 정보 (배송중)</span>
-                            <h4 class="tracking-number">1234-1234-1234</h4>
-                            <span class="tracking-label">운송장 번호</span>
+                    <div id="modalContentArea" class="modal-body">
 
-                            <div class="tracking-timeline">
-                                <div class="timeline-item active">
-                                    <span class="location">인천 물류센터</span>
-                                    <span class="time">Today, 08:14 AM</span>
-                                </div>
-                                <div class="timeline-item">
-                                    <span class="location">Departure from Port</span>
-                                    <span class="time">Yesterday, 10:00 PM</span>
-                                </div>
+                        <section class="modal-col col-order">
+                            <div class="col-header">
+                                <h3>주문 목록</h3>
+                                <span class="material-symbols-outlined">receipt_long</span>
                             </div>
-                        </div>
-                        <div class="shipping-address">
-                            <h5>Destination Address</h5>
-                            <p><span class="material-symbols-outlined icon-yellow">location_on</span> 기본주소 상세주소</p>
-                        </div>
-                    </div>
-                    <div class="col-footer">
-                        <button class="btn-solid-black" onclick="loadModalContent('/api/admin/shipment/12345890')">전체 배송 목록 조회</button>
-                    </div>
-                </section>
-
-                <section class="modal-col col-inquiry">
-                    <div class="col-header">
-                        <h3>문의 목록</h3>
-                        <span class="material-symbols-outlined">support_agent</span>
-                    </div>
-                    <div class="col-content">
-                        <article class="list-item">
-                            <div class="inquiry-meta">
-                                <span class="status-text text-yellow">문의 진행중</span>
-                                <span class="time">2 시간 전</span>
+                            <div class="col-content"></div>
+                            <div class="col-footer">
+                                <button class="btn-outline-yellow">전체 주문 목록 조회</button>
                             </div>
-                            <h4 class="item-title">Inquiry regarding bespoke finish...</h4>
-                            <p class="item-desc">"We are looking to match the sheen of the previous order..."</p>
-                        </article>
-                        <hr class="divider">
-                        <article class="list-item opacity-60">
-                            <div class="inquiry-meta">
-                                <span class="status-text">답변완료</span>
-                                <span class="time">2024-01-01</span>
-                            </div>
-                            <h4 class="item-title">Update on shipping schedule...</h4>
-                            <p class="item-desc">"Confirming that the port delays have been bypasssed..."</p>
-                        </article>
-                    </div>
-                    <div class="col-footer">
-                        <button class="btn-solid-yellow" onclick="loadModalContent('/api/admin/inquiry/12345890')">전체 문의 내역 조회</button>
-                    </div>
-                </section>
+                        </section>
 
+                        <section class="modal-col col-shipping">
+                            <div class="col-header bg-gray">
+                                <h3>배송 목록</h3>
+                                <span class="material-symbols-outlined">local_shipping</span>
+                            </div>
+                            <div class="col-content"></div>
+                            <div class="col-footer">
+                                <button class="btn-solid-black">전체 배송 목록 조회</button>
+                            </div>
+                        </section>
+
+                        <section class="modal-col col-inquiry">
+                            <div class="col-header">
+                                <h3>문의 목록</h3>
+                                <span class="material-symbols-outlined">support_agent</span>
+                            </div>
+                            <div class="col-content"></div>
+                            <div class="col-footer">
+                                <button class="btn-solid-yellow">전체 문의 내역 조회</button>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <script>
-        let cachedSummaryHtml = "";
-
-        function openMemberModal(memberId) {
-            const modal = document.getElementById('memberDetailModal');
-            const memberIdElement = modal.querySelector('.member-id');
-            if (memberIdElement) {
-                memberIdElement.textContent = "MEMBER ID: " + memberId;
-            }
-            console.log("Member ID :", memberId);
-            modal.classList.remove('hidden');
-        }
-
-        function loadModalContent(url) {
-            const contentArea = document.getElementById('modalContentArea');
-
-            if (cachedSummaryHtml === "") {
-                cachedSummaryHtml = contentArea.innerHTML;
-            }
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error("네트워크 응답 에러");
-                    return response.text();
-                })
-                .then(page => {
-                    contentArea.innerHTML = page;
-                })
-                .catch(error => {
-                    console.error('화면 전환 에러:', error);
-                    alert('데이터를 불러오지 못했습니다.');
-                });
-        }
-
-        function restoreModalSummary() {
-            const contentArea = document.getElementById('modalContentArea');
-
-            if (cachedSummaryHtml !== "") {
-                contentArea.innerHTML = cachedSummaryHtml;
-            }
-        }
-
-        function closeMemberModal() {
-            const modal = document.getElementById('memberDetailModal');
-            modal.classList.add('hidden');
-
-            if (cachedSummaryHtml !== "") {
-                document.getElementById('modalContentArea').innerHTML = cachedSummaryHtml;
-                cachedSummaryHtml = "";
-            }
-        }
-
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('memberDetailModal');
-            if (event.target === modal) {
-                closeMemberModal();
-            }
-        });
-    </script>
-
-
-</div>
+    <script th:src="@{/js/admin/member/list.js}"></script>
+</th:block>
 </body>
 </html>
