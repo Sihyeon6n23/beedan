@@ -142,11 +142,36 @@
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script th:src="@{/js/auth/phone-certification.js}"></script>
+    <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+
     <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}"
             type="text/javascript"
             th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}"></script>
 
     <script>
+        let certifyPhoneBtn = document.getElementById("certify_phone");
+        let phoneAvailable = document.getElementById("phoneAvailable");
+        let phoneCheckedInput = document.getElementById("phoneCheckedInput")
+        let certify_phone = document.getElementById("certify_phone")
+        certifyPhoneBtn.addEventListener('click',async () => {
+            const response = await PortOne.requestIdentityVerification({
+                storeId: "store-6e274706-e18d-4cc0-95b4-f9da97355da2",
+                identityVerificationId: `identity-verification-${crypto.randomUUID()}`,
+                channelKey: "channel-key-fe0517f7-44f1-4916-b471-2a71918fe5e3"
+            });
+
+            if (response.code !== undefined) {
+                return alert(response.message);
+                document.getElementById("imp_uid").value = response.identityVerificationId;
+                phoneAvailable.classList.remove("hidden");
+                certify_phone.disabled = true;
+                phoneCheckedInput.value = true;
+            }
+        });
+
         document.addEventListener("DOMContentLoaded", function() {
             // [중요] kakao 객체 존재 여부 체크
             if (typeof kakao === 'undefined' || typeof kakao.maps === 'undefined') {
