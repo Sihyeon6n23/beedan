@@ -5,10 +5,12 @@ import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.dto.order.WebhookShipmentRequest;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
+import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,8 @@ public class OrderService {
     private final ShipmentItemRepository shipmentItemRepository;
     private final OrderItemRepository orderItemRepository;
     private final QuoteInfoRepository  quoteInfoRepository;
+    private final PaymentRepository paymentRepository;
+    private final QuoteBaseRepository quoteBaseRepository;
 
     public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
         if(!memberRepository.existsById(memId)) return null;
@@ -107,6 +111,57 @@ public class OrderService {
         order.setOrdBaseStt(OrderStatus.CANCELED);
         order.getShipments().forEach(sh -> sh.setShCanYn(true));
     }
+
+    @Transactional
+    public Long createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
+        QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
+        List<QuoteDetail> quoteDetail = quoteDetailRepository.findAllByQuId(quoteBase.getQuId());
+        Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
+        Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(()-> new UsernameNotFoundException("일치하는 회원이 없습니다."));
+        Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(()->new IllegalArgumentException("결제 정보가 없습니다"));
+
+        Order order = Order.builder()
+                .member(member)
+               // .ordBaseRcvNm(quoteDetail.)
+               //  .ordBaseAdr(quoteDetail.getQuDtRcAdr()) //  .ordBaseAdrDt()
+                .ordBaseTtAm(payment.getPyTtAm())
+                .ordBaseNo(negotiation.getNgNm())
+                .build();
+        orderRepository.save(order);
+
+        Shipment shipment = Shipment.builder()
+                .order(order)
+                .shRcvNm(order.getOrdBaseRcvNm())
+                .shAdr(order.getOrdBaseAdr())
+                .shAdrDt(order.getOrdBaseAdrDt()) // 현재 null 들어감.
+                .shStt(ShipmentStatus.PREPARING)
+                .shCarCd(webhookRequest.getShCarNo())
+                .shTraNo(webhookRequest.getShTraNo())
+                .build();
+        shipmentRepository.save(shipment);
+
+        // 1개의 주문에 대한 각각의 수량 저장
+        List<QuoteDetail> details = quoteDetailRepository.findAllByNgId(negotiation.getNgId());
+        for (QuoteDetail detail : details) {
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .ordItmQn(detail.getQuDtQn())
+                    .ordItmNm(detail.getStNm())
+                    .build();
+            orderItemRepository.save(orderItem);
+
+            ShipmentItem shipmentItem = ShipmentItem.builder()
+                    .shipment(shipment)
+                    .orderItem(orderItem)
+                    .shQn(detail.getQuDtQn())
+                    // .domesticTraNo(null) 국내 택배 운송장 코드?
+                    .build();
+            shipmentItemRepository.save(shipmentItem);
+        }
+
+        return order.getOrdBaseId();
+    }
+
 
     @Transactional
     public Long createOrder(Long memId, OrderDto dto) {
