@@ -388,7 +388,7 @@ main > div {
 
 /* --- 하단 버튼들 --- */
 .col-footer button { width: 100%; padding: 12px 0; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 2px; }
-.btn-outline-yellow { background: transparent; border: 2px solid #ffd700; color: #1a1c1c; }
+.btn-outline-yellow { background: transparent; border: 1px solid #ffd700; color: #1a1c1c; }
 .btn-solid-black { background: #1a1c1c; border: none; color: #fff; }
 .btn-solid-yellow { background: #ffd700; border: none; color: #705d00; }
 

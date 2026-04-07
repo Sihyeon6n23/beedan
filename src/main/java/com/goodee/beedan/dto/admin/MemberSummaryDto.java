@@ -46,16 +46,6 @@ public class MemberSummaryDto {
         private String shAdrDt;
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TrackingDetailDto {
-        private String time;
-        private String status;
-        private String description;
-    }
-
 
     @Getter @Builder
     public static class InquirySummaryDto {

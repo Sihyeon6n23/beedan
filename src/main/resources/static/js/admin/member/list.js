@@ -226,7 +226,8 @@ function renderModalOrders(orders) {
     let html = '';
     orders.forEach(order => {
         const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.split('T')[0] : '-';
-        const sttName = order.ordBaseStt === 'DELIVERED' ? '배송완료' : (order.ordBaseStt === 'DELIVERING' ? '배송중' : order.ordBaseStt);
+
+        const sttInfo = getOrderBadgeTheme(order.ordBaseStt);
 
         html += `
             <article class="list-item ${order.ordBaseStt === 'DELIVERING' ? 'border-yellow' : ''}">
@@ -234,7 +235,7 @@ function renderModalOrders(orders) {
                 <h4 class="item-title">${order.ordSummaryNm}</h4>
                 <div class="item-footer">
                     <span class="item-price">${order.ordBaseTtAm ? order.ordBaseTtAm.toLocaleString() : 0}원</span>
-                    <span class="badge ${order.ordBaseStt === 'DELIVERED' ? 'badge-yellow' : 'badge-gray'}">${sttName}</span>
+                    <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                 </div>
             </article>
         `;
@@ -468,7 +469,7 @@ async function viewFullOrderList(memId, page = 0) {
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate(${order.ordBaseId})" title="상태변경">
+                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate(${order.ordBaseId})" title="변경상태저장">
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
@@ -701,8 +702,12 @@ async function shipmentDetail(shId, memId, page) {
                 <button class="btn-go-back" onclick="viewFullShipmentList(${memId}, ${page})">
                     <span class="material-symbols-outlined">arrow_back</span> 목록으로 돌아가기
                 </button>
-                <div class="title-row">
-                    <h2 class="fragment-title">TRACKING Details</h2>
+
+                <div class="title-row" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="fragment-title" style="margin: 0;">TRACKING Details</h2>
+                    <button onclick="advanceDemoStatus(${shId}, ${memId}, ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
+                        다음 배송 단계
+                    </button>
                 </div>
             </div>
 
@@ -710,8 +715,8 @@ async function shipmentDetail(shId, memId, page) {
                 <div id="trackingSummary" class="tracking-summary-card">
                     <p style="text-align:center; color:#666;">배송 데이터를 불러오는 중입니다...</p>
                 </div>
-                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;">
-                    </div>
+
+                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;"></div>
             </div>
         </div>
     `;
@@ -724,6 +729,7 @@ async function shipmentDetail(shId, memId, page) {
 
         document.getElementById('trackingSummary').innerHTML = `
             <div class="summary-info" style="display:flex; justify-content:space-between; width:100%;">
+
                 <div style="flex:1;">
                     <span style="font-size:12px; color:#888;">택배사</span>
                     <div style="font-weight:bold; font-size:16px;">${data.carrierName}</div>
@@ -751,10 +757,12 @@ async function shipmentDetail(shId, memId, page) {
             return;
         }
 
-        // 정상 데이터가 있을 때 타임라인 렌더링
         let html = '<ul class="tracking-timeline-list">';
+
         data.details.forEach((item, index) => {
-            const activeClass = (index === 0) ? 'active' : '';
+            const isLast = (index === data.details.length - 1);
+            const activeClass = isLast ? 'active' : '';
+
             html += `
                 <li class="timeline-step ${activeClass}">
                     <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
@@ -764,6 +772,7 @@ async function shipmentDetail(shId, memId, page) {
                     </div>
                 </li>`;
         });
+
         html += '</ul>';
         timelineArea.innerHTML = html;
 
@@ -771,4 +780,30 @@ async function shipmentDetail(shId, memId, page) {
         document.getElementById('trackingSummary').innerHTML = `<p style="color:red; text-align:center;">오류: ${error.message}</p>`;
         document.getElementById('trackingTimeline').innerHTML = '';
     }
+}
+
+async function advanceDemoStatus(shId, memId, page) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        if(!confirm("배송 상태를 다음 단계로 이동시킬까요?")) return;
+
+        try {
+            const response = await fetch(`/api/admin/member/shipment/${shId}/demo-progress`, {
+                method: 'POST',
+                headers: {
+                   'Content-Type': 'application/json',
+                   [csrfHeader]: csrfToken
+                }
+            });
+
+            if (response.ok) {
+                alert("상태가 업데이트 되었습니다.");
+                shipmentDetail(shId, memId, page);
+            } else {
+                alert("상태 업데이트 실패");
+            }
+        } catch (error) {
+            console.error("통신 오류:", error);
+        }
 }

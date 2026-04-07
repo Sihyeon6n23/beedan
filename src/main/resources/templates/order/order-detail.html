@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 
       th:replace="~{layout/layout :: layout(
           ~{::title},
@@ -183,6 +182,8 @@
             background-color: #555;
         }
 
+
+
     </style>
 
     <section class="admin-chat-page admin-chat-list-page order-management-list">
@@ -230,13 +231,13 @@
 
                             <div class="admin-chat-row__status">
                                 <span class="admin-chat-badge"
-                                                   th:classappend="${ship.shStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (ship.shStt?.name() == 'DELIVERING' || ship.shStt?.name() == 'DELIVERED' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed')}"
-                                                   th:text="${ship.shStt?.name() == 'PREPARING' ? '배송준비' : (ship.shStt?.name() == 'DELIVERING' ? '배송중' : (ship.shStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소'))}">상태
+                                                   th:classappend="${ship.shCanYn ? 'admin-chat-badge--closed' : (ship.shStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (ship.shStt?.name() == 'DELIVERING' || ship.shStt?.name() == 'DELIVERED' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed'))}"
+                                                   th:text="${ship.shCanYn ? '주문취소' : (ship.shStt?.name() == 'PREPARING' ? '배송준비' : (ship.shStt?.name() == 'DELIVERING' ? '배송중' : (ship.shStt?.name() == 'SHIPPING' ? '통관진행' : '배송완료')))}">상태
                                 </span>
                             </div>
 
                             <div class="action-btns">
-                                <button type="button" class="btn-detail" th:disabled="${order.ordBaseStt.name() == 'PREPARING'}" th:onclick="loadShipmentDetail([[${ship.shId}]])">
+                                <button type="button" class="btn-detail" th:disabled="${order.ordBaseStt.name() == 'CANCELED'}" th:onclick="loadShipmentDetail([[${ship.shId}]])">
                                     배송 현황
                                 </button>
 
@@ -267,8 +268,8 @@
 
                             <div class="admin-chat-row__status">
                                 <span class="admin-chat-badge"
-                                      th:classappend="${ship.shStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (ship.shStt?.name() == 'DELIVERING' || ship.shStt?.name() == 'SHIPPING' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed')}"
-                                      th:text="${ship.shStt?.name() == 'PREPARING' ? '배송준비' : (ship.shStt?.name() == 'DELIVERING' || ship.shStt?.name() == 'SHIPPING' ? '배송중' : (ship.shStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소'))}">상태
+                                      th:classappend="${ship.shCanYn ? 'admin-chat-badge--closed' : (ship.shStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (ship.shStt?.name() == 'DELIVERING' || ship.shStt?.name() == 'SHIPPING' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed'))}"
+                                      th:text="${ship.shCanYn ? '주문취소' : (ship.shStt?.name() == 'PREPARING' ? '배송준비' : (ship.shStt?.name() == 'DELIVERING' || ship.shStt?.name() == 'SHIPPING' ? '배송중' : (ship.shStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소')))}">상태
                                 </span>
                             </div>
 
@@ -333,17 +334,16 @@
                 }
             }
 
-            // 1. 배송 현황 버튼 클릭 시 실행
             async function loadShipmentDetail(shId) {
-            const modal = document.getElementById('orderTrackingModal');
-            const modalBody = modal.querySelector('.modal-body');
+                const modal = document.getElementById('orderTrackingModal');
+                const modalBody = modal.querySelector('.modal-body');
 
-            modal.style.display = 'flex';
-            modalBody.innerHTML = `
-                <div style="text-align: center; padding: 50px;">
-                    <p style="color: #666;">배송 정보를 불러오는 중입니다...</p>
-                </div>
-            `;
+                modal.style.display = 'flex';
+                modalBody.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <p style="color: #666;">배송 정보를 불러오는 중입니다...</p>
+                    </div>
+                `;
 
                 try {
                     const trackResponse = await fetch(`/api/shipments/${shId}/track`);
@@ -351,7 +351,6 @@
                     if (!trackResponse.ok) throw new Error("배송 현황을 가져올 수 없습니다.");
                     const trackData = await trackResponse.json();
 
-                    // 화면 렌더링
                     modalBody.innerHTML = buildTrackingHtml(trackData);
 
                 } catch (error) {
@@ -360,9 +359,7 @@
                 }
             }
 
-            // 2. 모달 내부에 들어갈 HTML을 생성하는 헬퍼 함수 (관리자 로직과 동일)
             function buildTrackingHtml(data) {
-                // 1) 상단 요약 박스 (택배사, 송장번호)
                 let html = `
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -382,7 +379,6 @@
                     </div>
                 `;
 
-                // 2) 하단 타임라인
                 if (!data.details || data.details.length === 0) {
                     html += `
                         <div style="text-align: center; padding: 20px; color: #888; background: #fafafa; border-radius: 8px;">
@@ -409,7 +405,6 @@
                 return html;
             }
 
-            // 3. 모달 닫기 함수
             function closeModal() {
                 document.getElementById('orderTrackingModal').style.display = 'none';
             }

@@ -90,9 +90,9 @@ public class AdminMemberService {
     public MemberSummaryDto getMemberSummary(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        List<Order> recentOrders = orderRepository.findTop5ByMember_MemIdOrderByOrdBaseCreDtDesc(memberId);
+        List<Order> recentOrders = orderRepository.findTop4ByMember_MemIdOrderByOrdBaseCreDtDesc(memberId);
 
-        List<Shipment> recentShipments = shipmentRepository.findTop4ByOrder_Member_MemIdOrderByShCreDtDesc(memberId);
+        List<Shipment> recentShipments = shipmentRepository.findTop3ByOrder_Member_MemIdOrderByShCreDtDesc(memberId);
 
         PageRequest pageRequest = PageRequest.of(0, 5); // 첫 페이지의 5건
         Page<Board> recentInquiries = boardRepository.findUserInquiryBoards(
@@ -172,7 +172,7 @@ public class AdminMemberService {
 
     private InquiryBoardListDto toInquirySummaryDto(Board inquiryBoard) {
         // 문의 작성자 조회
-        Member member = memberRepository.findById(inquiryBoard.getMemId())
+        Member member = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseGet(Member::new);
         // 문의 답글 조회
         Optional<Board> replyBoard = boardRepository
