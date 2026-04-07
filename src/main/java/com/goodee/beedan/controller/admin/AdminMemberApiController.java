@@ -1,14 +1,18 @@
 package com.goodee.beedan.controller.admin;
 
 import com.goodee.beedan.common.constant.OrderStatus;
+import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
+import com.goodee.beedan.entity.Shipment;
+import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.service.admin.AdminMemberService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.order.TrackingService;
+import com.goodee.beedan.service.shipment.ShipmentService;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +32,9 @@ public class AdminMemberApiController {
     private final AdminMemberService adminMemberService;
     private final OrderService orderService;
     private final TrackingService trackingService;
+    private final ShipmentService shipmentService;
+
+    private final ShipmentRepository shipmentRepository;
 
     @GetMapping("/list")
     public ResponseEntity<Page<MemberListDto>> getMemberList(
@@ -82,4 +89,23 @@ public class AdminMemberApiController {
         TrackingResponseDto result = trackingService.getTrackingInfo(shId);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/shipment/{shId}/demo-progress")
+    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId) {
+        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+
+        ShipmentStatus nextStatus = switch (shipment.getShStt()) {
+            case PREPARING -> ShipmentStatus.SHIPPING;
+            case SHIPPING -> ShipmentStatus.DELIVERING;
+            case DELIVERING -> ShipmentStatus.DELIVERED;
+            default -> shipment.getShStt();
+        };
+
+        ShipmentDto dto = ShipmentDto.builder().shStt(nextStatus).build();
+
+        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), dto);
+
+        return ResponseEntity.ok("배송 상태가 " + nextStatus.name() + " (으)로 변경되었습니다.");
+    }
+
 }
