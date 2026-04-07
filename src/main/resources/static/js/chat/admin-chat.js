@@ -99,6 +99,7 @@
 
   // 관리자 메시지 HTML 추가
   function appendAdminMessage(message) {
+    // 관리자 본인이 보낸 확정 메시지를 우측 말풍선으로 렌더링
     if (!adminMessageList || !message) {
       return;
     }
@@ -144,8 +145,52 @@
     }
   }
 
+  function appendPendingAdminMessage(messageText) {
+    // 전송 직후 지연 체감을 줄이기 위해 임시 관리자 메시지를 먼저 붙임
+    if (!adminMessageList || !messageText) {
+      return null;
+    }
+
+    var emptyMessage = adminMessageList.querySelector(".admin-chat-room__system--detail");
+    if (emptyMessage && emptyMessage.textContent.indexOf("메시지") !== -1) {
+      emptyMessage.remove();
+    }
+
+    var article = document.createElement("article");
+    article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
+    article.style.animationDelay = "0ms";
+    article.dataset.pending = "true";
+
+    var content = document.createElement("div");
+    content.className = "admin-chat-detail-message__content";
+
+    var meta = document.createElement("div");
+    meta.className = "admin-chat-detail-message__meta admin-chat-detail-message__meta--admin";
+
+    var bubble = document.createElement("div");
+    bubble.className = "admin-chat-detail-message__bubble admin-chat-detail-message__bubble--admin";
+    bubble.textContent = messageText;
+
+    var messageTime = document.createElement("span");
+    messageTime.className = "admin-chat-detail-message__time admin-chat-detail-message__time--admin";
+    messageTime.textContent = "";
+
+    content.appendChild(meta);
+    content.appendChild(bubble);
+    content.appendChild(messageTime);
+    article.appendChild(content);
+    adminMessageList.appendChild(article);
+
+    if (adminMessageScrollBody) {
+      adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
+    }
+
+    return article;
+  }
+
   // 메시지를 받았을 때 메시지 append
   function appendClientMessage(message) {
+      // 사용자가 보낸 메시지를 좌측 말풍선으로 그리고 회사/회원 정보를 함께 보여줌
       if (!adminMessageList || !message) return;
 
       var emptyMessage = adminMessageList.querySelector(".admin-chat-room__system--detail");
@@ -268,6 +313,7 @@
 
   // 관리자가 입력한 메시지를 전송 비동기 요청(서버에 저장 요청)
   function sendAdminChatMessage() {
+    // 입력 메시지는 REST로 저장 요청하고, 실제 화면 확정은 WebSocket 수신 결과로 처리
     if (!detailRoomId || !adminMessageInput || !detailCanWrite) {
       return;
     }
@@ -277,6 +323,8 @@
       adminMessageInput.focus();
       return;
     }
+
+    var pendingMessageElement = appendPendingAdminMessage(content);
 
     // CSRF 헤더 포함해서 POST /api/admin/chat/rooms/{roomId}/messages 요청
     var headers = getCsrfHeaders();
@@ -294,17 +342,20 @@
       }
 
       return response.json();
-    }).then(function (message) {
+    }).then(function () {
       adminMessageInput.value = "";
-//      appendAdminMessage(message); // HTTP 기반 일 때 사용(WebSocket 없을때)
       adminMessageInput.focus();
     }).catch(function (error) {
+      if (pendingMessageElement) {
+        pendingMessageElement.remove();
+      }
       console.error(error);
     });
   }
 
   // 관리자가 특정 채팅방을 실시간으로 구독(관리자 실시간 수신용 + 화면 반영)
   function connectAdminChatSocket() {
+    // 현재 관리자 상세 화면이 보고 있는 채팅방을 실시간으로 구독
     if (!detailPage || !detailRoomId || !window.StompJs) {
         return;
     }
@@ -329,6 +380,23 @@
 
             // 관리자 메시지면
             if (message.chMsSenTy === "ADMIN") {
+                var pendingMessage = adminMessageList ? adminMessageList.querySelector('[data-pending="true"]') : null;
+
+                if (pendingMessage) {
+                  pendingMessage.removeAttribute("data-pending");
+
+                  var pendingTime = pendingMessage.querySelector(".admin-chat-detail-message__time");
+                  if (pendingTime) {
+                    pendingTime.textContent = new Date(message.chMsCreDt).toLocaleTimeString("ko-KR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false
+                    });
+                  }
+
+                  return;
+                }
+
                 appendAdminMessage(message);
                 return;
             }

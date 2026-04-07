@@ -25,7 +25,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // "/sub/..." : 서버가 뿌리는 출구
 
         // 클라이언트가 서버로 메시지를 송신(publish) 할 주소의 시작점 설정,
-        registry.setApplicationDestinationPrefixes("/pub");
+        registry.setApplicationDestinationPrefixes("/pub"); // 현재는 사용X
         // "/pub/..." : 서버로 보내는 입구
     }
 }
