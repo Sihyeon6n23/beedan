@@ -2,15 +2,24 @@ package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.board.inquiry.InquiryBoardDetailDto;
-import com.goodee.beedan.dto.board.inquiry.InquiryReplyDto;
-import com.goodee.beedan.dto.board.inquiry.InquiryReplySaveDto;
+import com.goodee.beedan.dto.board.*;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.angus.mail.iap.Response;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.IOException;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +36,7 @@ public class AdminInquiryBoardRestController {
 
         return inquiryBoardDetail.getReply();
     }
-    
+
     // 관리자 답글 작성
     @PostMapping("/{id}/reply")
     public Long createInquiryReply(@PathVariable("id") Long brdId, // 문의글 Id
@@ -39,7 +48,7 @@ public class AdminInquiryBoardRestController {
                 inquiryReplySaveDto
         );
     }
-    
+
     // 관리자 답글 수정
     @PatchMapping("/{id}/reply")
     public void updateInquiryReply(@PathVariable("id") Long brdId, // 답글 Id
@@ -51,7 +60,7 @@ public class AdminInquiryBoardRestController {
                 inquiryReplySaveDto
         );
     }
-    
+
     // 관리자 문의 상태 수정
     @PatchMapping("/{id}/status")
     public void updateInquiryStatus(@PathVariable("id") Long brdId,
@@ -60,4 +69,18 @@ public class AdminInquiryBoardRestController {
                                     @RequestParam(value = "brdCanRe", required = false) String brdCanRe) {
         inquiryBoardService.updateInquiryStatus(brdId, userDetails.getMemberId(), inquiryStatus, brdCanRe);
     }
+
+    @GetMapping("{id}")
+    public ResponseEntity<Page<InquiryBoardListDto>> getInquiryList(@PathVariable("id") Long memId,
+                                                                    @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "10") int size) {
+        InquiryBoardSearchDto searchDto = InquiryBoardSearchDto.builder()
+                .page(page)
+                .size(size)
+                .build();
+        Page<InquiryBoardListDto> userInquiryBoards = inquiryBoardService.getUserInquiryBoards(memId, searchDto);
+
+        return ResponseEntity.ok(userInquiryBoards);
+    }
+
 }

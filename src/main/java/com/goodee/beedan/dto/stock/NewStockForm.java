@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class NewStockForm {
@@ -14,5 +15,6 @@ public class NewStockForm {
     private BigDecimal stPr;
     private String stCur;
     private Long stReqMemId;
-    private MultipartFile imgFile;
+    private boolean stReqYn;
+    private List<MultipartFile> newFiles;
 }

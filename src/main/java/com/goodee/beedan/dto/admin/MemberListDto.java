@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.admin;
 
+import com.goodee.beedan.common.constant.MemberAuthority;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,4 +18,5 @@ public class MemberListDto {
     private String memStt;
     private LocalDateTime memCreDt;
     private String memNm;
+    private MemberAuthority memAut;
 }

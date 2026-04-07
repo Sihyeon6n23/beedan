@@ -12,7 +12,7 @@ import java.util.List;
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     Page<Shipment> findByOrder_OrdBaseIdOrderByShCreDtDesc(Long ordBaseId, Pageable pageable);
 
-    List<Shipment> findTop4ByOrder_Member_MemIdOrderByShCreDtDesc(Long memId);
+    List<Shipment> findTop3ByOrder_Member_MemIdOrderByShCreDtDesc(Long memId);
 
     @Query("SELECT s FROM Shipment s " +
             "JOIN s.order o " +

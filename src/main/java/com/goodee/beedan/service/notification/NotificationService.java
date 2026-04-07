@@ -6,6 +6,7 @@ import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.entity.Notification;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.notification.NotificationRepository;
+import com.goodee.beedan.service.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,6 +23,8 @@ import java.util.List;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepositroy;
+
+    private final MailService mailService;
 
     public List<NotificationDto> getUnReadNotificationList(Long memId){
         memberRepositroy.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
@@ -64,7 +67,7 @@ public class NotificationService {
         Notification notification = Notification.builder()
                 .member(member)
                 .notiTtl(notiTp.getDefaultTitle())
-                .notiCon(notiTp.getContentTemplate())
+                .notiCon(notiTp.getMessage())
                 .notiRef(refUrl)
                 .notiReaYn(false)
                 .notiDelYn(false)
@@ -72,6 +75,8 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+
+        mailService.sendMail(member.getMemEml(), notiTp, targetId);
     }
 
     public void deleteNotification(Long notiId, Long memId) {

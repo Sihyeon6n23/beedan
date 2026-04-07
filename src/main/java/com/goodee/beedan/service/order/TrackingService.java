@@ -2,7 +2,9 @@ package com.goodee.beedan.service.order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
+import com.goodee.beedan.dto.order.TrackingDetailDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.ShipmentRepository;
@@ -16,13 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j // 💡 로그 출력을 위해 추가
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TrackingService {
 
     private final ShipmentRepository shipmentRepository;
@@ -35,11 +38,14 @@ public class TrackingService {
     private String clientSecret;
 
     public TrackingResponseDto getTrackingInfo(Long shId) {
-        Shipment shipment = shipmentRepository.findById(shId)
-                .orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
+        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
 
         String carrierId = shipment.getShCarCd();
         String trackingNumber = shipment.getShTraNo();
+
+        if (trackingNumber.startsWith("TEST-")) {
+            return generateMockTrackingResponse(shipment);
+        }
 
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://apis.tracker.delivery/graphql";
@@ -85,14 +91,14 @@ public class TrackingService {
             return createEmptyResponse(carrierId, trackingNumber, "배송 정보가 없습니다 (미등록 또는 오입력)");
         }
 
-        List<MemberSummaryDto.TrackingDetailDto> details = new ArrayList<>();
+        List<TrackingDetailDto> details = new ArrayList<>();
         JsonNode edges = trackNode.path("events").path("edges");
 
         if (edges.isArray()) {
             for (JsonNode edge : edges) {
                 JsonNode node = edge.path("node");
 
-                details.add(MemberSummaryDto.TrackingDetailDto.builder()
+                details.add(TrackingDetailDto.builder()
                         .time(node.path("time").asText())
                         .status(node.path("status").path("name").asText())
                         .description(node.path("description").asText())
@@ -126,4 +132,32 @@ public class TrackingService {
             "kr.cvsnet", "GS25 편의점택배",
             "kr.cupost", "CU 편의점택배"
     );
+
+    private TrackingResponseDto generateMockTrackingResponse(Shipment shipment) {
+        List<TrackingDetailDto> details = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        ShipmentStatus status = shipment.getShStt();
+
+        details.add(new TrackingDetailDto(now.minusDays(1).toString(), "상품준비", "판매자가 상품을 발송하기 위해 준비 중입니다."));
+
+        if (status != ShipmentStatus.PREPARING) details.add(new TrackingDetailDto(now.minusHours(5).toString(), "통관처리", "세관 검사가 진행 중입니다."));
+
+        if (status == ShipmentStatus.DELIVERING || status == ShipmentStatus.DELIVERED) {
+            details.add(new TrackingDetailDto(
+                    now.minusHours(2).toString(), "배송중", "고객님의 지역으로 물건이 이동 중입니다."));
+        }
+
+        if (status == ShipmentStatus.DELIVERED) {
+            details.add(new TrackingDetailDto(
+                    now.toString(), "배송완료", "배송이 완료되었습니다."));
+        }
+
+        return TrackingResponseDto.builder()
+                .carrierName("시연용 가상택배")
+                .trackingNumber(shipment.getShTraNo())
+                .statusText(shipment.getShStt().getStatusName())
+                .details(details)
+                .build();
+    }
+
 }
