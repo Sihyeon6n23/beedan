@@ -12,9 +12,11 @@ import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/auth")
@@ -38,6 +41,11 @@ public class AuthController {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final SnsIntegrateService snsIntegrateService;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String clientId;
+    @Value("${custom.security.oauth.client.registration.kakao.redirect-uri}")
+    private String redirectUri;
 
     @GetMapping("/signup")
     public String getSignUp(Model model) {
@@ -141,8 +149,22 @@ public class AuthController {
         return "/member/auth/find";
     }
 
+    @GetMapping("/kakao/link")
+    public String initiateKakaoLink(HttpSession session) {
+        String state = UUID.randomUUID().toString(); // 1회용 암호 생성
+        session.setAttribute("kakao_state", state); // 세션에 저장
+
+        return "redirect:https://kauth.kakao.com/oauth/authorize?" +
+                "client_id=" + clientId +
+                "&redirect_uri=" + redirectUri +
+                "&response_type=code" +
+                "&state=" + state; // URL에 포함
+    }
+
     @GetMapping("/kakao/callback")
     public String getSnsIntegrateCallback(@RequestParam("code")String code,
+                                          @RequestParam("state") String state,
+                                          HttpSession session,
                                           Principal principal,
                                           RedirectAttributes redirectAttributes) {
         // 1. sns 서비스 호출 -> id값으로 member 조회 후 인증정보 조회(방어) -> 있으면 return
@@ -151,6 +173,13 @@ public class AuthController {
             log.info("이미 연동중인 계정입니다.");
             return "redirect:/mypage/sns";
         }
+
+        String savedState = (String) session.getAttribute("kakao_state");
+        if (savedState == null || !savedState.equals(state)) {
+            log.error("CSRF 공격 의심: state 불일치");
+            return "redirect:/mypage/sns?error=invalid_state";
+        }
+        session.removeAttribute("kakao_state"); // 검증 후 즉시 파기
 
         SnsIntegrateRequest snsIntegrateRequest = SnsIntegrateRequest.builder()
                 .snsTp(SnsType.KAKAO)
