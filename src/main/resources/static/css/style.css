@@ -905,6 +905,12 @@
   .text-on-surface {
     color: var(--color-on-surface);
   }
+  .text-on-surface-variant {
+    color: var(--color-on-surface-variant);
+  }
+  .text-primary-container {
+    color: var(--color-primary-container);
+  }
   .text-outline-variant {
     color: var(--color-outline-variant);
   }

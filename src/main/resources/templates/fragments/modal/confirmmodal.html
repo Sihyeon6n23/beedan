@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="loginModal">
+    <div id="login-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm" onclick="if(event.target===this) this.classList.add('hidden')">
+        <div class="bg-surface-container-lowest border border-outline-variant w-[360px] px-10 py-10 text-center">
+            <span class="material-symbols-outlined text-4xl text-primary-container mb-4 block">lock</span>
+            <h3 class="font-headline font-extrabold text-lg tracking-tight text-on-surface mb-2">LOGIN REQUIRED</h3>
+            <p class="font-body text-sm text-on-surface-variant mb-8">로그인이 필요합니다.</p>
+            <button onclick="document.getElementById('login-modal').classList.add('hidden')"
+                    class="px-8 py-3 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase hover:opacity-90 transition-opacity">
+                확인
+            </button>
+        </div>
+    </div>
+</th:block>
+</html>
