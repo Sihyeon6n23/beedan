@@ -58,7 +58,7 @@
 }
 
 .member-chat-panel:not(.is-hidden) {
-  animation: member-chat-panel-in 0.18s ease both;
+  animation: member-chat-panel-in 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .member-chat-view {
@@ -71,15 +71,15 @@
 
 .member-chat-view.is-active {
   display: flex;
-  animation: member-chat-view-in 0.18s ease both;
+  animation: member-chat-view-in 0.14s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .member-chat-view.is-active.member-chat-view--slide-forward {
-  animation: member-chat-view-slide-forward 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: member-chat-view-slide-forward 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .member-chat-view.is-active.member-chat-view--slide-back {
-  animation: member-chat-view-slide-back 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: member-chat-view-slide-back 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .member-chat-topbar,
@@ -928,7 +928,7 @@
 }
 
 .member-chat-animate-in {
-  animation: member-chat-item-in 0.22s ease both;
+  animation: member-chat-item-in 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes member-chat-panel-in {

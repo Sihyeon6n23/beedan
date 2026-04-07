@@ -2,6 +2,7 @@ package com.goodee.beedan.service.crawling;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class AiCategoryService {
 
     @Value("${gemini.api-key}")
@@ -71,6 +73,7 @@ public class AiCategoryService {
             mapping.fields().forEachRemaining(entry ->
                     result.put(entry.getKey(), entry.getValue().asText()));
         } catch (Exception e) {
+            log.error("AI 응답 파싱 실패: {}", e.getMessage());
             productNames.forEach(name -> result.put(name, defaultCategory));
         }
 

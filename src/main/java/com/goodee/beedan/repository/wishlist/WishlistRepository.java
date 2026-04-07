@@ -12,4 +12,5 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
 
     void deleteByStIdAndMemId(Long stId, Long memId);
     List<Wishlist> findAllByMemId(Long memId);
+
 }

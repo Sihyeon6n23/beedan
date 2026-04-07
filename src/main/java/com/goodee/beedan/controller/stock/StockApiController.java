@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/stock")
 @RequiredArgsConstructor
-public class StockApiController {
+public class    StockApiController {
 
     private final StockService stockService;
 
@@ -27,5 +27,17 @@ public class StockApiController {
             @AuthenticationPrincipal MemberUserDetails userDetails) {
         Long memId = userDetails != null ? userDetails.getMemberId() : null;
         return stockService.findFiltered(brands, categories, keyword, sort, page, memId);
+    }
+
+    @GetMapping("/myitem")
+    public Page<StockListDto> myItemList(
+            @RequestParam(required = false) List<Long> brands,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Long memId = userDetails != null ? userDetails.getMemberId() : null;
+        return stockService.findMyItems(brands, categories, keyword, sort, page, memId);
     }
 }

@@ -15,7 +15,7 @@ public interface NoticeMapper {
      * 엔티티 -> 목록용 DTO 변환
      */
     // NoticeListDto의 조회수 필드명이 brdHit라면 그대로 유지, 아니라면 수정 필요
-    @Mapping(target = "fileCnt", ignore = true)
+    @Mapping(target = "fileYn", ignore = true)
     @Mapping(source = "brdVstCnt", target = "brdHit")
     @Mapping(source = "member.memNm", target = "memNm")
     NoticeListDto toListDto(Board notice);

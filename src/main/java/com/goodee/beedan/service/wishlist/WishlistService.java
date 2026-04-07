@@ -3,7 +3,6 @@ package com.goodee.beedan.service.wishlist;
 import com.goodee.beedan.entity.Wishlist;
 import com.goodee.beedan.repository.wishlist.WishlistRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +18,9 @@ public class WishlistService {
 
     // 관심 상품 추가
     public void addItem(Long stId, Long memId) {
+        if(wishlistRepository.findByStIdAndMemId(stId, memId) != null) {
+            throw new IllegalStateException("이미 관심 상품으로 등록된 상품입니다.");
+        }
         Wishlist wishlist = Wishlist.builder()
                 .stId(stId)
                 .memId(memId)

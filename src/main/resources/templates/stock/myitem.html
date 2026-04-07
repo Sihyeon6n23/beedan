@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout/layout :: layout(
+                ~{::title},
+                ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'My Items', ~{::sidebar})},
+                ~{::content}
+        )}">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title th:fragment="title">BEEDAN | MY ITEMS</title>
+
+</head>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('stock','stock-my')}"></div>
+</th:block>
+
+<body class="bg-surface-container-lowest text-on-surface" th:fragment="content" >
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-variant": "#e2e2e2",
+                    "outline": "#7e775f",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#4d4732",
+                    "inverse-on-surface": "#f1f1f1",
+                    "tertiary-container": "#dbd9d9",
+                    "background": "#f9f9f9",
+                    "on-primary-container": "#705e00",
+                    "on-secondary-container": "#636262",
+                    "surface": "#f9f9f9",
+                    "tertiary-fixed-dim": "#c8c6c6",
+                    "surface-tint": "#705d00",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container-high": "#e8e8e8",
+                    "surface-container-low": "#f3f3f3",
+                    "inverse-primary": "#e9c400",
+                    "secondary-fixed": "#e5e2e1",
+                    "primary": "#705d00",
+                    "secondary-container": "#e2dfde",
+                    "primary-container": "#ffd700",
+                    "tertiary": "#5f5e5e",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#5f5f5f",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "inverse-surface": "#2f3131",
+                    "on-primary-fixed-variant": "#544600",
+                    "surface-bright": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "surface-container": "#eeeeee",
+                    "on-background": "#1a1c1c",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-secondary-fixed-variant": "#474746",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "primary-fixed": "#ffe16d",
+                    "secondary": "#5f5e5e",
+                    "surface-dim": "#dadada",
+                    "on-tertiary-fixed-variant": "#474747",
+                    "tertiary-fixed": "#e4e2e1",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#d0c6ab",
+                    "on-primary-fixed": "#221b00"
+                },
+                fontFamily: {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+                },
+                borderRadius: { "none": "0px", "DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px" },
+            },
+        },
+    }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link th:href="@{/css/stock/stock-list.css}" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+<script th:inline="javascript">
+    const memberId = /*[[${memberId}]]*/ null;
+    const apiUrl = '/api/stock/myitem';
+</script>
+<script>
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    axios.defaults.headers.common[csrfHeader] = csrfToken;
+</script>
+<!-- TopNavBar -->
+
+<div class="pb-20 max-w-[1200px] mx-auto w-full px-6">
+
+    <!-- Main Content -->
+    <div class="flex-1 min-w-0 min-h-screen">
+        <!-- Breadcrumbs & Title -->
+        <nav class="mb-4">
+            <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
+                <li>Home</li>
+                <li class="text-neutral-300">/</li>
+                <li>Mypage</li>
+                <li class="text-neutral-300">/</li>
+                <li class="text-on-primary-container">My Items</li>
+            </ol>
+        </nav>
+
+        <div class="flex justify-between items-end mb-12">
+            <h1 class="text-6xl font-headline font-black tracking-tighter">MY ITEMS</h1>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                    <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Search</span>
+                    <input id="search-input" type="text" placeholder="Search..."
+                           class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-36" />
+                    <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+                </div>
+                <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                    <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
+                    <select id="sort-select" class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
+                        <option value="recent">Recent</option>
+                        <option value="popularity">Popularity</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="most-purchased">Most Purchased</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상품 영역 -->
+        <div id="product-area"></div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="mt-24 flex justify-center items-center gap-4"></div>
+    </div>
+
+</div>
+
+<!-- 로그인 필요 시 모달 -->
+<div id="login-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm" onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="bg-surface-container-lowest border border-outline-variant w-[360px] px-10 py-10 text-center">
+        <span class="material-symbols-outlined text-4xl text-primary-container mb-4 block">lock</span>
+        <h3 class="font-headline font-extrabold text-lg tracking-tight text-on-surface mb-2">LOGIN REQUIRED</h3>
+        <p class="font-body text-sm text-on-surface-variant mb-8">로그인이 필요합니다.</p>
+        <button onclick="document.getElementById('login-modal').classList.add('hidden')"
+                class="px-8 py-3 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase hover:opacity-90 transition-opacity">
+            확인
+        </button>
+    </div>
+</div>
+
+<script>
+    // 하트 버튼 토글, 찜 목록 비동기 추가,삭제
+    function toggleHeart(el) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        // 비로그인 사용자가 하트 클릭시
+        if (!memberId)  {
+            // 모달 띄우기
+            document.getElementById('login-modal').classList.remove('hidden');
+            return;
+        }
+
+
+        const icon = el.classList.contains('material-symbols-outlined') ? el :
+            el.querySelector('.material-symbols-outlined');
+        const heartBtn = el.classList.contains('heart-btn') ? el : el.closest('.heart-btn');
+        const stId = heartBtn.dataset.stId;
+        const isFilled = icon.dataset.filled === 'true';
+
+        if (isFilled) {
+            // 찜 해제
+            axios.delete('/api/wishlist/' + stId)
+                .then(() => {
+                    icon.dataset.filled = 'false';
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                    icon.classList.remove('text-red-500');
+                    icon.classList.add('text-on-primary-container');
+                })
+                .catch(err => console.error('찜 해제 실패:', err));
+        } else {
+            // 찜 추가
+            axios.post('/api/wishlist/' + stId)
+                .then(() => {
+                    icon.dataset.filled = 'true';
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                    icon.classList.remove('text-on-primary-container');
+                    icon.classList.add('text-red-500');
+                })
+                .catch(err => console.error('찜 추가 실패:', err));
+        }
+    }
+(function() {
+    let currentPage = 0;
+
+    function getSort() {
+        return document.getElementById('sort-select').value;
+    }
+
+    function getKeyword() {
+        return document.getElementById('search-input').value.trim();
+    }
+
+    function formatPrice(cur, price) {
+        if (cur === '₩') {
+            return cur + ' ' + Math.floor(price).toLocaleString();
+        }
+        return cur + ' ' + Number(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function renderProducts(data) {
+        const area = document.getElementById('product-area');
+        const pagination = document.getElementById('pagination');
+        const items = data.content;
+
+        if (!items || items.length === 0) {
+            area.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-40 text-secondary">
+                    <span class="material-symbols-outlined text-6xl mb-4">inventory_2</span>
+                    <p class="text-sm tracking-widest uppercase">No products available</p>
+                </div>`;
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">';
+        items.forEach(item => {
+            const hasImg = item.stImgUrl && item.stImgUrl.length > 0;
+            html += `
+            <div class="group cursor-pointer" onclick="location.href='/stock/detail/${item.stId}'">
+                <div class="relative mb-6 overflow-hidden bg-white w-full aspect-[4/5]">
+                    ${hasImg
+                        ? `<img src="${item.stImgUrl}" alt="${item.stNm}" class="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"/>`
+                        : `<div class="w-full h-full flex items-center justify-center bg-surface-container"><span class="material-symbols-outlined text-5xl text-on-surface-variant">image_not_supported</span></div>`
+                    }
+                    <div class="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/5 transition-colors duration-300"></div>
+                    <button class="absolute bottom-0 left-0 right-0 bg-primary-container text-on-primary-container font-headline font-extrabold text-[10px] tracking-[0.2em] py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 uppercase flex items-center justify-between px-4">
+                        <span>Go to Details</span>
+                        <span class="heart-btn cursor-pointer" data-st-id="${item.stId}" onclick="toggleHeart(this); event.stopPropagation();">
+                              <span class="material-symbols-outlined text-[20px] transition-colors
+                                    ${item.wished ? 'text-red-500' : 'text-on-primary-container hover:text-red-500'}"
+                                    data-filled="${item.wished}"
+                                    style="font-variation-settings: 'FILL' ${item.wished ? 1 : 0};">favorite
+                              </span>
+                        </span>
+                    </button>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-headline font-extrabold text-[11px] tracking-widest text-primary uppercase">${item.stBrNm || ''}</p>
+                    <h2 class="font-body font-light text-lg tracking-tight text-on-surface leading-tight">${item.stNm || ''}</h2>
+                    <p class="font-headline font-bold text-sm text-on-surface mt-2">${formatPrice(item.stCur, item.stPr)}</p>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+        area.innerHTML = html;
+
+        // Pagination
+        if (data.totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let pagHtml = '';
+        const isFirst = data.number === 0;
+        const isLast = data.number === data.totalPages - 1;
+
+        pagHtml += `<a href="javascript:void(0)" onclick="window.__loadPage(${data.number - 1})"
+            class="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-on-surface transition-colors ${isFirst ? 'pointer-events-none opacity-30' : ''}">
+            <span class="material-symbols-outlined">chevron_left</span></a>`;
+
+        const startPage = Math.max(0, data.number - 4);
+        const endPage = Math.min(data.totalPages - 1, startPage + 9);
+        for (let i = startPage; i <= endPage; i++) {
+            const active = i === data.number ? 'text-on-surface border-b-4 border-primary-container' : 'text-neutral-400 hover:text-on-surface';
+            pagHtml += `<a href="javascript:void(0)" onclick="window.__loadPage(${i})"
+                class="w-12 h-12 flex items-center justify-center font-headline font-extrabold text-xs transition-colors ${active}">${i + 1}</a>`;
+        }
+
+        pagHtml += `<a href="javascript:void(0)" onclick="window.__loadPage(${data.number + 1})"
+            class="flex items-center gap-2 text-on-surface font-headline font-extrabold text-[10px] tracking-[0.2em] uppercase pl-4 ${isLast ? 'pointer-events-none opacity-30' : ''}">
+            Next <span class="material-symbols-outlined text-sm">chevron_right</span></a>`;
+
+        pagination.innerHTML = pagHtml;
+    }
+
+    function loadProducts(page) {
+        currentPage = page || 0;
+        const params = { sort: getSort(), page: currentPage };
+
+        const keyword = getKeyword();
+        if (keyword) params.keyword = keyword;
+
+        axios.get(apiUrl, {
+            params,
+            paramsSerializer: function(p) {
+                const parts = [];
+                Object.entries(p).forEach(([key, val]) => {
+                    if (Array.isArray(val)) {
+                        val.forEach(v => parts.push(key + '=' + encodeURIComponent(v)));
+                    } else {
+                        parts.push(key + '=' + encodeURIComponent(val));
+                    }
+                });
+                return parts.join('&');
+            }
+        })
+            .then(res => renderProducts(res.data))
+            .catch(err => console.error('MyItem API error:', err));
+    }
+
+    window.__loadPage = function(p) { loadProducts(p); };
+
+    document.getElementById('sort-select').addEventListener('change', () => loadProducts(0));
+
+    let searchTimer;
+    document.getElementById('search-input').addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadProducts(0), 300);
+    });
+
+    loadProducts(0);
+})();
+
+
+</script>
+
+</body>
+</html>

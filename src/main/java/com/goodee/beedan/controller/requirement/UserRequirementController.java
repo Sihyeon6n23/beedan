@@ -43,11 +43,13 @@ public class UserRequirementController {
     }
 
     @GetMapping("/detail")
-    public String requireDetail(@RequestParam Long id, Model model) {
-        RequireForm form = requirementService.getRequireForm(id);
-        model.addAttribute("require", form);
-        model.addAttribute("isAdmin", false);
-        return "member/requirement/require-detail";
+    public String requireDetail(@RequestParam Long id,
+                                Model model) {
+            RequireForm form = requirementService.getRequireForm(id);
+            model.addAttribute("require", form);
+            model.addAttribute("isAdmin", false);
+            return "member/requirement/require-detail";
+
     }
 
 }

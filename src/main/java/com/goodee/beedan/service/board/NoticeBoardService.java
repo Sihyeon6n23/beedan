@@ -77,8 +77,8 @@ public class NoticeBoardService {
         board.setBrdFixYn(dto.getBrdFixYn());
 
         // 파일 처리 (삭제 후 신규 저장)
-        if (dto.getDeleteFileIds() != null && !dto.getDeleteFileIds().isEmpty()) {
-            fileService.deleteFiles(dto.getDeleteFileIds());
+        if (dto.getDeleteUuids() != null && !dto.getDeleteUuids().isEmpty()) {
+            fileService.deleteFiles(dto.getDeleteUuids());
         }
         handleFiles(dto, board.getBrdId());
     }
@@ -147,12 +147,12 @@ public class NoticeBoardService {
             List<NoticeListDto> fixedDtoList = fixedEntities.stream()
                     .map(board -> {
                         NoticeListDto dto = noticeMapper.toListDto(board);
-                        // 파일 개수 세팅
+                        // 파일 유무
                         RefDto ref = RefDto.builder()
                                 .refTy(BoardType.NOTICE.name())
                                 .refNo(board.getBrdId())
                                 .build();
-                        dto.setFileCnt(fileService.getFileCount(ref));
+                        dto.setFileYn(fileService.isFileYn(ref));
                         return dto;
                     })
                     .collect(Collectors.toList());
@@ -166,7 +166,7 @@ public class NoticeBoardService {
         // 2. 일반 공지 조회
         Page<Board> noticePage = boardRepository.findByBrdTyAndBrdFixYnFalseAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType.NOTICE, pageable);
 
-        // 3. 일반 공지 DTO 변환 및 파일 개수 세팅
+        // 3. 일반 공지 DTO 변환 및 파일 유무 세팅
         List<NoticeListDto> dtoList = noticePage.getContent().stream()
                 .map(board -> {
                     NoticeListDto dto = noticeMapper.toListDto(board);
@@ -175,7 +175,7 @@ public class NoticeBoardService {
                             .refNo(board.getBrdId())
                             .build();
 
-                    dto.setFileCnt(fileService.getFileCount(ref));
+                    dto.setFileYn(fileService.isFileYn(ref));
                     return dto;
                 })
                 .collect(Collectors.toList());

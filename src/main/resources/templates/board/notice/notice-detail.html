@@ -13,7 +13,7 @@
 </th:block>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <link rel="stylesheet" th:href="@{/css/board/notice.css}">
 
     <section class="inquiry-page inquiry-detail-page">
         <header class="inquiry-shell inquiry-shell--header">
@@ -47,7 +47,7 @@
             <div class="inquiry-detail-article__body">
                 <div class="inquiry-detail-article__content" th:utext="${notice.brdCon}">내용</div>
 
-                <div th:replace="~{fragments/file/file-list :: display(${fileList})}"></div>
+                <div th:replace="~{fragments/file/file-list :: display(list=${fileList})}"></div>
             </div>
 
             <div class="inquiry-detail-article__footer" th:if="${canModify}">

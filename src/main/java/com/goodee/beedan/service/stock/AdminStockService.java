@@ -1,8 +1,11 @@
 package com.goodee.beedan.service.stock;
 
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.stock.AdminStockDto;
 import com.goodee.beedan.entity.Stock;
+import com.goodee.beedan.repository.file.FileRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
+import com.goodee.beedan.service.file.FileService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +25,8 @@ import java.util.List;
 public class AdminStockService {
 
     private final StockRepository stockRepository;
+    private final FileService fileService;
+    private final FileRepository fileRepository;
 
     // 첫 호출 + 검색 조건 적용 조회
     public Page<AdminStockDto> findAdminStocks(String keyword,
@@ -54,7 +60,7 @@ public class AdminStockService {
 
     // 노출 여부 수정 by 토글 버튼
     public boolean toggleExpYn(Long stId) {
-        Stock stock = stockRepository.findById(stId).orElseThrow();
+        Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
         stock.setStExpYn(!stock.isStExpYn());
         stockRepository.save(stock);
         return stock.isStExpYn(); // 바뀐 값 프론트로 전달
@@ -62,7 +68,7 @@ public class AdminStockService {
 
     // 사용 여부 수정 by 토글 버튼
     public boolean toggleUseYn(Long stId) {
-        Stock stock = stockRepository.findById(stId).orElseThrow();
+        Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
         stock.setStUseYn(!stock.isStUseYn());
         stock.setStExpYn(false);
         stockRepository.save(stock);
@@ -71,24 +77,27 @@ public class AdminStockService {
 
     // 상품 삭제
     public void deleteStock(Long stId) {
-        Stock stock = stockRepository.findById(stId).orElseThrow();
+        Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
         stock.setStDelYn(true);
         stock.setStUseYn(false);
         stock.setStExpYn(false);
         stock.setStUpdDt(LocalDateTime.now());
         stockRepository.save(stock);
+
+
+        Long fileId = fileRepository.findByBrdRefTyAndBrdRefNo("STOCK", stId).getFileId();
+        fileService.deleteFileById(fileId);
     }
+
     // 상품 정보 수정
     public void updateStock(Long stId, AdminStockDto adminStockDto) {
-        Stock stock = stockRepository.findById(stId).orElseThrow();
+        Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
         stock.setStBrNm(adminStockDto.getStBrNm());
         stock.setStCatNm(adminStockDto.getStCatNm());
         stock.setStNm(adminStockDto.getStNm());
         stock.setStPr(adminStockDto.getStPr());
         stock.setStCur(adminStockDto.getStCur());
         stock.setStImgUrl(adminStockDto.getStImgUrl());
-        stock.setStExpYn(stock.isStExpYn());
-        stock.setStUseYn(stock.isStUseYn());
         stock.setStReqYn(adminStockDto.isStReqYn());
         stock.setStReqMemId(adminStockDto.getStReqMemId());
         stock.setStUpdDt(LocalDateTime.now());

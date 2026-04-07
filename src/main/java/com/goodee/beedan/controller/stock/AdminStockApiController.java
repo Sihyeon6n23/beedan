@@ -1,11 +1,8 @@
 package com.goodee.beedan.controller.stock;
 
-import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.stock.AdminStockDto;
-import com.goodee.beedan.dto.stock.StockListDto;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
-import com.goodee.beedan.service.crawling.CrawlingService;
 import com.goodee.beedan.service.stock.AdminStockService;
 import com.goodee.beedan.service.stock.StockService;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

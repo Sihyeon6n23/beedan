@@ -40,20 +40,23 @@ public class UserRequirementApiController {
 
     // DRAFT 삭제
     @DeleteMapping("/{reqId}")
-    public void deleteRequirement(@PathVariable Long reqId) {
-        requirementService.deleteRequirement(reqId);
+    public void deleteRequirement(@PathVariable Long reqId,
+                                  @AuthenticationPrincipal MemberUserDetails user) {
+        requirementService.deleteRequirement(reqId, user.getMemberId());
     }
 
     // DRAFT → SUBMITTED 제출
     @PostMapping("/{reqId}/submit")
-    public void submitDraft(@PathVariable Long reqId) {
-        requirementService.submitDraft(reqId);
+    public void submitDraft(@PathVariable Long reqId,
+                            @AuthenticationPrincipal MemberUserDetails user) {
+        requirementService.submitDraft(reqId, user.getMemberId());
     }
 
     // SUBMITTED → 등록 취소
     @PostMapping("/{reqId}/cancel")
-    public void cancelRequirement(@PathVariable Long reqId) {
-        requirementService.cancelRequirement(reqId);
+    public void cancelRequirement(@PathVariable Long reqId,
+                                  @AuthenticationPrincipal MemberUserDetails user) {
+        requirementService.cancelRequirement(reqId, user.getMemberId());
     }
 }
 

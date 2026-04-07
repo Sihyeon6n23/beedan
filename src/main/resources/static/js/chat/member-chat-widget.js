@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
 
   function connectMemberChatSocket() {
+      // 사용자 위젯이 현재 채팅방을 WebSocket으로 수신할 수 있게 연결을 만듬
       if (!window.StompJs) {
         return;
       }
@@ -91,6 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 채팅방 구독
   function subscribeCurrentChatRoom() {
+      // 현재 열려 있는 채팅방만 구독하고, 방이 바뀌면 기존 구독은 먼저 해제
       if (!stompClient || !wsConnected || !currentChatRoomId) {
         return;
       }
@@ -102,9 +104,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // 현재 채팅방 구독
       roomSubscription = stompClient.subscribe("/sub/chat/rooms/" + currentChatRoomId, function (frame) {
-        var message = JSON.parse(frame.body); // 서버가 보내주는 JSON 문자열을 (JSON 형식의) JS 객체로 변환
-        appendMemberChatMessage(message); // 화면에 메시지 추가
-        loadMemberChatRooms(); // 목록 갱신
+        var message = JSON.parse(frame.body);
+
+        if (message.chMsSenTy === "USER") {
+          var pendingMessage = chatRoomMessages ? chatRoomMessages.querySelector('[data-pending="true"]') : null;
+          if (pendingMessage) {
+            pendingMessage.removeAttribute("data-pending");
+            pendingMessage.classList.remove("member-chat-animate-in");
+
+            var pendingTime = pendingMessage.querySelector(".member-chat-message__body span");
+            if (pendingTime) {
+              pendingTime.textContent = formatChatMessageTime(message.chMsCreDt);
+            }
+
+            loadMemberChatRooms();
+            return;
+          }
+        }
+
+        appendMemberChatMessage(message);
+        loadMemberChatRooms();
       });
   }
 
@@ -646,7 +665,7 @@ document.addEventListener("DOMContentLoaded", function () {
       : "문의 내용을 남겨주세요.";
     description.textContent = currentChatRoomStatus === "CLOSED"
       ? "상담이 시작되기 전에 종료된 채팅방입니다."
-      : "메시지를 남기면 상담원이 내용을 확인한 뒤 순차적으로 답변드립니다.";
+      : "상담원이 내용을 확인한 뒤 순차적으로 답변드립니다.";
 
     emptyState.appendChild(icon);
     emptyState.appendChild(title);
@@ -729,6 +748,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 사용자 메시지 1건 즉시 추가
   function appendMemberChatMessage(message) {
+    // 서버에서 확정된 사용자/관리자 메시지를 채팅방 화면에 추가한다.
     if (!chatRoomMessages || !message) {
       return;
     }
@@ -770,6 +790,46 @@ document.addEventListener("DOMContentLoaded", function () {
         behavior: "smooth"
       });
     });
+  }
+
+  function appendPendingMemberChatMessage(messageText) {
+    // 전송 직후 바로 보이도록 임시 사용자 메시지를 먼저 붙임
+    if (!chatRoomMessages || !messageText) {
+      return null;
+    }
+
+    var emptyState = chatRoomMessages.querySelector(".member-chat-room-empty");
+    if (emptyState) {
+      emptyState.remove();
+    }
+
+    var article = document.createElement("article");
+    var body = document.createElement("div");
+    var bubble = document.createElement("div");
+    var time = document.createElement("span");
+
+    article.className = "member-chat-message member-chat-message--right";
+    article.classList.add("member-chat-animate-in");
+    article.dataset.pending = "true";
+
+    body.className = "member-chat-message__body";
+    bubble.className = "member-chat-message__bubble member-chat-message__bubble--accent";
+    bubble.textContent = messageText;
+    time.textContent = "";
+
+    body.appendChild(bubble);
+    body.appendChild(time);
+    article.appendChild(body);
+    chatRoomMessages.appendChild(article);
+
+    requestAnimationFrame(function () {
+      chatRoomMessages.scrollTo({
+        top: chatRoomMessages.scrollHeight,
+        behavior: "smooth"
+      });
+    });
+
+    return article;
   }
 
   // 회원 채팅방 목록 비동기 조회
@@ -889,9 +949,14 @@ document.addEventListener("DOMContentLoaded", function () {
       .then(function (chatRoomDetail) {
         renderMemberChatRoomDetail(chatRoomDetail); // -> currentChatRoomId 세팅
         connectMemberChatSocket(); // currentChatRoomId 기준으로 구독
-        return loadMemberChatRooms().then(function () {
-          setPanelOpen(true);
-          setView("chat-room");
+        setPanelOpen(true);
+        setView("chat-room");
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            if (chatRoomMessages) {
+              chatRoomMessages.scrollTop = chatRoomMessages.scrollHeight;
+            }
+          });
         });
       })
       .catch(function (error) {
@@ -901,6 +966,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 회원 메시지 비동기 전송
   function sendMemberChatMessage() {
+    // 입력 메시지를 REST로 저장 요청하고, 성공 반영은 WebSocket 수신 결과에 맡김
     if (!currentChatRoomId || !chatRoomMessageInput) {
       return;
     }
@@ -909,6 +975,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!messageContent || !messageContent.trim()) {
       return;
     }
+
+    var trimmedMessage = messageContent.trim();
+    var pendingMessageElement = appendPendingMemberChatMessage(trimmedMessage);
 
     var headers = {
       "Content-Type": "application/json"
@@ -922,7 +991,7 @@ document.addEventListener("DOMContentLoaded", function () {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        chMsCon: messageContent
+        chMsCon: trimmedMessage
       })
     })
       .then(function (response) {
@@ -932,13 +1001,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return response.json();
       })
-      .then(function (message) {
+      .then(function () {
         chatRoomMessageInput.value = "";
-//        appendMemberChatMessage(message); // HTTP 기반 일 때 사용(WebSocket 없을때)
         chatRoomMessageInput.focus();
         return loadMemberChatRooms();
       })
       .catch(function (error) {
+        if (pendingMessageElement) {
+          pendingMessageElement.remove();
+        }
         console.error(error);
       });
   }
@@ -1079,13 +1150,16 @@ document.addEventListener("DOMContentLoaded", function () {
       button.classList.toggle("is-active", button.dataset.viewTarget === navViewName);
     });
 
-    if (viewName === "chat-list" && isAuthenticated) {
-      loadMemberChatRooms();
-    }
-
-    if (viewName === "chat-room" && chatRoomMessageInput && !chatRoomMessageInput.disabled) {
+    if (viewName === "chat-room") {
       requestAnimationFrame(function () {
-        chatRoomMessageInput.focus();
+        requestAnimationFrame(function () {
+          if (chatRoomMessages) {
+            chatRoomMessages.scrollTop = chatRoomMessages.scrollHeight;
+          }
+          if (chatRoomMessageInput && !chatRoomMessageInput.disabled) {
+            chatRoomMessageInput.focus();
+          }
+        });
       });
     }
 
@@ -1168,6 +1242,12 @@ document.addEventListener("DOMContentLoaded", function () {
   viewButtons.forEach(function (button) {
     button.addEventListener("click", function () {
       setPanelOpen(true);
+      if (button.dataset.viewTarget === "chat-list" && isAuthenticated) {
+        loadMemberChatRooms().then(function () {
+          setView("chat-list");
+        });
+        return;
+      }
       setView(button.dataset.viewTarget);
     });
   });
