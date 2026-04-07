@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FileRepository extends JpaRepository<FileUpload, Long> {
     List<FileUpload> findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalseOrderByFileOrAsc(String brdRefTy, Long brdRefNo);
@@ -19,4 +20,6 @@ public interface FileRepository extends JpaRepository<FileUpload, Long> {
           AND (f.fileDelYn IS NULL OR f.fileDelYn = false)
     """)
     int countByRefDto(@Param("ref") RefDto ref);
+
+    Optional<FileUpload> findFileUploadByFileUuid(String fileUuid);
 }

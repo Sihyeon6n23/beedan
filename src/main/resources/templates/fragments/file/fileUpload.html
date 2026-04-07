@@ -16,20 +16,20 @@
 
     <div class="inquiry-upload__list mt-4" id="fileListContainer">
       <div th:each="file : ${existingFiles}"
-           th:id="'ex-' + ${file.uuid}"
+           th:id="'ex-' + ${file.fileUuid}"
            class="inquiry-upload__item existing flex items-center justify-between gap-3 p-3 mb-2 border-l-4 border-zinc-200 bg-white shadow-sm transition-all">
         <div class="flex items-center gap-2 overflow-hidden flex-1">
           <span class="material-symbols-outlined text-secondary !text-lg flex-shrink-0">description</span>
           <span class="text-sm font-medium text-on-background truncate">
-            [[${file.originName}]]
-            <small class="text-zinc-400 ml-1" th:text="'(' + ${file.fileSize != null ? (file.fileSize < 1024 ? file.fileSize + ' B' : (file.fileSize < 1048576 ? #numbers.formatDecimal(file.fileSize/1024.0, 1, 1) + ' KB' : #numbers.formatDecimal(file.fileSize/1048576.0, 1, 1) + ' MB')) : '0 B'} + ')'"></small>
+            [[${file.fileNm}]]
+            <small class="text-zinc-400 ml-1" th:text="'(' + ${file.fileSz != null ? (file.fileSz < 1024 ? file.fileSz + ' B' : (file.fileSz < 1048576 ? #numbers.formatDecimal(file.fileSz/1024.0, 1, 1) + ' KB' : #numbers.formatDecimal(file.fileSz/1048576.0, 1, 1) + ' MB')) : '0 B'} + ')'"></small>
           </span>
         </div>
         <button type="button" class="inquiry-upload__remove text-secondary hover:text-error transition-colors flex-shrink-0"
-                th:onclick="fileManager.toggleDelete([[${file.uuid}]])">
+                th:onclick="fileManager.toggleDelete([[${file.fileUuid}]])">
           <span class="material-symbols-outlined !text-lg">close</span>
         </button>
-        <input type="hidden" class="delete-input" th:data-uuid="${file.uuid}">
+        <input type="hidden" class="delete-input" th:data-uuid="${file.fileUuid}">
       </div>
     </div>
   </div>
@@ -58,7 +58,6 @@
         this.updateUI();
       },
 
-      /* [추가] 파일 용량 포맷팅 로직 (JS) */
       formatSize(bytes) {
         if (bytes === 0) return '0 B';
         const k = 1024;
@@ -99,13 +98,12 @@
         this.updateUI();
       },
 
-      /* [수정] 신규 파일 UI 렌더링 시 용량 표시 적용 */
+      /* [수정 완료] 신규 파일 UI 렌더링 시 브라우저 네이티브 속성(file.name) 사용 */
       renderNewUI(file) {
         const container = document.getElementById('fileListContainer');
         const div = document.createElement('div');
         div.className = 'inquiry-upload__item new flex items-center justify-between gap-3 p-3 mb-2 border-l-4 border-primary bg-white shadow-sm';
 
-        // fileManager.formatSize를 사용하여 용량 텍스트 생성
         const sizeStr = this.formatSize(file.size);
 
         div.innerHTML = `
@@ -122,12 +120,14 @@
             </button>
         `;
 
+        // 삭제 시에도 file.name을 기준으로 비교하도록 수정
         div.querySelector('button').onclick = () => this.removeNew(div, file.name);
         container.appendChild(div);
       },
 
       removeNew(element, fileName) {
         const newDT = new DataTransfer();
+        // 브라우저의 File 객체는 'name' 속성을 가집니다.
         Array.from(this.dt.files).filter(f => f.name !== fileName).forEach(f => newDT.items.add(f));
         this.dt = newDT;
         document.getElementById('fileInput').files = this.dt.files;
@@ -159,7 +159,7 @@
   <style th:inline="css">
     .inquiry-upload__item.to-delete div span {
       text-decoration: line-through;
-      color: var(--color-zinc-400) !important;
+      color: #a1a1aa !important; /* zinc-400 대용 */
     }
     .inquiry-upload__item.to-delete div small {
       text-decoration: line-through;
