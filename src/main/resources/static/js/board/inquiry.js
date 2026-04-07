@@ -217,6 +217,18 @@
       });
     }
 
+    form.addEventListener('submit', (event) => {
+      if (window.tinymce) {
+        tinymce.triggerSave();
+      }
+      if (!validateEditorForm()) {
+        event.preventDefault();
+      }
+    });
+
+    // 첨부파일 업로드는 fileUpload fragment가 자체적으로 처리
+    return;
+
     const uploadRoot = document.querySelector('[data-inquiry-upload]');
     if (!uploadRoot) {
       form.addEventListener('submit', (event) => {
@@ -646,6 +658,30 @@
       return (textarea.value || '').trim();
     };
 
+    // 답글 작성/수정은 파일 첨부를 같이 보내야 하므로 JSON 대신 FormData로 전송
+    const buildReplyFormData = (formRoot, content) => {
+      const formData = new FormData();
+      formData.append('brdCon', content);
+
+      if (!formRoot) {
+        return formData;
+      }
+
+      const fileInput = formRoot.querySelector('input[name="newFiles"]');
+      if (fileInput?.files?.length) {
+        Array.from(fileInput.files).forEach((file) => formData.append('newFiles', file));
+      }
+
+      const deleteInputs = formRoot.querySelectorAll('input[name="deleteUuids"]');
+      deleteInputs.forEach((input) => {
+        if (input.value) {
+          formData.append('deleteUuids', input.value);
+        }
+      });
+
+      return formData;
+    };
+
     const ensureEditButton = (replyId) => {
       const replyHeader = detailPage.querySelector('.inquiry-detail-reply__header');
       if (!replyHeader) {
@@ -713,27 +749,12 @@
           }
 
           try {
+            // 답글 수정은 첨부 삭제/추가를 같이 보내기 위해 multipart/form-data로 전송
             await request(`/api/admin/inquiries/${replyId}/reply`, {
               method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ brdCon: content })
+              body: buildReplyFormData(currentReplyEditForm, content)
             });
-            const reply = await fetchReplyDto();
-            const latestDisplay = detailPage.querySelector('[data-reply-display]');
-            const latestEditForm = detailPage.querySelector('[data-reply-edit-form]');
-            if (latestDisplay && reply) {
-              latestDisplay.innerHTML = renderReplyContent(reply);
-              latestDisplay.classList.remove('is-hidden');
-            }
-            if (latestEditForm) {
-              latestEditForm.classList.add('is-hidden');
-            }
-            if (currentReplyEditError) {
-              currentReplyEditError.classList.add('is-hidden');
-            }
-            removeInlineEditor(currentReplyEditTextarea);
+            await refreshDetailPage();
           } catch (error) {
             handleError();
           }
@@ -812,6 +833,14 @@
         }
 
         try {
+          // 답글 작성도 첨부를 같이 받기 위해 multipart/form-data로 전송
+          await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
+            method: 'POST',
+            body: buildReplyFormData(replyCreateForm, content)
+          });
+          await refreshDetailPage();
+          return;
+
           const response = await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
             method: 'POST',
             headers: {

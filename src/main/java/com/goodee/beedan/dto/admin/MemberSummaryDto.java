@@ -3,7 +3,7 @@ package com.goodee.beedan.dto.admin;
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
-import com.goodee.beedan.dto.board.InquiryBoardListDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardListDto;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;

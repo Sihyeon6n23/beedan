@@ -9,6 +9,8 @@ import org.eclipse.angus.mail.iap.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import java.io.IOException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -39,7 +41,7 @@ public class AdminInquiryBoardRestController {
     @PostMapping("/{id}/reply")
     public Long createInquiryReply(@PathVariable("id") Long brdId, // 문의글 Id
                                    @AuthenticationPrincipal MemberUserDetails userDetails,
-                                   @RequestBody InquiryReplySaveDto inquiryReplySaveDto) {
+                                   @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
         return inquiryBoardService.createInquiryReply(
                 brdId,
                 userDetails.getMemberId(),
@@ -51,7 +53,7 @@ public class AdminInquiryBoardRestController {
     @PatchMapping("/{id}/reply")
     public void updateInquiryReply(@PathVariable("id") Long brdId, // 답글 Id
                                    @AuthenticationPrincipal MemberUserDetails userDetails,
-                                   @RequestBody InquiryReplySaveDto inquiryReplySaveDto) {
+                                   @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
         inquiryBoardService.updateInquiryReply(
                 brdId,
                 userDetails.getMemberId(),

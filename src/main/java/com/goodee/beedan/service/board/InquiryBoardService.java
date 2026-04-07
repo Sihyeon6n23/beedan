@@ -4,11 +4,14 @@ import com.goodee.beedan.common.constant.BoardType;
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.NotificationType;
-import com.goodee.beedan.dto.board.*;
+import com.goodee.beedan.dto.board.inquiry.*;
+import com.goodee.beedan.dto.file.FileDto;
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.entity.Board;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.repository.board.BoardRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
+import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.mail.MailService;
 import com.goodee.beedan.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,6 +31,7 @@ public class InquiryBoardService {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
     private final MailService mailService;
+    private final FileService fileService;
 
     // 사용자 목록 조회
     public Page<InquiryBoardListDto> getUserInquiryBoards(Long memId, InquiryBoardSearchDto searchDto) {
@@ -114,6 +120,14 @@ public class InquiryBoardService {
         InquiryReplyDto replyDto = replyBoard.map(this::mapToInquiryReplyDto)
                 .orElse(null);
 
+        // 해당 문의의 첨부 파일 목록 조회
+        List<FileDto> fileList = fileService.getFileList(
+                RefDto.builder()
+                        .refTy(BoardType.INQUIRY.name())
+                        .refNo(brdId)
+                        .build()
+        );
+
         return InquiryBoardDetailDto.builder()
                 .brdId(inquiryBoard.getBrdId())
                 .brdTtl(inquiryBoard.getBrdTtl())
@@ -129,6 +143,7 @@ public class InquiryBoardService {
                 .canUpdateStatus(false)
                 .canEditReply(false)
                 .reply(replyDto)
+                .fileList(fileList)
                 .build();
     }
 
@@ -152,6 +167,14 @@ public class InquiryBoardService {
         boolean canEditReply = replyBoard.map(reply -> reply.getMember().getMemId().equals(memAdId))
                 .orElse(false);
 
+        // 해당 문의의 첨부 파일 목록 조회
+        List<FileDto> fileList = fileService.getFileList(
+                RefDto.builder()
+                        .refTy(BoardType.INQUIRY.name())
+                        .refNo(brdId)
+                        .build()
+        );
+
         return InquiryBoardDetailDto.builder()
                 .brdId(inquiryBoard.getBrdId())
                 .brdTtl(inquiryBoard.getBrdTtl())
@@ -167,6 +190,7 @@ public class InquiryBoardService {
                 .canUpdateStatus(inquiryBoard.getBrdInqStt() == InquiryStatus.RECEIVED)
                 .canEditReply(canEditReply)
                 .reply(replyDto)
+                .fileList(fileList)
                 .build();
     }
 
@@ -177,6 +201,13 @@ public class InquiryBoardService {
         boolean edited = replyBoard.getBrdUpdDt() != null
                 && !replyBoard.getBrdUpdDt().equals(replyBoard.getBrdCreDt());
 
+        List<FileDto> fileList = fileService.getFileList(
+                RefDto.builder()
+                        .refTy(BoardType.INQUIRY_ANSWER.name())
+                        .refNo(replyBoard.getBrdId())
+                        .build()
+        );
+
         return InquiryReplyDto.builder()
                 .brdId(replyBoard.getBrdId())
                 .brdCon(replyBoard.getBrdCon())
@@ -184,11 +215,12 @@ public class InquiryBoardService {
                 .brdCreDt(replyBoard.getBrdCreDt())
                 .brdUpdDt(replyBoard.getBrdUpdDt())
                 .edited(edited)
+                .fileList(fileList)
                 .build();
     }
 
     // 사용자 문의 작성
-    public Long createInquiryBoard(Long memId, InquiryBoardCreateDto inquiryBoardCreateDto) {
+    public Long createInquiryBoard(Long memId, InquiryBoardCreateDto inquiryBoardCreateDto) throws IOException {
         if (inquiryBoardCreateDto.getBrdTtl() == null || inquiryBoardCreateDto.getBrdTtl().isBlank()) {
             throw new IllegalArgumentException("문의 제목을 입력해 주세요.");
         }
@@ -196,10 +228,10 @@ public class InquiryBoardService {
         if (inquiryBoardCreateDto.getBrdCon() == null || inquiryBoardCreateDto.getBrdCon().isBlank()) {
             throw new IllegalArgumentException("문의 내용을 입력해 주세요.");
         }
-
+        // 회원 정보 조회
         Member member = memberRepository.findById(memId)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-
+        // 문의 엔티티 생성
         Board inquiryBoard = Board.builder()
                 .brdTy(BoardType.INQUIRY)
                 .brdTtl(inquiryBoardCreateDto.getBrdTtl().trim())
@@ -209,12 +241,22 @@ public class InquiryBoardService {
                 .build();
 
         Board savedBoard = boardRepository.save(inquiryBoard);
+        // 파일이 있다면 파일 저장
+        if (inquiryBoardCreateDto.getNewFiles() != null && !inquiryBoardCreateDto.getNewFiles().isEmpty()) {
+            fileService.saveFile(
+                    inquiryBoardCreateDto.getNewFiles(),
+                    RefDto.builder()
+                            .refTy(BoardType.INQUIRY.name())
+                            .refNo(savedBoard.getBrdId())
+                            .build()
+            );
+        }
 
         return savedBoard.getBrdId();
     }
 
     // 사용자 문의 수정
-    public void updateInquiryBoard(Long brdId, Long memId, InquiryBoardEditDto inquiryBoardEditDto) {
+    public void updateInquiryBoard(Long brdId, Long memId, InquiryBoardEditDto inquiryBoardEditDto) throws IOException {
         // 본인 문의 조회
         Board inquiryBoard = boardRepository
                 .findByBrdIdAndBrdTyAndMember_MemIdAndBrdDelYnFalse(brdId, BoardType.INQUIRY, memId)
@@ -237,6 +279,22 @@ public class InquiryBoardService {
                 inquiryBoardEditDto.getBrdCon().trim());
 
         boardRepository.save(inquiryBoard);
+
+        // 기존 첨부파일 삭제
+        if (inquiryBoardEditDto.getDeleteUuids() != null && !inquiryBoardEditDto.getDeleteUuids().isEmpty()) {
+            fileService.deleteFiles(inquiryBoardEditDto.getDeleteUuids());
+        }
+
+        // 신규 첨부파일 저장
+        if (inquiryBoardEditDto.getNewFiles() != null && !inquiryBoardEditDto.getNewFiles().isEmpty()) {
+            fileService.saveFile(
+                    inquiryBoardEditDto.getNewFiles(),
+                    RefDto.builder()
+                            .refTy(BoardType.INQUIRY.name())
+                            .refNo(brdId)
+                            .build()
+            );
+        }
     }
 
     // 사용자 문의 취소
@@ -256,7 +314,7 @@ public class InquiryBoardService {
     }
 
     // 관리자 답글 작성
-    public Long createInquiryReply(Long brdId, Long memAdId, InquiryReplySaveDto inquiryReplySaveDto) {
+    public Long createInquiryReply(Long brdId, Long memAdId, InquiryReplySaveDto inquiryReplySaveDto) throws IOException{
         validateAdminAuthority(memAdId);
 
         // 문의 조회
@@ -288,6 +346,16 @@ public class InquiryBoardService {
                 .build();
         // 답글 저장
         Board savedReplyBoard = boardRepository.save(replyBoard);
+        // 첨부 파일 저장
+        if (inquiryReplySaveDto.getNewFiles() != null && !inquiryReplySaveDto.getNewFiles().isEmpty()) {
+            fileService.saveFile(
+                    inquiryReplySaveDto.getNewFiles(),
+                    RefDto.builder()
+                            .refTy(BoardType.INQUIRY_ANSWER.name())
+                            .refNo(savedReplyBoard.getBrdId())
+                            .build()
+            );
+        }
         // 해당 문의의 상태를 답변 완료로 변경
         inquiryBoard.markAnswered();
 
@@ -315,7 +383,7 @@ public class InquiryBoardService {
     }
 
     // 관리자 답글 수정
-    public void updateInquiryReply(Long brdId, Long memAdId, InquiryReplySaveDto inquiryReplySaveDto) {
+    public void updateInquiryReply(Long brdId, Long memAdId, InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
         validateAdminAuthority(memAdId);
 
         // 답글 조회
@@ -344,6 +412,22 @@ public class InquiryBoardService {
         inquiryBoard.touch(memAdId);
 
         boardRepository.save(inquiryBoard);
+
+        // 기존 첨부파일 삭제
+        if (inquiryReplySaveDto.getDeleteUuids() != null && !inquiryReplySaveDto.getDeleteUuids().isEmpty()) {
+            fileService.deleteFiles(inquiryReplySaveDto.getDeleteUuids());
+        }
+
+        // 신규 첨부파일 추가
+        if (inquiryReplySaveDto.getNewFiles() != null && !inquiryReplySaveDto.getNewFiles().isEmpty()) {
+            fileService.saveFile(
+                    inquiryReplySaveDto.getNewFiles(),
+                    RefDto.builder()
+                            .refTy(BoardType.INQUIRY_ANSWER.name())
+                            .refNo(replyBoard.getBrdId())
+                            .build()
+            );
+        }
 
         // 웹 알림
         notificationService.createNotification(

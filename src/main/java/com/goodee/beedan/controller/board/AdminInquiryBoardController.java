@@ -1,9 +1,9 @@
 package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.board.InquiryBoardDetailDto;
-import com.goodee.beedan.dto.board.InquiryBoardListDto;
-import com.goodee.beedan.dto.board.InquiryBoardSearchDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardDetailDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardListDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardSearchDto;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
