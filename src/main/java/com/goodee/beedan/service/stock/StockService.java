@@ -2,12 +2,10 @@ package com.goodee.beedan.service.stock;
 
 import com.goodee.beedan.dto.stock.NewStockForm;
 import com.goodee.beedan.dto.stock.StockListDto;
-import com.goodee.beedan.entity.Brand;
-import com.goodee.beedan.entity.Category;
-import com.goodee.beedan.entity.Stock;
-import com.goodee.beedan.entity.Wishlist;
+import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.brand.BrandRepository;
 import com.goodee.beedan.repository.category.CategoryRepository;
+import com.goodee.beedan.repository.hitstock.HitStockRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.repository.wishlist.WishlistRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -29,10 +27,11 @@ public class StockService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final WishlistRepository wishlistRepository;
+    private final HitStockRepository hitStockRepository;
 
     // 상품 단건 조회
     public Stock findById(Long stId) {
-        return stockRepository.findById(stId).orElse(null);
+        return stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
     }
 
     // 찜 여부 확인
@@ -202,6 +201,54 @@ public class StockService {
 
         return save.getStId();
 
+    }
+    // 상품 구매시 날짜별 구매 현황 기록용
+    public void stockHitRecord(Long stId) {
+        Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+        HitStock hitStock = hitStockRepository.save(HitStock.builder()
+                .stId(stId)
+                .hitDt(LocalDateTime.now())
+                .build());
+    }
+    // 내 상품 조회 (stReqYn=true, stReqMemId=memId)
+    public Page<StockListDto> findMyItems(List<Long> brandIds, List<String> catNms, String keyword, String sort, int page, Long memId) {
+        Sort sorting = switch (sort != null ? sort : "recent") {
+            case "popularity" -> Sort.by(Sort.Direction.DESC, "stWisCnt");
+            case "price-asc" -> Sort.by(Sort.Direction.ASC, "stPr");
+            case "price-desc" -> Sort.by(Sort.Direction.DESC, "stPr");
+            case "most-purchased" -> Sort.by(Sort.Direction.DESC, "stPurCnt");
+            default -> Sort.by(Sort.Direction.DESC, "stId");
+        };
+
+        Pageable pageable = PageRequest.of(page, 8, sorting);
+
+        Specification<Stock> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("stReqYn")));
+            predicates.add(cb.equal(root.get("stReqMemId"), memId));
+            if (brandIds != null && !brandIds.isEmpty()) {
+                predicates.add(root.get("brId").in(brandIds));
+            }
+            if (catNms != null && !catNms.isEmpty()) {
+                predicates.add(root.get("stCatNm").in(catNms));
+            }
+            if (keyword != null && !keyword.isBlank()) {
+                String pattern = "%" + keyword.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("stNm")), pattern),
+                        cb.like(cb.lower(root.get("stBrNm")), pattern)
+                ));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Set<Long> wishedIds = memId != null
+                ? wishlistRepository.findAllByMemId(memId).stream()
+                .map(Wishlist::getStId).collect(Collectors.toSet())
+                : Collections.emptySet();
+
+        return stockRepository.findAll(spec, pageable)
+                .map(stock -> mapToStockListDto(stock, wishedIds));
     }
 
     // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개)

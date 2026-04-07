@@ -7,6 +7,7 @@ import com.goodee.beedan.service.cart.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +20,16 @@ public class CartApiController {
     private final CartService cartService;
 
     @DeleteMapping("/{caId}")
-    public ResponseEntity<Void> delete(@PathVariable Long caId) {
-        cartService.deleteItem(caId);
+    public ResponseEntity<Void> delete(@PathVariable Long caId,
+                                        @AuthenticationPrincipal MemberUserDetails userDetails) {
+        cartService.deleteItem(caId, userDetails.getMemberId());
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<Void> updateCart(@RequestBody List<CartUpdateDto> updates){
-        cartService.updateCart(updates);
+    public ResponseEntity<Void> updateCart(@RequestBody List<CartUpdateDto> updates,
+                                           @AuthenticationPrincipal MemberUserDetails userDetails) {
+        cartService.updateCart(updates, userDetails.getMemberId());
         return ResponseEntity.ok().build();
     }
 

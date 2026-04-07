@@ -21,4 +21,6 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
     Page<Stock> findByStIdInAndStExpYnTrue(List<Long> stIds, Pageable pageable);
 
     List<Stock> findTop30ByStExpYnTrueOrderByStCraDtDesc();
+
+    Page<Stock> findByStReqYnTrueAndStReqMemId(Long stReqMemId, Pageable pageable);
 }

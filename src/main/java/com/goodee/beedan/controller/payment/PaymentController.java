@@ -5,11 +5,13 @@ import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
+import com.goodee.beedan.repository.quote.QuoteDetailRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
 import com.goodee.beedan.service.quote.QuoteBaseService;
 import com.goodee.beedan.service.quote.QuoteDetailService;
 import com.goodee.beedan.service.quote.QuoteShipFeeService;
 import com.goodee.beedan.service.quote.NegotiationService;
+import com.goodee.beedan.service.stock.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +44,8 @@ public class PaymentController {
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
     private final QuoteShipFeeService quoteShipFeeService;
+    private final QuoteDetailRepository quoteDetailRepository;
+    private final StockService stockService;
 
     @Value("${toss.payments.secret-key}")
     private String tossSecretKey;
@@ -87,6 +91,8 @@ public class PaymentController {
                 ? quoteInfo.getQuInfoSrvFeAm() : BigDecimal.ZERO;
         BigDecimal calculatedTotal = itemTotalKrw.add(intShipFeeOnly).add(domesticFee)
                 .add(serviceFeeAm).add(totalDutyVat);
+
+
 
         model.addAttribute("activeStep", 4);
         model.addAttribute("quoteBase", quoteBase);
@@ -164,6 +170,12 @@ public class PaymentController {
 
         // 견적 상태를 PAID로 변경
         quoteBase.paid();
+
+        // 재고 히트 기록
+        List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
+        for(QuoteDetail d : details) {
+            stockService.stockHitRecord(d.getStId());
+        }
 
         log.info("결제 완료. paymentId: {}, quId: {}, amount: {}", payment.getPyId(), quId, amount);
 

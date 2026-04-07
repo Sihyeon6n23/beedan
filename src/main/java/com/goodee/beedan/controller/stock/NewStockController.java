@@ -74,7 +74,7 @@ public class NewStockController {
     @GetMapping("/check-type/{id}")
     @ResponseBody
     public Map<String, String> checkType(@PathVariable Long id) {
-        CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow();
+        CrawlingUrl url = crawlingUrlRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
         String urlTy = url.getUrlTy();
 
         String type;
@@ -130,7 +130,6 @@ public class NewStockController {
     public String saveManual(NewStockForm newStockForm,
                              RedirectAttributes redirectAttributes) {
 
-            String imgUrl = null;
             MultipartFile imgFile = newStockForm.getImgFile();
             List<MultipartFile> files = new ArrayList<>();
             files.add(imgFile);
