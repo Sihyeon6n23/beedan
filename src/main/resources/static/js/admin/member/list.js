@@ -112,7 +112,7 @@ function renderMemberList(members) {
 
                 <div class="action-btns">
                     <button class="btn-detail" onclick="openMemberModal('${member.memId}')">상세보기</button>
-                    <a class="btn-edit" href="/admin/detail?id=${member.memId}">수정하기</a>
+                    <a class="btn-edit" href="/admin/member/edit?id=${member.memId}">수정하기</a>
                 </div>
             </div>
         `;
@@ -331,7 +331,7 @@ function updateModalFooterButtons(memId) {
 
     if(orderBtn) orderBtn.setAttribute('onclick', `viewFullOrderList('${memId}', 0)`);
     if(shippingBtn) shippingBtn.setAttribute('onclick', `viewFullShipmentList('${memId}', 0)`);
-    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullInquiryIList('/api/admin/inquiry/${memId}', '전체 문의 내역')`);
+    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullInquiryIList('${memId}', 0)`);
 }
 
 async function viewFullList(url, title) {
@@ -807,3 +807,118 @@ async function advanceDemoStatus(shId, memId, page) {
             console.error("통신 오류:", error);
         }
 }
+
+// =========================== 문의 전체 목록 조회 ==============================
+
+async function viewFullInquiryIList(memId, page = 0) {
+    const contentArea = document.getElementById('modalContentArea');
+
+    contentArea.innerHTML = `
+        <div class="order-history-fragment">
+            <div class="fragment-top">
+                <button class="btn-go-back" onclick="restoreDashboard()">
+                    <span class="material-symbols-outlined">arrow_back</span> 이전으로
+                </button>
+                <div class="title-row">
+                    <h2 class="fragment-title">INQUIRY History</h2>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="fragment-table">
+                    <thead>
+                        <tr>
+                            <th>문의 제목</th>
+                            <th>상태</th>
+                            <th>회사 상호명</th>
+                            <th>등록일</th>
+                            <th class="text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inquiryListBody">
+                        <tr><td colspan="5" style="text-align: center; padding: 30px;">데이터를 불러오는 중...</td></tr>
+                    </tbody>
+                </table>
+                <div class="table-footer-row" id="inquiryPaginationArea"></div>
+            </div>
+        </div>
+    `;
+
+    try {
+        const url = `/api/admin/inquiries/${memId}?page=${page}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const listBody = document.getElementById('inquiryListBody');
+        const paginationArea = document.getElementById('inquiryPaginationArea');
+
+        if (!data.content || data.content.length === 0) {
+            listBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px;">문의 내역이 없습니다.</td></tr>`;
+            paginationArea.innerHTML = '';
+            return;
+        }
+
+        const rowsHtml = data.content.map(inquiry => {
+            const statusMap = {
+                RECEIVED: { text: '접수', className: 'badge-yellow' },
+                IN_PROGRESS: { text: '처리중', className: 'badge-blue' },
+                ANSWERED: { text: '답변완료', className: 'badge-green' },
+                CANCELLED: { text: '취소', className: 'badge-red' }
+            };
+            const sttInfo = statusMap[inquiry.brdInqStt] || { text: '미확인', className: 'badge-gray' };
+            const dateStr = inquiry.brdCreDt ? inquiry.brdCreDt.substring(0, 10).replace(/-/g, '.') : '-';
+            const companyName = inquiry.memBizTtl || '상호명 미등록';
+
+            return `
+                <tr>
+                    <td class="inquiry-title">
+                        <strong>${inquiry.brdTtl || '제목 없음'}</strong>
+                    </td>
+                    <td class="inquiry-status text-center">
+                        <span class="badge-status ${sttInfo.className}">${sttInfo.text}</span>
+                    </td>
+                    <td class="inquiry-company">${companyName}</td>
+                    <td class="inquiry-date">${dateStr}</td>
+                    <td class="action-cell text-center">
+                        <a class="btn-edit" href="/admin/inquiry/detail(id=${inquiry.brdId})}">상세보기</a>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        listBody.innerHTML = rowsHtml;
+
+        const startItem = (data.number * data.size) + 1;
+        const endItem = Math.min(startItem + data.size - 1, data.totalElements);
+
+        let paginationHtml = `<span class="showing-text">Showing ${startItem}-${endItem} of ${data.totalElements} inquiries</span>`;
+        paginationHtml += `<div class="fragment-pagination">`;
+
+        if (!data.first) {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number - 1})">
+                <span class="material-symbols-outlined">chevron_left</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
+        }
+
+        for (let i = 0; i < data.totalPages; i++) {
+            const activeClass = (i === data.number) ? 'active' : '';
+            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullInquiryIList('${memId}', ${i})">${i + 1}</button>`;
+        }
+
+        if (!data.last) {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number + 1})">
+                <span class="material-symbols-outlined">chevron_right</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
+        }
+
+        paginationHtml += `</div>`;
+        paginationArea.innerHTML = paginationHtml;
+
+    } catch (error) {
+        console.error("문의 목록 조회 실패:", error);
+        document.getElementById('inquiryListBody').innerHTML = '<tr><td colspan="5">데이터 로드에 실패했습니다.</td></tr>';
+    }
+}
+
