@@ -87,6 +87,8 @@ function renderMemberList(members) {
     let html = '';
     members.forEach(member => {
         const statusInfo = getStatusInfo(member.memStt);
+        const isRoot = member.memAut === 'ROOT';
+        console.log(member.memAut);
 
         html += `
             <div class="admin-chat-row">
@@ -112,7 +114,7 @@ function renderMemberList(members) {
 
                 <div class="action-btns">
                     <button class="btn-detail" onclick="openMemberModal('${member.memId}')">상세보기</button>
-                    <a class="btn-edit" href="/admin/member/edit?id=${member.memId}">수정하기</a>
+                    ${isRoot ? `<a class="btn-edit" href="/admin/member/edit?id=${member.memId}">수정하기</a>` : ''}
                 </div>
             </div>
         `;

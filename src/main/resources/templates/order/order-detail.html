@@ -182,8 +182,13 @@
             background-color: #555;
         }
 
-
-
+        .btn-back-to-list {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: inherit;
+        }
     </style>
 
     <section class="admin-chat-page admin-chat-list-page order-management-list">
@@ -196,9 +201,11 @@
                     <span></span>
                 </div>
 
-                <a href="/order/list" class="btn-back-to-list">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>목록으로
-                </a>
+                <div class="btn-back-to-list">
+                    <a href="/order/list" class="btn-back-to-list">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>목록으로
+                    </a>
+                </div>
             </div>
         </header>
 

@@ -366,7 +366,7 @@ main > div {
 /* --- 배송 카드 특화 --- */
 .shipping-card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 20px; border-left: 4px solid #ffd700; margin-bottom: 20px; }
 .shipping-status { font-size: 10px; font-weight: bold; color: #705d00; }
-.tracking-number { font-size: 20px; margin: 5px 0; }
+.tracking-number { font-size: 14px; margin: 5px 0; }
 .tracking-label { font-size: 11px; color: #636262; }
 .tracking-timeline { margin-top: 15px; border-left: 2px solid #e2e2e2; padding-left: 15px; }
 .timeline-item { margin-bottom: 10px; display: flex; flex-direction: column; }
@@ -377,6 +377,8 @@ main > div {
     align-items: center;
     gap: 6px;
 }
+.shipping-address
+
 .icon-yellow { color: #ffd700; font-size: 16px; vertical-align: middle; }
 
 /* --- 문의 내역 특화 --- */
@@ -487,7 +489,7 @@ main > div {
 /* 데이터 테이블 본체 */
 .fragment-table { width: 100%; border-collapse: collapse; text-align: left; }
 .fragment-table th {
-    background-color: #f4f4f5; color: #525252; font-size: 10px; font-weight: bold; text-transform: uppercase;
+    background-color: #f4f1e8; color: #525252; font-size: 10px; font-weight: bold; text-transform: uppercase;
     padding: 16px 24px;
 }
 .fragment-table td { padding: 20px 24px; border-bottom: 1px solid #f4f4f5; }
@@ -501,7 +503,7 @@ main > div {
 /* 정렬 및 뱃지 */
 .text-right { text-align: right; }
 .text-center { text-align: center; }
-.badge-status { padding: 6px 16px; font-size: 10px; font-weight: bold; text-transform: uppercase; border-left: 4px solid; display: inline-block; }
+.badge-status { padding: 6px 16px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: inline-block; }
 .badge-red { background-color: #ffdad6; color: #93000a; border-color: #ba1a1a; }
 .badge-yellow { background-color: rgba(255,215,0,0.2); color: #705d00; border-color: #705d00; }
 .badge-green { background-color: #f0fdf4; color: #15803d; border-color: #16a34a; }

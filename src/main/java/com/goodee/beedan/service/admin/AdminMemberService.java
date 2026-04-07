@@ -59,6 +59,7 @@ public class AdminMemberService {
                         .memCreDt(member.getMemCreDt())
                         .memBizAdr(member.getMemBizAdr())
                         .memStt(member.getMemStt())
+                        .memAut(member.getMemAut())
                         .build()
                 );
     }

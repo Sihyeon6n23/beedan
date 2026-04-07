@@ -6,6 +6,7 @@ import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
+import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.quote.QuoteBaseService;
 import com.goodee.beedan.service.quote.QuoteDetailService;
 import com.goodee.beedan.service.quote.QuoteShipFeeService;
@@ -42,6 +43,8 @@ public class PaymentController {
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
     private final QuoteShipFeeService quoteShipFeeService;
+
+    private final OrderService orderService;
 
     @Value("${toss.payments.secret-key}")
     private String tossSecretKey;
@@ -166,6 +169,8 @@ public class PaymentController {
         quoteBase.paid();
 
         log.info("결제 완료. paymentId: {}, quId: {}, amount: {}", payment.getPyId(), quId, amount);
+
+
 
         return "redirect:/payment/quote-detail?quId=" + quId
                 + "&paymentKey=" + paymentKey
