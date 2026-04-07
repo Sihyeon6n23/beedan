@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        @page { size: A4; margin: 40px 50px; }
+        body { font-family: 'NotoSansKR', sans-serif; font-size: 10px; color: #1a1a1a; line-height: 1.6; }
+        h1 { font-size: 24px; font-weight: 800; text-align: center; margin: 0 0 6px 0; }
+        .subtitle { text-align: center; font-size: 10px; color: #737373; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        th, td { border: 1px solid #999; padding: 6px 10px; font-size: 9px; }
+        th { background: #f0f0f0; font-weight: 700; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .section-title { font-size: 11px; font-weight: 700; margin: 20px 0 8px 0; padding-bottom: 4px; border-bottom: 2px solid #333; }
+        .total-row td { font-weight: 800; font-size: 12px; background: #f9f9f9; }
+        .info-table th { width: 120px; text-align: left; background: #f5f5f5; }
+        .info-table td { text-align: left; }
+        .note { font-size: 8px; color: #999; margin-top: 20px; padding: 8px; background: #fafafa; border-left: 3px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<h1>결 제 영 수 증</h1>
+<div class="subtitle">PAYMENT RECEIPT</div>
+
+<!-- 결제 정보 -->
+<div class="section-title">결제 정보</div>
+<table class="info-table">
+    <tr>
+        <th>견적 번호</th>
+        <td th:text="${quoteBase.quCd}">QU0000</td>
+    </tr>
+    <tr>
+        <th>협상명</th>
+        <td th:text="${negotiation.ngNm}">NG0000</td>
+    </tr>
+    <tr>
+        <th>결제자</th>
+        <td th:text="${member != null and member.memBizTtl != null ? member.memBizTtl + ' (' + member.memNm + ')' : '-'}">-</td>
+    </tr>
+    <tr>
+        <th>결제 수단</th>
+        <td th:text="${payment != null and payment.pyMt != null ? (payment.pyMt.name() == 'CARD' ? '법인카드 결제' : '무통장 입금 (가상계좌)') : '-'}">-</td>
+    </tr>
+    <tr>
+        <th>거래 ID</th>
+        <td th:text="${payment != null and payment.pyPgNm != null ? payment.pyPgNm : '-'}">-</td>
+    </tr>
+    <tr>
+        <th>결제일시</th>
+        <td th:text="${payment != null and payment.pyPdAt != null ? #temporals.format(payment.pyPdAt, 'yyyy년 MM월 dd일 HH:mm:ss') : '-'}">-</td>
+    </tr>
+    <tr>
+        <th>결제 상태</th>
+        <td th:text="${payment != null ? (payment.pyStt.name() == 'PAID' ? '결제 완료' : payment.pyStt.name()) : '-'}">-</td>
+    </tr>
+</table>
+
+<!-- 구매 품목 -->
+<div class="section-title">구매 품목</div>
+<table>
+    <thead>
+        <tr>
+            <th class="text-center" style="width:30px;">No.</th>
+            <th>품목명</th>
+            <th class="text-center" style="width:50px;">수량</th>
+            <th class="text-right" style="width:100px;">금액</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="detail, idx : ${details}">
+            <td class="text-center" th:text="${idx.count}">1</td>
+            <td th:text="${detail.stNm}">상품명</td>
+            <td class="text-center" th:text="${detail.quDtQn}">0</td>
+            <td class="text-right" th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- 결제 금액 명세 -->
+<div class="section-title">결제 금액 명세</div>
+<table>
+    <tr>
+        <th style="width:180px;">품목 대금</th>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA')}">₩0</td>
+    </tr>
+    <tr>
+        <th>물류 비용 (국제 운임 + 국내 배송)</th>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(domesticFee), 3, 'COMMA')}">₩0</td>
+    </tr>
+    <tr>
+        <th>큐레이션 수수료</th>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(serviceFeeAm, 3, 'COMMA')}">₩0</td>
+    </tr>
+    <tr>
+        <th>관세 및 부가세</th>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(totalDutyVat, 3, 'COMMA')}">₩0</td>
+    </tr>
+    <tr class="total-row">
+        <td style="text-align:center; font-weight:800;">최종 결제 금액</td>
+        <td class="text-right" th:text="${payment != null and payment.pyTtAm != null ? '₩' + #numbers.formatInteger(payment.pyTtAm, 3, 'COMMA') : '₩' + #numbers.formatInteger(calculatedTotal, 3, 'COMMA')}">₩0</td>
+    </tr>
+</table>
+
+<div class="note">
+    <p>본 영수증은 전자적으로 발행된 것으로 별도의 서명이 필요하지 않습니다.</p>
+    <p>결제 관련 문의는 BEEDAN 고객센터로 연락해주세요.</p>
+</div>
+
+</body>
+</html>

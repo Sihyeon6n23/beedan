@@ -55,6 +55,7 @@ public class QuoteRestController {
     private final com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final com.goodee.beedan.repository.quote.QuoteShipFeeRepository quoteShipFeeRepository;
     private final com.goodee.beedan.repository.quote.ShippingInsuranceRepository shippingInsuranceRepository;
+    private final com.goodee.beedan.service.quote.NegotiationService negotiationService;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -258,6 +259,11 @@ public class QuoteRestController {
             if (!quoteBase.isEditable()) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("status", "error", "message", "수정 불가 상태입니다."));
+            }
+
+            // 임시저장 시 상태가 null이면 TEMP_SAVE로 설정
+            if (quoteBase.getQuStt() == null) {
+                quoteBase.tempSave();
             }
 
             // 1. QuoteInfo 생성 또는 갱신
@@ -577,6 +583,36 @@ public class QuoteRestController {
                     .filter(sf -> !processedShipFeeIds.contains(sf.getQsfId()))
                     .forEach(sf -> quoteShipFeeRepository.delete(sf));
 
+            // 최종 금액을 서버에서 계산하여 quInfoTp에 저장 (single source of truth)
+            List<QuoteShipFee> savedShipFees = quoteShipFeeRepository.findAllByQuId(request.getQuId());
+            BigDecimal calcIntShip = BigDecimal.ZERO;
+            BigDecimal calcDutyVat = BigDecimal.ZERO;
+            for (QuoteShipFee sf : savedShipFees) {
+                calcIntShip = calcIntShip
+                        .add(sf.getQsfSrAm() != null ? sf.getQsfSrAm() : BigDecimal.ZERO)
+                        .add(sf.getQsfPrtAm() != null ? sf.getQsfPrtAm() : BigDecimal.ZERO)
+                        .add(sf.getQsfCstAm() != null ? sf.getQsfCstAm() : BigDecimal.ZERO)
+                        .add(sf.getQsfHsCd() != null ? sf.getQsfHsCd() : BigDecimal.ZERO)
+                        .add(sf.getQsfInsYn() != null && sf.getQsfInsYn() && sf.getQsfInsAm() != null
+                                ? sf.getQsfInsAm() : BigDecimal.ZERO);
+                calcDutyVat = calcDutyVat
+                        .add(sf.getQsfDty() != null ? sf.getQsfDty() : BigDecimal.ZERO)
+                        .add(sf.getQsfVat() != null ? sf.getQsfVat() : BigDecimal.ZERO);
+            }
+            BigDecimal calcDomestic = quoteInfo.getQuInfoDomShiFe() != null
+                    ? quoteInfo.getQuInfoDomShiFe() : BigDecimal.ZERO;
+            BigDecimal calcService = quoteInfo.getQuInfoSrvFeAm() != null
+                    ? quoteInfo.getQuInfoSrvFeAm() : BigDecimal.ZERO;
+            BigDecimal calcItemTotal = BigDecimal.ZERO;
+            List<QuoteDetail> savedDetails = quoteDetailService.findAllByQuote(request.getQuId());
+            for (QuoteDetail d : savedDetails) {
+                if (d.getQuDtPr() != null) calcItemTotal = calcItemTotal.add(d.getQuDtPr());
+            }
+            BigDecimal calculatedTotal = calcItemTotal.add(calcIntShip).add(calcDomestic)
+                    .add(calcService).add(calcDutyVat);
+            quoteInfo.updateGrandTotal(calculatedTotal);
+            quoteInfoRepository.save(quoteInfo);
+
             return ResponseEntity.ok(Map.of(
                     "status", "ok",
                     "message", "임시저장 완료",
@@ -778,7 +814,27 @@ public class QuoteRestController {
             BigDecimal docFee = BigDecimal.ZERO;
             String buyerGrade = "STANDARD";
 
-            if (userDetails != null) {
+            // 등급 결정: 기존 견적의 bgpId → 협상 고객 등급 → 로그인 사용자 등급
+            if (request.getQuId() != null) {
+                try {
+                    // 1순위: 기존 QuoteInfo의 bgpId
+                    QuoteInfo existingInfo = quoteInfoRepository.findByQuId(request.getQuId()).orElse(null);
+                    if (existingInfo != null && existingInfo.getBgpId() != null) {
+                        buyerGrade = buyerGradePolicyRepository.findById(existingInfo.getBgpId())
+                                .map(BuyerGradePolicy::getBgpGr).orElse("STANDARD");
+                    } else {
+                        // 2순위: 협상의 고객(memId) 등급
+                        QuoteBase qb = quoteBaseService.findById(request.getQuId());
+                        Negotiation ng = negotiationService.findById(qb.getNgId());
+                        Member customer = memberRepository.findById(ng.getMemId()).orElse(null);
+                        if (customer != null && customer.getMemBizNo() != null) {
+                            Buyer buyer = buyerService.findByBizNo(customer.getMemBizNo());
+                            buyerGrade = buyer.getBgpGr();
+                        }
+                    }
+                } catch (Exception ignored) {}
+            } else if (userDetails != null) {
+                // 3순위: 로그인 사용자 (최초 견적, quId 없는 경우)
                 try {
                     Member member = memberRepository.findByMemLgnId(userDetails.getUsername()).orElse(null);
                     if (member != null && member.getMemBizNo() != null) {
@@ -1040,6 +1096,7 @@ public class QuoteRestController {
     @Getter
     @NoArgsConstructor
     public static class EstimateFeeRequest {
+        private Long quId;                    // 견적 ID (기존 등급 조회용)
         private List<EstimateItem> items;
         private BigDecimal itemTotalKrw;      // 사용자 조정 소계 합산 (수수료용)
         private Boolean insuranceYn;

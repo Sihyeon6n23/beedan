@@ -351,6 +351,10 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
+                quId: (function() {
+                    var btn = document.getElementById('btnSaveDraft');
+                    return btn ? parseInt(btn.dataset.quId) || null : null;
+                })(),
                 items: estimateItems,
                 itemTotalKrw: itemTotalKrw,
                 insuranceYn: isAnyInsuranceChecked(),

@@ -23,10 +23,17 @@
             <span>유틸리티 설정</span>
         </a>
 
+        <a th:href="@{/root/operation}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'operation'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">tune</span>
+            <span>운영 정책 설정</span>
+        </a>
+
         <a th:href="@{/root/sales}"
            class="sidebar-menu__link"
            th:classappend="${activeMain == 'sales'} ? ' sidebar-menu__link--current' : ''">
-            <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
+            <span class="material-symbols-outlined sidebar-menu__icon">monitoring</span>
             <span>매출 관리</span>
         </a>
 

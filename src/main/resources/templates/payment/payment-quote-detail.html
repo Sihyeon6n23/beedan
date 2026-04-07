@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Goodee — 결제 완료</title>
-    <link rel="stylesheet" th:href="@{/css/payment/payment-quote-detail.css}">
-    <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment Complete', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 결제 완료</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/payment/payment-quote-detail.css}">
+<link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
 <div class="page-wrapper">
     <main class="main">
         <div class="main-canvas">
@@ -29,12 +33,12 @@
                     </div>
                 </div>
                 <div class="hero-right">
-                    <button class="btn-receipt-save">
+                    <a class="btn-receipt-save" th:href="@{'/api/payment/' + ${quId} + '/receipt'}" target="_blank">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8 1v9M4 7l4 4 4-4M2 14h12" stroke="#705e00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         결제 영수증 저장
-                    </button>
+                    </a>
                 </div>
             </header>
 
@@ -178,7 +182,7 @@
                         <span class="aside-label">문서 다운로드</span>
                     </div>
                     <div class="download-list">
-                        <button class="download-btn">
+                        <a class="download-btn" th:href="@{'/api/payment/' + ${quId} + '/tax-invoice'}" target="_blank">
                             <div class="download-btn-icon">
                                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M9 2v10M5 9l4 4 4-4" stroke="#705d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -192,8 +196,8 @@
                             <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                        </button>
-                        <button class="download-btn">
+                        </a>
+                        <a class="download-btn" th:href="@{'/api/payment/' + ${quId} + '/receipt'}" target="_blank">
                             <div class="download-btn-icon">
                                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M9 2v10M5 9l4 4 4-4" stroke="#705d00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -207,7 +211,7 @@
                             <svg class="download-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5 3l4 4-4 4" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                        </button>
+                        </a>
                     </div>
                 </div>
 
@@ -243,5 +247,5 @@
         </div><!-- /.main-canvas -->
     </main>
 </div>
-</body>
+</th:block>
 </html>

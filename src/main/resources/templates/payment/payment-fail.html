@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-FAIL!
-</body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 결제 실패</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<div style="padding:60px 0; text-align:center;">
+    <h1 style="font-size:32px; font-weight:700; margin-bottom:16px;">결제에 실패했습니다</h1>
+    <p style="color:#737373; margin-bottom:32px;">다시 시도해주세요.</p>
+    <a href="/quote/list" style="color:#705d00; font-weight:600;">견적 목록으로 돌아가기</a>
+</div>
+</th:block>
 </html>

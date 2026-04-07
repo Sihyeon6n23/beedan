@@ -425,6 +425,11 @@
     color: #c62828;
 }
 
+.ngd-q-badge--paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 .ngd-q-badge--expired {
     background: #f3e5f5;
     color: #6a1b9a;

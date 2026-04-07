@@ -47,11 +47,39 @@ public class PaymentController {
     private final QuoteShipFeeService quoteShipFeeService;
     private final QuoteDetailRepository quoteDetailRepository;
     private final StockService stockService;
-
+    private final BuyerService buyerService;
+    private final OrderWebhookService orderWebhookService;
     private final OrderService orderService;
 
     @Value("${toss.payments.secret-key}")
     private String tossSecretKey;
+
+    @GetMapping("/list")
+    public String getList(@AuthenticationPrincipal MemberUserDetails userDetails, Model model) {
+        if (userDetails == null) return "redirect:/auth/signin";
+
+        List<Payment> payments = paymentRepository.findAllByMemIdOrderByPyPdAtDesc(userDetails.getMemberId());
+
+        // 각 결제에 견적 코드 추가
+        List<Map<String, Object>> paymentList = new java.util.ArrayList<>();
+        for (Payment p : payments) {
+            Map<String, Object> item = new java.util.LinkedHashMap<>();
+            item.put("payment", p);
+            try {
+                QuoteBase qb = quoteBaseService.findById(p.getQuId());
+                item.put("quCd", qb.getQuCd());
+                Negotiation ng = negotiationService.findById(qb.getNgId());
+                item.put("ngNm", ng.getNgNm());
+            } catch (Exception e) {
+                item.put("quCd", "-");
+                item.put("ngNm", "-");
+            }
+            paymentList.add(item);
+        }
+
+        model.addAttribute("payments", paymentList);
+        return "/payment/payment-list";
+    }
 
     @GetMapping("/check")
     public String getCheck(@RequestParam Long quId, Model model,
@@ -179,10 +207,27 @@ public class PaymentController {
         for(QuoteDetail d : details) {
             stockService.stockHitRecord(d.getStId());
         }
+        // 고객 거래 실적 누적
+        try {
+            Negotiation ng = negotiationService.findById(quoteBase.getNgId());
+            Member customer = memberRepository.findById(ng.getMemId()).orElse(null);
+            if (customer != null && customer.getMemBizNo() != null) {
+                buyerService.updateAfterPayment(
+                        buyerService.findByBizNo(customer.getMemBizNo()).getById(),
+                        BigDecimal.valueOf(amount));
+            }
+        } catch (Exception e) {
+            log.warn("고객 실적 업데이트 실패: {}", e.getMessage());
+        }
 
         log.info("결제 완료. paymentId: {}, quId: {}, amount: {}", payment.getPyId(), quId, amount);
 
-
+        // 외부팀에 주문 정보 전달 (비동기, 실패해도 결제에 영향 없음)
+        try {
+            orderWebhookService.sendOrderToExternal(quId, payment.getPyId());
+        } catch (Exception e) {
+            log.warn("외부팀 webhook 전송 중 예외: {}", e.getMessage());
+        }
 
         return "redirect:/payment/quote-detail?quId=" + quId
                 + "&paymentKey=" + paymentKey

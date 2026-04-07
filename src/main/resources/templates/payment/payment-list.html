@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment History', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 결제 내역</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/quote/quote-list.css}">
+
+<div class="quote-page">
+    <section class="quote-shell quote-shell--header">
+        <h1 class="quote-page-title">결제 내역</h1>
+    </section>
+
+    <section class="quote-shell quote-shell--list">
+        <div class="quote-list-head">
+            <div>견적 정보</div>
+            <div>결제 수단</div>
+            <div>결제 금액</div>
+            <div>결제 상태</div>
+            <div>결제일</div>
+        </div>
+
+        <div class="quote-list-body">
+            <th:block th:each="item : ${payments}">
+                <a th:href="@{/payment/quote-detail(quId=${item.payment.quId})}"
+                   class="quote-row">
+                    <div class="quote-row__primary">
+                        <div class="quote-row__text">
+                            <h2>
+                                <span th:text="${item.quCd}">QU0000</span>
+                            </h2>
+                            <p class="quote-row__sub" th:text="${item.ngNm}">NG0000</p>
+                        </div>
+                    </div>
+                    <div class="quote-row__status">
+                        <span th:text="${item.payment.pyMt != null ? (item.payment.pyMt.name() == 'CARD' ? '법인카드' : '무통장입금') : '-'}">-</span>
+                    </div>
+                    <div class="quote-row__time" style="font-weight:700;">
+                        <span th:text="${item.payment.pyTtAm != null ? '₩' + #numbers.formatInteger(item.payment.pyTtAm, 3, 'COMMA') : '-'}">₩0</span>
+                    </div>
+                    <div class="quote-row__status">
+                        <span class="quote-badge"
+                              th:classappend="${item.payment.pyStt.name() == 'PAID' ? 'quote-badge--paid' :
+                                               item.payment.pyStt.name() == 'CANCELLED' ? 'quote-badge--rejected' :
+                                               item.payment.pyStt.name() == 'FAILED' ? 'quote-badge--rejected' : 'quote-badge--submitted'}"
+                              th:text="${item.payment.pyStt.name() == 'PAID' ? '결제완료' :
+                                         item.payment.pyStt.name() == 'CANCELLED' ? '취소됨' :
+                                         item.payment.pyStt.name() == 'FAILED' ? '실패' : '대기'}">상태</span>
+                    </div>
+                    <div class="quote-row__time">
+                        <span th:text="${item.payment.pyPdAt != null ? #temporals.format(item.payment.pyPdAt, 'yyyy.MM.dd HH:mm') : '-'}">-</span>
+                    </div>
+                </a>
+            </th:block>
+
+            <div class="quote-empty-state" th:if="${#lists.isEmpty(payments)}">
+                <strong>결제 내역이 없습니다.</strong>
+                <p>아직 결제한 견적이 없습니다.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+</th:block>
+</html>

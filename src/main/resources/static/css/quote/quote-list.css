@@ -335,6 +335,11 @@
     color: #c53030;
 }
 
+.quote-badge--paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 .quote-badge--expired {
     background: var(--color-surface-container-highest);
     color: var(--color-secondary);

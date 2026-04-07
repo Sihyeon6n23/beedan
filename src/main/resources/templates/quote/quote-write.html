@@ -2,16 +2,22 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/layout :: layout(
-                ~{::title},
-                null,
-                ~{::content}
-        )}">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:fragment="title" th:text="${isAdmin != null and isAdmin ? 'BEEDAN | 관리자 견적 작성' : 'BEEDAN | 견적 작성'}">BEEDAN | 견적 작성</title>
-</head>
-<body th:fragment="content">
+          ~{::title},
+          ~{fragments/sidebar :: frame(
+              ${isAdmin != null and isAdmin ? 'ADMIN' : 'TRADE MANAGEMENT'},
+              'Quote Write',
+              ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title" th:text="${isAdmin != null and isAdmin ? 'BEEDAN | 관리자 견적 작성' : 'BEEDAN | 견적 작성'}">BEEDAN | 견적 작성</title>
+
+<th:block th:fragment="sidebar">
+    <div th:if="${isAdmin != null and isAdmin}" th:replace="~{admin/admin-sidebar :: sidebar('quote', 'quote-list')}"></div>
+    <div th:if="${isAdmin == null or !isAdmin}" th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'quote-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
 <link rel="stylesheet" th:href="@{/css/quote/quote-write.css}">
 <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
 <link rel="stylesheet" th:href="@{/css/quote/exchangeRate.css}">
@@ -42,19 +48,25 @@
             <!-- Exchange Rate Section -->
             <div th:replace="~{fragments/quoteAndPayment/exchangeRate :: exchangeRateCard(${exchangeRates}, 0)}"></div>
 
-            <!-- 거절 사유 입력 (재작성 시) -->
-            <div class="rewrite-reject-section" th:if="${rewriteFromQuId != null}">
+            <!-- 이전 견적 거절 사유 (읽기 전용) -->
+            <div class="rewrite-reject-section" th:if="${rewriteFromQuId != null and rejectedReason != null and !rejectedReason.isEmpty()}">
                 <div class="rewrite-reject-header">
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="10" cy="10" r="9" stroke="#8b3a3a" stroke-width="1.5"/>
                         <path d="M7 7l6 6M13 7l-6 6" stroke="#8b3a3a" stroke-width="1.5" stroke-linecap="round"/>
                     </svg>
-                    <span class="rewrite-reject-title">거절 사유</span>
+                    <span class="rewrite-reject-title">이전 견적 거절 사유</span>
                     <span class="rewrite-reject-ref" th:text="'원본 견적: ' + ${rewriteFromQuCd}"></span>
                 </div>
+                <div class="rewrite-reject-readonly" th:text="${rejectedReason}"></div>
+            </div>
+            <!-- 새 거절 사유 입력 (재작성 시) -->
+            <div class="rewrite-reject-section rewrite-reject-section--new" th:if="${rewriteFromQuId != null}">
+                <div class="rewrite-reject-header">
+                    <span class="rewrite-reject-title">거절 사유 작성</span>
+                </div>
                 <textarea id="rejectReasonMemo" class="rewrite-reject-textarea"
-                          placeholder="이전 견적을 거절하는 사유를 입력해주세요."
-                          th:text="${rejectedReason != null && !rejectedReason.isEmpty() ? rejectedReason : ''}"></textarea>
+                          placeholder="이전 견적을 거절하는 사유를 입력해주세요."></textarea>
             </div>
 
             <!-- Quote Manifest Section -->
@@ -317,12 +329,12 @@
 
                 <!-- Quick Actions -->
                 <div class="quick-actions">
-                    <button class="btn-pdf">
+                    <a class="btn-pdf" th:href="@{'/api/quote/' + ${quId} + '/pdf'}" target="_blank">
                         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="#1a1c1c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         PDF 다운로드
-                    </button>
+                    </a>
                 </div>
             </div>
 

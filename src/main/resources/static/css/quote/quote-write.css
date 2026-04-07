@@ -1597,6 +1597,22 @@
     outline: none;
     border-color: #8b3a3a;
 }
+.rewrite-reject-readonly {
+    padding: 14px 16px;
+    background: #f5f0f0;
+    border-left: 3px solid #8b3a3a;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--color-text-muted);
+    border-radius: 0 8px 8px 0;
+}
+.rewrite-reject-section--new {
+    background: #fafafa;
+    border-left-color: #a0a0a0;
+}
+.rewrite-reject-section--new .rewrite-reject-title {
+    color: var(--color-text-muted);
+}
 
 /* ============================================================
    Previous Memo (이전 견적 메모, 읽기전용)

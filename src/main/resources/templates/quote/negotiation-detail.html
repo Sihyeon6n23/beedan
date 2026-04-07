@@ -122,7 +122,8 @@
                                   th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
                                              q.quStt == 'SUBMITTED' ? '제출완료' :
                                              q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
+                                             q.quStt == 'REJECTED' ? '거절' :
+                                             q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                         </div>
                         <div class="ngd-row__time">
                             <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2026.03.12</span>

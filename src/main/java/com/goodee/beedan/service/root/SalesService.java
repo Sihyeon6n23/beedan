@@ -2,15 +2,14 @@ package com.goodee.beedan.service.root;
 
 import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.dto.root.sales.*;
-import com.goodee.beedan.entity.Buyer;
-import com.goodee.beedan.entity.Member;
-import com.goodee.beedan.entity.QuoteBase;
-import com.goodee.beedan.entity.QuoteInfo;
+import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.buyer.BuyerRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
+import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.QuoteBaseRepository;
 import com.goodee.beedan.repository.quote.QuoteDetailRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
+import com.goodee.beedan.service.quote.NegotiationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,24 +29,28 @@ public class SalesService {
     private final QuoteInfoRepository quoteInfoRepository;
     private final QuoteDetailRepository quoteDetailRepository;
     private final BuyerRepository buyerRepository;
+    private final com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final MemberRepository memberRepository;
+    private final PaymentRepository paymentRepository;
+    private final NegotiationService negotiationService;
 
     /**
      * KPI 카드 데이터 조회
      */
     public SalesKpiResponse getKpi(LocalDateTime from, LocalDateTime to) {
-        List<QuoteBase> approvedQuotes = quoteBaseRepository
-                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.APPROVED, from, to);
+        // PAID 기준 매출 집계
+        List<QuoteBase> paidQuotes = quoteBaseRepository
+                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
-        for (QuoteBase qb : approvedQuotes) {
-            QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
-            if (info != null && info.getQuInfoTp() != null) {
-                totalRevenue = totalRevenue.add(info.getQuInfoTp());
+        for (QuoteBase qb : paidQuotes) {
+            Payment payment = paymentRepository.findByQuId(qb.getQuId()).orElse(null);
+            if (payment != null && payment.getPyTtAm() != null) {
+                totalRevenue = totalRevenue.add(payment.getPyTtAm());
             }
         }
 
-        long totalOrders = approvedQuotes.size();
+        long totalOrders = paidQuotes.size();
         BigDecimal avgOrderAmount = totalOrders > 0
                 ? totalRevenue.divide(BigDecimal.valueOf(totalOrders), 0, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
@@ -67,7 +70,7 @@ public class SalesService {
      */
     public List<CommissionRow> getCommissionRows(LocalDateTime from, LocalDateTime to) {
         List<QuoteBase> approvedQuotes = quoteBaseRepository
-                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.APPROVED, from, to);
+                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
 
         List<CommissionRow> rows = new ArrayList<>();
         for (QuoteBase qb : approvedQuotes) {
@@ -80,9 +83,14 @@ public class SalesService {
             BigDecimal shippingFee = nullToZero(info.getQuInfoTtlShiFe());
             BigDecimal totalFee = serviceFee.add(shippingFee);
 
-            // 바이어 정보 조회
-            String buyerName = resolveBuyerName(qb.getQuRid());
-            String grade = resolveBuyerGrade(qb.getQuRid());
+            // 바이어 정보 조회 (협상의 고객 기준)
+            Long customerId = null;
+            try {
+                Negotiation ng = negotiationService.findById(qb.getNgId());
+                customerId = ng.getMemId();
+            } catch (Exception ignored) {}
+            String buyerName = resolveBuyerName(customerId);
+            String grade = resolveGradeByNego(qb.getNgId());
 
             rows.add(CommissionRow.builder()
                     .date(qb.getQuCreDt())
@@ -105,7 +113,7 @@ public class SalesService {
      */
     public Map<String, BigDecimal> getCommissionSummary(LocalDateTime from, LocalDateTime to) {
         List<QuoteBase> approvedQuotes = quoteBaseRepository
-                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.APPROVED, from, to);
+                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
 
         BigDecimal totalServiceFee = BigDecimal.ZERO;
         BigDecimal totalShippingFee = BigDecimal.ZERO;
@@ -147,36 +155,45 @@ public class SalesService {
      */
     public List<GradeDistribution> getGradeDistribution(LocalDateTime from, LocalDateTime to) {
         List<QuoteBase> approvedQuotes = quoteBaseRepository
-                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.APPROVED, from, to);
+                .findAllByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
 
         // 등급별 집계
         Map<String, BigDecimal> revenueByGrade = new LinkedHashMap<>();
         Map<String, Long> ordersByGrade = new LinkedHashMap<>();
         Map<String, Set<Long>> buyersByGrade = new LinkedHashMap<>();
 
-        for (String grade : List.of("VIP", "PREMIUM", "STANDARD")) {
+        // DB에서 활성 등급 목록 조회
+        List<String> grades = buyerGradePolicyRepository.findAllByBgpAcYnTrue().stream()
+                .map(com.goodee.beedan.entity.BuyerGradePolicy::getBgpGr)
+                .distinct()
+                .collect(Collectors.toList());
+        if (grades.isEmpty()) grades = List.of("STANDARD");
+
+        for (String grade : grades) {
             revenueByGrade.put(grade, BigDecimal.ZERO);
             ordersByGrade.put(grade, 0L);
             buyersByGrade.put(grade, new HashSet<>());
         }
 
         for (QuoteBase qb : approvedQuotes) {
-            QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
-            if (info == null) continue;
+            Payment payment = paymentRepository.findByQuId(qb.getQuId()).orElse(null);
+            if (payment == null) continue;
 
-            String grade = resolveBuyerGrade(qb.getQuRid());
+            String grade = resolveGradeByNego(qb.getNgId());
             if (grade == null) grade = "STANDARD";
 
-            revenueByGrade.merge(grade, nullToZero(info.getQuInfoTp()), BigDecimal::add);
+            revenueByGrade.merge(grade, nullToZero(payment.getPyTtAm()), BigDecimal::add);
             ordersByGrade.merge(grade, 1L, Long::sum);
-            buyersByGrade.computeIfAbsent(grade, k -> new HashSet<>()).add(qb.getQuRid());
+            Long custId = null;
+            try { custId = negotiationService.findById(qb.getNgId()).getMemId(); } catch (Exception ignored) {}
+            buyersByGrade.computeIfAbsent(grade, k -> new HashSet<>()).add(custId);
         }
 
         BigDecimal totalRevenue = revenueByGrade.values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<GradeDistribution> result = new ArrayList<>();
-        for (String grade : List.of("VIP", "PREMIUM", "STANDARD")) {
+        for (String grade : grades) {
             BigDecimal revenue = revenueByGrade.get(grade);
             BigDecimal pct = totalRevenue.compareTo(BigDecimal.ZERO) > 0
                     ? revenue.multiply(BigDecimal.valueOf(100))
@@ -202,14 +219,19 @@ public class SalesService {
                 .findAllByQuCreDtBetweenOrderByQuCreDtDesc(from, to);
 
         return quotes.stream()
+                .filter(qb -> qb.getQuStt() != null && !QuoteStatus.TEMP_SAVE.equals(qb.getQuStt()))
                 .limit(limit)
                 .map(qb -> {
-                    QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
-                    BigDecimal amount = (info != null) ? nullToZero(info.getQuInfoTp()) : BigDecimal.ZERO;
+                    // PAID면 Payment에서, 아니면 0
+                    Payment payment = paymentRepository.findByQuId(qb.getQuId()).orElse(null);
+                    BigDecimal amount = (payment != null) ? nullToZero(payment.getPyTtAm()) : BigDecimal.ZERO;
+
+                    Long customerId = null;
+                    try { customerId = negotiationService.findById(qb.getNgId()).getMemId(); } catch (Exception ignored) {}
 
                     return RecentQuoteRow.builder()
                             .quoteCd(qb.getQuCd())
-                            .buyerName(resolveBuyerName(qb.getQuRid()))
+                            .buyerName(resolveBuyerName(customerId))
                             .status(qb.getQuStt())
                             .amount(amount)
                             .submitDate(qb.getQuCreDt())
@@ -255,6 +277,17 @@ public class SalesService {
                 .flatMap(buyerRepository::findByMemBizNo)
                 .map(Buyer::getBgpGr)
                 .orElse("STANDARD");
+    }
+
+    /** 협상의 고객 등급 조회 (negotiation.memId 기준) */
+    private String resolveGradeByNego(Long ngId) {
+        if (ngId == null) return "STANDARD";
+        try {
+            Negotiation ng = negotiationService.findById(ngId);
+            return resolveBuyerGrade(ng.getMemId());
+        } catch (Exception e) {
+            return "STANDARD";
+        }
     }
 
     private String resolveCuratorName(Long curatorId) {

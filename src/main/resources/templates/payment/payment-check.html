@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>결제 — BEEDAN</title>
-    <link rel="stylesheet" th:href="@{/css/payment/payment-check.css}">
-    <link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
-    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
-    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment', ~{::sidebar})},
+          ~{::content}
+      )}">
 
-    <script src="https://js.tosspayments.com/v1"></script>
-</head>
-<body>
+<title th:fragment="title">BEEDAN | 결제</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/payment/payment-check.css}">
+<link rel="stylesheet" th:href="@{/css/quote/roadToPayment.css}">
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+<script src="https://js.tosspayments.com/v1"></script>
 <div class="page">
 
     <!-- 페이지 타이틀 -->
@@ -219,5 +223,5 @@
         }
     });
 </script>
-</body>
+</th:block>
 </html>

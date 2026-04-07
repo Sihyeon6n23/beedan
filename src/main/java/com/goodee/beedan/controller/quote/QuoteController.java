@@ -44,6 +44,7 @@ public class QuoteController {
 
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
+    private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
     private final StockRepository stockRepository;
     private final HsCodeRepository hsCodeRepository;
     private final UnitGroupService unitGroupService;
@@ -156,8 +157,9 @@ public class QuoteController {
                     new com.goodee.beedan.dto.quote.QuoteBaseRequest(
                             oldQuote.getNgId(), myId, receiverId));
 
+            newQuote.tempSave(); // 재작성은 바로 TEMP_SAVE (데이터가 프리필되므로)
             quId = newQuote.getQuId();
-            sourceQuId = fromQuId; // 데이터는 기존 견적에서 로드
+            sourceQuId = fromQuId;
             model.addAttribute("rejectedReason", oldQuote.getQuCon());
             model.addAttribute("rewriteFromQuId", fromQuId);
             model.addAttribute("rewriteFromQuCd", oldQuote.getQuCd());
@@ -283,6 +285,14 @@ public class QuoteController {
         if (userDetails == null) return "redirect:/auth/signin";
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
+
+        // 상대방의 TEMP_SAVE 견적 접근 차단
+        Long myId = userDetails.getMemberId();
+        if (QuoteStatus.TEMP_SAVE.equals(quoteBase.getQuStt())
+                && !myId.equals(quoteBase.getQuSid())) {
+            return "redirect:/quote/list";
+        }
+
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
@@ -396,7 +406,6 @@ public class QuoteController {
         model.addAttribute("inspectionAmount", inspectionAmount);
 
         // 현재 사용자가 이 견적의 작성자인지 (작성자면 액션 버튼 숨김)
-        Long myId = userDetails.getMemberId();
         boolean isSender = myId.equals(quoteBase.getQuSid())
                 || (quoteBase.getQuSid() == null && myId.equals(quoteBase.getQuRid()));
         model.addAttribute("isSender", isSender);
@@ -423,8 +432,12 @@ public class QuoteController {
             item.put("ngCreDt", ng.getNgCreDt());
             item.put("ngEndDt", ng.getNgEndDt());
 
-            // 해당 협상의 견적 목록
-            List<QuoteBase> quotes = quoteBaseService.findAllByNego(ng.getNgId());
+            // 해당 협상의 유효 견적 목록 (quStt != null + 품목 1개 이상)
+            List<QuoteBase> quotes = quoteBaseRepository.findAllActiveByNgId(ng.getNgId(), memId);
+
+            // 유효 견적이 0개면 목록에서 제외
+            if (quotes.isEmpty()) continue;
+
             item.put("quoteCount", quotes.size());
 
             // 미열람 견적 존재 여부
@@ -469,11 +482,12 @@ public class QuoteController {
             return "redirect:/quote/negotiation/list";
         }
 
-        // 해당 협상의 견적 목록
-        List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId);
+        Long memId = userDetails.getMemberId();
+
+        // 해당 협상의 유효 견적 목록 (상대방 TEMP_SAVE 제외)
+        List<QuoteBase> quoteList = quoteBaseRepository.findAllActiveByNgId(ngId, memId);
 
         // 수신자 본인의 미열람 견적 열람 처리
-        Long memId = userDetails.getMemberId();
         for (QuoteBase qb : quoteList) {
             if (memId.equals(qb.getQuRid()) && (qb.getQuUsOpYn() == null || !qb.getQuUsOpYn())) {
                 quoteBaseService.userOpen(qb.getQuId());
