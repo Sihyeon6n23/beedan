@@ -87,6 +87,8 @@ function renderMemberList(members) {
     let html = '';
     members.forEach(member => {
         const statusInfo = getStatusInfo(member.memStt);
+        const isRoot = member.memAut === 'ROOT';
+        console.log(member.memAut);
 
         html += `
             <div class="admin-chat-row">
@@ -112,7 +114,7 @@ function renderMemberList(members) {
 
                 <div class="action-btns">
                     <button class="btn-detail" onclick="openMemberModal('${member.memId}')">상세보기</button>
-                    <a class="btn-edit" href="/admin/detail?id=${member.memId}">수정하기</a>
+                    ${isRoot ? `<a class="btn-edit" href="/admin/member/edit?id=${member.memId}">수정하기</a>` : ''}
                 </div>
             </div>
         `;
@@ -226,7 +228,8 @@ function renderModalOrders(orders) {
     let html = '';
     orders.forEach(order => {
         const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.split('T')[0] : '-';
-        const sttName = order.ordBaseStt === 'DELIVERED' ? '배송완료' : (order.ordBaseStt === 'DELIVERING' ? '배송중' : order.ordBaseStt);
+
+        const sttInfo = getOrderBadgeTheme(order.ordBaseStt);
 
         html += `
             <article class="list-item ${order.ordBaseStt === 'DELIVERING' ? 'border-yellow' : ''}">
@@ -234,7 +237,7 @@ function renderModalOrders(orders) {
                 <h4 class="item-title">${order.ordSummaryNm}</h4>
                 <div class="item-footer">
                     <span class="item-price">${order.ordBaseTtAm ? order.ordBaseTtAm.toLocaleString() : 0}원</span>
-                    <span class="badge ${order.ordBaseStt === 'DELIVERED' ? 'badge-yellow' : 'badge-gray'}">${sttName}</span>
+                    <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                 </div>
             </article>
         `;
@@ -330,7 +333,7 @@ function updateModalFooterButtons(memId) {
 
     if(orderBtn) orderBtn.setAttribute('onclick', `viewFullOrderList('${memId}', 0)`);
     if(shippingBtn) shippingBtn.setAttribute('onclick', `viewFullShipmentList('${memId}', 0)`);
-    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullInquiryIList('/api/admin/inquiry/${memId}', '전체 문의 내역')`);
+    if(inquiryBtn) inquiryBtn.setAttribute('onclick', `viewFullInquiryIList('${memId}', 0)`);
 }
 
 async function viewFullList(url, title) {
@@ -468,7 +471,7 @@ async function viewFullOrderList(memId, page = 0) {
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate(${order.ordBaseId})" title="상태변경">
+                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate(${order.ordBaseId})" title="변경상태저장">
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
@@ -701,8 +704,12 @@ async function shipmentDetail(shId, memId, page) {
                 <button class="btn-go-back" onclick="viewFullShipmentList(${memId}, ${page})">
                     <span class="material-symbols-outlined">arrow_back</span> 목록으로 돌아가기
                 </button>
-                <div class="title-row">
-                    <h2 class="fragment-title">TRACKING Details</h2>
+
+                <div class="title-row" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="fragment-title" style="margin: 0;">TRACKING Details</h2>
+                    <button onclick="advanceDemoStatus(${shId}, ${memId}, ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
+                        다음 배송 단계
+                    </button>
                 </div>
             </div>
 
@@ -710,8 +717,8 @@ async function shipmentDetail(shId, memId, page) {
                 <div id="trackingSummary" class="tracking-summary-card">
                     <p style="text-align:center; color:#666;">배송 데이터를 불러오는 중입니다...</p>
                 </div>
-                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;">
-                    </div>
+
+                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;"></div>
             </div>
         </div>
     `;
@@ -724,6 +731,7 @@ async function shipmentDetail(shId, memId, page) {
 
         document.getElementById('trackingSummary').innerHTML = `
             <div class="summary-info" style="display:flex; justify-content:space-between; width:100%;">
+
                 <div style="flex:1;">
                     <span style="font-size:12px; color:#888;">택배사</span>
                     <div style="font-weight:bold; font-size:16px;">${data.carrierName}</div>
@@ -751,10 +759,12 @@ async function shipmentDetail(shId, memId, page) {
             return;
         }
 
-        // 정상 데이터가 있을 때 타임라인 렌더링
         let html = '<ul class="tracking-timeline-list">';
+
         data.details.forEach((item, index) => {
-            const activeClass = (index === 0) ? 'active' : '';
+            const isLast = (index === data.details.length - 1);
+            const activeClass = isLast ? 'active' : '';
+
             html += `
                 <li class="timeline-step ${activeClass}">
                     <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
@@ -764,6 +774,7 @@ async function shipmentDetail(shId, memId, page) {
                     </div>
                 </li>`;
         });
+
         html += '</ul>';
         timelineArea.innerHTML = html;
 
@@ -772,3 +783,144 @@ async function shipmentDetail(shId, memId, page) {
         document.getElementById('trackingTimeline').innerHTML = '';
     }
 }
+
+async function advanceDemoStatus(shId, memId, page) {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        if(!confirm("배송 상태를 다음 단계로 이동시킬까요?")) return;
+
+        try {
+            const response = await fetch(`/api/admin/member/shipment/${shId}/demo-progress`, {
+                method: 'POST',
+                headers: {
+                   'Content-Type': 'application/json',
+                   [csrfHeader]: csrfToken
+                }
+            });
+
+            if (response.ok) {
+                alert("상태가 업데이트 되었습니다.");
+                shipmentDetail(shId, memId, page);
+            } else {
+                alert("상태 업데이트 실패");
+            }
+        } catch (error) {
+            console.error("통신 오류:", error);
+        }
+}
+
+// =========================== 문의 전체 목록 조회 ==============================
+
+async function viewFullInquiryIList(memId, page = 0) {
+    const contentArea = document.getElementById('modalContentArea');
+
+    contentArea.innerHTML = `
+        <div class="order-history-fragment">
+            <div class="fragment-top">
+                <button class="btn-go-back" onclick="restoreDashboard()">
+                    <span class="material-symbols-outlined">arrow_back</span> 이전으로
+                </button>
+                <div class="title-row">
+                    <h2 class="fragment-title">INQUIRY History</h2>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="fragment-table">
+                    <thead>
+                        <tr>
+                            <th>문의 제목</th>
+                            <th>상태</th>
+                            <th>회사 상호명</th>
+                            <th>등록일</th>
+                            <th class="text-center">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inquiryListBody">
+                        <tr><td colspan="5" style="text-align: center; padding: 30px;">데이터를 불러오는 중...</td></tr>
+                    </tbody>
+                </table>
+                <div class="table-footer-row" id="inquiryPaginationArea"></div>
+            </div>
+        </div>
+    `;
+
+    try {
+        const url = `/api/admin/inquiries/${memId}?page=${page}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const listBody = document.getElementById('inquiryListBody');
+        const paginationArea = document.getElementById('inquiryPaginationArea');
+
+        if (!data.content || data.content.length === 0) {
+            listBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px;">문의 내역이 없습니다.</td></tr>`;
+            paginationArea.innerHTML = '';
+            return;
+        }
+
+        const rowsHtml = data.content.map(inquiry => {
+            const statusMap = {
+                RECEIVED: { text: '접수', className: 'badge-yellow' },
+                IN_PROGRESS: { text: '처리중', className: 'badge-blue' },
+                ANSWERED: { text: '답변완료', className: 'badge-green' },
+                CANCELLED: { text: '취소', className: 'badge-red' }
+            };
+            const sttInfo = statusMap[inquiry.brdInqStt] || { text: '미확인', className: 'badge-gray' };
+            const dateStr = inquiry.brdCreDt ? inquiry.brdCreDt.substring(0, 10).replace(/-/g, '.') : '-';
+            const companyName = inquiry.memBizTtl || '상호명 미등록';
+
+            return `
+                <tr>
+                    <td class="inquiry-title">
+                        <strong>${inquiry.brdTtl || '제목 없음'}</strong>
+                    </td>
+                    <td class="inquiry-status text-center">
+                        <span class="badge-status ${sttInfo.className}">${sttInfo.text}</span>
+                    </td>
+                    <td class="inquiry-company">${companyName}</td>
+                    <td class="inquiry-date">${dateStr}</td>
+                    <td class="action-cell text-center">
+                        <a class="btn-edit" href="/admin/inquiry/detail(id=${inquiry.brdId})}">상세보기</a>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        listBody.innerHTML = rowsHtml;
+
+        const startItem = (data.number * data.size) + 1;
+        const endItem = Math.min(startItem + data.size - 1, data.totalElements);
+
+        let paginationHtml = `<span class="showing-text">Showing ${startItem}-${endItem} of ${data.totalElements} inquiries</span>`;
+        paginationHtml += `<div class="fragment-pagination">`;
+
+        if (!data.first) {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number - 1})">
+                <span class="material-symbols-outlined">chevron_left</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
+        }
+
+        for (let i = 0; i < data.totalPages; i++) {
+            const activeClass = (i === data.number) ? 'active' : '';
+            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullInquiryIList('${memId}', ${i})">${i + 1}</button>`;
+        }
+
+        if (!data.last) {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number + 1})">
+                <span class="material-symbols-outlined">chevron_right</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
+        }
+
+        paginationHtml += `</div>`;
+        paginationArea.innerHTML = paginationHtml;
+
+    } catch (error) {
+        console.error("문의 목록 조회 실패:", error);
+        document.getElementById('inquiryListBody').innerHTML = '<tr><td colspan="5">데이터 로드에 실패했습니다.</td></tr>';
+    }
+}
+

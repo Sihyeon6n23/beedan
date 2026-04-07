@@ -12,5 +12,5 @@ public class TrackingResponseDto {
     private String carrierName;
     private String trackingNumber;
     private String statusText;
-    private List<MemberSummaryDto.TrackingDetailDto> details; // 상세 이력이 담김
+    private List<TrackingDetailDto> details;
 }

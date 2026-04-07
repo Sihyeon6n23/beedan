@@ -24,4 +24,5 @@ public interface QuoteDetailRepository extends JpaRepository<QuoteDetail, Long> 
     void deleteAllByQuId(Long quId);
 
     List<QuoteDetail> findAllByNgId(Long ngId);
+
 }

@@ -1,5 +1,6 @@
 package com.goodee.beedan.service.requirement;
 
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.dto.requirement.RequireForm;
 import com.goodee.beedan.dto.requirement.RequirementListDto;
 import com.goodee.beedan.entity.Requirement;
@@ -7,6 +8,7 @@ import com.goodee.beedan.entity.RequirementReply;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.requirement.RequirementRepository;
 import com.goodee.beedan.repository.requirement.RequirementReplyRepository;
+import com.goodee.beedan.service.notification.NotificationService;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class RequirementService {
     private final RequirementRepository requirementRepository;
     private final RequirementReplyRepository requirementReplyRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     // 제출 완료된, 삭제되지 않은 요청서 전부 조회 (관리자용)
     public Page<RequirementListDto> findAllForAdmin(String status, Pageable pageable) {
@@ -136,6 +139,7 @@ public class RequirementService {
     public RequireForm getRequireForm(Long reqId) {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+
         RequireForm form = new RequireForm();
         form.setReqId(r.getReqId());
         form.setMemId(r.getMemId());
@@ -165,7 +169,9 @@ public class RequirementService {
     public void saveReply(Long reqId, String ttl, String con, Boolean perYn) {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
-
+        if(r.getReqRepYn()) {
+            throw new IllegalStateException("이미 답변이 작성된 요청입니다.");
+        }
         RequirementReply reply = RequirementReply.builder()
                 .reqId(reqId)
                 .reqRepTtl(ttl)
@@ -179,6 +185,12 @@ public class RequirementService {
         r.setReqPerYn(perYn);
         r.setReqUpdDt(LocalDateTime.now());
         requirementRepository.save(r);
+
+        // 웹 알림 서비스
+        notificationService.createNotification(
+                r.getMemId(),
+                perYn ? NotificationType.REQUIREMENT_APPROVE : NotificationType.REQUIREMENT_REJECT,
+                reqId);
     }
 
     // 답변 수정
@@ -196,29 +208,46 @@ public class RequirementService {
         r.setReqPerYn(perYn);
         r.setReqUpdDt(LocalDateTime.now());
         requirementRepository.save(r);
+
+        notificationService.createNotification(r.getMemId(), NotificationType.REQUIREMENT_CHANGE, reply.getReqId());
     }
 
     // 삭제 (논리 삭제)
-    public void deleteRequirement(Long reqId) {
+    public void deleteRequirement(Long reqId, Long memId) {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+        if(!r.getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 요청만 삭제할 수 있습니다.");
+        }
         r.setReqDelYn(true);
         requirementRepository.save(r);
     }
 
     // DRAFT → SUBMITTED 제출
-    public void submitDraft(Long reqId) {
+    public void submitDraft(Long reqId, Long memId) {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+        if(!"DRAFT".equals(r.getReqStt())) {
+            throw new IllegalStateException("임시 저장 상태의 요청만 제출할 수 있습니다.");
+        }
+        if(!r.getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 요청만 제출할 수 있습니다.");
+        }
         r.setReqStt("SUBMITTED");
         r.setReqUpdDt(LocalDateTime.now());
         requirementRepository.save(r);
     }
 
     // SUBMITTED → 등록 취소 (삭제 처리)
-    public void cancelRequirement(Long reqId) {
+    public void cancelRequirement(Long reqId, Long memId) {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+        if(!"SUBMITTED".equals(r.getReqStt())) {
+            throw new IllegalStateException("제출된 요청만 취소할 수 있습니다.");
+        }
+        if(!r.getMemId().equals(memId)) {
+            throw new IllegalArgumentException("본인의 요청만 취소할 수 있습니다.");
+        }
         r.setReqStt("DRAFT");
         requirementRepository.save(r);
     }

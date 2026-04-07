@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="display(list)">
+    <div th:if="${not #lists.isEmpty(list)}" class="inquiry-detail-files mt-8">
+        <h4 class="text-sm font-bold mb-4 flex items-center gap-2 text-zinc-700">
+            <span class="material-symbols-outlined text-zinc-400 text-lg">attach_file</span>
+            첨부파일 <span class="text-primary" th:text="${#lists.size(list)}">0</span>
+        </h4>
+
+        <ul class="flex flex-col gap-2">
+            <li th:each="file : ${list}" class="file-item flex items-center justify-between p-3 bg-zinc-50 rounded-lg border border-zinc-200 hover:border-zinc-300 transition-colors">
+
+                <div class="flex items-center gap-3 truncate">
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-zinc-300 text-zinc-500 uppercase flex-shrink-0"
+                          th:text="${file.fileExt}">EXT</span>
+
+                    <a th:href="@{/api/files/download/{id}(id=${file.fileUuid})}"
+                       th:download="${file.fileNm}"
+                       class="text-sm text-zinc-700 hover:text-primary transition-colors truncate font-medium">
+                        <span th:text="${file.fileNm}">파일명.ext</span>
+                    </a>
+                </div>
+
+                <span class="text-xs text-zinc-400 ml-4 flex-shrink-0"
+                      th:text="${#numbers.formatInteger(file.fileSz / 1024, 0, 'COMMA') + ' KB'}">0 KB</span>
+            </li>
+        </ul>
+    </div>
+</th:block>
+</html>

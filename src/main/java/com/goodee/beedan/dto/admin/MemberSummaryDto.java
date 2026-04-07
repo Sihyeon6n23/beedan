@@ -3,7 +3,7 @@ package com.goodee.beedan.dto.admin;
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
-import com.goodee.beedan.dto.board.InquiryBoardListDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardListDto;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
@@ -44,16 +44,6 @@ public class MemberSummaryDto {
         private String shRcvNm;
         private String shAdr;
         private String shAdrDt;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TrackingDetailDto {
-        private String time;
-        private String status;
-        private String description;
     }
 
 

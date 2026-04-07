@@ -5,11 +5,14 @@ import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
+import com.goodee.beedan.repository.quote.QuoteDetailRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
+import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.quote.QuoteBaseService;
 import com.goodee.beedan.service.quote.QuoteDetailService;
 import com.goodee.beedan.service.quote.QuoteShipFeeService;
 import com.goodee.beedan.service.quote.NegotiationService;
+import com.goodee.beedan.service.stock.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,8 +45,11 @@ public class PaymentController {
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
     private final QuoteShipFeeService quoteShipFeeService;
-    private final com.goodee.beedan.service.buyer.BuyerService buyerService;
-    private final com.goodee.beedan.service.webhook.OrderWebhookService orderWebhookService;
+    private final QuoteDetailRepository quoteDetailRepository;
+    private final StockService stockService;
+    private final BuyerService buyerService;
+    private final OrderWebhookService orderWebhookService;
+    private final OrderService orderService;
 
     @Value("${toss.payments.secret-key}")
     private String tossSecretKey;
@@ -116,6 +122,8 @@ public class PaymentController {
                 ? quoteInfo.getQuInfoSrvFeAm() : BigDecimal.ZERO;
         BigDecimal calculatedTotal = itemTotalKrw.add(intShipFeeOnly).add(domesticFee)
                 .add(serviceFeeAm).add(totalDutyVat);
+
+
 
         model.addAttribute("activeStep", 4);
         model.addAttribute("quoteBase", quoteBase);
@@ -194,6 +202,11 @@ public class PaymentController {
         // 견적 상태를 PAID로 변경
         quoteBase.paid();
 
+        // 재고 히트 기록
+        List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
+        for(QuoteDetail d : details) {
+            stockService.stockHitRecord(d.getStId());
+        }
         // 고객 거래 실적 누적
         try {
             Negotiation ng = negotiationService.findById(quoteBase.getNgId());

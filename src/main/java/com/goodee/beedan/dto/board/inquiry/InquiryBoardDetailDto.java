@@ -1,12 +1,14 @@
-package com.goodee.beedan.dto.board;
+package com.goodee.beedan.dto.board.inquiry;
 
 import com.goodee.beedan.common.constant.InquiryStatus;
+import com.goodee.beedan.dto.file.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -28,4 +30,6 @@ public class InquiryBoardDetailDto {
     private Boolean canUpdateStatus;    // 관리자 문의 상태 수정 가능 여부
     private Boolean canEditReply;
     private InquiryReplyDto reply;
+
+    private List<FileDto> fileList;     // 문의 상세 화면 표시용 첨부파일 목록
 }

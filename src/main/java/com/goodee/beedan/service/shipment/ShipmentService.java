@@ -52,6 +52,8 @@ public class ShipmentService {
             case DELIVERING -> shipment.setShStt(ShipmentStatus.DELIVERED);
             default -> throw new IllegalStateException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
         }
+
+        syncOrderStatus(shipment.getOrder());
     }
 
     public ShipmentDto updateStatusFromAdmin(Long shId, Long ordId, ShipmentDto dto) {
@@ -59,6 +61,8 @@ public class ShipmentService {
         if (!shipment.getOrder().getOrdBaseId().equals(ordId)) throw new IllegalArgumentException("해당 주문의 배송 내역이 아닙니다.");
 
         shipment.setShStt(dto.getShStt());
+
+        syncOrderStatus(shipment.getOrder());
 
         return mapToShipmentDto(shipment);
     }

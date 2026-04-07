@@ -243,6 +243,7 @@ public class OrderService {
                 .shAdr(shipment.getShAdr())
                 .shAdrDt(shipment.getShAdrDt())
                 .shMsg(shipment.getShMsg())
+                .shCanYn(shipment.getShCanYn())
                 .shipmentItems(shipmentItemDtos)
                 .build();
     }

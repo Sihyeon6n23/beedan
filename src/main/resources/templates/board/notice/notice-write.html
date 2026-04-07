@@ -6,21 +6,23 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 공지사항 작성</title>
+<title th:fragment="title">
+    BEEDAN | 공지사항 [[${boardCreateDto.brdId == null ? '작성' : '수정'}]]
+</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notice','notice-write')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <link rel="stylesheet" th:href="@{/css/board/notice.css}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
 
     <section class="inquiry-page inquiry-write-page">
         <header class="inquiry-shell inquiry-shell--header">
             <div class="inquiry-shell__heading">
-                <span class="inquiry-kicker">New Notice</span>
-                <h2 class="inquiry-title">공지사항 작성</h2>
+                <span class="inquiry-kicker" th:text="${boardCreateDto.brdId == null ? 'New Notice' : 'Edit Notice'}">Notice</span>
+                <h2 class="inquiry-title" th:text="${boardCreateDto.brdId == null ? '공지사항 작성' : '공지사항 수정'}">공지사항</h2>
             </div>
             <div class="inquiry-shell__rule"><span></span></div>
         </header>
@@ -28,11 +30,22 @@
         <section class="inquiry-write-panel">
             <form class="inquiry-write-form"
                   id="inquiry-write-form"
-                  th:action="@{/notice/write}"
+                  th:action="${boardCreateDto.brdId == null ? '/notice/write' : '/notice/edit'}"
                   th:object="${boardCreateDto}"
                   method="post"
                   enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{brdId}">
+
                 <div class="inquiry-write-form__stack">
+                    <div class="inquiry-write-field" th:if="${#authorization.expression('hasRole(''ROOT'')')}">
+                        <label class="flex items-center gap-2 cursor-pointer" style="margin-bottom: 20px; display: flex; align-items: center;">
+                            <input type="checkbox" th:field="*{brdFixYn}" class="w-4 h-4 accent-primary" style="width: 18px; height: 18px;">
+                            <span class="text-sm font-bold text-secondary" style="font-weight: 700; color: #1a1c1c;">이 게시물을 상단에 고정합니다. (중요 공지)</span>
+                        </label>
+                    </div>
+                    <input type="hidden" th:unless="${#authorization.expression('hasRole(''ROOT'')')}" th:field="*{brdFixYn}">
+
                     <div class="inquiry-write-field">
                         <label class="inquiry-write-field__label" for="brdTtl">공지 제목 <em>*</em></label>
                         <input class="inquiry-write-field__input"
@@ -58,12 +71,14 @@
 
                 <div class="inquiry-write-form__actions">
                     <a class="inquiry-outline-button" th:href="@{/notice/list}">취소</a>
-                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary">등록</button>
+                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary"
+                            th:text="${boardCreateDto.brdId == null ? '등록' : '수정 완료'}">확인</button>
                 </div>
             </form>
         </section>
     </section>
-    <script>
+
+    <script th:inline="javascript">
         const form = document.getElementById('inquiry-write-form');
         if (form && window.tinymce) {
             tinymce.init({
@@ -84,11 +99,18 @@
                 license_key: 'gpl'
             });
 
-            form.addEventListener('submit', () => {
+            form.addEventListener('submit', (e) => {
+                // 에디터 내용 동기화
                 tinymce.triggerSave();
+
+                // 필수값 검증 (TinyMCE는 별도 체크 필요할 수 있음)
+                const content = tinymce.get('brdCon').getContent();
+                if (!content || content.trim() === '') {
+                    alert('내용을 입력해주세요.');
+                    e.preventDefault();
+                }
             });
         }
     </script>
-
 </th:block>
 </html>

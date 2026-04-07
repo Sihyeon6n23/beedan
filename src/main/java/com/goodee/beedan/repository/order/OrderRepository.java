@@ -18,5 +18,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByIdWithShipments(@Param("ordId") Long ordId);
 
     Page<Order> findAll(Pageable pageable);
-    List<Order> findTop5ByMember_MemIdOrderByOrdBaseCreDtDesc(Long memId);
+    List<Order> findTop4ByMember_MemIdOrderByOrdBaseCreDtDesc(Long memId);
 }

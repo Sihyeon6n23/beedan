@@ -34,11 +34,6 @@
                    th:classappend="${activeSub == 'sns'} ? ' sidebar-menu__child-link--current' : ''">
                     SNS 로그인 연동
                 </a>
-                <a th:href="@{/mypage/detail}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'withdrawal'} ? ' sidebar-menu__child-link--current' : ''">
-                    회원 탈퇴
-                </a>
             </div>
         </div>
 
@@ -99,7 +94,7 @@
                     th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''"
                     th:attr="aria-expanded=${activeMain == 'quote'} ? 'true' : 'false'">
                 <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
-                <span>내 상품</span>
+                <span>견적 관리</span>
                 <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
             </button>
 
@@ -118,6 +113,26 @@
                    class="sidebar-menu__child-link"
                    th:classappend="${activeSub == 'payment-list'} ? ' sidebar-menu__child-link--current' : ''">
                     결제 내역
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'order'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'order'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'order'} ? 'true' : 'false'">
+                <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
+                <span>주문 관리</span>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/order/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'order-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    주문 목록
                 </a>
             </div>
         </div>

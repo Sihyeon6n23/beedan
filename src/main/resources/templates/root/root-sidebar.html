@@ -37,26 +37,20 @@
             <span>매출 관리</span>
         </a>
 
-        <div class="sidebar-menu__group">
-            <div class="sidebar-menu__link"
-                 th:classappend="${activeMain == 'account'} ? ' sidebar-menu__link--current' : ''">
-                <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
-                <span>계정 관리</span>
-            </div>
+        <a th:href="@{/admin/member/list}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'memberList'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>회원 관리</span>
+        </a>
 
-            <div class="sidebar-menu__child-wrap">
-                <a th:href="@{/root/member/edit}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'member-edit'} ? ' sidebar-menu__child-link--current' : ''">
-                    사용자 정보 수정
-                </a>
-                <a th:href="@{/root/member/create}"
-                   class="sidebar-menu__child-link"
-                   th:classappend="${activeSub == 'member-create'} ? ' sidebar-menu__child-link--current' : ''">
-                    계정 생성
-                </a>
-            </div>
-        </div>
+        <a th:href="@{/root/member/create}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'memberCreate'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>계정 생성</span>
+        </a>
+
     </div>
 </th:block>
 </html>

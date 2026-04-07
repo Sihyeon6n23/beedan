@@ -277,6 +277,12 @@
     min-width: 120px;
     text-align: center;
   }
+
+  .grid-cols-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   /* [1] 그리드 레이아웃 엔진 (PC 화면 768px 이상에서 가로 배치) */
   @media (min-width: 768px) {
     .grid-cols-12 {
@@ -393,6 +399,9 @@
   }
   .left-0 {
     left: calc(var(--spacing) * 0);
+  }
+  .z-0 {
+    z-index: 0;
   }
   .z-40 {
     z-index: 40;
@@ -1636,6 +1645,15 @@
 
   .text-neutral-500 {
     color: #737373;
+  }
+
+  .bg-zinc-50 {
+    background-color: #fafafa !important;
+  }
+
+  /* 테두리색: Zinc 200 (연한 회색) */
+  .border-zinc-200 {
+    border-color: #e4e4e7 !important;
   }
 
   .text-on-primary-container {
