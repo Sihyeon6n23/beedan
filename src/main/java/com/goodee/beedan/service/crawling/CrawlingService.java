@@ -22,7 +22,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import com.goodee.beedan.dto.crawling.SelectorForm;
 
@@ -45,12 +44,11 @@ public class CrawlingService {
     private final AiCategoryService aiCategoryService;
 
     private static final Long AI_CATEGORY_ID = 0L;
-    private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     public void autoYnChange(Long urlId) {
-        CrawlingUrl crawlingUrl = crawlingUrlRepository.findById(urlId).orElseThrow();
+        CrawlingUrl crawlingUrl = crawlingUrlRepository.findById(urlId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
         crawlingUrl.setUrlAtYn(!crawlingUrl.isUrlAtYn());
     }
 
@@ -70,7 +68,7 @@ public class CrawlingService {
     @Transactional
     public void updateSelector(Long urlId, SelectorForm dto) {
         CrawlingUrl url = crawlingUrlRepository.findById(urlId)
-                .orElseThrow(() -> new IllegalArgumentException("URL not found: " + urlId));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
         url.setUrlSelItem(dto.getSelItem());
         url.setUrlSelNm(dto.getSelNm());
         url.setUrlSelPr(dto.getSelPr());
@@ -82,7 +80,7 @@ public class CrawlingService {
     @Transactional
     public int crawl(Long urlId) throws IOException {
         CrawlingUrl crawlingUrl = crawlingUrlRepository.findById(urlId)
-                .orElseThrow(() -> new IllegalArgumentException("URL not found: " + urlId));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
 
         String selItem  = crawlingUrl.getUrlSelItem();
         String selNm    = crawlingUrl.getUrlSelNm();
@@ -92,7 +90,7 @@ public class CrawlingService {
 
         boolean aiMode = AI_CATEGORY_ID.equals(crawlingUrl.getCatId());
 
-        Brand brand = brandRepository.findById(crawlingUrl.getBrId()).orElse(null);
+        Brand brand = brandRepository.findById(crawlingUrl.getBrId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 브랜드입니다."));
         Category fixedCategory = aiMode ? null : categoryRepository.findById(crawlingUrl.getCatId()).orElse(null);
 
         // 1단계: 저장된 방식이 있으면 먼저 시도, 없거나 실패 시 폴백
@@ -284,7 +282,7 @@ public class CrawlingService {
             Document doc = Jsoup.parse(html, url);  // base URL 전달 → abs:src 정상 동작
             Elements items = doc.select(selItem);
 
-            System.out.println("[Playwright] 찾은 아이템 수: " + items.size());
+            log.info("[Playwright] 찾은 아이템 수: {}", + items.size());
 
             List<RawProduct> list = new ArrayList<>();
             for (Element item : items) {
@@ -303,7 +301,7 @@ public class CrawlingService {
             }
             return list;
         } catch (Exception e) {
-            System.out.println("[Playwright] 오류: " + e.getMessage());
+            log.info("[Playwright] 오류: {}", e.getMessage());
             return List.of();
         }
     }
