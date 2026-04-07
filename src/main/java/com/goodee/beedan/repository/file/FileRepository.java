@@ -13,13 +13,13 @@ public interface FileRepository extends JpaRepository<FileUpload, Long> {
     List<FileUpload> findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalseOrderByFileOrAsc(String brdRefTy, Long brdRefNo);
     List<FileUpload> findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalse(String brdRefTy, Long brdRefNo);
     @Query("""
-        SELECT COUNT(f) 
-        FROM FileUpload f 
-        WHERE f.brdRefTy = :#{#ref.refTy} 
-          AND f.brdRefNo = :#{#ref.refNo} 
-          AND (f.fileDelYn IS NULL OR f.fileDelYn = false)
-    """)
-    int countByRefDto(@Param("ref") RefDto ref);
+    SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END 
+    FROM FileUpload f 
+    WHERE f.brdRefTy = :#{#ref.refTy} 
+      AND f.brdRefNo = :#{#ref.refNo} 
+      AND (f.fileDelYn IS NULL OR f.fileDelYn = false)
+""")
+    boolean existsByRefDto(@Param("ref") RefDto ref);
 
     Optional<FileUpload> findFileUploadByFileUuid(String fileUuid);
 }

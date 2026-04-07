@@ -17,5 +17,6 @@ public class NoticeListDto {
     private String memNm;        // 작성자 이름 (Join 필요)
     private LocalDateTime brdCreDt; // 작성일
     private int brdHit;          // 조회수
-    private int fileCnt;         // 첨부파일 개수 (Subquery 또는 Join)
+    private boolean fileYn;         // 첨부파일 유무
+    private boolean isNew;          // 24시간 이내 작성되었는지(제목 옆 표시)
 }

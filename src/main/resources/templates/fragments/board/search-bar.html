@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div th:fragment="search(actionUrl, searchOptions)" class="search-container">
+        <form th:action="${actionUrl}" method="get" class="flex gap-2">
+            <select name="searchType" class="search-select">
+                <option th:each="opt : ${searchOptions}"
+                        th:value="${opt.key}"
+                        th:text="${opt.value}"
+                        th:selected="${param.searchType == opt.key}">옵션</option>
+            </select>
+
+            <div class="search-input-group">
+                <input type="text" name="keyword" th:value="${param.keyword}" placeholder="검색어를 입력하세요">
+                <button type="submit" class="search-btn">
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

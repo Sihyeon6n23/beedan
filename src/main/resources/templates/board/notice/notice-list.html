@@ -13,7 +13,7 @@
 </th:block>
 
 <th:block th:fragment="content">
-    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <link rel="stylesheet" th:href="@{/css/board/notice.css}">
 
     <section class="inquiry-page inquiry-list-page">
         <header class="inquiry-shell inquiry-shell--header">
@@ -42,7 +42,10 @@
 
         <section class="inquiry-shell inquiry-shell--list">
             <div class="inquiry-list-head" aria-hidden="true">
-                <div style="flex: 2;">제목</div>
+                <div>번호</div>
+                <div>구분</div>
+                <div>제목</div>
+                <div>첨부</div>
                 <div>작성자</div>
                 <div>조회수</div>
                 <div>등록일</div>
@@ -51,15 +54,20 @@
             <div class="inquiry-list-body">
                 <a th:each="fixed : ${fixedNotices}" th:href="@{/notice/detail(id=${fixed.brdId})}"
                    class="inquiry-row inquiry-row--featured">
-                    <div class="inquiry-row__primary" style="flex: 2;">
-                        <span class="inquiry-badge inquiry-badge--received" style="margin-right: 10px;">공지</span>
+                    <div class="inquiry-row__no" style="color: #ef4444; font-weight: bold;">-</div>
+                    <div class="inquiry-row__top"><span class="inquiry-badge inquiry-badge--received">공지</span></div>
+                    <div class="inquiry-row__primary">
                         <h2 th:text="${fixed.brdTtl}">고정 공지 제목</h2>
-                        <span th:if="${fixed.fileCnt > 0}" th:text="'[' + ${fixed.fileCnt} + ']'" style="color: #e74c3c; font-size: 0.9em; margin-left: 5px;"></span>
                     </div>
-                    <div class="inquiry-row__company">
+                    <div class="inquiry-row__file">
+                        <span th:if="${fixed.fileYn}" class="material-symbols-outlined" style="font-size: 18px; color: #94a3b8;">
+                            attach_file
+                        </span>
+                    </div>
+                    <div class="inquiry-row__writer">
                         <span th:text="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')} ? ${fixed.memNm} : '관리자'">작성자</span>
                     </div>
-                    <div class="inquiry-row__status">
+                    <div class="inquiry-row__hit">
                         <span th:text="${fixed.brdHit}">0</span>
                     </div>
                     <div class="inquiry-row__time">
@@ -67,15 +75,21 @@
                     </div>
                 </a>
 
-                <a th:each="board : ${boardPage.content}" th:href="@{/notice/detail(id=${board.brdId})}" class="inquiry-row">
-                    <div class="inquiry-row__primary" style="flex: 2;">
+                <a th:each="board, iterStat : ${boardPage.content}" th:href="@{/notice/detail(id=${board.brdId})}" class="inquiry-row">
+                    <div class="inquiry-row__no" th:text="${boardPage.totalElements - (boardPage.number * boardPage.size) - iterStat.index}">1</div>
+                    <div class="inquiry-row__top" style="color: #94a3b8; font-size: 0.85rem;">일반</div>
+                    <div class="inquiry-row__primary">
                         <h2 th:text="${board.brdTtl}">일반 공지 제목</h2>
-                        <span th:if="${board.fileCnt > 0}" th:text="'[' + ${board.fileCnt} + ']'" style="color: #e74c3c; font-size: 0.9em; margin-left: 5px;"></span>
                     </div>
-                    <div class="inquiry-row__company">
+                    <div class="inquiry-row__file">
+                        <span th:if="${board.fileYn}" class="material-symbols-outlined" style="font-size: 18px; color: #94a3b8;">
+                            attach_file
+                        </span>
+                    </div>
+                    <div class="inquiry-row__writer">
                         <span th:text="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')} ? ${board.memNm} : '관리자'">작성자</span>
                     </div>
-                    <div class="inquiry-row__status">
+                    <div class="inquiry-row__hit">
                         <span th:text="${board.brdHit}">0</span>
                     </div>
                     <div class="inquiry-row__time">
