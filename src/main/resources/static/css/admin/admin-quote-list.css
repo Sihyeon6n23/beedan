@@ -300,6 +300,11 @@ main > div {
     color: #c53030;
 }
 
+.aq-badge--paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 .aq-badge--expired {
     background: #e5e5e5;
     color: #737373;

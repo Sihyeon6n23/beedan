@@ -172,7 +172,7 @@ public class AdminMemberService {
 
     private InquiryBoardListDto toInquirySummaryDto(Board inquiryBoard) {
         // 문의 작성자 조회
-        Member member = memberRepository.findById(inquiryBoard.getMemId())
+        Member member = memberRepository.findById(inquiryBoard.getMember().getMemId())
                 .orElseGet(Member::new);
         // 문의 답글 조회
         Optional<Board> replyBoard = boardRepository

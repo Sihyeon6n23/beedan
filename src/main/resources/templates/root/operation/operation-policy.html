@@ -484,14 +484,22 @@
     </div>
 
     <script>
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
         /* ============================
-         *  모달 설정 (섹션별 필드 정의)
+         *  모달 설정 (섹션별 필드 + API 경로)
          * ============================ */
+        let currentConfigKey = null;
+        let currentEditId = null;
+
         const MODAL_CONFIG = {
             gradeModal: {
-                title: '고객사 등급 추가',
+                title: '고객사 등급',
+                api: '/api/root/operation/grade',
+                dataType: 'grade',
                 fields: [
-                    { name: 'bgpGr',        label: '등급명',              type: 'select', options: ['STANDARD', 'PREMIUM', 'VIP'] },
+                    { name: 'bgpGr',        label: '등급명',              type: 'text',   placeholder: 'STANDARD, PREMIUM, VIP 등' },
                     { name: 'bgpMinOrdCnt',  label: '최소 거래횟수',       type: 'number', placeholder: '5' },
                     { name: 'bgpMinTtAm',    label: '최소 누적금액',       type: 'number', placeholder: '100000' },
                     { name: 'bgpEfFrDt',     label: '시작일',             type: 'date' },
@@ -500,7 +508,9 @@
                 ]
             },
             insuranceModal: {
-                title: '적하보험 추가',
+                title: '적하보험',
+                api: '/api/root/operation/insurance',
+                dataType: 'insurance',
                 fields: [
                     { name: 'siNm',  label: '보험명',       type: 'text',   placeholder: 'ICC(A) — 전위험담보' },
                     { name: 'siAm',  label: '요율 / 금액',  type: 'number', placeholder: '0.35', step: '0.0001' },
@@ -508,7 +518,9 @@
                 ]
             },
             inspectionModal: {
-                title: '품질 검사 서비스 추가',
+                title: '품질 검사 서비스',
+                api: '/api/root/operation/inspection',
+                dataType: 'inspection',
                 fields: [
                     { name: 'stiNm',  label: '검사명',  type: 'text',   placeholder: '선적 전 검사 (PSI)' },
                     { name: 'stiAm',  label: '금액',    type: 'number', placeholder: '280' },
@@ -516,14 +528,18 @@
                 ]
             },
             packingModal: {
-                title: '묶음 단위 추가',
+                title: '묶음 단위',
+                api: '/api/root/operation/unit-group',
+                dataType: 'packing',
                 fields: [
                     { name: 'unGNm', label: '단위명',       type: 'text',   placeholder: '다스' },
                     { name: 'unGQn', label: '단위당 수량',   type: 'number', placeholder: '12' }
                 ]
             },
             freightModal: {
-                title: '해외 운임 추가',
+                title: '해외 운임',
+                api: '/api/root/operation/shipping-rate',
+                dataType: 'freight',
                 fields: [
                     { name: 'srCCd',   label: '국가코드',          type: 'text',   placeholder: 'CN' },
                     { name: 'srTrspTy', label: '운송 방식',        type: 'select', options: ['SEA', 'AIR', 'EXPRESS'] },
@@ -537,7 +553,9 @@
                 ]
             },
             portFeeModal: {
-                title: '항만비 · 통관 수수료 추가',
+                title: '항만비 · 통관 수수료',
+                api: '/api/root/operation/port-customs',
+                dataType: 'portFee',
                 fields: [
                     { name: 'pcrTy',   label: '비용 종류',  type: 'select', options: ['PORT', 'CUSTOMS', 'HS_CODE'] },
                     { name: 'pcrSmAm', label: '소형 금액',  type: 'number', placeholder: '50000' },
@@ -547,7 +565,9 @@
                 ]
             },
             deliveryModal: {
-                title: '국내 배송비 추가',
+                title: '국내 배송비',
+                api: '/api/root/operation/delivery-rate',
+                dataType: 'delivery',
                 fields: [
                     { name: 'ddrRgn',  label: '지역 구분',    type: 'select', options: ['SEOUL', 'GYEONGGI', 'METRO', 'PROVINCE', 'JEJU', 'ISLAND'] },
                     { name: 'ddrAm',   label: '기본 배송비',   type: 'number', placeholder: '80000' },
@@ -556,7 +576,9 @@
                 ]
             },
             submitCheckModal: {
-                title: '견적 제출 확인 항목 추가',
+                title: '견적 제출 확인 항목',
+                api: '/api/root/operation/submit-check',
+                dataType: 'submitCheck',
                 fields: [
                     { name: 'qscDes',   label: '확인 항목 텍스트',  type: 'text',   placeholder: '견적 내용을 확인하였습니다.' },
                     { name: 'qscSort',  label: '정렬 순서',         type: 'number', placeholder: '1' }
@@ -567,11 +589,28 @@
         /* ============================
          *  모달 열기 / 닫기
          * ============================ */
-        function openModal(configKey) {
+        // dataType → configKey 매핑
+        const TYPE_TO_CONFIG = {
+            grade: 'gradeModal', insurance: 'insuranceModal', inspection: 'inspectionModal',
+            unitGroup: 'packingModal', shippingRate: 'freightModal', portCustoms: 'portFeeModal',
+            delivery: 'deliveryModal', submitCheck: 'submitCheckModal'
+        };
+        // dataType → API 경로 매핑
+        const TYPE_TO_API = {
+            grade: '/api/root/operation/grade', insurance: '/api/root/operation/insurance',
+            inspection: '/api/root/operation/inspection', unitGroup: '/api/root/operation/unit-group',
+            shippingRate: '/api/root/operation/shipping-rate', portCustoms: '/api/root/operation/port-customs',
+            delivery: '/api/root/operation/delivery-rate', submitCheck: '/api/root/operation/submit-check'
+        };
+
+        function openModal(configKey, editId, editData) {
             const config = MODAL_CONFIG[configKey];
             if (!config) return;
+            currentConfigKey = configKey;
+            currentEditId = editId || null;
 
-            document.getElementById('modalTitle').textContent = config.title;
+            document.getElementById('modalTitle').textContent =
+                config.title + (currentEditId ? ' 수정' : ' 추가');
 
             const fieldsContainer = document.getElementById('modalFields');
             fieldsContainer.innerHTML = '';
@@ -579,7 +618,6 @@
             config.fields.forEach(field => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'space-y-1';
-
                 const label = document.createElement('label');
                 label.className = 'block text-xs font-bold text-zinc-500 uppercase';
                 label.textContent = field.label;
@@ -604,8 +642,11 @@
                 }
                 input.name = field.name;
                 input.required = field.required !== false;
+                // 수정 시 기존 값 프리필
+                if (editData && editData[field.name] != null) {
+                    input.value = editData[field.name];
+                }
                 wrapper.appendChild(input);
-
                 fieldsContainer.appendChild(wrapper);
             });
 
@@ -619,33 +660,86 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.getElementById('modalForm').reset();
+            currentConfigKey = null;
+            currentEditId = null;
         }
 
         document.getElementById('policyModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
-
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeModal();
         });
 
+        // 저장 (생성 / 수정)
         document.getElementById('modalForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('저장 기능은 REST API 연동 후 활성화됩니다.');
-            closeModal();
+            const config = MODAL_CONFIG[currentConfigKey];
+            if (!config) return;
+
+            const formData = {};
+            config.fields.forEach(field => {
+                const input = this.querySelector('[name="' + field.name + '"]');
+                if (input) formData[field.name] = input.value || null;
+            });
+
+            const url = currentEditId ? config.api + '/' + currentEditId : config.api;
+            const method = currentEditId ? 'PUT' : 'POST';
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            fetch(url, { method, headers, body: JSON.stringify(formData) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        closeModal();
+                        location.reload();
+                    } else {
+                        alert('저장 실패: ' + (data.message || ''));
+                    }
+                })
+                .catch(err => alert('저장 실패: ' + err.message));
         });
 
+        // 삭제 (비활성화)
         document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('정말 비활성화하시겠습니까?')) {
-                    alert('비활성화 기능은 REST API 연동 후 활성화됩니다.');
-                }
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!confirm('정말 비활성화하시겠습니까?')) return;
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                const api = TYPE_TO_API[type];
+                if (!api) return;
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+                fetch(api + '/' + id, { method: 'DELETE', headers })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'ok') location.reload();
+                        else alert('삭제 실패: ' + (data.message || ''));
+                    })
+                    .catch(err => alert('삭제 실패: ' + err.message));
             });
         });
 
+        // 수정 (서버에서 기존 값 조회 → 모달 프리필)
         document.querySelectorAll('.btn-edit').forEach(btn => {
-            btn.addEventListener('click', function() {
-                alert('수정 기능은 REST API 연동 후 활성화됩니다.');
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                const configKey = TYPE_TO_CONFIG[type];
+                const api = TYPE_TO_API[type];
+                if (!configKey || !api) return;
+
+                fetch(api + '/' + id)
+                    .then(res => res.json())
+                    .then(data => {
+                        openModal(configKey, id, data);
+                    })
+                    .catch(err => alert('데이터 조회 실패: ' + err.message));
             });
         });
     </script>

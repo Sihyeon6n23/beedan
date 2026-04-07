@@ -20,7 +20,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, CustomFailureHandler customFailureHandler) throws Exception {
         http
-                .csrf(withDefaults())
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/webhook/**")
+                )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다.
                 .authorizeHttpRequests(authorize -> authorize
                                 .requestMatchers("/error/**").permitAll()
                                 .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()

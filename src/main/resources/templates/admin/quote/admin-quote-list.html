@@ -75,7 +75,8 @@
                                   th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
                                              q.quStt == 'SUBMITTED' ? '대기중' :
                                              q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
+                                             q.quStt == 'REJECTED' ? '거절' :
+                                             q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                         </td>
                         <td class="col-date"
                             th:text="${q.quUpdDt != null ? #temporals.format(q.quUpdDt, 'yyyy.MM.dd') : '-'}">-</td>

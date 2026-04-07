@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>결제 완료 — BEEDAN</title>
-    <link rel="stylesheet" th:href="@{/css/payment/payment-receipt.css}">
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=KoPub+Batang:wght@400;700&display=swap" rel="stylesheet" />
-</head>
-<body>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Receipt', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 영수증</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/payment/payment-receipt.css}">
 
 <div class="page">
 
@@ -237,5 +242,5 @@
 
 </div><!-- /page -->
 
-</body>
+</th:block>
 </html>

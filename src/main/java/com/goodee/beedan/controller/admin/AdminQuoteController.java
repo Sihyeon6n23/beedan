@@ -150,7 +150,7 @@ public class AdminQuoteController {
     public String quoteList(@RequestParam(required = false) Long ngId, Model model) {
         // ngId가 있으면 해당 협상의 견적만, 없으면 전체 (quStt != null만)
         List<QuoteBase> quoteList = (ngId != null)
-                ? quoteBaseRepository.findAllActiveByNgId(ngId)
+                ? quoteBaseRepository.findAllActiveByNgIdAdmin(ngId)
                 : quoteBaseRepository.findAllActive();
 
         List<Map<String, Object>> quotes = new ArrayList<>();

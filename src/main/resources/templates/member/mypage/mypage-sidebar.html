@@ -114,6 +114,11 @@
                    th:classappend="${activeSub == 'quote-list'} ? ' sidebar-menu__child-link--current' : ''">
                     견적 목록
                 </a>
+                <a th:href="@{/payment/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'payment-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    결제 내역
+                </a>
             </div>
         </div>
 

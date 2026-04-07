@@ -50,4 +50,17 @@ public class QuoteSubmitCheck {
         this.qscSort = qscSort;
         this.qscYn = true;
     }
+
+    public void update(Boolean requiredYn, String description, String key,
+                       Boolean defaultYn, Integer sort) {
+        this.qscRqYn = requiredYn;
+        this.qscDes = description;
+        this.qscKey = key;
+        this.qscDfltYn = defaultYn;
+        this.qscSort = sort;
+    }
+
+    public void deactivate() {
+        this.qscYn = false;
+    }
 }

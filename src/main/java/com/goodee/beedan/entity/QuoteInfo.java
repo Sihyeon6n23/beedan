@@ -88,6 +88,10 @@ public class QuoteInfo {
         }
     }
 
+    public void updateGrandTotal(BigDecimal grandTotal) {
+        this.quInfoTp = grandTotal;
+    }
+
     public void updateExchangeRate(String currencyCode, BigDecimal exchangeRate) {
         this.quInfoCurCd = currencyCode;
         this.quInfoExcRt = exchangeRate;

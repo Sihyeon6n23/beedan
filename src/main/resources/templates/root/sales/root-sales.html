@@ -22,20 +22,30 @@
         </div>
 
         <!-- ========== 기간 선택 ========== -->
-        <div class="flex items-center gap-4 mb-8">
-            <div class="flex items-center gap-2 bg-surface-container-lowest shadow-sm px-4 py-2">
-                <span class="material-symbols-outlined text-primary text-base">calendar_today</span>
-                <span class="text-sm font-bold text-on-surface" th:text="${periodLabel}">2026년 3월</span>
-                <span class="text-xs text-outline" th:text="'(' + ${periodRange} + ')'">
-                    (2026.03.01 ~ 2026.03.31)</span>
+        <div class="flex items-center gap-4 mb-8 flex-wrap">
+            <!-- 이전 월 / 현재 월 / 다음 월 -->
+            <div class="flex items-center gap-1">
+                <a th:href="@{/root/sales(year=${month - 1 > 0 ? year : year - 1}, month=${month - 1 > 0 ? month - 1 : 12})}"
+                   class="px-3 py-1.5 text-xs font-bold bg-surface-container-high text-outline hover:bg-surface-container transition-colors">&lt; 이전 월</a>
+                <div class="flex items-center gap-2 bg-surface-container-lowest shadow-sm px-4 py-2">
+                    <span class="material-symbols-outlined text-primary text-base">calendar_today</span>
+                    <span class="text-sm font-bold text-on-surface" th:text="${periodLabel}">2026년 3월</span>
+                    <span class="text-xs text-outline" th:text="'(' + ${periodRange} + ')'">
+                        (2026.03.01 ~ 2026.03.31)</span>
+                </div>
+                <a th:href="@{/root/sales(year=${month + 1 <= 12 ? year : year + 1}, month=${month + 1 <= 12 ? month + 1 : 1})}"
+                   class="px-3 py-1.5 text-xs font-bold bg-surface-container-high text-outline hover:bg-surface-container transition-colors">다음 월 &gt;</a>
             </div>
-            <div class="flex gap-1">
-                <a th:href="@{/root/sales(year=${year}, month=${month})}"
-                   class="px-3 py-1.5 text-xs font-bold bg-primary text-on-primary">월간</a>
-                <a th:href="@{/root/sales(year=${year}, month=${month - 1 > 0 ? month - 1 : 12})}"
-                   class="px-3 py-1.5 text-xs font-bold bg-surface-container-high text-outline hover:bg-surface-container transition-colors">이전 월</a>
-                <a th:href="@{/root/sales(year=${year}, month=${month + 1 <= 12 ? month + 1 : 1})}"
-                   class="px-3 py-1.5 text-xs font-bold bg-surface-container-high text-outline hover:bg-surface-container transition-colors">다음 월</a>
+            <!-- 년/월 직접 선택 -->
+            <div class="flex items-center gap-1">
+                <select id="salesYear" class="px-2 py-1.5 text-xs font-bold border border-outline/30 bg-surface-container-lowest">
+                    <option th:each="y : ${#numbers.sequence(2024, 2030)}" th:value="${y}" th:text="${y + '년'}" th:selected="${y == year}"></option>
+                </select>
+                <select id="salesMonth" class="px-2 py-1.5 text-xs font-bold border border-outline/30 bg-surface-container-lowest">
+                    <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}" th:text="${m + '월'}" th:selected="${m == month}"></option>
+                </select>
+                <button onclick="var y=document.getElementById('salesYear').value; var m=document.getElementById('salesMonth').value; location.href='/root/sales?year='+y+'&month='+m;"
+                        class="px-3 py-1.5 text-xs font-bold bg-primary text-on-primary">이동</button>
             </div>
         </div>
 

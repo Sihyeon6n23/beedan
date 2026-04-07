@@ -231,23 +231,99 @@
             if (e.key === 'Escape') closeModal();
         });
 
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        let currentEditId = null;
+
+        // 수정 시 openModal 오버라이드
+        const _origOpen = openModal;
+        function openModalEdit(configKey, editId, editData) {
+            currentEditId = editId || null;
+            _origOpen(configKey);
+            if (editData) {
+                const config = MODAL_CONFIG[configKey];
+                config.fields.forEach(field => {
+                    const input = document.querySelector('#modalFields [name="' + field.name + '"]');
+                    if (input && editData[field.name] != null) input.value = editData[field.name];
+                });
+            }
+            document.getElementById('modalTitle').textContent =
+                MODAL_CONFIG[configKey].title + (currentEditId ? ' 수정' : '');
+        }
+
+        // 저장 (생성 / 수정)
         document.getElementById('modalForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('저장 기능은 REST API 연동 후 활성화됩니다.');
-            closeModal();
+            const config = MODAL_CONFIG['feePolicyModal'];
+            const formData = { bgpGr: gradeGr };
+            config.fields.forEach(field => {
+                const input = this.querySelector('[name="' + field.name + '"]');
+                if (input) formData[field.name] = input.value || null;
+            });
+
+            const url = currentEditId
+                ? '/api/root/operation/fee-policy/' + currentEditId
+                : '/api/root/operation/fee-policy';
+            const method = currentEditId ? 'PUT' : 'POST';
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            fetch(url, { method, headers, body: JSON.stringify(formData) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') { closeModal(); location.reload(); }
+                    else alert('저장 실패: ' + (data.message || ''));
+                })
+                .catch(err => alert('저장 실패: ' + err.message));
         });
 
+        // 삭제 (비활성화)
         document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('정말 비활성화하시겠습니까?')) {
-                    alert('비활성화 기능은 REST API 연동 후 활성화됩니다.');
-                }
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                if (!confirm('정말 비활성화하시겠습니까?')) return;
+
+                const api = type === 'feePolicy' ? '/api/root/operation/fee-policy'
+                          : type === 'grade' ? '/api/root/operation/grade' : null;
+                if (!api) return;
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+                fetch(api + '/' + id, { method: 'DELETE', headers })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'ok') location.reload();
+                        else alert('삭제 실패: ' + (data.message || ''));
+                    })
+                    .catch(err => alert('삭제 실패: ' + err.message));
             });
         });
 
+        // 수정 (서버에서 기존 값 조회 → 모달 프리필)
         document.querySelectorAll('.btn-edit').forEach(btn => {
-            btn.addEventListener('click', function() {
-                alert('수정 기능은 REST API 연동 후 활성화됩니다.');
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+
+                const api = type === 'feePolicy' ? '/api/root/operation/fee-policy'
+                          : type === 'grade' ? '/api/root/operation/grade' : null;
+                if (!api) return;
+
+                fetch(api + '/' + id)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (type === 'feePolicy') {
+                            openModalEdit('feePolicyModal', id, data);
+                        } else {
+                            // 등급 수정은 operation-policy 페이지에서
+                            alert('등급 수정은 운영 정책 페이지에서 해주세요.');
+                        }
+                    })
+                    .catch(err => alert('데이터 조회 실패: ' + err.message));
             });
         });
     </script>
