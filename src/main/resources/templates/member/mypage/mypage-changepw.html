@@ -9,12 +9,13 @@
 <title th:fragment="title">BEEDAN | 비밀번호 변경</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('member', 'changepw')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
     <main class="mypage-changepw-page bg-background">
         <div class="max-w-5xl mx-auto">
+<!--            <section class="mypage-changepw-page__intro">-->
             <section class="mypage-changepw-page__intro">
                 <span class="mypage-changepw-page__kicker">Credential Security</span>
                 <h1 class="mypage-changepw-page__title">비밀번호 변경</h1>
