@@ -2,20 +2,15 @@ package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.board.InquiryBoardDetailDto;
-import com.goodee.beedan.dto.board.InquiryReplyDto;
-import com.goodee.beedan.dto.board.InquiryReplySaveDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardDetailDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryReplyDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryReplySaveDto;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,7 +32,7 @@ public class AdminInquiryBoardRestController {
     @PostMapping("/{id}/reply")
     public Long createInquiryReply(@PathVariable("id") Long brdId, // 문의글 Id
                                    @AuthenticationPrincipal MemberUserDetails userDetails,
-                                   @RequestBody InquiryReplySaveDto inquiryReplySaveDto) {
+                                   @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
         return inquiryBoardService.createInquiryReply(
                 brdId,
                 userDetails.getMemberId(),
@@ -49,7 +44,7 @@ public class AdminInquiryBoardRestController {
     @PatchMapping("/{id}/reply")
     public void updateInquiryReply(@PathVariable("id") Long brdId, // 답글 Id
                                    @AuthenticationPrincipal MemberUserDetails userDetails,
-                                   @RequestBody InquiryReplySaveDto inquiryReplySaveDto) {
+                                   @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
         inquiryBoardService.updateInquiryReply(
                 brdId,
                 userDetails.getMemberId(),

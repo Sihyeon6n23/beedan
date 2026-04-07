@@ -53,23 +53,8 @@
 
                     <div class="inquiry-write-field">
                         <label class="inquiry-write-field__label">첨부 파일</label>
-                        <div class="inquiry-upload" data-inquiry-upload>
-                            <div class="inquiry-upload__zone" data-upload-zone>
-                                <span class="material-symbols-outlined inquiry-upload__icon">cloud_upload</span>
-                                <p class="inquiry-upload__text">
-                                    파일을 여기에 끌어다 놓거나 <strong>클릭해서 업로드</strong>
-                                </p>
-                                <input class="inquiry-upload__input"
-                                       type="file"
-                                       id="inquiryFiles"
-                                       name="files"
-                                       multiple
-                                       data-upload-input
-                                       accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
-                            </div>
-                            <div class="inquiry-upload__list" data-upload-list></div>
-                        </div>
-</div>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${null}, isMultiple=true)}"></div>
+                    </div>
                 </div>
 
                 <div class="inquiry-write-form__actions">

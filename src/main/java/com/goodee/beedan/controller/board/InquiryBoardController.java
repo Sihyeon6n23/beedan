@@ -1,7 +1,7 @@
 package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.board.*;
+import com.goodee.beedan.dto.board.inquiry.*;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,6 +9,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @Controller
 @RequiredArgsConstructor
@@ -67,7 +69,7 @@ public class InquiryBoardController {
     // 사용자 문의 작성 처리
     @PostMapping("/write")
     public String writeInquiry(@ModelAttribute InquiryBoardCreateDto inquiryBoardCreateDto,
-                               @AuthenticationPrincipal MemberUserDetails userDetails) {
+                               @AuthenticationPrincipal MemberUserDetails userDetails) throws IOException{
         Long brdId = inquiryBoardService
                 .createInquiryBoard(userDetails.getMemberId(), inquiryBoardCreateDto);
 
@@ -85,6 +87,7 @@ public class InquiryBoardController {
         InquiryBoardEditDto inquiryBoardEditDto = InquiryBoardEditDto.builder()
                 .brdTtl(inquiryBoardDetail.getBrdTtl())
                 .brdCon(inquiryBoardDetail.getBrdCon())
+                .existingFiles(inquiryBoardDetail.getFileList())
                 .build();
 
         model.addAttribute("brdId", brdId);
@@ -97,7 +100,7 @@ public class InquiryBoardController {
     @PostMapping("/edit")
     public String editInquiry(@RequestParam("id") Long brdId,
                               @ModelAttribute InquiryBoardEditDto inquiryBoardEditDto,
-                              @AuthenticationPrincipal MemberUserDetails userDetails) {
+                              @AuthenticationPrincipal MemberUserDetails userDetails) throws IOException {
         inquiryBoardService.updateInquiryBoard(brdId, userDetails.getMemberId(), inquiryBoardEditDto);
 
         return "redirect:/inquiry/detail?id=" + brdId;

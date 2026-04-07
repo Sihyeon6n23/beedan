@@ -61,6 +61,7 @@
 
                 <div class="inquiry-detail-article__body">
                     <div class="inquiry-detail-article__content" th:utext="${inquiryBoardDetail.brdCon}">문의 내용</div>
+                    <div th:replace="~{fragments/file/file-list :: display(${inquiryBoardDetail.fileList})}"></div>
                 </div>
 
                 <div class="inquiry-detail-article__footer" th:if="${!isAdmin and (inquiryBoardDetail.canEdit or inquiryBoardDetail.canCancel)}">
@@ -121,12 +122,14 @@
                             <span th:if="${inquiryBoardDetail.reply.edited}">(수정됨)</span>
                         </div>
                         <div class="inquiry-detail-reply__content" th:utext="${inquiryBoardDetail.reply.brdCon}">답변 내용</div>
+                        <div th:replace="~{fragments/file/file-list :: display(${inquiryBoardDetail.reply.fileList})}"></div>
                     </div>
                     <div class="inquiry-detail-inline-form is-hidden" data-reply-edit-form>
                         <div class="inquiry-detail-inline-form__editor">
                             <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-edit-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
                             <p class="inquiry-detail-inline-form__error is-hidden" data-reply-edit-error>답변 내용을 입력해 주세요.</p>
                         </div>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${inquiryBoardDetail.reply.fileList}, isMultiple=true)}"></div>
                         <div class="inquiry-detail-inline-form__actions-wrap">
                             <div class="inquiry-detail-inline-form__actions">
                                 <button type="button" class="inquiry-detail-action" data-reply-edit-cancel>취소</button>
@@ -146,6 +149,7 @@
                             <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-create-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
                             <p class="inquiry-detail-inline-form__error is-hidden" data-reply-create-error>답변 내용을 입력해 주세요.</p>
                         </div>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${null}, isMultiple=true)}"></div>
                         <div class="inquiry-detail-inline-form__actions-wrap">
                             <div class="inquiry-detail-inline-form__actions">
                                 <button type="button" class="inquiry-detail-action" data-reply-create-cancel>취소</button>

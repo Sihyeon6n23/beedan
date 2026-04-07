@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // 메시지 송/수신 규칙 설정
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // 클라이언트가 구독(subscribe)헤서 메시지를 수신 할 주소의 시작점 설정
+        // 클라이언트가 구독(subscribe)해서 메시지를 수신 할 주소의 시작점 설정
         registry.enableSimpleBroker("/sub");
         // "/sub/..." : 서버가 뿌리는 출구
 
