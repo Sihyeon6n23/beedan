@@ -96,6 +96,7 @@ public class FileService {
                 throw new IllegalIdentifierException("파일 이름이 없습니다.");
             }
 
+            String mimeType = getMimeType(file);
             uploadToDisk(file, uuid, ext);
 
             // FileListDto 생성 및 추가

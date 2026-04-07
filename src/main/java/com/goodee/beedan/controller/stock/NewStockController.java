@@ -1,12 +1,15 @@
 package com.goodee.beedan.controller.stock;
 
+import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.crawling.SelectorForm;
 import com.goodee.beedan.dto.crawling.UrlForm;
+import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.stock.NewStockForm;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
 import com.goodee.beedan.entity.CrawlingUrl;
+import com.goodee.beedan.entity.Stock;
 import com.goodee.beedan.repository.brand.BrandRepository;
 import com.goodee.beedan.repository.category.CategoryRepository;
 import com.goodee.beedan.repository.crawling.CrawlingUrlRepository;
@@ -15,6 +18,7 @@ import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.stock.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -128,24 +132,29 @@ public class NewStockController {
     // 자체 상품 등록 (수동)
     @PostMapping("/manual")
     public String saveManual(NewStockForm newStockForm,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes,
+                             @AuthenticationPrincipal MemberUserDetails userDetails) {
 
-            MultipartFile imgFile = newStockForm.getImgFile();
-            List<MultipartFile> files = new ArrayList<>();
-            files.add(imgFile);
+        Long lastId = stockService.saveManual(newStockForm);
 
-            Long lastId = stockService.saveManual(newStockForm);
+        List<MultipartFile> files = newStockForm.getNewFiles();
+        boolean hasFile = files != null && !files.isEmpty()
+                && files.stream().anyMatch(f -> f != null && !f.isEmpty());
+
+        if (hasFile) {
             RefDto refDto = RefDto.builder()
                     .refTy("STOCK")
                     .refNo(lastId)
                     .build();
-        try {
-            fileService.saveFile(files, refDto);
-            redirectAttributes.addFlashAttribute("message", "상품이 등록되었습니다.");
-        } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("error", "이미지 업로드 실패: " + e.getMessage());
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "상품 등록 실패: " + e.getMessage());
+            List<FileDto> file;
+            try {
+                file = fileService.saveFile(files, refDto);
+            } catch (IOException e) {
+                throw new RuntimeException("파일 저장 실패: " + e.getMessage());
+            }
+            FileDto saved = file.getFirst();
+            String imgUrl = "/files/" + saved.getFilePat() + "/" + saved.getFileUuid() + "." + saved.getFileExt();
+            stockService.saveImgUrl(lastId, imgUrl);
         }
 
         redirectAttributes.addFlashAttribute("activeTab", "manual");

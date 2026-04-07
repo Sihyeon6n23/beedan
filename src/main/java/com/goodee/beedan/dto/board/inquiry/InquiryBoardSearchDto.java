@@ -1,4 +1,4 @@
-package com.goodee.beedan.dto.board;
+package com.goodee.beedan.dto.board.inquiry;
 
 import com.goodee.beedan.common.constant.InquiryStatus;
 import lombok.AllArgsConstructor;

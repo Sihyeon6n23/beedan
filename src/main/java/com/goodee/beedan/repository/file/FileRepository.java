@@ -22,4 +22,6 @@ public interface FileRepository extends JpaRepository<FileUpload, Long> {
     boolean existsByRefDto(@Param("ref") RefDto ref);
 
     Optional<FileUpload> findFileUploadByFileUuid(String fileUuid);
+
+    FileUpload findByBrdRefTyAndBrdRefNo(String stock, Long stId);
 }

@@ -4,7 +4,7 @@ import com.goodee.beedan.common.constant.BoardType;
 import com.goodee.beedan.dto.admin.MemberEditRequest;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
-import com.goodee.beedan.dto.board.InquiryBoardListDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardListDto;
 import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.ShipmentItemDto;
 import com.goodee.beedan.entity.Board;
@@ -18,14 +18,12 @@ import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,6 +57,7 @@ public class AdminMemberService {
                         .memCreDt(member.getMemCreDt())
                         .memBizAdr(member.getMemBizAdr())
                         .memStt(member.getMemStt())
+                        .memAut(member.getMemAut())
                         .build()
                 );
     }
@@ -90,9 +89,9 @@ public class AdminMemberService {
     public MemberSummaryDto getMemberSummary(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        List<Order> recentOrders = orderRepository.findTop5ByMember_MemIdOrderByOrdBaseCreDtDesc(memberId);
+        List<Order> recentOrders = orderRepository.findTop4ByMember_MemIdOrderByOrdBaseCreDtDesc(memberId);
 
-        List<Shipment> recentShipments = shipmentRepository.findTop4ByOrder_Member_MemIdOrderByShCreDtDesc(memberId);
+        List<Shipment> recentShipments = shipmentRepository.findTop3ByOrder_Member_MemIdOrderByShCreDtDesc(memberId);
 
         PageRequest pageRequest = PageRequest.of(0, 5); // 첫 페이지의 5건
         Page<Board> recentInquiries = boardRepository.findUserInquiryBoards(

@@ -1,4 +1,4 @@
-package com.goodee.beedan.dto.board;
+package com.goodee.beedan.dto.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-// 사용자 새 문의 작성용
-public class InquiryBoardCreateDto {
-    private String brdTtl;
-    private String brdCon;
+public class TrackingDetailDto {
+    private String time;
+    private String status;
+    private String description;
 }

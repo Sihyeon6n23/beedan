@@ -54,6 +54,7 @@ public class OrderDto {
         private String shAdr;
         private String shAdrDt;
         private String shMsg;
+        private Boolean shCanYn;
         private List<ShipmentItemResponseDto> shipmentItems;
 
         public String getShCarNm() {

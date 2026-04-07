@@ -1,8 +1,8 @@
 package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.board.InquiryBoardDetailDto;
-import com.goodee.beedan.dto.board.InquiryReplyDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryBoardDetailDto;
+import com.goodee.beedan.dto.board.inquiry.InquiryReplyDto;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
