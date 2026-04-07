@@ -35,6 +35,7 @@ public class AdminQuoteController {
 
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
+    private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
     private final QuoteDetailService quoteDetailService;
     private final QuoteInfoRepository quoteInfoRepository;
     private final MemberRepository memberRepository;
@@ -147,10 +148,10 @@ public class AdminQuoteController {
 
     @GetMapping("/quote/list")
     public String quoteList(@RequestParam(required = false) Long ngId, Model model) {
-        // ngId가 있으면 해당 협상의 견적만, 없으면 전체
+        // ngId가 있으면 해당 협상의 견적만, 없으면 전체 (quStt != null만)
         List<QuoteBase> quoteList = (ngId != null)
-                ? quoteBaseService.findAllByNego(ngId)
-                : quoteBaseService.findAll();
+                ? quoteBaseRepository.findAllActiveByNgId(ngId)
+                : quoteBaseRepository.findAllActive();
 
         List<Map<String, Object>> quotes = new ArrayList<>();
         for (QuoteBase qb : quoteList) {
@@ -323,6 +324,7 @@ public class AdminQuoteController {
                     new com.goodee.beedan.dto.quote.QuoteBaseRequest(
                             oldQuote.getNgId(), myId, receiverId));
 
+            newQuote.tempSave(); // 재작성은 바로 TEMP_SAVE
             quId = newQuote.getQuId();
             sourceQuId = fromQuId;
             model.addAttribute("rejectedReason", oldQuote.getQuCon());

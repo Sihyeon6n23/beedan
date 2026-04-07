@@ -260,6 +260,11 @@ public class QuoteRestController {
                         .body(Map.of("status", "error", "message", "수정 불가 상태입니다."));
             }
 
+            // 임시저장 시 상태가 null이면 TEMP_SAVE로 설정
+            if (quoteBase.getQuStt() == null) {
+                quoteBase.tempSave();
+            }
+
             // 1. QuoteInfo 생성 또는 갱신
             QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(request.getQuId()).orElse(null);
             if (quoteInfo == null) {

@@ -16,6 +16,14 @@ public interface QuoteBaseRepository extends JpaRepository<QuoteBase, Long> {
     // 협상별 견적 전체 조회
     List<QuoteBase> findAllByNgId(Long ngId);
 
+    // 협상별 견적 조회 (quStt != null만)
+    @Query("SELECT q FROM QuoteBase q WHERE q.ngId = :ngId AND q.quStt IS NOT NULL ORDER BY q.quCreDt DESC")
+    List<QuoteBase> findAllActiveByNgId(@Param("ngId") Long ngId);
+
+    // 전체 견적 조회 (quStt != null만)
+    @Query("SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL ORDER BY q.quCreDt DESC")
+    List<QuoteBase> findAllActive();
+
     // 협상별 특정 상태 견적 조회
     List<QuoteBase> findAllByNgIdAndQuStt(Long ngId, QuoteStatus quStt);
 
@@ -28,9 +36,9 @@ public interface QuoteBaseRepository extends JpaRepository<QuoteBase, Long> {
     // 수신자별 견적 페이징 조회
     Page<QuoteBase> findAllByQuRid(Long quRid, Pageable pageable);
 
-    // 송신자 또는 수신자별 견적 페이징 조회
+    // 송신자 또는 수신자별 견적 페이징 조회 (quStt != null만)
     @Query(
-            "SELECT q FROM QuoteBase q WHERE q.quSid = :memId OR q.quRid = :memId ORDER BY q.quCreDt DESC")
+            "SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL AND (q.quSid = :memId OR q.quRid = :memId) ORDER BY q.quCreDt DESC")
     Page<QuoteBase> findAllByMember(@Param("memId") Long memId, Pageable pageable);
 
     // 기간별 상태 조회

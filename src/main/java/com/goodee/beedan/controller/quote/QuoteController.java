@@ -156,8 +156,9 @@ public class QuoteController {
                     new com.goodee.beedan.dto.quote.QuoteBaseRequest(
                             oldQuote.getNgId(), myId, receiverId));
 
+            newQuote.tempSave(); // 재작성은 바로 TEMP_SAVE (데이터가 프리필되므로)
             quId = newQuote.getQuId();
-            sourceQuId = fromQuId; // 데이터는 기존 견적에서 로드
+            sourceQuId = fromQuId;
             model.addAttribute("rejectedReason", oldQuote.getQuCon());
             model.addAttribute("rewriteFromQuId", fromQuId);
             model.addAttribute("rewriteFromQuCd", oldQuote.getQuCd());
@@ -423,8 +424,14 @@ public class QuoteController {
             item.put("ngCreDt", ng.getNgCreDt());
             item.put("ngEndDt", ng.getNgEndDt());
 
-            // 해당 협상의 견적 목록
-            List<QuoteBase> quotes = quoteBaseService.findAllByNego(ng.getNgId());
+            // 해당 협상의 유효 견적 목록 (quStt != null)
+            List<QuoteBase> quotes = quoteBaseService.findAllByNego(ng.getNgId()).stream()
+                    .filter(q -> q.getQuStt() != null)
+                    .collect(java.util.stream.Collectors.toList());
+
+            // 유효 견적이 0개면 목록에서 제외
+            if (quotes.isEmpty()) continue;
+
             item.put("quoteCount", quotes.size());
 
             // 미열람 견적 존재 여부
@@ -469,8 +476,10 @@ public class QuoteController {
             return "redirect:/quote/negotiation/list";
         }
 
-        // 해당 협상의 견적 목록
-        List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId);
+        // 해당 협상의 유효 견적 목록 (quStt != null)
+        List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId).stream()
+                .filter(q -> q.getQuStt() != null)
+                .collect(java.util.stream.Collectors.toList());
 
         // 수신자 본인의 미열람 견적 열람 처리
         Long memId = userDetails.getMemberId();

@@ -47,9 +47,13 @@ public class QuoteBase {
         this.ngId = negoId;
         this.quSid = senderId;
         this.quRid = receiverId;
-        this.quStt = QuoteStatus.TEMP_SAVE;
+        this.quStt = null;
         this.quAdOpYn = false;
         this.quUsOpYn = false;
+    }
+
+    public void tempSave() {
+        this.quStt = QuoteStatus.TEMP_SAVE;
     }
 
     public void submit(){
@@ -86,7 +90,8 @@ public class QuoteBase {
         return LocalDateTime.now().isAfter(this.quExpDt);
     }
     public boolean isEditable() {
-        return QuoteStatus.TEMP_SAVE.equals(this.quStt)
+        return this.quStt == null
+                || QuoteStatus.TEMP_SAVE.equals(this.quStt)
                 || QuoteStatus.REJECTED.equals(this.quStt);
     }
 
