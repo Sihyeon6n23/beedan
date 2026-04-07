@@ -70,7 +70,7 @@ class FileServiceTest {
         FileUpload target = fileRepository.findAllByBrdRefTyAndBrdRefNoAndFileDelYnFalseOrderByFileOrAsc("FREE", 99L).get(0);
 
         // when
-        FileDownloadDto downloadDto = fileService.prepareDownload(target.getFileId());
+        FileDownloadDto downloadDto = fileService.prepareDownload(target.getFileUuid());
 
         // then
         assertThat(downloadDto.getResource().exists()).isTrue();
@@ -88,7 +88,7 @@ class FileServiceTest {
 
         // 2. [수정 진행] 기존 삭제 + 신규 추가
         // 삭제 호출
-        fileService.deleteFiles(List.of(oldId));
+        fileService.deleteFilesById(List.of(oldId));
 
         // 신규 추가 호출
         MockMultipartFile newFile = new MockMultipartFile("files", "new.png", "image/png", "new".getBytes());

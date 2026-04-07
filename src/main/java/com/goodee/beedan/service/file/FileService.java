@@ -2,7 +2,6 @@ package com.goodee.beedan.service.file;
 
 import com.goodee.beedan.dto.file.FileDownloadDto;
 import com.goodee.beedan.dto.file.FileDto;
-import com.goodee.beedan.dto.file.FileListDto;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.FileUpload;
@@ -57,10 +56,15 @@ public class FileService {
      */
 
     // 파일 저장 요청
-    public List<FileListDto> saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
-        List<FileListDto> fileListDtoList = new ArrayList<>();
+    public List<FileDto> saveFile(List<MultipartFile> files, RefDto refDto) throws IOException {
+        List<FileDto> fileListDtoList = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
+
+
+            if (file.isEmpty() || file.getOriginalFilename().isEmpty()) {
+                continue;
+            }
 
             validateFilePolicy(file); // 파일업로드 화이트리스트 정책
 
@@ -79,12 +83,12 @@ public class FileService {
             uploadToDisk(file, uuid, ext);
 
             // FileListDto 생성 및 추가
-            fileListDtoList.add(FileListDto.builder()
-                    .uuid(uuid)
-                    .originalName(originalName)
+            fileListDtoList.add(FileDto.builder()
+                    .fileUuid(uuid)
+                    .fileNm(originalName)
                     .fileExt(ext)
-                    .fileSize(file.getSize())
-                    .filePat(uploadPath + "\\" + datePath)
+                    .fileSz(file.getSize())
+                    .filePat(datePath)
                     .build());
 
             FileUpload fileUpload = FileUpload.builder()
@@ -96,7 +100,7 @@ public class FileService {
                     .fileExt(ext)
                     .fileCtp(getMimeType(file))
                     .fileOr(i + 1)
-                    .filePat(Paths.get(uploadPath, datePath).toString())
+                    .filePat(datePath)
                     .fileDelYn(false)
                     .build();
 
@@ -105,14 +109,14 @@ public class FileService {
         return fileListDtoList;
     }
     // 물리파일 다운로드 서비스
-    public FileDownloadDto prepareDownload(Long fileId) {
+    public FileDownloadDto prepareDownload(String fileUuId) {
         // 1. DB에서 파일 정보 조회 (없으면 예외 발생)
-        FileUpload fileUpload = fileRepository.findById(fileId)
-                .orElseThrow(() -> new RuntimeException("해당 파일 기록을 찾을 수 없습니다. ID: " + fileId));
+        FileUpload fileUpload = fileRepository.findFileUploadByFileUuid(fileUuId)
+                .orElseThrow(() -> new RuntimeException("해당 파일 기록을 찾을 수 없습니다. ID: " + fileUuId));
 
         // 2. 경로 복원 (uploadPath + DB의 filePath + UUID.ext)
         // Paths.get을 사용하면 OS별 구분자(\ 또는 /) 문제를 알아서 해결해줍니다.
-        Path fullPath = Paths.get(fileUpload.getFilePat(),
+        Path fullPath = Paths.get(uploadPath ,fileUpload.getFilePat(),
                 fileUpload.getFileUuid() + "." + fileUpload.getFileExt());
 
         // 3. 물리 리소스 생성
@@ -143,7 +147,7 @@ public class FileService {
                         .fileExt(file.getFileExt())
                         .fileSz(file.getFileSz())
                         .fileCtp(file.getFileCtp())
-                        .fileUrl("/api/files/display/" + file.getFileId())
+                        .filePat(file.getFilePat())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -153,13 +157,22 @@ public class FileService {
                 .fileId(fileUpload.getFileId())
                 .fileNm(fileUpload.getFileNm())
                 .fileSz(fileUpload.getFileSz())
-                .fileUrl(fileUpload.getFilePat())
+                .filePat(fileUpload.getFilePat())
                 .fileCtp(fileUpload.getFileCtp())
                 .build()).orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다."));
     }
 
     // 파일 단건 삭제
-    public void deleteFile(Long fileId) {
+    public void deleteFile(String fileUuid) {
+        FileUpload fileUpload = fileRepository.findFileUploadByFileUuid(fileUuid)
+                .orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다."));
+
+        fileUpload.setFileDelYn(true);
+        deletePhysicalFile(fileUpload.getFilePat(), fileUpload.getFileUuid(), fileUpload.getFileExt());
+    }
+
+    // 파일 단건 삭제
+    public void deleteFileById(Long fileId) {
         FileUpload fileUpload = fileRepository.findById(fileId)
                 .orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다."));
 
@@ -178,16 +191,26 @@ public class FileService {
         if (fileIdList.isEmpty()) {
             return;
         }
-        deleteFiles(fileIdList);
+        deleteFilesById(fileIdList);
     }
 
-    // 파일 일괄 삭제(아이디리스트)
-    public void deleteFiles(List<Long> fileIdList) {
+
+    public void deleteFilesById(List<Long> fileIdList) {
         if (fileIdList == null || fileIdList.isEmpty()) return;
 
         for (int i = 0; i < fileIdList.size(); i++) {
-            Long fileId = fileIdList.get(i);
-            deleteFile(fileId);
+            Long fileid = fileIdList.get(i);
+            deleteFileById(fileid);
+        }
+    }
+
+    // 파일 일괄 삭제(아이디리스트)
+    public void deleteFiles(List<String> fileUuidList) {
+        if (fileUuidList == null || fileUuidList.isEmpty()) return;
+
+        for (int i = 0; i < fileUuidList.size(); i++) {
+            String fileUuid = fileUuidList.get(i);
+            deleteFile(fileUuid);
         }
     }
 
@@ -203,8 +226,9 @@ public class FileService {
         if (path == null || uuid == null || ext == null) {
             return;
         }
+
         try {
-            Path filePath = Paths.get(path, uuid + "." + ext);
+            Path filePath = Paths.get(uploadPath, path, uuid + "." + ext);
             Files.deleteIfExists(filePath); // 파일이 있으면 삭제, 없으면 무시
             log.info("파일 삭제 성공: {}", filePath);
         } catch (IOException e) {

@@ -174,8 +174,11 @@
                 </div>
 
                 <!-- 답변 없을 때: 사용자 대기 메시지 -->
-                <div class="inquiry-detail-empty" th:if="${(require.reqRepYn == null or !require.reqRepYn) and !isAdmin}">
+                <div class="inquiry-detail-empty" th:if="${(require.reqRepYn == null or !require.reqRepYn) and !isAdmin and (require.reqStt == 'SUBMITTED')}">
                     <strong>문의 내용을 확인하고 있습니다.</strong>
+                </div>
+                <div class="inquiry-detail-empty" th:if="${!isAdmin and (require.reqStt == 'DRAFT')}">
+                    <strong>상품 요청 제출시 관리자가 답변드리겠습니다.</strong>
                 </div>
             </section>
         </section>

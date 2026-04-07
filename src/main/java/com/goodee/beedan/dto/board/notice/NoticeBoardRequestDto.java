@@ -18,5 +18,5 @@ public class NoticeBoardRequestDto {
     private String brdCon;
     private Boolean brdFixYn;
     private List<MultipartFile> newFiles; // 신규 첨부 파일
-    private List<Long> deleteFileIds;     // 삭제할 파일 PK 리스트
+    private List<String> deleteUuids;     // 삭제할 파일 PK 리스트
 }
