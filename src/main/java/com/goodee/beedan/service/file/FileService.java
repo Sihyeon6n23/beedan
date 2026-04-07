@@ -80,6 +80,7 @@ public class FileService {
                 throw new IllegalIdentifierException("파일 이름이 없습니다.");
             }
 
+            String mimeType = getMimeType(file);
             uploadToDisk(file, uuid, ext);
 
             // FileListDto 생성 및 추가
@@ -98,7 +99,7 @@ public class FileService {
                     .brdRefNo(refDto.getRefNo())
                     .fileSz(file.getSize())
                     .fileExt(ext)
-                    .fileCtp(getMimeType(file))
+                    .fileCtp(mimeType)
                     .fileOr(i + 1)
                     .filePat(datePath)
                     .fileDelYn(false)
@@ -252,7 +253,7 @@ public class FileService {
         return datePath.toString();
     }
 
-    // MYME 타입 조회 메소드
+    // MIME 타입 조회 메소드
     public String getMimeType(MultipartFile file) {
         try {
             return tika.detect(file.getInputStream());
