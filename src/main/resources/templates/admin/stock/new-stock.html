@@ -15,6 +15,7 @@
 <th:block th:fragment="content">
 <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}"/>
 <link rel="stylesheet" th:href="@{/css/crawling/admin-crawling.css}"/>
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
 
 <section class="admin-crawling-page" th:data-active-tab="${activeTab != null ? activeTab : 'external'}">
 
@@ -172,49 +173,54 @@
 
         <div class="admin-crawling-shell">
             <h2 class="admin-crawling-section-title">상품 직접 등록</h2>
-            <form th:action="@{/admin/newstock/manual}" method="post" enctype="multipart/form-data" class="admin-crawling-form">
+            <form th:action="@{/admin/newstock/manual}" method="post" enctype="multipart/form-data" class="admin-crawling-form" novalidate onsubmit="return validateManualForm(this)">
 
                 <div class="admin-crawling-row">
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">상품 코드</label>
-                        <input type="text" name="stCd" required placeholder="ST-001"
+                        <input type="text" name="stCd" placeholder="ST-001"
                                class="admin-crawling-input"/>
+                        <span class="field-error" data-for="stCd"></span>
                     </div>
                     <div class="admin-crawling-field" style="flex: 2;">
                         <label class="admin-crawling-label">상품명</label>
-                        <input type="text" name="stNm" required placeholder="상품명을 입력하세요"
+                        <input type="text" name="stNm" placeholder="상품명을 입력하세요"
                                class="admin-crawling-input"/>
+                        <span class="field-error" data-for="stNm"></span>
                     </div>
                 </div>
 
                 <div class="admin-crawling-row">
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">브랜드명 <span>(없으면 새로 추가)</span></label>
-                        <input type="text" name="brNm" list="brand-list-manual" required placeholder="Kapital"
+                        <input type="text" name="brNm" list="brand-list-manual" placeholder="Kapital"
                                class="admin-crawling-input"/>
                         <datalist id="brand-list-manual">
                             <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
                         </datalist>
+                        <span class="field-error" data-for="brNm"></span>
                     </div>
                     <div class="admin-crawling-field">
-                        <label class="admin-crawling-label">카테고리 <span>(선택)</span></label>
+                        <label class="admin-crawling-label">카테고리 <span>(선택 또는 직접 입력)</span></label>
                         <input type="text" name="catNm" list="cat-list-manual" placeholder="Outerwear"
                                class="admin-crawling-input"/>
                         <datalist id="cat-list-manual">
                             <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
                         </datalist>
+                        <span class="field-error" data-for="catNm"></span>
                     </div>
                 </div>
 
                 <div class="admin-crawling-row">
                     <div class="admin-crawling-field" style="flex: 2;">
                         <label class="admin-crawling-label">가격</label>
-                        <input type="number" name="stPr" required placeholder="0" min="0" step="0.01"
+                        <input type="number" name="stPr" placeholder="0" min="0" step="0.01"
                                class="admin-crawling-input"/>
+                        <span class="field-error" data-for="stPr"></span>
                     </div>
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">통화</label>
-                        <input type="text" name="stCur" list="currency-list-manual" required placeholder="₩" maxlength="5"
+                        <input type="text" name="stCur" list="currency-list-manual" placeholder="₩" maxlength="5"
                                class="admin-crawling-input"/>
                         <datalist id="currency-list-manual">
                             <option value="₩">KRW</option>
@@ -223,17 +229,18 @@
                             <option value="€">EUR</option>
                             <option value="£">GBP</option>
                         </datalist>
+                        <span class="field-error" data-for="stCur"></span>
                     </div>
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">요청자 ID</label>
-                        <input type="number" name="stReqMemId" required placeholder="회원 ID"
+                        <input type="number" name="stReqMemId" placeholder="회원 ID"
                                class="admin-crawling-input"/>
                     </div>
                 </div>
 
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">상품 이미지</label>
-                    <input type="file" name="imgFile" accept="image/*" class="admin-crawling-input admin-crawling-input--file"/>
+                    <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${fileList}, isMultiple=false)}"></div>
                 </div>
 
                 <div>
@@ -415,6 +422,36 @@
             form.querySelector('[data-for="catNm"]').textContent = '카테고리를 입력하세요.';
             return false;
         }
+        return true;
+    }
+
+    // 자체 상품 등록 폼 검증
+    function validateManualForm(form) {
+        form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+        const fields = [
+            { name: 'stCd',       msg: '상품 코드를 입력하세요.' },
+            { name: 'stNm',       msg: '상품명을 입력하세요.' },
+            { name: 'brNm',       msg: '브랜드명을 입력하세요.' },
+            { name: 'catNm',      msg: '카테고리를 입력하세요.' },
+            { name: 'stPr',       msg: '가격을 입력하세요.' },
+            { name: 'stCur',      msg: '통화를 선택하세요.' },
+        ];
+
+        for (const field of fields) {
+            if (!form[field.name].value.trim()) {
+                form.querySelector('[data-for="' + field.name + '"]').textContent = field.msg;
+                form[field.name].focus();
+                return false;
+            }
+        }
+
+        if (Number(form.stPr.value) < 0) {
+            form.querySelector('[data-for="stPr"]').textContent = '가격은 0 이상이어야 합니다.';
+            form.stPr.focus();
+            return false;
+        }
+
         return true;
     }
 

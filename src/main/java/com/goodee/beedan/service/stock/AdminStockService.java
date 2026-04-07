@@ -1,8 +1,11 @@
 package com.goodee.beedan.service.stock;
 
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.stock.AdminStockDto;
 import com.goodee.beedan.entity.Stock;
+import com.goodee.beedan.repository.file.FileRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
+import com.goodee.beedan.service.file.FileService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +25,8 @@ import java.util.NoSuchElementException;
 public class AdminStockService {
 
     private final StockRepository stockRepository;
+    private final FileService fileService;
+    private final FileRepository fileRepository;
 
     // 첫 호출 + 검색 조건 적용 조회
     public Page<AdminStockDto> findAdminStocks(String keyword,
@@ -78,7 +83,12 @@ public class AdminStockService {
         stock.setStExpYn(false);
         stock.setStUpdDt(LocalDateTime.now());
         stockRepository.save(stock);
+
+
+        Long fileId = fileRepository.findByBrdRefTyAndBrdRefNo("STOCK", stId).getFileId();
+        fileService.deleteFileById(fileId);
     }
+
     // 상품 정보 수정
     public void updateStock(Long stId, AdminStockDto adminStockDto) {
         Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));

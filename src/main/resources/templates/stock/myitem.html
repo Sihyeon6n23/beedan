@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/layout :: layout(
-          ~{::title},
-          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'My Items', ~{::sidebar})},
-          ~{::content}
-      )}">
+    th:replace="~{layout/layout :: layout(
+                ~{::title},
+                ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'My Items', ~{::sidebar})},
+                ~{::content}
+        )}">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title th:fragment="title">BEEDAN | MY ITEMS</title>
+
 </head>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('stock','stock-my')}"></div>
 </th:block>
 
-<body class="bg-surface-container-lowest text-on-surface" th:fragment="content">
+<body class="bg-surface-container-lowest text-on-surface" th:fragment="content" >
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
     tailwind.config = {
@@ -96,45 +97,53 @@
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
     axios.defaults.headers.common[csrfHeader] = csrfToken;
 </script>
+<!-- TopNavBar -->
 
-<!-- Breadcrumbs & Title -->
-<nav class="mb-4">
-    <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
-        <li>Home</li>
-        <li class="text-neutral-300">/</li>
-        <li>Mypage</li>
-        <li class="text-neutral-300">/</li>
-        <li class="text-on-primary-container">My Items</li>
-    </ol>
-</nav>
+<div class="pb-20 max-w-[1200px] mx-auto w-full px-6">
 
-<div class="flex justify-between items-end mb-12">
-    <h1 class="text-6xl font-headline font-black tracking-tighter">MY ITEMS</h1>
-    <div class="flex items-center gap-6">
-        <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
-            <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Search</span>
-            <input id="search-input" type="text" placeholder="Search..."
-                   class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-36" />
-            <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+    <!-- Main Content -->
+    <div class="flex-1 min-w-0 min-h-screen">
+        <!-- Breadcrumbs & Title -->
+        <nav class="mb-4">
+            <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
+                <li>Home</li>
+                <li class="text-neutral-300">/</li>
+                <li>Mypage</li>
+                <li class="text-neutral-300">/</li>
+                <li class="text-on-primary-container">My Items</li>
+            </ol>
+        </nav>
+
+        <div class="flex justify-between items-end mb-12">
+            <h1 class="text-6xl font-headline font-black tracking-tighter">MY ITEMS</h1>
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                    <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Search</span>
+                    <input id="search-input" type="text" placeholder="Search..."
+                           class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-36" />
+                    <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+                </div>
+                <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
+                    <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
+                    <select id="sort-select" class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
+                        <option value="recent">Recent</option>
+                        <option value="popularity">Popularity</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="most-purchased">Most Purchased</option>
+                    </select>
+                </div>
+            </div>
         </div>
-        <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
-            <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Sort by</span>
-            <select id="sort-select" class="bg-transparent border-none text-xs font-bold uppercase tracking-widest focus:ring-0 cursor-pointer">
-                <option value="recent">Recent</option>
-                <option value="popularity">Popularity</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="most-purchased">Most Purchased</option>
-            </select>
-        </div>
+
+        <!-- 상품 영역 -->
+        <div id="product-area"></div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="mt-24 flex justify-center items-center gap-4"></div>
     </div>
+
 </div>
-
-<!-- 상품 영역 -->
-<div id="product-area"></div>
-
-<!-- Pagination -->
-<div id="pagination" class="mt-24 flex justify-center items-center gap-4"></div>
 
 <!-- 로그인 필요 시 모달 -->
 <div id="login-modal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center backdrop-blur-sm" onclick="if(event.target===this) this.classList.add('hidden')">
@@ -150,14 +159,18 @@
 </div>
 
 <script>
+    // 하트 버튼 토글, 찜 목록 비동기 추가,삭제
     function toggleHeart(el) {
         event.stopPropagation();
         event.preventDefault();
 
+        // 비로그인 사용자가 하트 클릭시
         if (!memberId)  {
+            // 모달 띄우기
             document.getElementById('login-modal').classList.remove('hidden');
             return;
         }
+
 
         const icon = el.classList.contains('material-symbols-outlined') ? el :
             el.querySelector('.material-symbols-outlined');
@@ -166,6 +179,7 @@
         const isFilled = icon.dataset.filled === 'true';
 
         if (isFilled) {
+            // 찜 해제
             axios.delete('/api/wishlist/' + stId)
                 .then(() => {
                     icon.dataset.filled = 'false';
@@ -175,6 +189,7 @@
                 })
                 .catch(err => console.error('찜 해제 실패:', err));
         } else {
+            // 찜 추가
             axios.post('/api/wishlist/' + stId)
                 .then(() => {
                     icon.dataset.filled = 'true';
@@ -185,7 +200,6 @@
                 .catch(err => console.error('찜 추가 실패:', err));
         }
     }
-
 (function() {
     let currentPage = 0;
 
@@ -317,6 +331,8 @@
 
     loadProducts(0);
 })();
+
+
 </script>
 
 </body>

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class StockService {
     private final StockRepository stockRepository;
     private final BrandRepository brandRepository;
@@ -65,8 +65,9 @@ public class StockService {
 
     // 전체 브랜드 목록 불러오기
     public List<Brand> findAllBrands() {
-
-        return brandRepository.findAllByOrderByBrNmAsc();
+        // 개별 요청 아이템만 존재하는 브랜드는 제외
+        List<Long> activeBrandIds = stockRepository.findDistinctBrandIdsWithStock();
+        return brandRepository.findAllById(activeBrandIds);
     }
 
     // 전체 카테고리 목록 불러오기
@@ -95,6 +96,7 @@ public class StockService {
         Specification<Stock> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.isTrue(root.get("stExpYn")));
+            predicates.add(cb.isFalse(root.get("stReqYn")));
             if (brandIds != null && !brandIds.isEmpty()) {
                 predicates.add(root.get("brId").in(brandIds));
             }
@@ -273,5 +275,12 @@ public class StockService {
                 .stImgUrl(stock.getStImgUrl())
                 .wished(wishedIds.contains(stock.getStId()))
                 .build();
+    }
+
+    // 상품 이미지 URL 저장 (업로드 후 URL 저장용)
+    public void saveImgUrl(Long lastId, String imgUrl) {
+        Stock stock = stockRepository.findById(lastId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+        stock.setStImgUrl(imgUrl);
+        stockRepository.save(stock);
     }
 }
