@@ -69,7 +69,6 @@ public class NoticeBoardController {
     public String noticeForm(@RequestParam(value = "id", required = false) Long id,
                              Principal principal,
                              Model model) {
-
         if (id != null) {
             // 수정 모드
             NoticeDetailDto notice = noticeBoardService.getNoticeDetail(id, principal.getName());

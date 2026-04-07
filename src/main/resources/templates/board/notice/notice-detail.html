@@ -47,7 +47,7 @@
             <div class="inquiry-detail-article__body">
                 <div class="inquiry-detail-article__content" th:utext="${notice.brdCon}">내용</div>
 
-                <div th:replace="~{fragments/file/file-list :: display(${fileList})}"></div>
+                <div th:replace="~{fragments/file/file-list :: display(list=${fileList})}"></div>
             </div>
 
             <div class="inquiry-detail-article__footer" th:if="${canModify}">

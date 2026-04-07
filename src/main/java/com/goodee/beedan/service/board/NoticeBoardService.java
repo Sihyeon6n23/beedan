@@ -77,8 +77,8 @@ public class NoticeBoardService {
         board.setBrdFixYn(dto.getBrdFixYn());
 
         // 파일 처리 (삭제 후 신규 저장)
-        if (dto.getDeleteFileIds() != null && !dto.getDeleteFileIds().isEmpty()) {
-            fileService.deleteFiles(dto.getDeleteFileIds());
+        if (dto.getDeleteUuids() != null && !dto.getDeleteUuids().isEmpty()) {
+            fileService.deleteFiles(dto.getDeleteUuids());
         }
         handleFiles(dto, board.getBrdId());
     }

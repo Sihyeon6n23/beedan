@@ -14,5 +14,5 @@ public class FileDto {
     private String fileCtp;
     private Integer fileOr;
 
-    private String fileUrl;
+    private String filePat;
 }

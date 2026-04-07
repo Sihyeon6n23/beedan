@@ -25,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 public class FileRestController {
     private final FileService fileService;
 
-    @GetMapping("/download/{fileId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) {
-        FileDownloadDto downloadDto = fileService.prepareDownload(fileId);
+    @GetMapping("/download/{fileUuid}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileUuid) {
+        FileDownloadDto downloadDto = fileService.prepareDownload(fileUuid);
 
         String encodedFileName = UriUtils.encode(downloadDto.getFileName(), StandardCharsets.UTF_8);
         String contentDisposition = "attachment; filename=\"" + encodedFileName + "\"";
