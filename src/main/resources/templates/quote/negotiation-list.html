@@ -42,15 +42,8 @@
         <section class="ng-shell ng-shell--list">
             <div class="ng-list-head">
                 <div>협상 정보</div>
-                <div class="ng-sortable is-active" data-sort="status" data-dir="asc">
-                    상태 <span class="ng-sort-icon">▼</span>
-                </div>
-                <div class="ng-sortable" data-sort="latestUpdate" data-dir="desc">
-                    최근 업데이트 <span class="ng-sort-icon">▼</span>
-                </div>
-                <div class="ng-sortable" data-sort="ngCreDt" data-dir="desc">
-                    시작일 <span class="ng-sort-icon">▼</span>
-                </div>
+                <div>상태</div>
+                <div>시작일</div>
             </div>
 
             <div class="ng-list-body">
@@ -59,11 +52,8 @@
                        class="ng-row"
                        th:classappend="(${ng.ongoing} ? '' : ' ng-row--closed') + (${ng.hasUnread} ? ' ng-row--featured' : '')"
                        th:data-status="${ng.ongoing} ? '0' : '1'"
-                       th:data-latest-update="${ng.latestUpdate}"
                        th:data-ng-cre-dt="${ng.ngCreDt}">
                         <div class="ng-row__primary">
-                            <span th:if="${ng.hasUnread}" class="ng-row__dot"></span>
-                            <span th:unless="${ng.hasUnread}" class="ng-row__dot ng-row__dot--empty"></span>
                             <div class="ng-row__text">
                                 <h2>
                                     <span th:text="${ng.ngNm}">QU0000</span>
@@ -75,9 +65,6 @@
                             <span class="ng-badge"
                                   th:classappend="${ng.ongoing} ? ' ng-badge--ongoing' : ' ng-badge--closed'"
                                   th:text="${ng.ongoing} ? '진행중' : '종료'">상태</span>
-                        </div>
-                        <div class="ng-row__time">
-                            <span th:text="${ng.latestUpdate != null ? #temporals.format(ng.latestUpdate, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
                         </div>
                         <div class="ng-row__time">
                             <span th:text="${ng.ngCreDt != null ? #temporals.format(ng.ngCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>

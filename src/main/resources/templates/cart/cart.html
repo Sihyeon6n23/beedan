@@ -409,7 +409,10 @@
     });
 
     // ===== REQUEST QUOTE (체크된 상품만) =====
+    var quoteRequesting = false;
     document.getElementById('btn-request-quote').addEventListener('click', () => {
+        if (quoteRequesting) return;
+
         const items = [];
         document.querySelectorAll('.cart-row').forEach(row => {
             const cb = row.querySelector('.cart-check');
@@ -425,11 +428,25 @@
             alert('견적 요청할 상품을 선택해주세요.');
             return;
         }
+
+        // 중복 클릭 방지 + 로딩 표시
+        quoteRequesting = true;
+        const btn = document.getElementById('btn-request-quote');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-xl animate-spin">progress_activity</span> 견적 생성 중...';
+        btn.style.opacity = '0.6';
+        btn.style.pointerEvents = 'none';
+
         axios.post('/quote/request', { items })
             .then(res => { window.location.href = res.data.redirectUrl; })
             .catch(err => {
                 console.error('견적 요청 실패:', err);
                 alert('견적 요청에 실패했습니다.');
+                quoteRequesting = false;
+                btn.disabled = false;
+                btn.innerHTML = 'REQUEST QUOTE <span class="material-symbols-outlined text-xl">arrow_forward</span>';
+                btn.style.opacity = '';
+                btn.style.pointerEvents = '';
             });
     });
 })();

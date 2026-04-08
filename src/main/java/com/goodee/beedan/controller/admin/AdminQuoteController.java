@@ -51,7 +51,9 @@ public class AdminQuoteController {
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
 
     @GetMapping("/negotiation/list")
-    public String negotiationList(Model model) {
+    public String negotiationList(Model model,
+                                  @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
+        Long myId = userDetails != null ? userDetails.getMemberId() : null;
         List<Negotiation> ngList = negotiationService.findAll();
 
         List<Map<String, Object>> negotiations = new ArrayList<>();
@@ -63,8 +65,12 @@ public class AdminQuoteController {
             item.put("ngCreDt", ng.getNgCreDt());
             item.put("ngEndDt", ng.getNgEndDt());
 
-            // 견적 목록
-            List<QuoteBase> quotes = quoteBaseService.findAllByNego(ng.getNgId());
+            // 유효 견적 목록 (상대방 TEMP_SAVE 제외)
+            List<QuoteBase> quotes = quoteBaseRepository.findAllActiveByNgId(ng.getNgId(), myId);
+
+            // 유효 견적이 0개면 목록에서 제외
+            if (quotes.isEmpty()) continue;
+
             item.put("quoteCount", quotes.size());
 
             // 미열람 견적 존재 여부
@@ -147,11 +153,13 @@ public class AdminQuoteController {
     }
 
     @GetMapping("/quote/list")
-    public String quoteList(@RequestParam(required = false) Long ngId, Model model) {
-        // ngId가 있으면 해당 협상의 견적만, 없으면 전체 (quStt != null만)
+    public String quoteList(@RequestParam(required = false) Long ngId, Model model,
+                            @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
+        Long myId = userDetails != null ? userDetails.getMemberId() : null;
+        // ngId가 있으면 해당 협상의 견적만, 없으면 전체 (상대방 TEMP_SAVE 제외)
         List<QuoteBase> quoteList = (ngId != null)
-                ? quoteBaseRepository.findAllActiveByNgIdAdmin(ngId)
-                : quoteBaseRepository.findAllActive();
+                ? quoteBaseRepository.findAllActiveByNgId(ngId, myId)
+                : quoteBaseRepository.findAllActive(myId);
 
         List<Map<String, Object>> quotes = new ArrayList<>();
         for (QuoteBase qb : quoteList) {
