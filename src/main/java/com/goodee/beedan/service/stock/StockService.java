@@ -229,6 +229,7 @@ public class StockService {
         Specification<Stock> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.isTrue(root.get("stReqYn")));
+            predicates.add(cb.isTrue(root.get("stExpYn")));
             predicates.add(cb.equal(root.get("stReqMemId"), memId));
             if (brandIds != null && !brandIds.isEmpty()) {
                 predicates.add(root.get("brId").in(brandIds));
