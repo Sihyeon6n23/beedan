@@ -1,7 +1,7 @@
 {
+  "autoCrawlingEnabled" : true,
   "gradeResolveEnabled" : false,
   "exchangeRateEnabled" : true,
-  "autoCrawlingEnabled" : true,
   "is_auto_crawling_enabled" : true,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
   "auto_crawling_interval" : "6",

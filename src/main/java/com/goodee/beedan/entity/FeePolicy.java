@@ -57,6 +57,7 @@ public class FeePolicy {
 
         public void deactivate() {
                 this.fpAcYn = false;
+                this.fpFeeTy = this.fpFeeTy + "_deleted_" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         }
 
         public void update(
