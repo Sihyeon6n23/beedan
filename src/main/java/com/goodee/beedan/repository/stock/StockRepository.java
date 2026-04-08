@@ -39,4 +39,6 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
             @Param("end") LocalDateTime end,
             Pageable pageable
     );
+
+    List<Stock> findByBrId(Long brId);
 }
