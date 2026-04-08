@@ -178,7 +178,8 @@
     <div class="card-title">⚡ 스케줄러 강제 실행</div>
     <div th:each="name : ${schedulerNames}">
         <button class="tick-btn"
-                th:onclick="'tick(\'' + ${name} + '\')'"
+                th:attr="data-scheduler-name=${name}"
+                onclick="tick(this.dataset.schedulerName)"
                 th:text="'▶  ' + ${name}">
         </button>
     </div>
@@ -367,7 +368,9 @@
     // ── 스케줄러 ──────────────────────────────────────
     async function tick(name) {
         addLog(name + ' 실행 요청 중...', 'info');
-        const res = await fetch('/dev/tick/' + name, { method: 'POST' });
+        const headers = {};
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const res = await fetch('/dev/tick/' + name, { method: 'POST', headers });
         const msg = await res.text();
         addLog(msg, res.ok ? 'ok' : 'err');
     }

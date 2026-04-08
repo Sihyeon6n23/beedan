@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.chat;
 
+import com.goodee.beedan.common.constant.ChatRoomCloseReason;
 import com.goodee.beedan.common.constant.ChatRoomStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +25,6 @@ public class AdminChatRoomDetailDto {
     private LocalDateTime chRoAsgDt;
     private LocalDateTime chRoClsDt;
     private List<AdminChatMessageDto> messages;
+
+    private ChatRoomCloseReason chRoClsRsn;
 }

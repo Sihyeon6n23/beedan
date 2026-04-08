@@ -22,7 +22,7 @@ public class SecurityService {
     private final String filePath = "src/main/resources/security-policy.json";
 
     @PostConstruct
-    public void init() throws IOException{
+    public void init() throws IOException {
         File file = new File(filePath);
         if (file.exists()) {
             this.cachedPolicy = objectMapper.readValue(file, SecurityPolicyDto.class);

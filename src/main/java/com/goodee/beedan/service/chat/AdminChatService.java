@@ -103,6 +103,7 @@ public class AdminChatService {
                 .chRoStt(chatRoom.getChRoStt())
                 .unread(unread)
                 .adminName(admin != null ? admin.getMemNm() : null)
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
     }
 
@@ -316,6 +317,7 @@ public class AdminChatService {
                 .chRoStt(chatRoom.getChRoStt())
                 .chRoAsgDt(chatRoom.getChRoAsgDt())
                 .chRoClsDt(chatRoom.getChRoClsDt())
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .messages(messageDtos)
                 .build();
     }
