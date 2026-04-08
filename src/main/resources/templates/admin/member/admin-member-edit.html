@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{::sidebar},
+          ~{fragments/sidebar :: frame('ADMIN', 'MEMBER EDIT', ~{::sidebar})},
           ~{::content}
       )}">
 <head>
@@ -10,38 +10,45 @@
 </head>
 <body>
 
-<aside th:fragment="sidebar">
-    <div th:replace="~{fragments/sidebar :: frame('Member Curation', 'onboarding', ~{::side-menu})}">
-        <div th:fragment="side-menu">
-            <a href="#" class="block px-10 py-2 text-sm font-medium text-stone-600 hover:text-stone-900">회원 목록</a>
-            <a href="#" class="block px-10 py-2 text-sm font-medium text-stone-600 hover:text-stone-900">통계 보기</a>
-        </div>
-    </div>
-</aside>
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('member', 'member-list')}"></div>
+</th:block>
 
-<div th:fragment="content">
+<th:block th:fragment="content">
     <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
     <link rel="stylesheet" th:href="@{/css/admin/admin-member-edit.css}">
-    <section class="admin-edit-container">
 
-        <header class="edit-header">
-            <div class="header-info">
-                <h1>회원 정보 수정</h1>
-                <div class="meta-info">
-                    <span class="material-symbols-outlined">person</span>
-                    <span>ID: <th:block th:text="${member.loginId}">user02</th:block></span>
-                    <span class="divider">|</span>
-                    <span>가입일 : [[${#temporals.format(member.createdAt, 'yyyy/MM/dd')}]]</span>
+    <section class="admin-chat-page admin-chat-list-page">
+            <header class="admin-chat-shell admin-chat-shell--header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+                    <div>
+                        <div class="admin-chat-shell__heading">
+                            <span class="admin-chat-kicker">Member Edit</span>
+                            <h2 class="admin-chat-title">회원정보 수정</h2>
+
+                            <div class="meta-info">
+                                <span class="material-symbols-outlined">person</span>
+                                <span>ID: <th:block th:text="${member.loginId}">user02</th:block></span>
+                                <span class="divider">|</span>
+                                <span>가입일 : [[${#temporals.format(member.createdAt, 'yyyy/MM/dd')}]]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="header-actions" style="display: flex; gap: 10px;">
+                            <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+                            <button type="submit" form="editForm" class="btn-save">변경사항 저장 <span class="material-symbols-outlined">save</span></button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="header-actions">
-                <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
-                <button type="submit" form="editForm" class="btn-save">변경사항 저장 <span class="material-symbols-outlined">save</span></button>
-            </div>
-        </header>
 
-        <div class="edit-form-body">
+                    <div class="admin-chat-shell__rule">
+                        <span></span>
+                    </div>
+            </header>
+
             <form id="editForm" th:action="@{/admin/member/edit}" th:object="${member}" method="post" class="edit-form-grid">
                 <input type="hidden" th:field="*{id}">
 
@@ -142,12 +149,9 @@
                     </article>
                 </div>
             </form>
-        </div>
-    </section>
+        </section>
 
-    <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}" type="text/javascript"
-            th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}"></script>
-
+    <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}" type="text/javascript" th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             /** 3. 주소 검색 스크립트 이식 **/
@@ -201,7 +205,6 @@
             }
         });
     </script>
-</div>
-
+</th:block>
 </body>
 </html>
