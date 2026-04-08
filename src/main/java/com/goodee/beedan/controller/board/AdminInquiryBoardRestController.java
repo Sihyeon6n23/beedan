@@ -2,24 +2,15 @@ package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.board.*;
+import com.goodee.beedan.dto.board.inquiry.*;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.angus.mail.iap.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor

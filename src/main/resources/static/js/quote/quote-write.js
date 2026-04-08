@@ -774,8 +774,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var draftData = collectDraftData();
             if (!draftData.quId) { alert('견적 ID가 없습니다.'); return; }
 
-            doFetchEstimateFees()
-            .then(function () { return saveDraft(); })
+            saveDraft()
             .then(function (draftRes) {
                 if (draftRes.status !== 'ok') {
                     throw new Error(draftRes.message || '데이터 저장 실패');

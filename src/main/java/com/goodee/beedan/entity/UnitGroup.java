@@ -35,6 +35,7 @@ public class UnitGroup {
 
     public void deactivate() {
         this.unGYn = false;
+        this.unGNm = this.unGNm + "_deleted_" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
     }
 
     public void update(String name, Integer quantity) {
