@@ -32,7 +32,6 @@ public class GlobalControllerAdvice {
 
 
 
-    //
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgument(IllegalArgumentException e, Model model) {
         model.addAttribute("message", e.getMessage());
@@ -50,4 +49,5 @@ public class GlobalControllerAdvice {
         model.addAttribute("message", "요청을 처리하는 중 오류가 발생했습니다.");
         return "error/common";
     }
+
 }

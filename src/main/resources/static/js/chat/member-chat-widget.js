@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var currentTopicName = null;
   var currentChatRoomId = null;
   var currentChatRoomStatus = null;
+  var currentChatRoomCloseReason = null;
   var stompClient = null;
   var roomSubscription = null;
   var wsConnected = false;
@@ -567,7 +568,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!summaryMessage) {
         summaryMessage = chatRoom.chRoStt === "CLOSED"
-          ? "상담이 종료되었습니다."
+          ? getClosedSummaryMessage(chatRoom)
           : "상담 대기 중입니다.";
       }
 
@@ -646,6 +647,43 @@ document.addEventListener("DOMContentLoaded", function () {
     return date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
   }
 
+  function getClosedSummaryMessage(chatRoom) {
+    if (chatRoom && chatRoom.chRoClsRsn === "AUTO") {
+      return "3일 동안 메시지가 없어 자동 종료되었습니다.";
+    }
+
+    return "상담이 종료되었습니다.";
+  }
+
+  function getClosedDetailDescription() {
+    if (currentChatRoomCloseReason === "AUTO") {
+      return "3일 동안 메시지가 없어 채팅방이 자동 종료되었습니다.";
+    }
+
+    return "상담이 시작되기 전에 종료된 채팅방입니다.";
+  }
+
+  function appendClosedNotice(chatRoomDetail) {
+    if (!chatRoomMessages || !chatRoomDetail || chatRoomDetail.chRoStt !== "CLOSED") {
+      return;
+    }
+
+    var notice = document.createElement("div");
+    var icon = document.createElement("span");
+    var text = document.createElement("p");
+
+    notice.className = "member-chat-room-notice";
+    icon.className = "material-symbols-outlined";
+    icon.textContent = "schedule";
+    text.textContent = chatRoomDetail.chRoClsRsn === "AUTO"
+      ? "3일 동안 메시지가 없어 채팅방이 자동 종료되었습니다."
+      : "종료된 상담은 추가 메시지를 보낼 수 없고, 이력만 확인할 수 있습니다.";
+
+    notice.appendChild(icon);
+    notice.appendChild(text);
+    chatRoomMessages.appendChild(notice);
+  }
+
   // 메시지 없는 상세 화면 안내 출력
   function renderEmptyChatRoomDetail() {
     if (!chatRoomMessages) {
@@ -664,7 +702,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ? "아직 대화 내역이 없습니다."
       : "문의 내용을 남겨주세요.";
     description.textContent = currentChatRoomStatus === "CLOSED"
-      ? "상담이 시작되기 전에 종료된 채팅방입니다."
+      ? getClosedDetailDescription()
       : "상담원이 내용을 확인한 뒤 순차적으로 답변드립니다.";
 
     emptyState.appendChild(icon);
@@ -681,7 +719,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (chatRoomMessageInput) {
       chatRoomMessageInput.disabled = isClosed;
       chatRoomMessageInput.placeholder = isClosed
-        ? "종료된 채팅방입니다."
+        ? (currentChatRoomCloseReason === "AUTO"
+            ? "자동 종료된 채팅방입니다."
+            : "종료된 채팅방입니다.")
         : "메시지를 입력해 주세요..";
     }
 
@@ -701,6 +741,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     currentChatRoomId = chatRoomDetail.chRoId;
+    currentChatRoomCloseReason = chatRoomDetail.chRoClsRsn || null;
     updateChatRoomComposerState(chatRoomDetail.chRoStt);
     chatRoomTitle.textContent = chatRoomDetail.chRoTtl;
     chatRoomMessages.innerHTML = "";
@@ -737,6 +778,8 @@ document.addEventListener("DOMContentLoaded", function () {
       article.appendChild(body);
       chatRoomMessages.appendChild(article);
     });
+
+    appendClosedNotice(chatRoomDetail);
 
     requestAnimationFrame(function () {
       chatRoomMessages.scrollTo({

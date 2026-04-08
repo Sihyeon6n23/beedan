@@ -115,6 +115,7 @@ public class MemberChatService {
                 .lastMessageCreatedAt(lastMessage.map(chatMessage -> chatMessage.getChMsCreDt()).orElse(null))
                 .chRoCreDt(chatRoom.getChRoCreDt())
                 .unread(roomReadStatus.map(chatRoomReadStatus -> chatRoomReadStatus.getChRoReStUnrYn()).orElse(false))
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
     }
 
@@ -173,6 +174,7 @@ public class MemberChatService {
                 .chRoTtl(chatRoom.getChRoTtl())
                 .chRoStt(chatRoom.getChRoStt())
                 .messages(messageDtos)
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
     }
 

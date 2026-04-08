@@ -41,6 +41,7 @@ public class SchedulerSettingDto {
     @JsonProperty("last_exchange_rate_run_time")
     private String lastExchangeRateRunTime;
 
+
     // 3. 고객 등급 재산정
     @JsonProperty("is_grade_resolve_enabled")
     private boolean isGradeResolveEnabled = false;
@@ -66,11 +67,28 @@ public class SchedulerSettingDto {
     private String lastNewStockUpdateTime;
 
 
-
     // 5. 전시용 전월 인기 상품 업데이트 설정 (매월 N일)
     @JsonProperty("popular_stock_update_day")
     private String popularStockUpdateDay;
 
     @JsonProperty("last_popular_stock_update_time")
     private String lastPopularStockUpdateTime;
+
+
+    // 6. 채팅방 자동 종료 설정
+    // 6.1 ON/OFF
+    @JsonProperty("is_chat_auto_close_enabled")
+    private boolean isChatAutoCloseEnabled = false;
+
+    // 6.2 시작 시각
+    @JsonProperty("chat_auto_close_start_dt")
+    private String chatAutoCloseStartDt;
+
+    // 6.3 실행 주기(1시간 마다)
+    @JsonProperty("chat_auto_close_interval")
+    private String chatAutoCloseInterval;
+
+    // 6.4 마지막 실행 시각
+    @JsonProperty("last_chat_auto_close_run_time")
+    private String lastChatAutoCloseRunTime;
 }
