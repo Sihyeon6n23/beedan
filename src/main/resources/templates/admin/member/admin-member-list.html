@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('Member', 'Member Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('ADMIN', 'MEMBER MANAGEMENT', ~{::sidebar})},
           ~{::content}
       )}">
 <head>
@@ -11,7 +11,7 @@
 <body>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{admin/admin-sidebar :: sidebar('Member', 'Member-list')}"></div>
+    <div th:replace="~{admin/admin-sidebar :: sidebar('member', 'member-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
