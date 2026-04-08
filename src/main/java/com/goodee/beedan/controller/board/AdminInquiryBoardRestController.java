@@ -41,7 +41,7 @@ public class AdminInquiryBoardRestController {
     }
 
     // 관리자 답글 수정
-    @PatchMapping("/{id}/reply")
+    @PostMapping("/{id}/reply/edit")
     public void updateInquiryReply(@PathVariable("id") Long brdId, // 답글 Id
                                    @AuthenticationPrincipal MemberUserDetails userDetails,
                                    @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
