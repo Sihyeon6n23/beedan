@@ -1,46 +1,41 @@
 package com.goodee.beedan.service.stock;
 
 import com.goodee.beedan.dto.stock.StockListDto;
-import com.goodee.beedan.entity.Stock;
-import com.goodee.beedan.repository.stock.StockRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.YearMonth;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class StockDisplayService {
 
-    private final StockRepository stockRepository;
+    private static final String KEY_NEW_STOCKS = "display:newStocks";
+    private static final String KEY_POPULAR_STOCKS = "display:popularStocks";
+
     private final StockService stockService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    private volatile List<StockListDto> cachedNewStocks;
-    private volatile List<StockListDto> cachedPopularStocks;
-
+    // redis에 데이터 없으면 최초 삽입
     @PostConstruct
     public void init() {
-        refreshNewStocks();
-        refreshPopularStocks();
+        if(!redisTemplate.hasKey(KEY_NEW_STOCKS)) {
+            refreshNewStocks();
+        }
+        if(!redisTemplate.hasKey(KEY_POPULAR_STOCKS)) {
+            refreshPopularStocks();
+        }
     }
 
     public void refreshNewStocks() {
         try {
-            List<Stock> newStocks = stockRepository.findTop30ByStExpYnTrueOrderByStCraDtDesc();
-            Collections.shuffle(newStocks);
-            cachedNewStocks = newStocks.stream()
-                    .limit(16)
-                    .map(stock -> stockService.mapToStockListDto(stock, Collections.emptySet()))
-                    .collect(Collectors.toList());
-            log.info("신규 상품 전시 캐시 갱신 완료 ({}건)", cachedNewStocks.size());
+            List<StockListDto> result = stockService.findNewStocks();
+            redisTemplate.opsForValue().set(KEY_NEW_STOCKS, result);
+            log.info("신규 상품 전시 캐시 갱신 완료 ({}건)", result.size());
         } catch (Exception e) {
             log.error("신규 상품 전시 캐시 갱신 실패", e);
         }
@@ -48,40 +43,33 @@ public class StockDisplayService {
 
     public void refreshPopularStocks() {
         try {
-            // 1. 전월(Last Month) 범위 계산
-            YearMonth lastMonth = YearMonth.now().minusMonths(1);
-            LocalDateTime startDt = lastMonth.atDay(1).atStartOfDay(); // 예: 2026-03-01 00:00:00
-            LocalDateTime endDt = lastMonth.plusMonths(1).atDay(1).atStartOfDay(); // 예: 2026-04-01 00:00:00
-
-            // 2. DB에서 상위 16개 추출 (PageRequest 사용)
-            List<Stock> popularStocks = stockRepository.findPopularStocksByPeriod(
-                    startDt, endDt, PageRequest.of(0, 16)
-            );
-
-            // 3. 캐시 업데이트
-            cachedPopularStocks = popularStocks.stream()
-                    .map(stock -> stockService.mapToStockListDto(stock, Collections.emptySet()))
-                    .collect(Collectors.toList());
-
-            log.info("전월 인기 상품 캐시 갱신 완료 ({}년 {}월 기준, {}건)",
-                    lastMonth.getYear(), lastMonth.getMonthValue(), cachedPopularStocks.size());
-
+            List<StockListDto> result = stockService.findPopularStocks();
+            redisTemplate.opsForValue().set(KEY_POPULAR_STOCKS, result);
+            log.info("전월 인기 상품 캐시 갱신 완료 ({}건)", result.size());
         } catch (Exception e) {
             log.error("전월 인기 상품 캐시 갱신 실패", e);
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<StockListDto> getNewStocks() {
-        if (cachedNewStocks != null) {
-            return cachedNewStocks;
+        Object cached = redisTemplate.opsForValue().get(KEY_NEW_STOCKS);
+        if (cached instanceof List) {
+            log.info("신규 상품 전시 캐시에서 데이터 조회 ({}건)", ((List<?>) cached).size());
+            return (List<StockListDto>) cached;
         }
+        log.info("신규 상품 전시 캐시에 데이터 없음, DB에서 조회");
         return stockService.findNewStocks();
     }
 
+    @SuppressWarnings("unchecked")
     public List<StockListDto> getPopularStocks() {
-        if (cachedPopularStocks != null) {
-            return cachedPopularStocks;
+        Object cached = redisTemplate.opsForValue().get(KEY_POPULAR_STOCKS);
+        if (cached instanceof List) {
+            log.info("전월 인기 상품 캐시에서 데이터 조회 ({}건)", ((List<?>) cached).size());
+            return (List<StockListDto>) cached;
         }
-        return Collections.emptyList();
+        log.info("전월 인기 상품 캐시에 데이터 없음, DB에서 조회");
+        return stockService.findPopularStocks();
     }
 }

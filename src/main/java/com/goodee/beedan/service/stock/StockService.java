@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -256,12 +257,32 @@ public class StockService {
                 .map(stock -> mapToStockListDto(stock, wishedIds));
     }
 
+    // 상품 이미지 URL 저장 (업로드 후 URL 저장용)
+    public void saveImgUrl(Long lastId, String imgUrl) {
+        Stock stock = stockRepository.findById(lastId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+        stock.setStImgUrl(imgUrl);
+        stockRepository.save(stock);
+    }
+
     // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개)
     public List<StockListDto> findNewStocks() {
         List<Stock> newStocks = stockRepository.findTop30ByStExpYnTrueOrderByStCraDtDesc();
         Collections.shuffle(newStocks);
         return newStocks.stream()
                 .limit(16)
+                .map(stock -> mapToStockListDto(stock, Collections.emptySet()))
+                .collect(Collectors.toList());
+    }
+
+    public List<StockListDto> findPopularStocks() {
+        YearMonth lastMonth = YearMonth.now().minusMonths(1);
+        LocalDateTime startDt = lastMonth.atDay(1).atStartOfDay();
+        LocalDateTime endDt = lastMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        List<Stock> popularStocks = stockRepository.findPopularStocksByPeriod(
+                startDt, endDt, PageRequest.of(0, 16)
+        );
+        return popularStocks.stream()
                 .map(stock -> mapToStockListDto(stock, Collections.emptySet()))
                 .collect(Collectors.toList());
     }
@@ -278,12 +299,5 @@ public class StockService {
                 .stImgUrl(stock.getStImgUrl())
                 .wished(wishedIds.contains(stock.getStId()))
                 .build();
-    }
-
-    // 상품 이미지 URL 저장 (업로드 후 URL 저장용)
-    public void saveImgUrl(Long lastId, String imgUrl) {
-        Stock stock = stockRepository.findById(lastId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
-        stock.setStImgUrl(imgUrl);
-        stockRepository.save(stock);
     }
 }
