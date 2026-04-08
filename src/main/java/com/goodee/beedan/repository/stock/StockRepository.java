@@ -9,8 +9,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -26,4 +28,15 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
 
     @Query("SELECT DISTINCT s.brId FROM Stock s WHERE s.stReqYn = false")
     List<Long> findDistinctBrandIdsWithStock();
+
+    @Query("SELECT s FROM Stock s " +
+            "JOIN HitStock h ON s.stId = h.stId " +
+            "WHERE h.hitDt >= :start AND h.hitDt < :end " +
+            "GROUP BY s.stId " +
+            "ORDER BY COUNT(h.hitId) DESC")
+    List<Stock> findPopularStocksByPeriod(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            Pageable pageable
+    );
 }

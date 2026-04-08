@@ -204,6 +204,7 @@ public class StockService {
         return save.getStId();
 
     }
+
     // 상품 구매시 날짜별 구매 현황 기록용
     public void stockHitRecord(Long stId) {
         Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
@@ -212,6 +213,7 @@ public class StockService {
                 .hitDt(LocalDateTime.now())
                 .build());
     }
+
     // 내 상품 조회 (stReqYn=true, stReqMemId=memId)
     public Page<StockListDto> findMyItems(List<Long> brandIds, List<String> catNms, String keyword, String sort, int page, Long memId) {
         Sort sorting = switch (sort != null ? sort : "recent") {
