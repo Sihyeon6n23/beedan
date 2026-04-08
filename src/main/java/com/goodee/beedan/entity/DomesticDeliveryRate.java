@@ -43,6 +43,7 @@ public class DomesticDeliveryRate {
 
     public void deactivate() {
         this.ddrYn = false;
+        this.ddrRgn = this.ddrRgn + "_deleted_" + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
     }
 
     @Builder

@@ -1,7 +1,7 @@
 {
+  "autoCrawlingEnabled" : true,
   "gradeResolveEnabled" : false,
   "exchangeRateEnabled" : true,
-  "autoCrawlingEnabled" : true,
   "is_auto_crawling_enabled" : true,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
   "auto_crawling_interval" : "6",
@@ -13,5 +13,10 @@
   "is_grade_resolve_enabled" : false,
   "grade_resolve_start_dt" : "2026-04-07T00:00",
   "grade_resolve_interval" : "24",
-  "last_grade_resolve_run_time" : null
+  "last_grade_resolve_run_time" : null,
+  "new_stock_update_start_dt" : "2026-04-08T06:00",
+  "new_stock_update_interval" : "24",
+  "last_new_stock_update_time" : "2026-04-08T09:40:27.850533500",
+  "popular_stock_update_day" : "1",
+  "last_popular_stock_update_time" : "2026-04-08T09:40:27.383364600"
 }

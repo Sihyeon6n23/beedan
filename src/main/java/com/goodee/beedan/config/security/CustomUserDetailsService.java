@@ -22,6 +22,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         // 우리가 확장 정의한 MemberUserDetails 객체로 만들어 반환
         Member member = memberRepository.findByMemLgnId(username).orElseThrow(() -> new UsernameNotFoundException("UsernameNotFound"));
 
-        return new MemberUserDetails(member);
+        return new MemberUserDetails(member, null);
     }
 }
