@@ -25,9 +25,13 @@ public class UserRequirementController {
     }
 
     @GetMapping("/write")
-    public String writeRequirement(@RequestParam(required = false) Long reqId, Model model) {
+    public String writeRequirement(@RequestParam(required = false) Long reqId,
+                                   @AuthenticationPrincipal MemberUserDetails user,
+                                   Model model) {
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
         if (reqId != null) {
-            model.addAttribute("require", requirementService.getRequireForm(reqId));
+            model.addAttribute("require", requirementService.getRequireForm(reqId, user.getMemberId(), isAdmin));
         } else {
             model.addAttribute("require", new RequireForm());
         }
@@ -44,8 +48,13 @@ public class UserRequirementController {
 
     @GetMapping("/detail")
     public String requireDetail(@RequestParam Long id,
+                                @AuthenticationPrincipal MemberUserDetails user,
                                 Model model) {
-            RequireForm form = requirementService.getRequireForm(id);
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+            RequireForm form = requirementService.getRequireForm(id, user.getMemberId(), isAdmin);
+
             model.addAttribute("require", form);
             model.addAttribute("isAdmin", false);
             return "member/requirement/require-detail";

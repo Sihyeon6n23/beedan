@@ -27,20 +27,25 @@ public class AiCategoryService {
      * @return Map<상품명, 카테고리명>
      */
     public Map<String, String> categorize(List<String> productNames, List<String> categoryNames) {
-        String prompt = buildPrompt(productNames, categoryNames);
+        try {
+            String prompt = buildPrompt(productNames, categoryNames);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Map<String, Object> body = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
-        );
+            Map<String, Object> body = Map.of(
+                    "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
+            );
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
-        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
 
-        return parseResponse(response.getBody(), productNames, categoryNames);
+            return parseResponse(response.getBody(), productNames, categoryNames);
+        } catch (Exception e) {
+            log.error("AI 분류 API 호출 실패: {}", e.getMessage());
+            return Map.of();
+        }
     }
 
     private String buildPrompt(List<String> productNames, List<String> categoryNames) {

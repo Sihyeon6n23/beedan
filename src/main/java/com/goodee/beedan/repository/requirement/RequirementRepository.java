@@ -23,4 +23,5 @@ public interface RequirementRepository extends JpaRepository<Requirement, Long>,
 
     Page<Requirement> findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(Long memId, String submitted, boolean b, Pageable pageable);
 
+    Requirement findByReqId(Long reqId);
 }
