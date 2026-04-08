@@ -2,32 +2,28 @@ package com.goodee.beedan.service.board;
 
 import com.goodee.beedan.common.constant.BoardType;
 import com.goodee.beedan.common.constant.MemberAuthority;
-import com.goodee.beedan.dto.board.notice.NoticeBoardRequestDto;
-import com.goodee.beedan.dto.board.notice.NoticeDetailDto;
-import com.goodee.beedan.dto.board.notice.NoticeListDto;
+import com.goodee.beedan.common.specification.BoardSpecs;
+import com.goodee.beedan.dto.board.notice.*;
 import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.entity.Board;
 import com.goodee.beedan.entity.Member;
-import com.goodee.beedan.mapper.board.NoticeMapper;
+import com.goodee.beedan.mapper.board.BoardMapper;
 import com.goodee.beedan.repository.board.BoardRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.service.file.FileService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,15 +34,18 @@ public class NoticeBoardService {
     private final MemberRepository memberRepository;
     private final FileService fileService;
     private final BoardCoreService boardCoreService;
-    private final NoticeMapper noticeMapper;
+    private final BoardMapper boardMapper; // 통합 매퍼 사용
 
-    /** 1. 공지사항 작성 */
-    public void writeNotice(NoticeBoardRequestDto dto, String username) throws IOException {
+    @Value("${board.notice.fixed-size}")
+    private int fixedNoticeSize;
+
+    /** 1. 게시글 작성 (공통) */
+    public void writeNotice(CommonBoardRequestDto dto, String username) throws IOException {
         Member member = getMemberByUsername(username);
 
-        // 권한 체크: ADMIN, ROOT만 작성 가능
+        // 권한 체크 (공지사항 기준)
         if (member.getMemAut() == MemberAuthority.USER) {
-            throw new SecurityException("공지사항 작성 권한이 없습니다.");
+            throw new SecurityException("게시글 작성 권한이 없습니다.");
         }
 
         Board board = Board.builder()
@@ -61,154 +60,139 @@ public class NoticeBoardService {
 
         boardRepository.save(board);
 
-        // 파일 저장 (생성된 ID 사용)
+        // 파일 저장 로직 통합
         handleFiles(dto, board.getBrdId());
     }
 
-    /** 2. 공지사항 수정 */
-    public void updateNotice(NoticeBoardRequestDto dto, String username) throws IOException {
+    /** 2. 게시글 수정 (공통) */
+    public void updateNotice(CommonBoardRequestDto dto, String username) throws IOException {
         Board board = boardCoreService.getBoard(dto.getBrdId(), BoardType.NOTICE);
 
-        // 권한 검증 (실패 시 예외 발생)
         checkModifyAuthority(board, username);
 
-        // 내용 수정
+        // 엔티티 업데이트 (Dirty Checking)
         board.updateInquiry(dto.getBrdTtl(), dto.getBrdCon());
         board.setBrdFixYn(dto.getBrdFixYn());
 
-        // 파일 처리 (삭제 후 신규 저장)
+        // 파일 처리 (삭제 + 신규 저장)
         if (dto.getDeleteUuids() != null && !dto.getDeleteUuids().isEmpty()) {
             fileService.deleteFiles(dto.getDeleteUuids());
         }
         handleFiles(dto, board.getBrdId());
     }
 
-    /** 3. 공지사항 삭제 */
-    public void deleteNotice(Long brdId, String username) {
+    /** 3. 상세 조회 (이전/다음글 포함 통합 버전) */
+    public CommonBoardDetailDto getNoticeDetail(Long brdId, String currentUsername) {
         Board board = boardCoreService.getBoard(brdId, BoardType.NOTICE);
 
-        checkModifyAuthority(board, username);
+        // 매퍼를 통한 기본 변환
+        CommonBoardDetailDto dto = boardMapper.toDetailDto(board);
 
-        board.markAsDeleted();
-        fileService.deleteFilesByRef(RefDto.builder()
-                .refTy(BoardType.NOTICE.name())
-                .refNo(brdId).build());
-
-        log.info("공지사항 삭제 완료: ID={}, 삭제자={}", brdId, username);
-    }
-
-    /** 4. 상세 조회 (이전/다음글 포함) */
-    public NoticeDetailDto getNoticeDetail(Long brdId, String currentUsername) {
-        Board board = boardCoreService.getBoard(brdId, BoardType.NOTICE);
-
-        // 이전글/다음글 조회
-        NoticeDetailDto.NeighborNotice prev = boardRepository.findFirstByBrdIdLessThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdDesc(brdId, BoardType.NOTICE)
-                .map(b -> new NoticeDetailDto.NeighborNotice(b.getBrdId(), b.getBrdTtl()))
-                .orElse(null);
-
-        NoticeDetailDto.NeighborNotice next = boardRepository.findFirstByBrdIdGreaterThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdAsc(brdId, BoardType.NOTICE)
-                .map(b -> new NoticeDetailDto.NeighborNotice(b.getBrdId(), b.getBrdTtl()))
-                .orElse(null);
+        // 이전글/다음글 조회 및 DTO 매핑
+        dto.setPrevBoard(boardRepository.findFirstByBrdIdLessThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdDesc(brdId, BoardType.NOTICE)
+                .map(boardMapper::toDetailDto).orElse(null));
+        dto.setNextBoard(boardRepository.findFirstByBrdIdGreaterThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdAsc(brdId, BoardType.NOTICE)
+                .map(boardMapper::toDetailDto).orElse(null));
 
         // 파일 목록 조회
-        List<FileDto> fileList = fileService.getFileList(RefDto.builder().refTy("NOTICE").refNo(brdId).build());
+        List<FileDto> fileList = fileService.getFileList(RefDto.builder()
+                .refTy(BoardType.NOTICE.name())
+                .refNo(brdId).build());
+        dto.setFileList(fileList);
 
-        // 수정 권한 여부 (화면 버튼 노출용)
-        boolean canModify = false;
-        try {
-            canModify = checkModifyAuthority(board, currentUsername);
-        } catch (Exception e) {
-            canModify = false;
-        }
+        // 권한 플래그 설정
+        dto.setCanEdit(isModifiable(board, currentUsername));
 
-        return NoticeDetailDto.builder()
-                .brdId(board.getBrdId())
-                .brdTtl(board.getBrdTtl())
-                .brdCon(board.getBrdCon())
-                .brdVstCnt(board.getBrdVstCnt())
-                .brdFixYn(board.getBrdFixYn())
-                .brdCreDt(board.getBrdCreDt())
-                .memNm(board.getMember().getMemNm())
-                .canModify(canModify)
-                .fileList(fileList)
-                .prevNotice(prev)
-                .nextNotice(next)
-                .build();
+        return dto;
     }
 
-    /** 5. 목록 조회 (고정글 + 일반글 페이징) */
-    public Map<String, Object> getNoticeList(Pageable pageable) {
-        Map<String, Object> result = new HashMap<>();
+    /** 3. 공지사항 삭제 */
+    public void deleteNotice(Long brdId, String username) {
+        // 1. 게시글 존재 여부 및 타입 검증
+        Board board = boardCoreService.getBoard(brdId, BoardType.NOTICE);
 
-        // 1. 고정 공지 조회 (첫 페이지에서만 노출하고 싶을 경우 조건 추가)
-        if (pageable.getPageNumber() == 0) {
-            List<Board> fixedEntities = boardRepository.findByBrdTyAndBrdFixYnTrueAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType.NOTICE);
+        // 2. 권한 체크
+        checkModifyAuthority(board, username);
 
-            List<NoticeListDto> fixedDtoList = fixedEntities.stream()
-                    .map(board -> {
-                        NoticeListDto dto = noticeMapper.toListDto(board);
-                        // 파일 유무
-                        RefDto ref = RefDto.builder()
-                                .refTy(BoardType.NOTICE.name())
-                                .refNo(board.getBrdId())
-                                .build();
-                        dto.setFileYn(fileService.isFileYn(ref));
-                        return dto;
-                    })
-                    .collect(Collectors.toList());
+        // 3. 게시글 소프트 삭제 (DB 상태 변경)
+        board.markAsDeleted();
 
-            result.put("fixedNotices", fixedDtoList);
-        } else {
-            // 첫 페이지가 아니면 빈 리스트 반환 (Null 방지)
-            result.put("fixedNotices", new ArrayList<NoticeListDto>());
+        // 4. 연관 파일 삭제 로직 (복구)
+        // RefDto를 통해 'NOTICE' 타입의 'brdId' 번호를 가진 모든 파일을 찾아 삭제
+        fileService.deleteFilesByRef(RefDto.builder()
+                .refTy(BoardType.NOTICE.name())
+                .refNo(brdId)
+                .build());
+
+        log.info("공지사항 및 연관 파일 삭제 완료: ID={}, 삭제자={}", brdId, username);
+    }
+
+    /** 4. 목록 조회 (통합 DTO 및 배치 조회 적용) */
+    public BoardListResponse getBoardList(BoardType boardType, SearchDto searchDto) {
+        // 1. 고정글 조회
+        List<Board> fixedEntities = boardType.isUseFixed() ?
+                boardRepository.findTopFixedNotices(boardType, PageRequest.of(0, 5, Sort.by("brdCreDt").descending()))
+                : Collections.emptyList();
+
+        // 2. 일반글 페이징 조회
+        Specification<Board> spec = BoardSpecs.isActive(boardType);
+        if (boardType.isUseStatus() && searchDto.getBrdInqStt() != null) {
+            spec = spec.and(BoardSpecs.withStatus(searchDto.getBrdInqStt()));
         }
+        spec = spec.and(BoardSpecs.withKeyword(searchDto.getKeyword(), searchDto.getSearchType()))
+                .and(BoardSpecs.fetchMember());
 
-        // 2. 일반 공지 조회
-        Page<Board> noticePage = boardRepository.findByBrdTyAndBrdFixYnFalseAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType.NOTICE, pageable);
+        Pageable pageable = PageRequest.of(searchDto.getPage(), searchDto.getSize(), Sort.by("brdCreDt").descending());
+        Page<Board> normalPage = boardRepository.findAll(spec, pageable);
 
-        // 3. 일반 공지 DTO 변환 및 파일 유무 세팅
-        List<NoticeListDto> dtoList = noticePage.getContent().stream()
-                .map(board -> {
-                    NoticeListDto dto = noticeMapper.toListDto(board);
-                    RefDto ref = RefDto.builder()
-                            .refTy(BoardType.NOTICE.name())
-                            .refNo(board.getBrdId())
-                            .build();
+        // 3. 파일 존재 여부 일괄 조회 (Batch Fetching)
+        List<Long> allIds = Stream.concat(fixedEntities.stream(), normalPage.getContent().stream())
+                .map(Board::getBrdId).distinct().toList();
 
-                    dto.setFileYn(fileService.isFileYn(ref));
-                    return dto;
-                })
+        Set<Long> fileExistSet = boardType.isFileUpload() ?
+                fileService.getFileYnSet(boardType.name(), allIds) : Collections.emptySet();
+
+        // 4. DTO 변환 및 합체
+        List<CommonBoardDetailDto> fixedDtos = fixedEntities.stream()
+                .map(entity -> convertToDto(entity, fileExistSet.contains(entity.getBrdId())))
                 .collect(Collectors.toList());
 
-        // 페이징 객체로 감싸서 반환
-        result.put("notices", new PageImpl<>(dtoList, pageable, noticePage.getTotalElements()));
+        Page<CommonBoardDetailDto> normalDtos = normalPage.map(entity ->
+                convertToDto(entity, fileExistSet.contains(entity.getBrdId())));
 
-        return result;
+        return new BoardListResponse(fixedDtos, new PageResponseDto<>(normalDtos, 5));
+    }
+
+    /** 변환 보조 메서드 */
+    private CommonBoardDetailDto convertToDto(Board board, boolean hasFile) {
+        CommonBoardDetailDto dto = boardMapper.toDetailDto(board);
+        dto.setFileYn(hasFile);
+        // isNew 계산 로직은 매퍼의 Expression에서 처리되거나 여기서 수동 설정 가능
+        return dto;
     }
 
     // --- Private Helper Methods ---
 
-    /** 공통 권한 체크 문지기 */
+    private boolean isModifiable(Board board, String username) {
+        try { return checkModifyAuthority(board, username); }
+        catch (Exception e) { return false; }
+    }
+
     private boolean checkModifyAuthority(Board board, String username) {
         if (username == null || username.isBlank()) throw new SecurityException("로그인이 필요합니다.");
-
         Member requestMem = getMemberByUsername(username);
         MemberAuthority auth = requestMem.getMemAut();
-
         if (auth == MemberAuthority.ROOT) return true;
         if (auth == MemberAuthority.ADMIN && board.getMember().getMemLgnId().equals(username)) return true;
-
-        throw new SecurityException("해당 게시글에 대한 권한이 없습니다.");
+        throw new SecurityException("해당 권한이 없습니다.");
     }
 
-    /** 사용자 조회 공통 로직 */
     private Member getMemberByUsername(String username) {
         return memberRepository.findByMemLgnId(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username));
+                .orElseThrow(() -> new IllegalArgumentException("사용자 미존재: " + username));
     }
 
-    /** 파일 저장 공통 로직 */
-    private void handleFiles(NoticeBoardRequestDto dto, Long brdId) throws IOException {
+    private void handleFiles(CommonBoardRequestDto dto, Long brdId) throws IOException {
         if (dto.getNewFiles() != null && !dto.getNewFiles().isEmpty()) {
             fileService.saveFile(dto.getNewFiles(), RefDto.builder()
                     .refTy(BoardType.NOTICE.name())

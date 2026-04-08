@@ -14,6 +14,7 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/notice.css}">
+    <link rel="stylesheet" th:href="@{/css/board/board-module.css}">
 
     <section class="inquiry-page inquiry-list-page">
         <header class="inquiry-shell inquiry-shell--header">
@@ -26,11 +27,10 @@
 
         <section class="inquiry-shell inquiry-shell--toolbar">
             <div class="inquiry-toolbar">
-                <div class="inquiry-toolbar__actions" style="margin-left: auto;">
-                    <form class="inquiry-search-form" method="get" th:action="@{/notice/list}">
-                        <input type="text" name="keyword" th:value="${keyword}" class="inquiry-search-form__input" placeholder="제목 검색">
-                        <button type="submit" class="inquiry-search-form__submit">조회</button>
-                    </form>
+                <div class="inquiry-toolbar__actions" style="margin-left: auto; display: flex; gap: 0.75rem; align-items: center;">
+
+                    <div th:replace="~{fragments/board/board-module :: searchBar('/notice/list', ${searchDto}, ${boardType})}"></div>
+
                     <a th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')}"
                        th:href="@{/notice/write}" class="inquiry-action-link">
                         <span class="material-symbols-outlined">edit_square</span>
@@ -52,7 +52,7 @@
             </div>
 
             <div class="inquiry-list-body">
-                <a th:each="fixed : ${fixedNotices}" th:href="@{/notice/detail(id=${fixed.brdId})}"
+                <a th:each="fixed : ${response.fixedBoards}" th:href="@{/notice/detail(id=${fixed.brdId})}"
                    class="inquiry-row inquiry-row--featured">
                     <div class="inquiry-row__no" style="color: #ef4444; font-weight: bold;">-</div>
                     <div class="inquiry-row__top"><span class="inquiry-badge inquiry-badge--received">공지</span></div>
@@ -75,8 +75,8 @@
                     </div>
                 </a>
 
-                <a th:each="board, iterStat : ${boardPage.content}" th:href="@{/notice/detail(id=${board.brdId})}" class="inquiry-row">
-                    <div class="inquiry-row__no" th:text="${boardPage.totalElements - (boardPage.number * boardPage.size) - iterStat.index}">1</div>
+                <a th:each="board, iterStat : ${response.pagination.content}" th:href="@{/notice/detail(id=${board.brdId})}" class="inquiry-row">
+                    <div class="inquiry-row__no" th:text="${response.pagination.totalElements - (response.pagination.page * response.pagination.size) - iterStat.index}">1</div>
                     <div class="inquiry-row__top" style="color: #94a3b8; font-size: 0.85rem;">일반</div>
                     <div class="inquiry-row__primary">
                         <h2 th:text="${board.brdTtl}">일반 공지 제목</h2>
@@ -96,12 +96,21 @@
                         <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">날짜</span>
                     </div>
                 </a>
+
+                <th:block th:if="${#lists.size(response.pagination.content) < 10}"
+                          th:each="spacer : ${#numbers.sequence(1, 10 - #lists.size(response.pagination.content))}">
+                    <div class="inquiry-row-spacer" aria-hidden="true" style="min-height: 2.68rem;"></div>
+                </th:block>
+                <div class="inquiry-empty-state" th:if="${#lists.isEmpty(response.pagination.content)}">
+                    <strong>표시할 내용이 없습니다.</strong>
+                    <p>등록된 공지사항이 없습니다.</p>
+                </div>
             </div>
         </section>
 
-        <footer class="inquiry-shell inquiry-shell--pagination">
-            <div class="inquiry-pagination" th:replace="~{fragments/pagination :: paging(${boardPage})}"></div>
-        </footer>
+        <div th:replace="~{fragments/board/board-module :: pagination(${response.pagination}, '/notice/list', ${searchDto})}"></div>
     </section>
+
+    <script defer th:src="@{/js/board/inquiry.js}"></script>
 </th:block>
 </html>

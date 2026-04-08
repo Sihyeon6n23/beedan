@@ -21,6 +21,15 @@ public interface FileRepository extends JpaRepository<FileUpload, Long> {
 """)
     boolean existsByRefDto(@Param("ref") RefDto ref);
 
+    @Query("""
+    SELECT DISTINCT f.brdRefNo 
+    FROM FileUpload f 
+    WHERE f.brdRefTy = :refTy 
+      AND f.brdRefNo IN :refNos
+      AND (f.fileDelYn IS NULL OR f.fileDelYn = false)
+""")
+    List<Long> findExistingRefNos(@Param("refTy") String refTy, @Param("refNos") List<Long> refNos);
+
     Optional<FileUpload> findFileUploadByFileUuid(String fileUuid);
 
     FileUpload findByBrdRefTyAndBrdRefNo(String stock, Long stId);
