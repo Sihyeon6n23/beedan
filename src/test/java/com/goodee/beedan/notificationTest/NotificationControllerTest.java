@@ -43,20 +43,20 @@ public class NotificationControllerTest {
 
     private MemberUserDetails mockUser;
 
-    @BeforeEach
-    void setUp() {
-        Member member = Member.builder()
-                .memId(1L)
-                .memNm("테스트")
-                .memLgnId("user")
-                .memLgnPw("1234")
-                .memAut(MemberAuthority.USER)
-                .memEml("test@mail.com")
-                .memCreDt(LocalDateTime.now())
-                .build();
-
-        mockUser = new MemberUserDetails(member);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        Member member = Member.builder()
+//                .memId(1L)
+//                .memNm("테스트")
+//                .memLgnId("user")
+//                .memLgnPw("1234")
+//                .memAut(MemberAuthority.USER)
+//                .memEml("test@mail.com")
+//                .memCreDt(LocalDateTime.now())
+//                .build();
+//
+//        mockUser = new MemberUserDetails(member);
+//    }
 
     @Test
     void debugTest() {

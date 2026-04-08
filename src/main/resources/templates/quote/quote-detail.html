@@ -40,7 +40,7 @@
             <!-- ② Status Timeline -->
             <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
 
-            <!-- 거절 사유 배너 -->
+            <!-- 반려 사유 배너 -->
             <div class="rejection-banner" th:if="${quoteBase.quStt.name() == 'REJECTED'}">
                 <div class="rejection-icon">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -51,10 +51,10 @@
                 <div class="rejection-content">
                     <div class="rejection-header">
                         <span class="rejection-tag">REJECTED</span>
-                        <span class="rejection-title">견적이 거절되었습니다</span>
+                        <span class="rejection-title">견적이 반려되었습니다</span>
                     </div>
                     <p class="rejection-reason"
-                       th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '거절 사유가 기재되지 않았습니다.'}">거절 사유</p>
+                       th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '반려 사유가 기재되지 않았습니다.'}">반려 사유</p>
                 </div>
             </div>
 

@@ -54,6 +54,8 @@ public class PaymentController {
     private final StockService stockService;
     private final BuyerService buyerService;
     private final OrderWebhookService orderWebhookService;
+    private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
+    private final com.goodee.beedan.service.quote.QuoteNotificationService quoteNotificationService;
     private final OrderService orderService;
 
     @Value("${toss.payments.secret-key}")
@@ -206,6 +208,12 @@ public class PaymentController {
 
         // 견적 상태를 PAID로 변경
         quoteBase.paid();
+
+        // 협상 종료 체크
+        negotiationService.checkAndClose(quoteBase.getNgId(), quoteBaseRepository);
+
+        // 결제 완료 메일 알림
+        quoteNotificationService.notifyOnPaid(quoteBase);
 
         // 재고 히트 기록
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);

@@ -86,7 +86,7 @@
                 <span class="and-stat-card__value" th:text="${statusCounts['APPROVED']}">0</span>
             </div>
             <div class="and-stat-card">
-                <span class="and-stat-card__label">거절</span>
+                <span class="and-stat-card__label">반려</span>
                 <span class="and-stat-card__value" th:text="${statusCounts['REJECTED']}">0</span>
             </div>
             <div class="and-stat-card">
@@ -125,7 +125,7 @@
                                       th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
                                                  q.quStt == 'SUBMITTED' ? '대기중' :
                                                  q.quStt == 'APPROVED' ? '승인' :
-                                                 q.quStt == 'REJECTED' ? '거절' : '만료'}">상태</span>
+                                                 q.quStt == 'REJECTED' ? '반려' : '만료'}">상태</span>
                             </td>
                             <td class="col-items" th:text="${q.itemCount}">0</td>
                             <td class="col-first-item" th:text="${q.firstItemName != null ? q.firstItemName : '-'}">-</td>

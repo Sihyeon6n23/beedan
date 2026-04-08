@@ -151,7 +151,7 @@
 .ng-list-head,
 .ng-row {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(100px, 1.1fr) minmax(100px, 1.1fr);
+    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(120px, 1.2fr);
     gap: 0.8rem;
     align-items: center;
 }

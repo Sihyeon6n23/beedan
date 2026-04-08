@@ -73,7 +73,7 @@
                     <span class="ngd-stat__value" th:text="${statusCounts['APPROVED']}">0</span>
                 </div>
                 <div class="ngd-stat">
-                    <span class="ngd-stat__label">거절</span>
+                    <span class="ngd-stat__label">반려</span>
                     <span class="ngd-stat__value" th:text="${statusCounts['REJECTED']}">0</span>
                 </div>
                 <div class="ngd-stat">
@@ -92,12 +92,7 @@
             <div class="ngd-list-head">
                 <div>견적 정보</div>
                 <div>상태</div>
-                <div class="ngd-sortable is-active" data-sort="quUpdDt" data-dir="desc">
-                    최근 업데이�� <span class="ngd-sort-icon">▼</span>
-                </div>
-                <div class="ngd-sortable" data-sort="quCreDt" data-dir="desc">
-                    발행일 <span class="ngd-sort-icon">▼</span>
-                </div>
+                <div>발행일</div>
             </div>
 
             <div class="ngd-list-body">
@@ -106,12 +101,9 @@
                        class="ngd-row"
                        th:classappend="${!q.quOpYn} ? ' ngd-row--featured' : ''"
                        th:data-qu-id="${q.quId}"
-                       th:data-qu-upd-dt="${q.quUpdDt}"
                        th:data-qu-cre-dt="${q.quCreDt}"
                        th:data-qu-op-yn="${q.quOpYn}">
                         <div class="ngd-row__primary">
-                            <span th:if="${!q.quOpYn}" class="ngd-row__dot"></span>
-                            <span th:if="${q.quOpYn}" class="ngd-row__dot ngd-row__dot--empty"></span>
                             <div class="ngd-row__text">
                                 <h3 th:text="${q.quCd}">QU0000</h3>
                             </div>
@@ -122,7 +114,7 @@
                                   th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
                                              q.quStt == 'SUBMITTED' ? '제출완료' :
                                              q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '거절' :
+                                             q.quStt == 'REJECTED' ? '반려' :
                                              q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                         </div>
                         <div class="ngd-row__time">
@@ -182,7 +174,7 @@
         });
 
         // 초기 정렬: 최근 업데이트순
-        sortRows('quUpdDt', 'desc');
+        sortRows('quCreDt', 'desc');
 
         // ── 열람 처리 ──
         listBody.querySelectorAll('.ngd-row').forEach(function (row) {
