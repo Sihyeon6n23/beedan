@@ -1,11 +1,11 @@
 package com.goodee.beedan.config.security;
 
+import com.goodee.beedan.service.auth.CustomOAuth2UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,12 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
-import static org.springframework.security.config.Customizer.*;
 
 @Configuration
-public class SecurityConfiguration {
+public class SecurityConfiguration {;
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, CustomFailureHandler customFailureHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, CustomFailureHandler customFailureHandler, CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/webhook/**")
@@ -43,6 +42,15 @@ public class SecurityConfiguration {
                 )
                 .sessionManagement(session -> session
                         .sessionFixation().changeSessionId() // 세션 고정 공격 방지 (권장)
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/signin")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .oidcUserService(customOAuth2UserService)
+                        )
+                        .failureHandler((request, response, exception) -> {
+                            response.sendRedirect("/auth/signin?error=" + exception.getMessage());
+                        })
                 );
         return http.build();
 

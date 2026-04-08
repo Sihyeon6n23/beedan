@@ -1,7 +1,7 @@
 {
+  "autoCrawlingEnabled" : true,
   "gradeResolveEnabled" : false,
   "exchangeRateEnabled" : true,
-  "autoCrawlingEnabled" : true,
   "is_auto_crawling_enabled" : true,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
   "auto_crawling_interval" : "6",
@@ -9,7 +9,7 @@
   "is_exchange_rate_enabled" : true,
   "exchange_rate_start_dt" : "2026-04-07T09:00",
   "exchange_rate_interval" : "6",
-  "last_exchange_rate_run_time" : "2026-04-08T09:27:41.596997400",
+  "last_exchange_rate_run_time" : "2026-04-07T21:01:39.966424200",
   "is_grade_resolve_enabled" : false,
   "grade_resolve_start_dt" : "2026-04-07T00:00",
   "grade_resolve_interval" : "24",

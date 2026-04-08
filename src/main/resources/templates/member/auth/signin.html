@@ -69,6 +69,26 @@
             </div>
           </div>
         </form>
+
+        <div class="mt-10">
+          <div class="relative flex items-center mb-4 mt-4">
+            <div class="flex-grow border-t border-secondary/20"></div>
+            <span class="flex-none mx-4 text-[9px] font-bold tracking-[0.3em] text-secondary/50 uppercase">Social Access</span>
+            <div class="flex-grow border-t border-secondary/20"></div>
+          </div>
+
+          <div class="flex justify-center">
+            <a th:href="@{/oauth2/authorization/kakao}"
+               class="flex items-center justify-center gap-3 w-full py-3 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] transition-all duration-200 shadow-sm group">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3C6.477 3 2 6.48 2 10.791c0 2.758 1.817 5.18 4.545 6.44l-1.16 4.254c-.052.193.064.394.258.446a.35.35 0 0 0 .216-.01l5.06-3.366C11.31 18.51 11.65 18.524 12 18.524c5.523 0 10-3.48 10-7.733S17.523 3 12 3z"/>
+              </svg>
+              <span class="text-[11px] font-bold tracking-wider uppercase">Login with Kakao</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       </div>
     </main>
   </div>

@@ -344,6 +344,7 @@
   .bg-outline-variant { background-color: var(--color-outline-variant); }
   .opacity-30 { opacity: 0.3; }
   .h-3 { height: 0.75rem; }
+  .h-4 { height: 1rem; }
   .w-px { width: 1px; }
   /* 로그인 폼 전용 커스텀 그림자 */
   .shadow-\[0_4px_20px_rgba\(26\,28\,28\,0\.05\)\] {
@@ -368,6 +369,7 @@
   .max-w-\[480px\] { max-width: 480px; }
   .min-h-\[80vh\] { min-height: 80vh; }
   .text-\[10px\] { font-size: 10px; }
+  .text-\[11px\] { font-size: 11px; }
   .text-\[9px\] { font-size: 9px; }
   .tracking-\[0\.3em\] { letter-spacing: 0.3em; }
   .tracking-\[0\.2em\] { letter-spacing: 0.2em; }
@@ -517,6 +519,9 @@
   }
   .w-2 {
     width: 0.5rem;
+  }
+  .w-4 {
+    width: 1rem;
   }
   .w-5 {
     width: 1.25rem;
@@ -984,6 +989,17 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-surface-container-low);
+      }
+    }
+  }
+  .kakao-login-btn:hover {
+    background-color: #FDD835;
+  }
+
+  .hover\:bg-\[\#FDD835\] {
+    &:hover {
+      @media (hover: hover) {
+        background-color: #FDD835
       }
     }
   }
@@ -1825,6 +1841,16 @@
   }
   .btn-secondary:hover {
     opacity: 0.9;
+  }
+  .border-secondary\/20 {
+    /* 변수를 불러와서 뒤에 투명도 0.2만 붙여줍니다 */
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(var(--color-secondary), 0.2);
+  }
+
+  .text-secondary\/50 {
+    color: rgba(var(--color-secondary), 0.5);
   }
 }
 @property --tw-space-y-reverse {

@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PasswordResetTokenDto {
     private String tkVl;
-    private String tkTy = "passwordReset";
+    private String tkTy;
     private Long memId;
 }
