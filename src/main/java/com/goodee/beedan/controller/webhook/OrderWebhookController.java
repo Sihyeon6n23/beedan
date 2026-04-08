@@ -55,8 +55,9 @@ public class OrderWebhookController {
         try {
             WebhookShipmentRequest webhookRequest = new ObjectMapper().readValue(rawBody, WebhookShipmentRequest.class); // JSON String -> Webhook DTO로 변환
 
-            orderService.createOrderFromWebhook(webhookRequest);
+            String result = orderService.createOrderFromWebhook(webhookRequest);
 
+            log.info(result);
         } catch (Exception e) {
             log.error("웹훅 처리 중 오류 발생: ", e);
         }
