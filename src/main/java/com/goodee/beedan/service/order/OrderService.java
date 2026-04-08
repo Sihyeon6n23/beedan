@@ -122,9 +122,8 @@ public class OrderService {
         Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(()-> new UsernameNotFoundException("일치하는 회원이 없습니다."));
         Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(()->new IllegalArgumentException("결제 정보가 없습니다"));
         List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByQuId(quoteBase.getQuId());
-        if (quoteDetails.isEmpty()) {
-            throw new IllegalStateException("견적 상세 상품이 없습니다.");
-        }
+
+        if (quoteDetails.isEmpty()) throw new IllegalStateException("견적 상세 상품이 없습니다.");
 
         QuoteDetail firstItem = quoteDetails.get(0);
         Order order = Order.builder()

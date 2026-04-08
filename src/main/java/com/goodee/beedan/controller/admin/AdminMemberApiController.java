@@ -2,7 +2,9 @@ package com.goodee.beedan.controller.admin;
 
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.admin.MemberListDto;
+import com.goodee.beedan.dto.admin.MemberListResponse;
 import com.goodee.beedan.dto.admin.MemberSummaryDto;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.dto.order.ShipmentDto;
@@ -15,15 +17,20 @@ import com.goodee.beedan.service.order.TrackingService;
 import com.goodee.beedan.service.shipment.ShipmentService;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@lombok.extern.slf4j.Slf4j
 @RestController
 @RequestMapping("/api/admin/member")
 @RequiredArgsConstructor
@@ -37,12 +44,15 @@ public class AdminMemberApiController {
     private final ShipmentRepository shipmentRepository;
 
     @GetMapping("/list")
-    public ResponseEntity<Page<MemberListDto>> getMemberList(
+    public ResponseEntity<MemberListResponse> getMemberList(
             @RequestParam(required = false, defaultValue = "ALL") String status,
-            @PageableDefault(size = 10, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable){
+            @PageableDefault(size = 10, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal MemberUserDetails userDetails) {
         Page<MemberListDto> memberListDtos = adminMemberService.getMembersByStatus(status, pageable);
 
-        return ResponseEntity.ok(memberListDtos);
+        boolean isRoot = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ROOT"));
+
+        return ResponseEntity.ok(new MemberListResponse(memberListDtos, isRoot));
     }
 
     @GetMapping("/{memId}/summary")
