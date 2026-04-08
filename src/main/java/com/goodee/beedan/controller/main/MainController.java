@@ -1,12 +1,8 @@
 package com.goodee.beedan.controller.main;
 
-import com.goodee.beedan.client.weather.WeatherClient;
-import com.goodee.beedan.dto.root.utility.UtilitySettingDto;
 import com.goodee.beedan.dto.stock.StockListDto;
-import com.goodee.beedan.dto.weather.WeatherResponseDto;
 import com.goodee.beedan.service.news.NewsService;
-import com.goodee.beedan.service.root.UtilityService;
-import com.goodee.beedan.service.stock.StockService;
+import com.goodee.beedan.service.stock.StockDisplayService;
 import com.goodee.beedan.service.weather.WeatherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +20,7 @@ public class MainController {
 
     private final WeatherService weatherService;
     private final NewsService newsService;
-    private final StockService stockService;
+    private final StockDisplayService stockDisplayService;
 
     @GetMapping("/")
     public String getMain(Model model) {
@@ -41,9 +37,11 @@ public class MainController {
         model.addAttribute("rightNewsList", rightNewsList);
 
         // 전 월 인기상품 전시
-        
+        List<StockListDto> popularStockList = stockDisplayService.getPopularStocks();
+        model.addAttribute("popularStockList", popularStockList);
+
         // 최근 등록 상품 전시
-        List<StockListDto> newStockList = stockService.findNewStocks();
+        List<StockListDto> newStockList = stockDisplayService.getNewStocks();
         model.addAttribute("newStockList", newStockList);
 
         return "main/index";
