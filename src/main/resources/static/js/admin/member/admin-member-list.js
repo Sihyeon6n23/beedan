@@ -313,9 +313,7 @@ function renderModalInquiries(input) {
                     <span class="time">${dateStr}</span>
                 </div>
 
-                <h4 class="item-title" style="cursor:pointer;" onclick="location.href='/admin/inquiry/detail?${inquiry.brdId}'">
-                    ${inquiry.brdTtl}
-                </h4>
+                <h4 class="item-title" style="cursor:pointer;">${inquiry.brdTtl}</h4>
 
                 <p class="item-desc">#${inquiry.brdId}번 문의사항입니다.</p>
             </article>
@@ -883,7 +881,7 @@ async function viewFullInquiryIList(memId, page = 0) {
                     <td class="inquiry-company">${companyName}</td>
                     <td class="inquiry-date">${dateStr}</td>
                     <td class="action-cell text-center">
-                        <a class="btn-edit" href="/admin/inquiry/detail(id=${inquiry.brdId})}">상세보기</a>
+                           <a class="btn-edit" href="/admin/inquiry/detail?id=${inquiry.brdId}">상세보기</a>
                     </td>
                 </tr>
             `;
