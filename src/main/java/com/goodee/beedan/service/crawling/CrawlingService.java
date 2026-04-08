@@ -28,9 +28,8 @@ import com.goodee.beedan.dto.crawling.SelectorForm;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -141,29 +140,46 @@ public class CrawlingService {
         prefix = prefix.length() >= 3 ? prefix.substring(0, 3) : String.format("%-3s", prefix).replace(' ', 'X');
         long existingCount = stockRepository.countByBrId(crawlingUrl.getBrId());
 
+        // 등록하려는 브랜드의
+        List<Stock> existingStocks = stockRepository.findByBrId(crawlingUrl.getBrId());
+
+        // 새로운 브랜드면 empty, 기존 브랜드면 set으로 담음
+        // 삼항 연산자나 Stream으로 안전하게 Set 생성
+        Set<String> existingNames = existingStocks.stream()
+                .map(s -> s.getStNm().trim())
+                .collect(Collectors.toSet());
+
+        // 현재 DB에 있는 해당 브랜드 상품 총 개수 (코드 생성용)
+        long currentTotalCount = existingStocks.size();
+
         int newCount = 0;
-        int i = 0;
+        int addedInThisLoop = 0; // 이번 루프에서 추가된 개수 카운트
+
         for (RawProduct raw : rawList) {
+            // DB 안 가고 메모리에서 즉시 비교!
+            if (existingNames.contains(raw.name())) {
+                continue;
+            }
+
+            // 신규 상품 등록
             String catNm;
             Long catId;
             if (aiMode) {
                 catNm = aiCategoryMap.getOrDefault(raw.name(), "");
                 Category aiCat = categoryRepository.findByCatNm(catNm).orElse(null);
-                catId = aiCat != null ? aiCat.getCatId() : null;
+                if (aiCat == null) {
+                    catNm = "ETC";
+                    aiCat = categoryRepository.findByCatNm("ETC")
+                            .orElseGet(() -> categoryRepository.save(
+                                    Category.builder().catNm("ETC").build()));
+                }
+                catId = aiCat.getCatId();
             } else {
                 catNm = fixedCategory != null ? fixedCategory.getCatNm() : "";
                 catId = fixedCategory != null ? fixedCategory.getCatId() : null;
             }
 
-            java.util.Optional<Stock> existing =
-                    stockRepository.findByBrIdAndStNm(crawlingUrl.getBrId(), raw.name());
-
-            if (existing.isPresent()) {
-                // 기존 상품 → 스킵
-                continue;
-            } else {
-                // 신규 상품 → insert
-                String stCd = prefix + String.format("%05d", existingCount + (++i));
+                String stCd = prefix + String.format("%05d", currentTotalCount + (++addedInThisLoop));
                 stockRepository.save(Stock.builder()
                         .stCd(stCd)
                         .brId(crawlingUrl.getBrId())
@@ -185,7 +201,6 @@ public class CrawlingService {
                         .build());
                 newCount++;
             }
-        }
 
         // 성공한 크롤링 방식 저장
         if (usedMethod != null) {

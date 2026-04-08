@@ -67,4 +67,31 @@ public class NegotiationService {
     public Long getMemId(Long ngId){
         return negotiationRepository.findByNgId(ngId).getMemId();
     }
+
+    /**
+     * 협상의 마지막 견적 상태가 REJECTED/PAID/EXPIRED이면 협상 종료
+     */
+    @Transactional
+    public void checkAndClose(Long ngId, com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository) {
+        Negotiation negotiation = findById(ngId);
+        if (!negotiation.isOngoing()) return; // 이미 종료
+
+        List<com.goodee.beedan.entity.QuoteBase> quotes = quoteBaseRepository.findAllByNgId(ngId);
+        if (quotes.isEmpty()) return;
+
+        // 최신 견적 (quStt != null인 것 중 가장 최근)
+        com.goodee.beedan.entity.QuoteBase latest = quotes.stream()
+                .filter(q -> q.getQuStt() != null)
+                .max(java.util.Comparator.comparing(q -> q.getQuCreDt() != null ? q.getQuCreDt() : java.time.LocalDateTime.MIN))
+                .orElse(null);
+        if (latest == null) return;
+
+        var stt = latest.getQuStt();
+        if (stt == com.goodee.beedan.common.constant.QuoteStatus.REJECTED
+                || stt == com.goodee.beedan.common.constant.QuoteStatus.PAID
+                || stt == com.goodee.beedan.common.constant.QuoteStatus.EXPIRED) {
+            negotiation.close();
+            log.info("협상 자동 종료. ngId: {}, 사유: 마지막 견적 상태 {}", ngId, stt);
+        }
+    }
 }

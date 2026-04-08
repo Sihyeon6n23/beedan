@@ -472,6 +472,19 @@
         loadStockList(0);
     };
 
+    // ===== datalist 입력창: focus 시 전체 목록 표시 =====
+    ['modal-stBrNm', 'modal-stCatNm'].forEach(id => {
+        const input = document.getElementById(id);
+        let savedValue = '';
+        input.addEventListener('focus', function() {
+            savedValue = this.value;
+            this.value = '';
+        });
+        input.addEventListener('blur', function() {
+            if (this.value === '') this.value = savedValue;
+        });
+    });
+
     // ===== 검색 엔터키 =====
     document.getElementById('search-keyword').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') searchStock();

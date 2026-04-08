@@ -154,99 +154,27 @@
 </section>
 
 <!-- ===================== -->
-<!-- 4. BEST SELLERS       -->
+<!-- 4. BEST SELLERS -->
 <!-- ===================== -->
 <section class="main-section" style="padding-top: 0;">
-    <p class="main-section__label">Monthly Ranking</p>
-    <h2 class="main-section__title">Best Sellers &mdash; Last Month</h2>
+    <p class="main-section__label">MONTHLY RANKING</p>
+    <h2 class="main-section__title">Best Sellers - Last Month</h2>
 
-    <div class="carousel" id="carousel-best">
-        <button class="carousel__btn carousel__btn--prev" onclick="carouselMove('carousel-best', -1)">
+    <div class="carousel" id="carousel-popular">
+        <button class="carousel__btn carousel__btn--prev" onclick="carouselMove('carousel-popular', -1)">
             <span class="material-symbols-outlined">chevron_left</span>
         </button>
-        <div class="carousel__track">
-            <div class="product-card">
+        <div class="carousel__track" >
+            <div th:each="item : ${popularStockList}" th:onclick="'location.href=\'/stock/detail/' + ${item.stId} + '\''" class="product-card">
                 <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=600&q=80" alt="Product"/>
+                    <img th:src="${item.getStImgUrl()}" alt="Product"/>
                 </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">25FW Mens Coach Jacket</p>
-                <p class="product-card__price">&yen; 1,749.99</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kenzo</p>
-                <p class="product-card__name">Tiger Print Tee</p>
-                <p class="product-card__price">&euro; 180.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">GORE-TEX Cruiser Jacket</p>
-                <p class="product-card__price">&yen; 3,200.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kenzo</p>
-                <p class="product-card__name">Tiger Cap</p>
-                <p class="product-card__price">&euro; 120.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">Boro Mix Sweater</p>
-                <p class="product-card__price">&yen; 890.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1548126032-079a0fb0099d?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">Boro Padded Jacket</p>
-                <p class="product-card__price">&yen; 2,100.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kenzo</p>
-                <p class="product-card__name">Boke Flower Peacoat</p>
-                <p class="product-card__price">&euro; 890.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Nanamica</p>
-                <p class="product-card__name">Mountain Parka</p>
-                <p class="product-card__price">&yen; 2,800.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kenzo</p>
-                <p class="product-card__name">Tiger Embroidery Sweater</p>
-                <p class="product-card__price">&euro; 420.00</p>
-            </div>
-            <div class="product-card">
-                <div class="product-card__img-wrap">
-                    <img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=600&q=80" alt="Product"/>
-                </div>
-                <p class="product-card__brand">Kapital</p>
-                <p class="product-card__name">Kendo Pants</p>
-                <p class="product-card__price">&yen; 980.00</p>
+                <p th:text="${item.stBrNm}" class="product-card__brand">Nanamica</p>
+                <p th:text="${item.stNm}" class="product-card__name">Ruck Sack</p>
+                <p th:text="${item.stCur + ' ' + (item.stCur == '₩' ? #numbers.formatInteger(item.stPr, 1, 'COMMA') : #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT'))}" class="product-card__price"></p>
             </div>
         </div>
-        <button class="carousel__btn carousel__btn--next" onclick="carouselMove('carousel-best', 1)">
+        <button class="carousel__btn carousel__btn--next" onclick="carouselMove('carousel-popular', 1)">
             <span class="material-symbols-outlined">chevron_right</span>
         </button>
     </div>

@@ -52,6 +52,10 @@ public class QuoteBase {
         this.quUsOpYn = false;
     }
 
+    public void setQuCd(String quCd) {
+        this.quCd = quCd;
+    }
+
     public void tempSave() {
         this.quStt = QuoteStatus.TEMP_SAVE;
     }

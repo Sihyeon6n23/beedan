@@ -58,6 +58,7 @@ public class QuoteController {
     private final ReceiverRepository receiverRepository;
     private final MemberRepository memberRepository;
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
+    private final QuoteNameService quoteNameService;
 
     @PostMapping("/request")
     @ResponseBody
@@ -68,9 +69,23 @@ public class QuoteController {
 
         Long memId = userDetails.getMemberId();
 
+        // AI로 협상 이름 생성
+        Member member = memberRepository.findById(memId).orElse(null);
+        String companyName = (member != null && member.getMemBizTtl() != null)
+                ? member.getMemBizTtl() : "고객";
+        List<String> productNames = new java.util.ArrayList<>();
+        for (var item : dto.getItems()) {
+            Stock stock = stockRepository.findById(item.getStId()).orElse(null);
+            if (stock != null) productNames.add(stock.getStNm());
+        }
+        String ngNm;
+        try {
+            ngNm = quoteNameService.generateName(companyName, productNames);
+        } catch (Exception e) {
+            ngNm = companyName + "_견적";
+        }
+
         // 1. Negotiation 생성
-        long millis = System.currentTimeMillis() % 10000; // 0 ~ 9999
-        String ngNm = "NG" + String.format("%04d", millis);
         Negotiation negotiation = negotiationService.create(
                 NegotiationRequest.builder()
                         .ngNm(ngNm)
@@ -78,9 +93,7 @@ public class QuoteController {
                         .build()
         );
 
-        // 2. QuoteBase 생성
-        // quRid = 작성자 = 클라이언트 (초기 견적 요청서 작성자)
-        // quSid = 수신자 = 클라이언트 (큐레이터가 응답 시 새 QuoteBase를 생성하며 각자의 id 사용)
+        // 2. QuoteBase 생성 (QU 코드 = 협상 내 순번)
         QuoteBase quoteBase = quoteBaseService.create(
                 QuoteBaseRequest.builder()
                         .ngId(negotiation.getNgId())
@@ -97,13 +110,18 @@ public class QuoteController {
     @GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails,
                           @RequestParam(defaultValue = "1") int page,
+                          @RequestParam(defaultValue = "desc") String sort,
                           Model model) {
         if (userDetails == null) return "redirect:/auth/signin";
         Long memId = userDetails.getMemberId();
 
         int pageSize = 10;
+        org.springframework.data.domain.Sort sortOrder = "asc".equals(sort)
+                ? org.springframework.data.domain.Sort.by("quCreDt").ascending()
+                : org.springframework.data.domain.Sort.by("quCreDt").descending();
         Page<QuoteBase> quPage = quoteBaseService.findAllByMember(
-                memId, PageRequest.of(page - 1, pageSize));
+                memId, PageRequest.of(page - 1, pageSize, sortOrder));
+        model.addAttribute("sort", sort);
 
         // 각 견적에 대한 협상명, 품목 수, 첫 품목명, 총 금액을 조합
         List<Map<String, Object>> quotes = new ArrayList<>();
@@ -114,6 +132,12 @@ public class QuoteController {
             item.put("quOpYn", qb.getQuUsOpYn() != null && qb.getQuUsOpYn());
             item.put("quAdOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
             item.put("quCd", qb.getQuCd());
+            try {
+                Negotiation ng = negotiationService.findById(qb.getNgId());
+                item.put("ngNm", ng.getNgNm());
+            } catch (Exception e) {
+                item.put("ngNm", "");
+            }
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
 
@@ -419,43 +443,36 @@ public class QuoteController {
         if (userDetails == null) return "redirect:/auth/signin";
         Long memId = userDetails.getMemberId();
 
-        int pageSize = 10;
-        Page<Negotiation> ngPage = negotiationService.findAllByMember(
-                memId, org.springframework.data.domain.PageRequest.of(page - 1, pageSize));
+        // 전체 협상 조회 후 유효 견적 있는 것만 필터링
+        List<Negotiation> allNegos = negotiationService.findAllByMember(memId);
 
-        List<Map<String, Object>> negotiations = new ArrayList<>();
-        for (Negotiation ng : ngPage.getContent()) {
+        List<Map<String, Object>> allFiltered = new ArrayList<>();
+        for (Negotiation ng : allNegos) {
+            List<QuoteBase> quotes = quoteBaseRepository.findAllActiveByNgId(ng.getNgId(), memId);
+            if (quotes.isEmpty()) continue;
+
             Map<String, Object> item = new java.util.LinkedHashMap<>();
             item.put("ngId", ng.getNgId());
             item.put("ngNm", ng.getNgNm());
             item.put("ongoing", ng.isOngoing());
             item.put("ngCreDt", ng.getNgCreDt());
             item.put("ngEndDt", ng.getNgEndDt());
-
-            // 해당 협상의 유효 견적 목록 (quStt != null + 품목 1개 이상)
-            List<QuoteBase> quotes = quoteBaseRepository.findAllActiveByNgId(ng.getNgId(), memId);
-
-            // 유효 견적이 0개면 목록에서 제외
-            if (quotes.isEmpty()) continue;
-
             item.put("quoteCount", quotes.size());
 
-            // 미열람 견적 존재 여부
             boolean hasUnread = quotes.stream().anyMatch(q -> q.getQuUsOpYn() == null || !q.getQuUsOpYn());
             item.put("hasUnread", hasUnread);
 
-            // 최신 견적 업데이트 시간 (정렬용)
-            LocalDateTime latestUpdate = quotes.stream()
-                    .map(QuoteBase::getQuUpdDt)
-                    .filter(java.util.Objects::nonNull)
-                    .max(LocalDateTime::compareTo)
-                    .orElse(ng.getNgCreDt());
-            item.put("latestUpdate", latestUpdate);
-
-            negotiations.add(item);
+            allFiltered.add(item);
         }
 
-        int totalPages = ngPage.getTotalPages();
+        // 수동 페이징
+        int pageSize = 10;
+        int totalItems = allFiltered.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        int fromIndex = Math.min((page - 1) * pageSize, totalItems);
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+        List<Map<String, Object>> negotiations = allFiltered.subList(fromIndex, toIndex);
+
         List<String> pageLabels = new ArrayList<>();
         for (int i = 1; i <= totalPages; i++) {
             pageLabels.add(String.format("%02d", i));

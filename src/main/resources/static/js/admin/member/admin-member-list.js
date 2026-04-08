@@ -68,14 +68,16 @@ function loadMemberList(page) {
             if (!response.ok) throw new Error("데이터 로드 실패");
             return response.json();
         })
-        .then(data => {
-            renderMemberList(data.content);
-            renderPagination(data);
-        })
+       .then(data => {
+                   console.log('API Response:', data);
+                   console.log('isRoot value:', data.isRoot);
+                   renderMemberList(data.memberList.content, data.isRoot);
+                   renderPagination(data.memberList);
+       })
         .catch(error => console.error('Error:', error));
 }
 
-function renderMemberList(members) {
+function renderMemberList(members, isRoot) {
     const listBody = document.getElementById('memberListBody');
     listBody.innerHTML = '';
 
@@ -87,8 +89,6 @@ function renderMemberList(members) {
     let html = '';
     members.forEach(member => {
         const statusInfo = getStatusInfo(member.memStt);
-        const isRoot = member.memAut === 'ROOT';
-        console.log(member.memAut);
 
         html += `
             <div class="admin-chat-row">
@@ -154,12 +154,13 @@ function renderPagination(pageData) {
     area.innerHTML = html;
 }
 
-// =============================== 모달 제어 영역 (Refactored) =================================
+// =============================== 모달 제어 영역 =================================
 
 function openMemberModal(memId) {
     const modal = document.getElementById('memberDetailModal');
     modal.classList.remove('hidden');
 
+    document.body.classList.add('modal-open');
     modal.setAttribute('data-current-member-id', memId);
 
     setupDashboardLayout();
@@ -312,9 +313,7 @@ function renderModalInquiries(input) {
                     <span class="time">${dateStr}</span>
                 </div>
 
-                <h4 class="item-title" style="cursor:pointer;" onclick="location.href='/admin/inquiry/detail?${inquiry.brdId}'">
-                    ${inquiry.brdTtl}
-                </h4>
+                <h4 class="item-title" style="cursor:pointer;">${inquiry.brdTtl}</h4>
 
                 <p class="item-desc">#${inquiry.brdId}번 문의사항입니다.</p>
             </article>
@@ -882,7 +881,7 @@ async function viewFullInquiryIList(memId, page = 0) {
                     <td class="inquiry-company">${companyName}</td>
                     <td class="inquiry-date">${dateStr}</td>
                     <td class="action-cell text-center">
-                        <a class="btn-edit" href="/admin/inquiry/detail(id=${inquiry.brdId})}">상세보기</a>
+                           <a class="btn-edit" href="/admin/inquiry/detail?id=${inquiry.brdId}">상세보기</a>
                     </td>
                 </tr>
             `;

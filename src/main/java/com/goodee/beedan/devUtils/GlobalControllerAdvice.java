@@ -7,26 +7,30 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 
 @ControllerAdvice
 public class GlobalControllerAdvice {
 
     private final NotificationService notificationService;
-
     public GlobalControllerAdvice(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
     @ModelAttribute("unreadCount")
     public int addUnreadCountToModel(@AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) {
-            return 0;
-        }
+        if (userDetails == null) return 0;
 
-        Long memId = userDetails.getMemberId();
-        return notificationService.getUnreadCount(memId);
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
+                || userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ROOT"));
+
+        if (isAdmin) return 0;
+
+        return notificationService.getUnreadCount(userDetails.getMemberId());
     }
+
+
 
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgument(IllegalArgumentException e, Model model) {

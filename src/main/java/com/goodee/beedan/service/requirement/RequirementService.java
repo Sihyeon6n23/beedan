@@ -29,6 +29,8 @@ public class RequirementService {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
 
+
+
     // 제출 완료된, 삭제되지 않은 요청서 전부 조회 (관리자용)
     public Page<RequirementListDto> findAllForAdmin(String status, Pageable pageable) {
         Page<Requirement> pages;
@@ -136,9 +138,16 @@ public class RequirementService {
     }
 
     // 상세 조회
-    public RequireForm getRequireForm(Long reqId) {
+    public RequireForm getRequireForm(Long reqId, Long memId, boolean isAdmin) {
+
         Requirement r = requirementRepository.findById(reqId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품 요청서입니다."));
+
+        if (!isAdmin) {
+            if (!r.getMemId().equals(memId)) {
+                throw new IllegalArgumentException("본인의 요청서만 조회할 수 있습니다.");
+            }
+        }
 
         RequireForm form = new RequireForm();
         form.setReqId(r.getReqId());
