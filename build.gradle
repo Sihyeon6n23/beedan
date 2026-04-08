@@ -71,6 +71,11 @@ dependencies {
 
 	// PDF 생성 (Flying Saucer + iText)
 	implementation 'org.xhtmlrenderer:flying-saucer-pdf:9.11.4'
+
+	// 레디스
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+
 }
 
 tasks.named('test') {
