@@ -22,6 +22,7 @@
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
 
             <form id="policyForm" th:action="@{/root/scheduler/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- 자동 크롤링 설정 -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">schedule</span>
@@ -170,6 +171,73 @@
                         <input type="text" readonly
                                th:value="${setting.lastGradeResolveRunTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastGradeResolveRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
+
+                <!-- 4. 전시용 전월 인기 상품 갱신 -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">trending_up</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">4. 인기 상품 전시 갱신</h2>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">매월 갱신일</label>
+                        <select name="popularStockUpdateDay"
+                                class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.popularStockUpdateDay == '1'}">1일</option>
+                            <option value="5" th:selected="${setting.popularStockUpdateDay == '5'}">5일</option>
+                            <option value="10" th:selected="${setting.popularStockUpdateDay == '10'}">10일</option>
+                            <option value="15" th:selected="${setting.popularStockUpdateDay == '15'}">15일</option>
+                            <option value="20" th:selected="${setting.popularStockUpdateDay == '20'}">20일</option>
+                            <option value="25" th:selected="${setting.popularStockUpdateDay == '25'}">25일</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastPopularStockUpdateTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastPopularStockUpdateTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
+                <!-- 5. 전시용 신규 상품 갱신 -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">new_releases</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">4. 신규 상품 전시 갱신</h2>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="newStockUpdateStartDt"
+                               th:value="${setting.newStockUpdateStartDt}"
+                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">갱신 주기</label>
+                        <select name="newStockUpdateInterval"
+                                class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all">
+                            <option value="6" th:selected="${setting.newStockUpdateInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.newStockUpdateInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.newStockUpdateInterval == '24'}">1일</option>
+                            <option value="48" th:selected="${setting.newStockUpdateInterval == '24'}">2일</option>
+                            <option value="168" th:selected="${setting.newStockUpdateInterval == '168'}">7일</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastNewStockUpdateTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastNewStockUpdateTime), 'yyyy년 MM월 dd일 HH:mm')
                                    : '실행 기록 없음'}"
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>

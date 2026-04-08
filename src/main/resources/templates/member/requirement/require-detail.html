@@ -17,6 +17,7 @@
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:if="${isAdmin}" src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
 
     <section class="inquiry-page inquiry-detail-page" th:object="${require}">
         <header class="inquiry-shell inquiry-shell--header">
@@ -194,6 +195,31 @@
         const reqRepIdEl = document.getElementById('reqRepId');
         const reqRepId = reqRepIdEl ? reqRepIdEl.value : '';
 
+        // ===== TinyMCE 초기화 (관리자 전용) =====
+        var tinyMceConfig = {
+            height: 280,
+            language: 'ko_KR',
+            menubar: false,
+            plugins: 'lists link table wordcount preview',
+            toolbar: 'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+                     'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+            block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
+            font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
+            content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
+            branding: false,
+            promotion: false,
+            license_key: 'gpl'
+        };
+
+        if (typeof tinymce !== 'undefined') {
+            if (document.getElementById('create-rep-con')) {
+                tinymce.init(Object.assign({}, tinyMceConfig, { selector: '#create-rep-con', placeholder: '답변 내용을 입력해 주세요.' }));
+            }
+            if (document.getElementById('edit-rep-con')) {
+                tinymce.init(Object.assign({}, tinyMceConfig, { selector: '#edit-rep-con', placeholder: '답변 내용을 입력해 주세요.' }));
+            }
+        }
+
         // ===== 사용자 버튼 =====
         var btnDelete = document.getElementById('btn-delete');
         if (btnDelete) {
@@ -239,7 +265,10 @@
         if (btnCreateSubmit) {
             btnCreateSubmit.addEventListener('click', function() {
                 var ttl = document.getElementById('create-rep-ttl').value.trim();
-                var con = document.getElementById('create-rep-con').value.trim();
+                var con = (typeof tinymce !== 'undefined' && tinymce.get('create-rep-con'))
+                    ? tinymce.get('create-rep-con').getContent({format:'text'}).trim() : document.getElementById('create-rep-con').value.trim();
+                var conHtml = (typeof tinymce !== 'undefined' && tinymce.get('create-rep-con'))
+                    ? tinymce.get('create-rep-con').getContent() : document.getElementById('create-rep-con').value.trim();
                 var per = document.getElementById('create-rep-per').value === 'true';
                 var errEl = document.getElementById('create-rep-error');
 
@@ -251,7 +280,7 @@
                 errEl.classList.add('is-hidden');
 
                 axios.post('/api/admin/require/' + reqId + '/reply', {
-                    reqRepTtl: ttl, reqRepCon: con, reqRepPerYn: per
+                    reqRepTtl: ttl, reqRepCon: conHtml, reqRepPerYn: per
                 }).then(function() {
                     alert('답변이 등록되었습니다.');
                     location.reload();
@@ -280,7 +309,10 @@
         if (btnEditSubmit) {
             btnEditSubmit.addEventListener('click', function() {
                 var ttl = document.getElementById('edit-rep-ttl').value.trim();
-                var con = document.getElementById('edit-rep-con').value.trim();
+                var con = (typeof tinymce !== 'undefined' && tinymce.get('edit-rep-con'))
+                    ? tinymce.get('edit-rep-con').getContent({format:'text'}).trim() : document.getElementById('edit-rep-con').value.trim();
+                var conHtml = (typeof tinymce !== 'undefined' && tinymce.get('edit-rep-con'))
+                    ? tinymce.get('edit-rep-con').getContent() : document.getElementById('edit-rep-con').value.trim();
                 var per = document.getElementById('edit-rep-per').value === 'true';
                 var errEl = document.getElementById('edit-rep-error');
 
@@ -292,7 +324,7 @@
                 errEl.classList.add('is-hidden');
 
                 axios.put('/api/admin/require/reply/' + reqRepId, {
-                    reqRepTtl: ttl, reqRepCon: con, reqRepPerYn: per
+                    reqRepTtl: ttl, reqRepCon: conHtml, reqRepPerYn: per
                 }).then(function() {
                     alert('답변이 수정되었습니다.');
                     location.reload();
