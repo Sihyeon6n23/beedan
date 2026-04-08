@@ -5,10 +5,12 @@ import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.dto.order.WebhookShipmentRequest;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
+import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,8 @@ public class OrderService {
     private final ShipmentItemRepository shipmentItemRepository;
     private final OrderItemRepository orderItemRepository;
     private final QuoteInfoRepository  quoteInfoRepository;
+    private final PaymentRepository paymentRepository;
+    private final QuoteBaseRepository quoteBaseRepository;
 
     public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
         if(!memberRepository.existsById(memId)) return null;
@@ -109,6 +113,76 @@ public class OrderService {
     }
 
     @Transactional
+    public String createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
+        // quId (QouteBase) 사용 Payment 총 결제금액 확인
+        // quId 사용 QuoteDetail에서 주문한 상품 목록 및 배송지 정보 (수령인, 주소)
+        // memId가 들어가 있는 곳은 negotiation
+        QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
+        Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
+        Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(()-> new UsernameNotFoundException("일치하는 회원이 없습니다."));
+        Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(()->new IllegalArgumentException("결제 정보가 없습니다"));
+        List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByQuId(quoteBase.getQuId());
+        if (quoteDetails.isEmpty()) {
+            throw new IllegalStateException("견적 상세 상품이 없습니다.");
+        }
+
+        QuoteDetail firstItem = quoteDetails.get(0);
+        Order order = Order.builder()
+                .member(member)
+                .ordBaseStt(OrderStatus.PREPARING)
+                .ordBaseRcvNm(firstItem.getQuDtRcNm())
+                .ordBaseAdr(firstItem.getQuDtRcAdr())
+                .ordBaseTtAm(payment.getPyTtAm())
+                .ordBaseNo(quoteBase.getQuCd())
+                .build();
+        orderRepository.save(order);
+
+        Map<String, List<QuoteDetail>> groupedByAddress = quoteDetails.stream()
+                .collect(Collectors.groupingBy(d -> d.getQuDtRcNm() + "_" + d.getQuDtRcAdr()));
+
+        // Shipment 및 관련 아이템 생성
+        for (Map.Entry<String, List<QuoteDetail>> entry : groupedByAddress.entrySet()) {
+            List<QuoteDetail> groupItems = entry.getValue();
+            QuoteDetail addressInfo = groupItems.get(0); // 그룹의 대표 배송지 정보
+
+            // 목적지별 Shipment 생성
+            Shipment shipment = Shipment.builder()
+                    .order(order)
+                    .shRcvNm(addressInfo.getQuDtRcNm())
+                    .shAdr(addressInfo.getQuDtRcAdr())
+                    .shAdrDt(addressInfo.getQuDtRcPhn()) // DB 컬럼 상황에 맞춰 전화번호나 상세주소 매핑
+                    .shStt(ShipmentStatus.PREPARING)
+                    .shCarCd(webhookRequest.getShCarNo())    // 해외 물류사 코드
+                    .shTraNo(webhookRequest.getShTraNo())    // 해외 통합 송장 번호
+                    .shCanYn(false)
+                    .build();
+            shipmentRepository.save(shipment);
+
+            // Shipment에 속한 상품들 처리
+            for (QuoteDetail detail : groupItems) {
+                OrderItem orderItem = OrderItem.builder()
+                        .order(order)
+                        .ordItmQn(detail.getQuDtQn())
+                        .ordItmNm(detail.getStNm())
+                        .build();
+                orderItemRepository.save(orderItem);
+
+                // ShipmentItem 생성 (Shipment와 OrderItem 연결)
+                ShipmentItem shipmentItem = ShipmentItem.builder()
+                        .shipment(shipment)
+                        .orderItem(orderItem)
+                        .shQn(detail.getQuDtQn())
+                        .ordItmNm(detail.getStNm()) // 추후 국내 배송 시 업데이트될 필드
+                        .build();
+                shipmentItemRepository.save(shipmentItem);
+            }
+        }
+
+        log.info("주문 생성 성공: {}", order.getOrdBaseId());
+        return "주문 생성 완료";
+    }
+
+    @Transactional
     public Long createOrder(Long memId, OrderDto dto) {
         Member member = memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("User not found"));
 
@@ -132,6 +206,7 @@ public class OrderService {
 
         Order order = Order.builder()
                 .member(member)
+                .ordBaseStt(OrderStatus.PREPARING)
                 .ordBaseRcvNm(dto.getOrdBaseRcvNm())
                 .ordBaseAdr(dto.getOrdBaseAdr())
                 .ordBaseAdrDt(dto.getOrdBaseAdrDt())

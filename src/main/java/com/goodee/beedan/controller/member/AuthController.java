@@ -44,7 +44,7 @@ public class AuthController {
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
-    @Value("${custom.security.oauth.client.registration.kakao.redirect-uri}")
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
 
     @GetMapping("/signup")
