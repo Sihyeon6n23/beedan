@@ -36,7 +36,7 @@
                 <button class="aq-filter" data-filter="TEMP_SAVE">임시저장</button>
                 <button class="aq-filter" data-filter="SUBMITTED">대기중</button>
                 <button class="aq-filter" data-filter="APPROVED">승인</button>
-                <button class="aq-filter" data-filter="REJECTED">거절</button>
+                <button class="aq-filter" data-filter="REJECTED">반려</button>
                 <button class="aq-filter" data-filter="EXPIRED">만료</button>
             </div>
         </section>
@@ -75,7 +75,7 @@
                                   th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
                                              q.quStt == 'SUBMITTED' ? '대기중' :
                                              q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '거절' :
+                                             q.quStt == 'REJECTED' ? '반려' :
                                              q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                         </td>
                         <td class="col-date"

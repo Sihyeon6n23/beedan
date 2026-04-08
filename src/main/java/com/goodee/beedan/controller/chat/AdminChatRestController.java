@@ -28,7 +28,7 @@ public class AdminChatRestController {
         adminChatService.closeAdminChatRoom(chRoId, userDetails.getMemberId());
     }
 
-    // 채팅 전송 처리 (추후 Websocket 추가)
+    // 채팅 전송 처리
     @PostMapping("/rooms/{id}/messages")
     public AdminChatMessageDto sendAdminChatMessage(
             @PathVariable("id") Long chRoId,

@@ -13,8 +13,12 @@
        th:text="${isAdmin != null and isAdmin ? 'BEEDAN | 관리자 견적 상세' : 'BEEDAN | 견적 상세'}">BEEDAN | 견적 상세</title>
 
 <th:block th:fragment="sidebar">
-    <div th:if="${isAdmin != null and isAdmin}" th:replace="~{admin/admin-sidebar :: sidebar('quote', 'quote-list')}"></div>
-    <div th:if="${isAdmin == null or !isAdmin}" th:replace="~{fragments/quoteAndPayment/quote-sidebar :: sidebar('quote', 'quote-list')}"></div>
+    <th:block th:if="${isAdmin != null and isAdmin}">
+        <div th:replace="~{admin/admin-sidebar :: sidebar('quote', 'quote-list')}"></div>
+    </th:block>
+    <th:block th:if="${isAdmin == null or !isAdmin}">
+        <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'quote-list')}"></div>
+    </th:block>
 </th:block>
 
 <th:block th:fragment="content">
@@ -36,7 +40,7 @@
                       th:text="${quoteBase.quStt.name() == 'TEMP_SAVE' ? '임시저장' :
                                  quoteBase.quStt.name() == 'SUBMITTED' ? (isAdmin != null and isAdmin ? '대기중' : '제출완료') :
                                  quoteBase.quStt.name() == 'APPROVED' ? '승인' :
-                                 quoteBase.quStt.name() == 'REJECTED' ? '거절' :
+                                 quoteBase.quStt.name() == 'REJECTED' ? '반려' :
                                  quoteBase.quStt.name() == 'PAID' ? '결제완료' : '만료'}">상태</span>
             </div>
             <div class="aqd-header__title">
@@ -79,18 +83,18 @@
             <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
         </div>
 
-        <!-- 거절 사유 배너 -->
+        <!-- 반려 사유 배너 -->
         <div class="aqd-rejection-banner" th:if="${quoteBase.quStt.name() == 'REJECTED'}">
             <span class="aqd-rejection-tag">REJECTED</span>
-            <span class="aqd-rejection-title">견적이 거절되었습니다</span>
+            <span class="aqd-rejection-title">견적이 반려되었습니다</span>
             <p class="aqd-rejection-reason"
-               th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '거절 사유가 기재되지 않았습니다.'}">거절 사유</p>
+               th:text="${quoteBase.quCon != null && !quoteBase.quCon.isEmpty() ? quoteBase.quCon : '반려 사유가 기재되지 않았습니다.'}">반려 사유</p>
         </div>
 
         <!-- Quote Manifest Table -->
         <section class="aqd-manifest" th:if="${details != null && !details.isEmpty()}">
             <div class="aqd-manifest__header">
-                <h2 class="aqd-manifest__id" th:text="${quoteBase.quCd}">QU0000</h2>
+                <h2 class="aqd-manifest__id" th:text="${negotiation.ngNm + ' ' + quoteBase.quCd}">협상명 QU0001</h2>
                 <span class="aqd-manifest__count" th:text="${details.size()} + '개의 아이템'">0개의 아이템</span>
                 <span class="aqd-manifest__rate"
                       th:if="${quoteInfo != null && quoteInfo.quInfoExcRt != null && quoteInfo.quInfoCurCd != null}"
@@ -387,24 +391,24 @@
                 <span class="aqd-final__note">INC. VAT &amp; DELIVERY</span>
             </div>
 
-            <!-- 승인/거절/재작성 (SUBMITTED + 수신자만) -->
+            <!-- 승인/반려/재작성 (SUBMITTED + 수신자만) -->
             <div class="aqd-final__actions" th:if="${quoteBase.quStt.name() == 'SUBMITTED' and (isSender == null or !isSender)}">
                 <button class="aqd-btn aqd-btn--approve"
                         id="btnApprove"
                         th:data-qu-id="${quoteBase.quId}">승인</button>
                 <a class="aqd-btn aqd-btn--rewrite"
-                   th:href="${(isAdmin != null and isAdmin ? '/admin/quote/write?fromQuId=' : '/quote/write?fromQuId=') + quoteBase.quId}">견적 거절 후 재작성</a>
+                   th:href="${(isAdmin != null and isAdmin ? '/admin/quote/write?fromQuId=' : '/quote/write?fromQuId=') + quoteBase.quId}">견적 반려 후 재작성</a>
                 <button class="aqd-btn aqd-btn--reject"
                         id="btnReject"
-                        th:data-qu-id="${quoteBase.quId}">거절</button>
+                        th:data-qu-id="${quoteBase.quId}">반려</button>
             </div>
-            <!-- 거절 사유 입력 (공통) -->
+            <!-- 반려 사유 입력 (공통) -->
             <div class="aqd-reject-form" id="rejectForm" style="display:none;"
                  th:if="${quoteBase.quStt.name() == 'SUBMITTED' and (isSender == null or !isSender)}">
-                <label class="aqd-reject-form__label">거절 사유를 입력하세요</label>
-                <textarea class="aqd-reject-form__textarea" id="rejectReason" rows="4" placeholder="거절 사유를 입력해주세요..."></textarea>
+                <label class="aqd-reject-form__label">반려 사유를 입력하세요</label>
+                <textarea class="aqd-reject-form__textarea" id="rejectReason" rows="4" placeholder="반려 사유를 입력해주세요..."></textarea>
                 <div class="aqd-reject-form__actions">
-                    <button class="aqd-btn aqd-btn--reject-confirm" id="btnRejectConfirm">거절 확인</button>
+                    <button class="aqd-btn aqd-btn--reject-confirm" id="btnRejectConfirm">반려 확인</button>
                     <button class="aqd-btn aqd-btn--cancel" id="btnRejectCancel">취소</button>
                 </div>
             </div>
@@ -427,7 +431,7 @@
 
     </section>
 
-    <!-- 승인/거절 JS (공통) -->
+    <!-- 승인/반려 JS (공통) -->
     <script th:if="${quoteBase.quStt.name() == 'SUBMITTED' and (isSender == null or !isSender)}" th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {
         var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -457,7 +461,7 @@
             });
             document.getElementById('btnRejectConfirm').addEventListener('click', function () {
                 var reason = document.getElementById('rejectReason').value.trim();
-                if (!reason) { alert('거절 사유를 입력해주세요.'); return; }
+                if (!reason) { alert('반려 사유를 입력해주세요.'); return; }
                 var quId = btnReject.dataset.quId;
                 var headers = {'Content-Type': 'application/json'};
                 headers[csrfHeader] = csrfToken;

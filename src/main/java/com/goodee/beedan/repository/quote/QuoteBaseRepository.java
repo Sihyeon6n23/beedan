@@ -16,17 +16,21 @@ public interface QuoteBaseRepository extends JpaRepository<QuoteBase, Long> {
     // 협상별 견적 전체 조회
     List<QuoteBase> findAllByNgId(Long ngId);
 
-    // 협상별 유효 견적 조회 (quStt != null + 품목 1개 이상 + 상대방 TEMP_SAVE 제외)
-    @Query("SELECT q FROM QuoteBase q WHERE q.ngId = :ngId AND q.quStt IS NOT NULL AND (q.quStt <> 'TEMP_SAVE' OR q.quSid = :memId) AND EXISTS (SELECT 1 FROM QuoteDetail d WHERE d.quId = q.quId) ORDER BY q.quCreDt DESC")
+    // 협상별 유효 견적 조회 (quStt != null + 상대방 TEMP_SAVE 제외)
+    @Query("SELECT q FROM QuoteBase q WHERE q.ngId = :ngId AND q.quStt IS NOT NULL AND (q.quStt <> 'TEMP_SAVE' OR q.quSid = :memId OR (q.quSid IS NULL AND q.quRid = :memId)) ORDER BY q.quCreDt DESC")
     List<QuoteBase> findAllActiveByNgId(@Param("ngId") Long ngId, @Param("memId") Long memId);
 
     // 협상별 유효 견적 조회 (admin용 - TEMP_SAVE 포함)
-    @Query("SELECT q FROM QuoteBase q WHERE q.ngId = :ngId AND q.quStt IS NOT NULL AND EXISTS (SELECT 1 FROM QuoteDetail d WHERE d.quId = q.quId) ORDER BY q.quCreDt DESC")
+    @Query("SELECT q FROM QuoteBase q WHERE q.ngId = :ngId AND q.quStt IS NOT NULL ORDER BY q.quCreDt DESC")
     List<QuoteBase> findAllActiveByNgIdAdmin(@Param("ngId") Long ngId);
 
-    // 전체 유효 견적 조회 (quStt != null + 품목 1개 이상)
-    @Query("SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL AND EXISTS (SELECT 1 FROM QuoteDetail d WHERE d.quId = q.quId) ORDER BY q.quCreDt DESC")
-    List<QuoteBase> findAllActive();
+    // 전체 유효 견적 조회 (quStt != null + 상대방 TEMP_SAVE 제외)
+    @Query("SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL AND (q.quStt <> 'TEMP_SAVE' OR q.quSid = :memId OR (q.quSid IS NULL AND q.quRid = :memId)) ORDER BY q.quCreDt DESC")
+    List<QuoteBase> findAllActive(@Param("memId") Long memId);
+
+    // 전체 유효 견적 조회 (파라미터 없는 버전 - 하위호환)
+    @Query("SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL ORDER BY q.quCreDt DESC")
+    List<QuoteBase> findAllActiveNoFilter();
 
     // 협상별 특정 상태 견적 조회
     List<QuoteBase> findAllByNgIdAndQuStt(Long ngId, QuoteStatus quStt);
@@ -42,7 +46,7 @@ public interface QuoteBaseRepository extends JpaRepository<QuoteBase, Long> {
 
     // 송신자 또는 수신자별 유효 견적 페이징 조회 (상대방의 TEMP_SAVE 제외)
     @Query(
-            "SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL AND (q.quSid = :memId OR q.quRid = :memId) AND (q.quStt <> 'TEMP_SAVE' OR q.quSid = :memId) AND EXISTS (SELECT 1 FROM QuoteDetail d WHERE d.quId = q.quId) ORDER BY q.quCreDt DESC")
+            "SELECT q FROM QuoteBase q WHERE q.quStt IS NOT NULL AND (q.quSid = :memId OR q.quRid = :memId) AND (q.quStt <> 'TEMP_SAVE' OR q.quSid = :memId OR (q.quSid IS NULL AND q.quRid = :memId)) ORDER BY q.quCreDt DESC")
     Page<QuoteBase> findAllByMember(@Param("memId") Long memId, Pageable pageable);
 
     // 기간별 상태 조회

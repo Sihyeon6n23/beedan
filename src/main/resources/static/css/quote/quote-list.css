@@ -151,7 +151,7 @@
 .quote-list-head,
 .quote-row {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(100px, 1.1fr) minmax(100px, 1.1fr) minmax(80px, 0.9fr);
+    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(120px, 1.2fr) minmax(80px, 0.9fr);
     gap: 0.8rem;
     align-items: center;
 }
@@ -169,8 +169,7 @@
 
 .quote-list-head > div:nth-child(2),
 .quote-list-head > div:nth-child(3),
-.quote-list-head > div:nth-child(4),
-.quote-list-head > div:nth-child(5) {
+.quote-list-head > div:nth-child(4) {
     text-align: center;
 }
 

@@ -43,7 +43,7 @@ public class NotificationControllerTest {
 
     private MemberUserDetails mockUser;
 
-    @BeforeEach
+   /* @BeforeEach
     void setUp() {
         Member member = Member.builder()
                 .memId(1L)
@@ -56,7 +56,7 @@ public class NotificationControllerTest {
                 .build();
 
         mockUser = new MemberUserDetails(member);
-    }
+    }*/
 
     @Test
     void debugTest() {

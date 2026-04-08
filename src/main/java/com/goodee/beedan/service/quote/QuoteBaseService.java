@@ -29,6 +29,10 @@ public class QuoteBaseService {
      */
     @Transactional
     public QuoteBase create(QuoteBaseRequest request) {
+        // 협상 내 순번 계산
+        List<QuoteBase> existingQuotes = quoteBaseRepository.findAllByNgId(request.getNgId());
+        int seq = existingQuotes.size() + 1;
+
         QuoteBase quoteBase = quoteBaseRepository.save(
                 QuoteBase.builder()
                         .negoId(request.getNgId())
@@ -36,8 +40,11 @@ public class QuoteBaseService {
                         .receiverId(request.getQuRid())
                         .build()
         );
-        log.info("견적 생성 완료. ID: {}, 협상ID: {}, 상태: {}",
-                quoteBase.getQuId(), quoteBase.getNgId(), quoteBase.getQuStt());
+        // QU 코드를 협상 내 순번으로 설정
+        quoteBase.setQuCd("QU" + String.format("%04d", seq));
+
+        log.info("견적 생성 완료. ID: {}, 협상ID: {}, 코드: {}",
+                quoteBase.getQuId(), quoteBase.getNgId(), quoteBase.getQuCd());
         return quoteBase;
     }
 

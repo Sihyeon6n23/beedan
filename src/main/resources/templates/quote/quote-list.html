@@ -31,9 +31,11 @@
                 <div class="quote-toolbar__filters">
                     <div class="quote-filter-set" data-filter-group="status">
                         <a class="quote-filter is-active" href="#">전체</a>
+                        <a class="quote-filter" href="#">임시저장</a>
                         <a class="quote-filter" href="#">제출완료</a>
                         <a class="quote-filter" href="#">승인</a>
-                        <a class="quote-filter" href="#">거절</a>
+                        <a class="quote-filter" href="#">반려</a>
+                        <a class="quote-filter" href="#">결제완료</a>
                         <a class="quote-filter" href="#">만료</a>
                     </div>
                 </div>
@@ -44,14 +46,10 @@
         <section class="quote-shell quote-shell--list">
             <div class="quote-list-head">
                 <div>견적 정보</div>
-                <div class="quote-sortable is-active" data-sort="status" data-dir="asc">
-                    상태 <span class="quote-sort-icon">▼</span>
-                </div>
-                <div class="quote-sortable" data-sort="quUpdDt" data-dir="desc">
-                    최근 업데이트 <span class="quote-sort-icon">▼</span>
-                </div>
-                <div class="quote-sortable" data-sort="quCreDt" data-dir="desc">
-                    발행일 <span class="quote-sort-icon">▼</span>
+                <div>상태</div>
+                <div class="quote-sortable is-active" style="cursor:pointer;"
+                     th:onclick="'location.href=\'/quote/list?sort=' + (${sort == 'desc'} ? 'asc' : 'desc') + '\''">
+                    발행일 <span class="quote-sort-icon" th:text="${sort == 'asc' ? '▲' : '▼'}">▼</span>
                 </div>
                 <div>관리자 열람</div>
             </div>
@@ -62,15 +60,12 @@
                        class="quote-row"
                        th:classappend="${!q.quOpYn} ? ' quote-row--featured' : ''"
                        th:data-qu-id="${q.quId}"
-                       th:data-status="${q.quStt == 'SUBMITTED' ? '0' : q.quStt == 'APPROVED' ? '1' : q.quStt == 'REJECTED' ? '2' : q.quStt == 'EXPIRED' ? '3' : '4'}"
-                       th:data-qu-upd-dt="${q.quUpdDt}"
+                       th:data-status="${q.quStt == 'SUBMITTED' ? '0' : q.quStt == 'APPROVED' ? '1' : q.quStt == 'REJECTED' ? '2' : q.quStt == 'EXPIRED' ? '3' : q.quStt == 'TEMP_SAVE' ? '4' : q.quStt == 'PAID' ? '5' : '6'}"
                        th:data-qu-cre-dt="${q.quCreDt}"
                        th:data-qu-op-yn="${q.quOpYn}">
                         <div class="quote-row__primary">
-                            <span th:if="${!q.quOpYn}" class="quote-row__unread"></span>
-                            <span th:if="${q.quOpYn}" class="quote-row__unread quote-row__unread--empty"></span>
                             <div class="quote-row__text">
-                                <h2 th:text="${q.quCd}">QU0000</h2>
+                                <h2 th:text="${q.ngNm + ' ' + q.quCd}">협상명 QU0001</h2>
                             </div>
                         </div>
                         <div class="quote-row__status">
@@ -79,11 +74,8 @@
                                   th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
                                              q.quStt == 'SUBMITTED' ? '제출완료' :
                                              q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '거절' :
+                                             q.quStt == 'REJECTED' ? '반려' :
                                              q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
-                        </div>
-                        <div class="quote-row__time">
-                            <span th:text="${q.quUpdDt != null ? #temporals.format(q.quUpdDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
                         </div>
                         <div class="quote-row__time">
                             <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
@@ -176,22 +168,25 @@
             });
         });
 
-        // 초기 정렬: 상태순 + 최근 업데이트순
-        sortRows('status', 'asc');
+        // 서버에서 정렬 완료 — 초기 정렬 불필요
 
         // ── 필터 ──
         var emptyState = document.querySelector('.quote-empty-state');
         var STATUS_MAP = {
             '전체': null,
+            '임시저장': 'TEMP_SAVE',
             '제출완료': 'SUBMITTED',
             '승인': 'APPROVED',
-            '거절': 'REJECTED',
+            '반려': 'REJECTED',
+            '결제완료': 'PAID',
             '만료': 'EXPIRED'
         };
         var STATUS_CODE_MAP = {
+            'TEMP_SAVE': '4',
             'SUBMITTED': '0',
             'APPROVED': '1',
             'REJECTED': '2',
+            'PAID': '5',
             'EXPIRED': '3'
         };
 
