@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -204,6 +205,7 @@ public class StockService {
         return save.getStId();
 
     }
+
     // 상품 구매시 날짜별 구매 현황 기록용
     public void stockHitRecord(Long stId) {
         Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
@@ -212,6 +214,7 @@ public class StockService {
                 .hitDt(LocalDateTime.now())
                 .build());
     }
+
     // 내 상품 조회 (stReqYn=true, stReqMemId=memId)
     public Page<StockListDto> findMyItems(List<Long> brandIds, List<String> catNms, String keyword, String sort, int page, Long memId) {
         Sort sorting = switch (sort != null ? sort : "recent") {
@@ -227,6 +230,7 @@ public class StockService {
         Specification<Stock> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.isTrue(root.get("stReqYn")));
+            predicates.add(cb.isTrue(root.get("stExpYn")));
             predicates.add(cb.equal(root.get("stReqMemId"), memId));
             if (brandIds != null && !brandIds.isEmpty()) {
                 predicates.add(root.get("brId").in(brandIds));
@@ -253,12 +257,32 @@ public class StockService {
                 .map(stock -> mapToStockListDto(stock, wishedIds));
     }
 
+    // 상품 이미지 URL 저장 (업로드 후 URL 저장용)
+    public void saveImgUrl(Long lastId, String imgUrl) {
+        Stock stock = stockRepository.findById(lastId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+        stock.setStImgUrl(imgUrl);
+        stockRepository.save(stock);
+    }
+
     // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개)
     public List<StockListDto> findNewStocks() {
         List<Stock> newStocks = stockRepository.findTop30ByStExpYnTrueOrderByStCraDtDesc();
         Collections.shuffle(newStocks);
         return newStocks.stream()
                 .limit(16)
+                .map(stock -> mapToStockListDto(stock, Collections.emptySet()))
+                .collect(Collectors.toList());
+    }
+
+    public List<StockListDto> findPopularStocks() {
+        YearMonth lastMonth = YearMonth.now().minusMonths(1);
+        LocalDateTime startDt = lastMonth.atDay(1).atStartOfDay();
+        LocalDateTime endDt = lastMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        List<Stock> popularStocks = stockRepository.findPopularStocksByPeriod(
+                startDt, endDt, PageRequest.of(0, 16)
+        );
+        return popularStocks.stream()
                 .map(stock -> mapToStockListDto(stock, Collections.emptySet()))
                 .collect(Collectors.toList());
     }
@@ -275,12 +299,5 @@ public class StockService {
                 .stImgUrl(stock.getStImgUrl())
                 .wished(wishedIds.contains(stock.getStId()))
                 .build();
-    }
-
-    // 상품 이미지 URL 저장 (업로드 후 URL 저장용)
-    public void saveImgUrl(Long lastId, String imgUrl) {
-        Stock stock = stockRepository.findById(lastId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
-        stock.setStImgUrl(imgUrl);
-        stockRepository.save(stock);
     }
 }

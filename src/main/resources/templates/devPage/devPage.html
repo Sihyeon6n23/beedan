@@ -178,7 +178,8 @@
     <div class="card-title">⚡ 스케줄러 강제 실행</div>
     <div th:each="name : ${schedulerNames}">
         <button class="tick-btn"
-                th:onclick="'tick(\'' + ${name} + '\')'"
+                th:attr="data-scheduler-name=${name}"
+                onclick="tick(this.dataset.schedulerName)"
                 th:text="'▶  ' + ${name}">
         </button>
     </div>
@@ -345,9 +346,11 @@
         const s  = document.getElementById('selSec').value;
         const datetime = `${y}-${mo}-${d}T${h}:${mi}:${s}`;
 
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
         const res = await fetch('/dev/time', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({ datetime })
         });
         const result = await res.text();
@@ -356,7 +359,9 @@
     }
 
     async function resetTime() {
-        const res = await fetch('/dev/time', { method: 'DELETE' });
+        const headers = {};
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const res = await fetch('/dev/time', { method: 'DELETE', headers });
         const result = await res.text();
         selectsInitialized = false; // 초기화 후 셀렉트를 실제 시간으로 다시 채움
         await syncWithServer();
@@ -367,7 +372,9 @@
     // ── 스케줄러 ──────────────────────────────────────
     async function tick(name) {
         addLog(name + ' 실행 요청 중...', 'info');
-        const res = await fetch('/dev/tick/' + name, { method: 'POST' });
+        const headers = {};
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const res = await fetch('/dev/tick/' + name, { method: 'POST', headers });
         const msg = await res.text();
         addLog(msg, res.ok ? 'ok' : 'err');
     }

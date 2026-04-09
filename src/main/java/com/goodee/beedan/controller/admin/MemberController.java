@@ -25,6 +25,8 @@ public class MemberController {
                                 @RequestParam("id") Long id){
         MemberEditResponse memberEditResponse = MemberEditResponse.fromEntity(memberService.getMemberById(id));
         model.addAttribute("member", memberEditResponse);
+        model.addAttribute("kakaoAppKey", kakaoAppKey);
+
         return "admin/member/admin-member-edit";
     }
 

@@ -756,6 +756,15 @@ document.addEventListener('DOMContentLoaded', function () {
             document.body.style.overflow = '';
         }
 
+        // 필수 체크 전체 선택
+        var btnCheckAll = document.getElementById('btnCheckAll');
+        if (btnCheckAll) {
+            btnCheckAll.addEventListener('click', function () {
+                overlay.querySelectorAll('.chk-required').forEach(function (c) { c.checked = true; });
+                updateFinalState();
+            });
+        }
+
         var isAdmin = !!document.getElementById('js-is-admin');
         document.getElementById('btnOpenSubmitModal').addEventListener('click', isAdmin ? adminDirectSubmit : loadAndOpenModal);
         document.getElementById('btnCloseSubmitModal').addEventListener('click', closeSubmitModal);
@@ -774,8 +783,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var draftData = collectDraftData();
             if (!draftData.quId) { alert('견적 ID가 없습니다.'); return; }
 
-            doFetchEstimateFees()
-            .then(function () { return saveDraft(); })
+            saveDraft()
             .then(function (draftRes) {
                 if (draftRes.status !== 'ok') {
                     throw new Error(draftRes.message || '데이터 저장 실패');

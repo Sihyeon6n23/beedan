@@ -312,6 +312,11 @@ main > div {
     background-color: rgba(255, 215, 0, 1);
 }
 
+.modal-open {
+    overflow: hidden;
+    padding-right: 15px;
+}
+
 /* --- 헤더 --- */
 .modal-header {
     display: flex;
@@ -606,3 +611,13 @@ main > div {
 .step-time { font-size: 12px; color: #999; }
 .step-content strong { font-size: 15px; color: #333; }
 .step-content p { font-size: 13px; color: #666; margin-top: 5px; }
+
+.btn-back-to-list {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: inherit;
+}
+
+

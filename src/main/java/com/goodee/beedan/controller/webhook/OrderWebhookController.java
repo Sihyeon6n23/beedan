@@ -1,6 +1,8 @@
 package com.goodee.beedan.controller.webhook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.goodee.beedan.dto.order.WebhookShipmentRequest;
+import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.webhook.OrderWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import java.util.Map;
 public class OrderWebhookController {
 
     private final OrderWebhookService orderWebhookService;
+    private final OrderService orderService;
 
     @Value("${webhook.external.api-key}")
     private String expectedApiKey;
@@ -49,7 +52,15 @@ public class OrderWebhookController {
         // 로그 저장
         orderWebhookService.logReceive(rawBody, quId);
 
-        // TODO: 욱형 여기다 메서드 넣으시면 돼요
+        try {
+            WebhookShipmentRequest webhookRequest = new ObjectMapper().readValue(rawBody, WebhookShipmentRequest.class); // JSON String -> Webhook DTO로 변환
+
+            String result = orderService.createOrderFromWebhook(webhookRequest);
+
+            log.info(result);
+        } catch (Exception e) {
+            log.error("웹훅 처리 중 오류 발생: ", e);
+        }
 
         return ResponseEntity.ok(Map.of("status", "ok", "message", "수신 완료"));
     }

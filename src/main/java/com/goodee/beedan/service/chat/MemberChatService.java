@@ -3,10 +3,7 @@ package com.goodee.beedan.service.chat;
 import com.goodee.beedan.common.constant.ChatMessageSenderType;
 import com.goodee.beedan.common.constant.ChatRoomCloseReason;
 import com.goodee.beedan.common.constant.ChatRoomStatus;
-import com.goodee.beedan.dto.chat.ChatRoomOpenResultDto;
-import com.goodee.beedan.dto.chat.MemberChatMessageDto;
-import com.goodee.beedan.dto.chat.MemberChatRoomDetailDto;
-import com.goodee.beedan.dto.chat.MemberChatRoomListDto;
+import com.goodee.beedan.dto.chat.*;
 import com.goodee.beedan.dto.chatbot.ChatbotTopLevelTopicDto;
 import com.goodee.beedan.entity.ChatMessage;
 import com.goodee.beedan.entity.ChatRoom;
@@ -115,6 +112,7 @@ public class MemberChatService {
                 .lastMessageCreatedAt(lastMessage.map(chatMessage -> chatMessage.getChMsCreDt()).orElse(null))
                 .chRoCreDt(chatRoom.getChRoCreDt())
                 .unread(roomReadStatus.map(chatRoomReadStatus -> chatRoomReadStatus.getChRoReStUnrYn()).orElse(false))
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
     }
 
@@ -173,6 +171,7 @@ public class MemberChatService {
                 .chRoTtl(chatRoom.getChRoTtl())
                 .chRoStt(chatRoom.getChRoStt())
                 .messages(messageDtos)
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
     }
 
@@ -237,8 +236,12 @@ public class MemberChatService {
 
         // 엔티티 -> Dto 변환
         MemberChatMessageDto memberChatMessageDto = mapToMemberChatMessageDto(savedMessage);
-        // 채팅방 구독자들에게 실시간으로 메시지를 뿌림
+        // 현재 방 메시지 실시간 반영
         chatRealtimeService.publishMessage(chRoId, memberChatMessageDto);
+        // 사용자 본인 위젯 목록/배지 갱신
+        chatRealtimeService.publishMemberSummary(memId);
+        // 관리자 목록 갱신
+        chatRealtimeService.publishAdminSummary();
 
         return memberChatMessageDto;
     }
@@ -261,5 +264,17 @@ public class MemberChatService {
 
         // 채팅방 저장
         chatRoomRepository.save(chatRoom);
+        // 채팅방 종료 실시간 반영 (사용자/관리자)
+        chatRealtimeService.publishMemberSummary(memId);
+        chatRealtimeService.publishAdminSummary();
+        chatRealtimeService.publishRoomStatus(
+                chRoId,
+                ChatRoomStatusEventDto.builder()
+                        .eventType("ROOM_STATUS")
+                        .chRoId(chRoId)
+                        .chRoStt(chatRoom.getChRoStt())
+                        .chRoClsRsn(chatRoom.getChRoClsRsn())
+                        .build()
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.chat;
 
+import com.goodee.beedan.common.constant.ChatRoomCloseReason;
 import com.goodee.beedan.common.constant.ChatRoomStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,4 +24,6 @@ public class AdminChatRoomListDto {
     private ChatRoomStatus chRoStt;                 // 상태 표시
     private Boolean unread;                         // 관리자 기준 미읽음 표시
     private String adminName;                       // 담당 관리자 이름
+
+    private ChatRoomCloseReason chRoClsRsn;
 }

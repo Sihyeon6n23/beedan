@@ -2,14 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('주문 목록', 'order', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('ORDER', 'ORDER MANAGEMENT', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | Order History</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Order', 'Order-list')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('order', 'order-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -18,7 +18,7 @@
         .order-management-list .admin-chat-list-head,
         .order-management-list .admin-chat-row {
             display: grid !important;
-            grid-template-columns: minmax(120px, 1.2fr) minmax(200px, 2fr) minmax(180px, 1.3fr) minmax(90px, 0.9fr) minmax(110px, 1fr) !important;
+            grid-template-columns: minmax(80px, 1.2fr) minmax(220px, 2.2fr) minmax(180px, 1.3fr) minmax(40px, 0.7fr) minmax(30px, 0.3fr) !important;
             gap: 1rem;
             align-items: center;
         }
@@ -89,8 +89,8 @@
 
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-head" aria-hidden="true">
-                <div>주문번호 / 상품정보</div>
-                <div style="text-align: center;">배송지 주소</div>
+                <div>주문번호</div>
+                <div style="text-align: center;">상품정보</div>
                 <div>결제 금액</div>
                 <div style="text-align: center;">상태</div>
                 <div style="text-align: center;">관리</div>
@@ -100,15 +100,13 @@
                 <div th:unless="${#lists.isEmpty(orders)}" th:each="order : ${orders}" class="admin-chat-row">
 
                     <div class="admin-chat-row__primary">
-                        <span class="admin-chat-row__unread" th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? '' : 'admin-chat-row__unread--empty'}"></span>
                         <div class="admin-chat-row__text">
                             <h2 th:text="${order.ordBaseNo}">주문번호</h2>
-                            <p th:text="${order.ordSummaryNm}">상품 정보</p>
                         </div>
                     </div>
 
-                    <div class="admin-chat-row__address" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        <span th:text="${order.ordBaseAdr}">기본 배송지</span>
+                    <div class="admin-chat-row__text">
+                        <p th:text="${order.ordSummaryNm}">상품 정보</p>
                     </div>
 
                     <div class="admin-chat-row__amount">

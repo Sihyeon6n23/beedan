@@ -12,6 +12,7 @@ import com.goodee.beedan.service.buyer.FeePolicyService;
 import com.goodee.beedan.service.quote.DomesticDeliveryRateService;
 import com.goodee.beedan.service.quote.PortCustomsRateService;
 import com.goodee.beedan.service.quote.QuoteBaseService;
+import com.goodee.beedan.service.quote.QuoteNotificationService;
 import com.goodee.beedan.service.quote.QuoteDetailService;
 import com.goodee.beedan.service.quote.QuoteSubmitCheckService;
 import com.goodee.beedan.service.quote.ShippingRateService;
@@ -56,6 +57,8 @@ public class QuoteRestController {
     private final com.goodee.beedan.repository.quote.QuoteShipFeeRepository quoteShipFeeRepository;
     private final com.goodee.beedan.repository.quote.ShippingInsuranceRepository shippingInsuranceRepository;
     private final com.goodee.beedan.service.quote.NegotiationService negotiationService;
+    private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
+    private final QuoteNotificationService quoteNotificationService;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -74,14 +77,16 @@ public class QuoteRestController {
     // ── 운영자 견적 열람 처리 ─────────────────────────────────
     @PostMapping("/{quId}/admin-opened")
     public ResponseEntity<Void> markAdminOpened(@PathVariable Long quId) {
-        quoteBaseService.adminOpen(quId);
+        QuoteBase qb = quoteBaseService.adminOpen(quId);
+        quoteNotificationService.notifyOnReview(qb);
         return ResponseEntity.ok().build();
     }
 
     // ── 견적 승인 ─────────────────────────────────
     @PostMapping("/{quId}/approve")
     public ResponseEntity<Void> approveQuote(@PathVariable Long quId) {
-        quoteBaseService.approve(quId);
+        QuoteBase qb = quoteBaseService.approve(quId);
+        quoteNotificationService.notifyOnApprove(qb);
         return ResponseEntity.ok().build();
     }
 
@@ -89,7 +94,8 @@ public class QuoteRestController {
     @PostMapping("/{quId}/reject")
     public ResponseEntity<Void> rejectQuote(@PathVariable Long quId,
                                             @RequestBody Map<String, String> body) {
-        quoteBaseService.reject(quId, body.get("reason"));
+        QuoteBase qb = quoteBaseService.reject(quId, body.get("reason"));
+        negotiationService.checkAndClose(qb.getNgId(), quoteBaseRepository);
         return ResponseEntity.ok().build();
     }
 
@@ -222,9 +228,14 @@ public class QuoteRestController {
                 quoteBaseService.reject(request.getFromQuId(), reason);
             }
 
-            quoteBaseService.submit(request.getQuId());
+            QuoteBase submittedQuote = quoteBaseService.submit(request.getQuId());
             if (request.getChecks() != null && !request.getChecks().isEmpty()) {
                 quoteSubmitCheckService.saveCheckLog(request.getQuId(), request.getChecks());
+            }
+
+            // 재작성인 경우 원본 견적 기준으로 회신 알림
+            if (request.getFromQuId() != null) {
+                quoteNotificationService.notifyOnQuoteReply(request.getFromQuId(), submittedQuote.getNgId());
             }
             return ResponseEntity.ok(Map.of(
                     "status", "ok",
