@@ -74,7 +74,7 @@
             <td class="text-center" th:text="${idx.count}">1</td>
             <td th:text="${detail.stNm}">상품명</td>
             <td class="text-center" th:text="${detail.quDtQn}">0</td>
-            <td class="text-right" th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</td>
+            <td class="text-right" th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">₩0</td>
         </tr>
     </tbody>
 </table>
@@ -84,23 +84,23 @@
 <table>
     <tr>
         <th style="width:180px;">품목 대금</th>
-        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA')}">₩0</td>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA')}">₩0</td>
     </tr>
     <tr>
         <th>물류 비용 (국제 운임 + 국내 배송)</th>
-        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(domesticFee), 3, 'COMMA')}">₩0</td>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(domesticFee), 1, 'COMMA')}">₩0</td>
     </tr>
     <tr>
         <th>큐레이션 수수료</th>
-        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(serviceFeeAm, 3, 'COMMA')}">₩0</td>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(serviceFeeAm, 1, 'COMMA')}">₩0</td>
     </tr>
     <tr>
         <th>관세 및 부가세</th>
-        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(totalDutyVat, 3, 'COMMA')}">₩0</td>
+        <td class="text-right" th:text="${'₩' + #numbers.formatInteger(totalDutyVat, 1, 'COMMA')}">₩0</td>
     </tr>
     <tr class="total-row">
         <td style="text-align:center; font-weight:800;">최종 결제 금액</td>
-        <td class="text-right" th:text="${payment != null and payment.pyTtAm != null ? '₩' + #numbers.formatInteger(payment.pyTtAm, 3, 'COMMA') : '₩' + #numbers.formatInteger(calculatedTotal, 3, 'COMMA')}">₩0</td>
+        <td class="text-right" th:text="${payment != null and payment.pyTtAm != null ? '₩' + #numbers.formatInteger(payment.pyTtAm, 1, 'COMMA') : '₩' + #numbers.formatInteger(calculatedTotal, 1, 'COMMA')}">₩0</td>
     </tr>
 </table>
 

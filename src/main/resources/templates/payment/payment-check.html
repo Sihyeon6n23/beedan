@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('MEMBER', 'Payment', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 결제</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'payment-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -74,27 +74,23 @@
             <div class="form-grid">
                 <div class="form-group form-group--full">
                     <label class="form-label">법인/상호명</label>
-                    <input class="form-input" type="text"
-                           th:value="${member != null and member.memBizTtl != null ? member.memBizTtl : ''}"
-                           placeholder="상호명" />
+                    <input class="form-input" type="text" readonly
+                           th:value="${member != null and member.memBizTtl != null ? member.memBizTtl : ''}" />
                 </div>
                 <div class="form-group form-group--full">
                     <label class="form-label">사업장 소재지</label>
-                    <input class="form-input" type="text"
-                           th:value="${member != null and member.memBizAdr != null ? member.memBizAdr : ''}"
-                           placeholder="사업장 소재지" />
+                    <input class="form-input" type="text" readonly
+                           th:value="${member != null and member.memBizAdr != null ? member.memBizAdr : ''}" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">사업자등록번호</label>
-                    <input class="form-input" type="text"
-                           th:value="${member != null and member.memBizNo != null ? member.memBizNo : ''}"
-                           placeholder="000-00-00000" />
+                    <input class="form-input" type="text" readonly
+                           th:value="${member != null and member.memBizNo != null ? member.memBizNo : ''}" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">담당자명</label>
-                    <input class="form-input" type="text"
-                           th:value="${member != null and member.memNm != null ? member.memNm : ''}"
-                           placeholder="담당자명" />
+                    <input class="form-input" type="text" readonly
+                           th:value="${member != null and member.memNm != null ? member.memNm : ''}" />
                 </div>
                 <div class="form-group form-group--full">
                     <label class="form-label">견적 번호</label>
@@ -119,7 +115,7 @@
                             <p class="summary-item__desc" th:text="${details.size() + '개 품목'}">0개 품목</p>
                         </div>
                         <span class="summary-item__price"
-                              th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA') : '-'}">₩0</span>
+                              th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA') : '-'}">₩0</span>
                     </div>
                     <div class="summary-item" th:if="${intShipFeeOnly != null}">
                         <div class="summary-item__info">
@@ -127,7 +123,7 @@
                             <p class="summary-item__desc">국제 운임 + 국내 배송</p>
                         </div>
                         <span class="summary-item__price"
-                              th:text="'₩' + ${#numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 3, 'COMMA')}">₩0</span>
+                              th:text="'₩' + ${#numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 1, 'COMMA')}">₩0</span>
                     </div>
                     <div class="summary-item" th:if="${quoteInfo != null and quoteInfo.quInfoSrvFeAm != null}">
                         <div class="summary-item__info">
@@ -135,7 +131,7 @@
                             <p class="summary-item__desc">구매 대행 서비스</p>
                         </div>
                         <span class="summary-item__price"
-                              th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA')}">₩0</span>
+                              th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA')}">₩0</span>
                     </div>
                 </div>
 
@@ -144,12 +140,12 @@
                     <div class="summary-row" th:if="${totalDutyVat != null}">
                         <span class="summary-row__label">관세 + 부가세</span>
                         <span class="summary-row__value"
-                              th:text="'₩' + ${#numbers.formatInteger(totalDutyVat, 3, 'COMMA')}">₩0</span>
+                              th:text="'₩' + ${#numbers.formatInteger(totalDutyVat, 1, 'COMMA')}">₩0</span>
                     </div>
                     <div class="summary-row summary-row--total">
                         <span class="summary-row__label">최종 금액</span>
                         <span class="summary-row__value summary-row__value--total"
-                              th:text="${calculatedTotal != null and calculatedTotal.longValue() > 0 ? '₩' + #numbers.formatInteger(calculatedTotal, 3, 'COMMA') : '산출 중'}">₩0</span>
+                              th:text="${calculatedTotal != null and calculatedTotal.longValue() > 0 ? '₩' + #numbers.formatInteger(calculatedTotal, 1, 'COMMA') : '산출 중'}">₩0</span>
                     </div>
                 </div>
 

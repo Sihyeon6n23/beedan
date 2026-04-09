@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment History', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('MEMBER', 'Payment History', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <div class="ng-row__status" style="font-weight:700;">
-                        <span th:text="${item.payment.pyTtAm != null ? '₩' + #numbers.formatInteger(item.payment.pyTtAm, 3, 'COMMA') : '-'}">₩0</span>
+                        <span th:text="${item.payment.pyTtAm != null ? '₩' + #numbers.formatInteger(item.payment.pyTtAm, 1, 'COMMA') : '-'}">₩0</span>
                     </div>
                     <div class="ng-row__status">
                         <span th:text="${item.payment.pyMt != null ? (item.payment.pyMt.name() == 'CARD' ? '법인카드' : '무통장입금') : '-'}">-</span>

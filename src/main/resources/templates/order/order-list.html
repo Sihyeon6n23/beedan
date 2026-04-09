@@ -110,7 +110,7 @@
                     </div>
 
                     <div class="admin-chat-row__amount">
-                        <strong th:text="${order.ordBaseTtAm != null ? #numbers.formatInteger(order.ordBaseTtAm, 3, 'COMMA') : 0} + '원'">금액</strong>
+                        <strong th:text="${order.ordBaseTtAm != null ? #numbers.formatInteger(order.ordBaseTtAm, 1, 'COMMA') : 0} + '원'">금액</strong>
                     </div>
 
                     <div class="admin-chat-row__status">

@@ -13,4 +13,8 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     List<Cart> findByMemId(Long memId);
 
     Optional<Cart> findByMemIdAndStock_StId(Long memId, Long stId);
+
+    void deleteAllByMemId(Long memId);
+
+    void deleteAllByMemIdAndStock_StIdIn(Long memId, List<Long> stIds);
 }

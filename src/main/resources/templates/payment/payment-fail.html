@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('MEMBER', 'Payment', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 결제 실패</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'payment-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">

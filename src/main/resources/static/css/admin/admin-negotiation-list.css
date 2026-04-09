@@ -287,8 +287,9 @@ main > div {
 /* Pagination */
 .ang-pagination-wrapper {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    gap: 0.5rem;
     padding: 1.5rem 0;
     margin-top: 1rem;
     border-top: 1px solid var(--ang-border);
