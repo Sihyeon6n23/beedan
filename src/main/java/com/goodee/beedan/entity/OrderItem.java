@@ -40,4 +40,10 @@ public class OrderItem {
 
     @Column(name = "ord_item_nm")
     private String ordItmNm;
+
+    @Column(name="ord_item_thm_key")
+    private String ordItmThumbKey;
+
+    @Column(name="ord_item_img_url")
+    private String ordItmStUrl;
 }

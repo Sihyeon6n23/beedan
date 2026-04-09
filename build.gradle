@@ -75,7 +75,9 @@ dependencies {
 	// 레디스
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-
+	// Source: https://mvnrepository.com/artifact/net.coobird/thumbnailator
+	implementation("net.coobird:thumbnailator:0.4.21")
+	implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0'
 }
 
 tasks.named('test') {
