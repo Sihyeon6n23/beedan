@@ -89,8 +89,8 @@
 
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-head" aria-hidden="true">
-                <div>주문번호</div>
-                <div style="text-align: center;">상품정보</div>
+                <div>주문번호/이미지</div>
+                <div style="text-align: center;">상품명</div>
                 <div>결제 금액</div>
                 <div style="text-align: center;">상태</div>
                 <div style="text-align: center;">관리</div>
@@ -101,7 +101,12 @@
 
                     <div class="admin-chat-row__primary">
                         <div class="admin-chat-row__text">
-                            <h2 th:text="${order.ordBaseNo}">주문번호</h2>
+                            <h2  style="margin-left: 22px" th:text="${order.ordBaseNo}">주문번호</h2>
+                            <img th:if="${order.ordThumbUrl != null}"
+                                 th:src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px;">
+                            <div th:if="${order.ordThumbUrl == null}" class="order-thumb-none">
+                                <i class="fas fa-box"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -110,7 +115,7 @@
                     </div>
 
                     <div class="admin-chat-row__amount">
-                        <strong th:text="${order.ordBaseTtAm != null ? #numbers.formatInteger(order.ordBaseTtAm, 3, 'COMMA') : 0} + '원'">금액</strong>
+                        <strong th:text="${order.ordBaseTtAm != null ? #numbers.formatInteger(order.ordBaseTtAm, 1, 'COMMA') : 0} + '원'">금액</strong>
                     </div>
 
                     <div class="admin-chat-row__status">

@@ -29,10 +29,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
               WHEN cr.chRoStt IN ('OPEN', 'ONGOING') THEN 0
               ELSE 1
           END,
-          CASE
-              WHEN cr.chRoStt = 'CLOSED' THEN cr.chRoClsDt
-              ELSE cr.chRoLastMsDt
-          END DESC,
+          cr.chRoLastMsDt DESC,
           cr.chRoCreDt DESC
   """)
     List<ChatRoom> findMemberChatRoomsByMemIdOrderByActiveFirst(@Param("memId") Long memId);
@@ -76,6 +73,50 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     Page<ChatRoom> findByMemAdIdPriorityOrder(Long memAdId, Pageable pageable);
     // 내 담당 목록 + 페이징 + 상태 필터
     Page<ChatRoom> findByChRoSttAndMemAdIdOrderByChRoLastMsDtDescChRoCreDtDesc(ChatRoomStatus chRoStt, Long memAdId, Pageable pageable);
+    @Query(
+            value = """
+                    SELECT cr.*
+                    FROM chat_room cr
+                    JOIN member m ON m.mem_id = cr.mem_id
+                    WHERE (:status = 'ALL' OR cr.ch_ro_stt = :status)
+                      AND (:myAssignedOnly = false OR cr.mem_ad_id = :memAdId)
+                      AND (
+                          :keyword = ''
+                          OR LOWER(COALESCE(m.mem_biz_ttl, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                          OR LOWER(COALESCE(m.mem_nm, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                          OR LOWER(COALESCE(cr.ch_ro_ttl, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                      )
+                    ORDER BY
+                        CASE
+                            WHEN cr.ch_ro_stt = 'OPEN' THEN 0
+                            WHEN cr.ch_ro_stt = 'ONGOING' THEN 1
+                            ELSE 2
+                        END,
+                        cr.ch_ro_last_ms_dt DESC,
+                        cr.ch_ro_cre_dt DESC
+                    """,
+            countQuery = """
+                    SELECT COUNT(*)
+                    FROM chat_room cr
+                    JOIN member m ON m.mem_id = cr.mem_id
+                    WHERE (:status = 'ALL' OR cr.ch_ro_stt = :status)
+                      AND (:myAssignedOnly = false OR cr.mem_ad_id = :memAdId)
+                      AND (
+                          :keyword = ''
+                          OR LOWER(COALESCE(m.mem_biz_ttl, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                          OR LOWER(COALESCE(m.mem_nm, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                          OR LOWER(COALESCE(cr.ch_ro_ttl, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                      )
+                    """,
+            nativeQuery = true
+    )
+    Page<ChatRoom> searchAdminChatRooms(
+            @Param("memAdId") Long memAdId,
+            @Param("status") String status,
+            @Param("myAssignedOnly") boolean myAssignedOnly,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
     // 채팅방 자동 종료 대상 조회
     List<ChatRoom> findByChRoSttInAndChRoLastMsDtBefore(Collection<ChatRoomStatus> chRoStts, LocalDateTime cutoff);
 }

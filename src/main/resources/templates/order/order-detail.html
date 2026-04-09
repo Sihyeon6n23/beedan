@@ -14,182 +14,9 @@
 </th:block>
 
 <th:block th:fragment="content">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
-    <style>
-        .order-management-list .admin-chat-list-head,
-        .order-management-list .admin-chat-row {
-            display: grid !important;
-            grid-template-columns: minmax(60px, 1.0fr) minmax(40px, 1.0fr) minmax(120px, 1.7fr) minmax(200px, 2fr) minmax(60px, 0.9fr) minmax(60px, 1fr) !important;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .order-management-list .action-btns {
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .order-management-list .btn-detail {
-            background-color: #e2e2e2;
-            color: #1a1c1c;
-            border: none;
-            padding: 4px 8px;
-            font-size: 0.55rem;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            text-decoration: none !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 45px;
-            height: 24px;
-            transition: all 0.2s ease;
-        }
-        .order-management-list .btn-detail:hover { background-color: #d1d1d1; }
-
-        .order-management-list .btn-edit {
-            background-color: #1a1c1c;
-            color: #ffffff;
-            border: none;
-            padding: 4px 8px;
-            font-size: 0.55rem;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            text-decoration: none !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 45px;
-            height: 24px;
-            transition: all 0.2s ease;
-        }
-        .order-management-list .btn-edit:hover { background-color: #333; }
-
-        .order-management-list .admin-chat-row__amount {
-            text-align: right;
-            white-space: nowrap;
-            font-variant-numeric: tabular-nums;
-            padding-right: 10px;
-        }
-
-         .tracking-timeline-list {
-            position: relative;
-            list-style: none;
-        }
-        .tracking-timeline-list::before {
-            content: '';
-            position: absolute;
-            left: 4px; top: 0; bottom: 0;
-            width: 2px; background: #eee;
-        }
-        .timeline-step {
-            position: relative;
-            padding-left: 20px;
-        }
-        .timeline-step::before {
-            content: '';
-            position: absolute;
-            left: -18px; top: 4px;
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: #ddd;
-            border: 2px solid #fff;
-            z-index: 1;
-        }
-        .timeline-step.active::before {
-            background: #0056b3;
-            box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.2);
-        }
-
-        .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 */
-        z-index: 9999; /* 화면 최상단으로 끌어올림 */
-        display: none; /* 평소엔 숨김 (JS에서 display: flex로 바꿈) */
-        justify-content: center;
-        align-items: center;
-        }
-
-        .modal-container {
-            background-color: #ffffff;
-            width: 100%;
-            max-width: 500px;
-            max-height: 80vh;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* 박스 둥근 모서리 밖으로 삐져나가지 않게 */
-            animation: modalFadeIn 0.3s ease-out; /* 부드럽게 나타나는 애니메이션 */
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            border-bottom: 1px solid #eeeeee;
-        }
-
-        .modal-header .modal-title {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .modal-header .btn-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-            color: #666;
-        }
-
-        .modal-body {
-            padding: 20px;
-            overflow-y: auto; /* 타임라인이 길면 내부 스크롤 생성 */
-            flex: 1; /* 남은 공간을 모두 차지함 */
-        }
-
-        .modal-footer {
-            padding: 16px 20px;
-            border-top: 1px solid #eeeeee;
-            text-align: right;
-            background-color: #fafafa;
-        }
-
-        .modal-footer .btn-solid {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .modal-footer .btn-solid:hover {
-            background-color: #555;
-        }
-
-        .btn-back-to-list {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            color: inherit;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/order/order-detail.css}">
 
     <section class="admin-chat-page admin-chat-list-page order-management-list">
         <header class="admin-chat-shell admin-chat-shell--header">
@@ -211,10 +38,9 @@
 
             <section class="admin-chat-shell admin-chat-shell--list">
                 <div class="admin-chat-list-head" aria-hidden="true">
-                    <div>수령인</div>
-                    <div>운송회사/운송장번호</div>
-                    <div>배송지 주소</div>
-                    <div>품목 수</div>
+                    <div>수령자</div>
+                    <div>상품 정보</div>
+                    <div></div>
                     <div style="text-align: center;">배송 상태</div>
                     <div style="text-align: center;">관리</div>
                 </div>
@@ -224,20 +50,24 @@
                         <div th:with="ship=${order.shipmentResponses[0]}" class="admin-chat-row">
                             <div class="admin-chat-row__text">
                                 <h2 th:text="${ship.shRcvNm}">수령자 이름</h2>
-                            </div>
-
-                            <div class="admin-chat-row__text">
-                                <p th:text="${ship.shCarNm}">운송회사코드</p>
-                                <p th:text="${ship.shTraNo}">운송장번호</p>
-                            </div>
-
-                            <div class="admin-chat-row__text">
                                 <p th:text="${ship.shAdr}">기본 주소</p>
                                 <p th:text="${ship.shAdrDt}">상세 주소</p>
                             </div>
 
+
+                            <div class="swiper mySwiper">
+                                <div class="swiper-wrapper">
+                                    <div th:each="item : ${order.orderItems}" class="swiper-slide">
+                                        <img th:src="${item.ordItmThumbUrl}" th:alt="${item.ordItmNm}" class="order-thumb-img" th:title="${item.ordItmNm}">
+                                    </div>
+                                </div>
+                                <div class="swiper-button-next"></div>
+                                <div class="swiper-button-prev"></div>
+                            </div>
+
+
                             <div class="admin-chat-row__text">
-                                <p style="text-align: center;" th:each="item : ${ship.shipmentItems}" th:text="${item.ordItmNm} + ' (' + ${item.shQn} + '개)'">물품명 (수량)</p>
+                                <p style="text-align: left;" th:each="item : ${ship.shipmentItems}" th:text="${item.ordItmNm} + ' (' + ${item.shQn} + '개)'">물품명 (수량)</p>
                             </div>
 
                             <div class="admin-chat-row__status">
@@ -257,24 +87,27 @@
                         </div>
                     </th:block>
 
+
                     <th:block th:if="${#lists.size(order.shipmentResponses) > 1}">
                         <div th:each="ship, stat : ${order.shipmentResponses}" class="admin-chat-row">
                             <div class="admin-chat-row__text">
                                 <h2 th:text="${ship.shRcvNm}">수령자 이름</h2>
-                            </div>
-
-                            <div class="admin-chat-row__text">
-                                <p th:text="${ship.shCarNm}">운송회사코드</p>
-                                <p th:text="${ship.shTraNo}">운송장번호</p>
-                            </div>
-
-                            <div class="admin-chat-row__text">
                                 <p th:text="${ship.shAdr}">기본 주소</p>
                                 <p th:text="${ship.shAdrDt}">상세 주소</p>
                             </div>
 
+                            <div class="swiper mySwiper">
+                                <div class="swiper-wrapper">
+                                    <div th:each="item : ${order.orderItems}" class="swiper-slide">
+                                        <img th:src="${item.ordItmThumbUrl}" th:alt="${item.ordItmNm}" class="order-thumb-img" th:title="${item.ordItmNm}">
+                                    </div>
+                                </div>
+                                <div class="swiper-button-next"></div>
+                                <div class="swiper-button-prev"></div>
+                            </div>
+
                             <div class="admin-chat-row__text">
-                                <p style="text-align: center;" th:each="item : ${ship.shipmentItems}" th:text="${item.ordItmNm} + ' (' + ${item.shQn} + '개)'">물품명 (수량)</p>
+                                <p style="text-align: left;" th:each="item : ${ship.shipmentItems}" th:text="${item.ordItmNm} + ' (' + ${item.shQn} + '개)'">물품명 (수량)</p>
                             </div>
 
                             <div class="admin-chat-row__status">
@@ -335,98 +168,8 @@
                 </div>
             </div>
 
-        <script>
-            function cancelOrder(ordId) {
-                if (!ordId) return;
-                if (confirm("이 주문을 정말로 취소하시겠습니까?\n(모든 배송지의 발송이 취소됩니다.)")) {
-                    const form = document.getElementById('cancelForm-' + ordId);
-                    console.log(form);
-                    if (form) form.submit();
-                }
-            }
-
-            async function loadShipmentDetail(shId) {
-                const modal = document.getElementById('orderTrackingModal');
-                const modalBody = modal.querySelector('.modal-body');
-
-                modal.style.display = 'flex';
-                modalBody.innerHTML = `
-                    <div style="text-align: center; padding: 50px;">
-                        <p style="color: #666;">배송 정보를 불러오는 중입니다...</p>
-                    </div>
-                `;
-
-                try {
-                    const trackResponse = await fetch(`/api/shipments/${shId}/track`);
-
-                    if (!trackResponse.ok) throw new Error("배송 현황을 가져올 수 없습니다.");
-                    const trackData = await trackResponse.json();
-
-                    modalBody.innerHTML = buildTrackingHtml(trackData);
-
-                } catch (error) {
-                    console.error(error);
-                    modalBody.innerHTML = `<div style="text-align: center; padding: 40px; color: red;">오류: ${error.message}</div>`;
-                }
-            }
-
-            function buildTrackingHtml(data) {
-                let html = `
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <span style="font-size: 12px; color: #888;">택배사</span>
-                                <div style="font-weight: bold; font-size: 15px;">${data.carrierName}</div>
-                            </div>
-                            <div>
-                                <span style="font-size: 12px; color: #888;">송장번호</span>
-                                <div style="font-weight: bold; font-size: 15px; color: #0056b3;">${data.trackingNumber}</div>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="font-size: 12px; color: #888;">현재 상태</span>
-                                <div style="font-weight: bold; font-size: 15px; color: #d9534f;">${data.statusText}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                if (!data.details || data.details.length === 0) {
-                    html += `
-                        <div style="text-align: center; padding: 20px; color: #888; background: #fafafa; border-radius: 8px;">
-                            <p style="margin: 0;">아직 택배사에 배송 정보가 등록되지 않았습니다.</p>
-                        </div>
-                    `;
-                    return html;
-                }
-
-                html += '<ul class="tracking-timeline-list" style="padding-left: 20px;">';
-                data.details.forEach((item, index) => {
-                    const activeClass = (index === 0) ? 'active' : '';
-                    html += `
-                        <li class="timeline-step ${activeClass}" style="margin-bottom: 15px;">
-                            <div style="font-size: 12px; color: #999;">${item.time.replace('T', ' ').substring(0, 16)}</div>
-                            <div style="margin-top: 4px;">
-                                <strong style="font-size: 14px; color: #333;">${item.status}</strong>
-                                <p style="font-size: 13px; color: #666; margin: 2px 0 0 0;">${item.description}</p>
-                            </div>
-                        </li>`;
-                });
-                html += '</ul><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">';
-
-                return html;
-            }
-
-            function closeModal() {
-                document.getElementById('orderTrackingModal').style.display = 'none';
-            }
-
-            window.addEventListener('click', function(event) {
-                const modal = document.getElementById('orderTrackingModal');
-                if (event.target === modal) {
-                    closeModal();
-                }
-            });
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+        <script th:src="@{/js/order/order-detail.js}"></script>
     </section>
 </th:block>
 </html>

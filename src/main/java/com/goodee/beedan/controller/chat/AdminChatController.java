@@ -24,12 +24,14 @@ public class AdminChatController {
     @GetMapping("/list")
     public String getAdminChatList(Model model,
         @RequestParam(defaultValue = "ALL") String status,
+        @RequestParam(defaultValue = "") String keyword,
         @RequestParam(defaultValue = "false") Boolean myAssignedOnly,
         @RequestParam(defaultValue = "0") int page,
         @AuthenticationPrincipal MemberUserDetails userDetails) {
 
         AdminChatRoomSearchDto searchDto = AdminChatRoomSearchDto.builder()
                 .status(status)
+                .keyword(keyword)
                 .myAssignedOnly(myAssignedOnly)
                 .page(page)
                 .size(5)

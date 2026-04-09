@@ -1,6 +1,6 @@
 package com.goodee.beedan.devUtils;
 
-import com.goodee.beedan.scheduler.chat.ChatRoomCloseScheduler;
+import com.goodee.beedan.service.chat.ChatSchedulerService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +32,7 @@ public class DevController {
 
     public DevController(
             AuthenticationConfiguration authenticationConfiguration,
-            ChatRoomCloseScheduler chatRoomCloseScheduler) throws Exception {
+            ChatSchedulerService chatSchedulerService) throws Exception {
         this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
         this.schedulerMap = new LinkedHashMap<>();
 
@@ -41,7 +41,7 @@ public class DevController {
         // 채팅방 자동 종료 스케줄러
         schedulerMap.put("chatAutoClose", () -> {
             try {
-                chatRoomCloseScheduler.closeInactiveChatRooms();
+                chatSchedulerService.closeInactiveChatRooms();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

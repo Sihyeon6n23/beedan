@@ -392,6 +392,16 @@ main > div {
     color: #737373;
 }
 
+.and-q-badge--unread {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.and-q-badge--confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
 /* Action buttons */
 .and-action-group {
     display: flex;

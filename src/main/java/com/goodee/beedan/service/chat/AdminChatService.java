@@ -4,10 +4,7 @@ import com.goodee.beedan.common.constant.ChatMessageSenderType;
 import com.goodee.beedan.common.constant.ChatRoomCloseReason;
 import com.goodee.beedan.common.constant.ChatRoomStatus;
 import com.goodee.beedan.common.constant.MemberAuthority;
-import com.goodee.beedan.dto.chat.AdminChatMessageDto;
-import com.goodee.beedan.dto.chat.AdminChatRoomDetailDto;
-import com.goodee.beedan.dto.chat.AdminChatRoomListDto;
-import com.goodee.beedan.dto.chat.AdminChatRoomSearchDto;
+import com.goodee.beedan.dto.chat.*;
 import com.goodee.beedan.entity.ChatMessage;
 import com.goodee.beedan.entity.ChatRoom;
 import com.goodee.beedan.entity.ChatRoomReadStatus;
@@ -18,13 +15,18 @@ import com.goodee.beedan.repository.chat.ChatRoomRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +48,18 @@ public class AdminChatService {
         boolean myAssignedOnly = Boolean.TRUE.equals(searchDto.getMyAssignedOnly());
         boolean allStatus = "ALL".equals(searchDto.getStatus()); // 상태 필터가 전체인지
 
-        if (allStatus && !myAssignedOnly) { // 전체 상태 + 전체 목록
+        String keyword = searchDto.getKeyword() == null ? "" : searchDto.getKeyword().trim();
+        boolean hasKeyword = !keyword.isEmpty();
+
+        if (hasKeyword) { // 검색어가 있으면 검색 전용 쿼리 사용
+            chatRoomPage = chatRoomRepository.searchAdminChatRooms(
+                    memAdId,
+                    searchDto.getStatus(),
+                    myAssignedOnly,
+                    keyword,
+                    pageable
+            );
+        } else if (allStatus && !myAssignedOnly) { // 전체 상태 + 전체 목록
             chatRoomPage = chatRoomRepository
                     .findAllByPriorityOrder(pageable);
         } else if (!allStatus && !myAssignedOnly) { // 특정 상태 + 전체 목록
@@ -62,43 +75,93 @@ public class AdminChatService {
                     .findByChRoSttAndMemAdIdOrderByChRoLastMsDtDescChRoCreDtDesc(status, memAdId, pageable);
         }
 
-        return chatRoomPage.map(this::mapToAdminChatRoomListDto);
+        // 현재 페이지의 채팅방 목록 조회
+        List<ChatRoom> chatRooms = chatRoomPage.getContent();
+
+        // 목록에 포함된 회원/관리자/읽음 상태를 먼저 모아서 한 번에 조회
+        // 중복 제거한 회원 id 목록
+        List<Long> memberIds = chatRooms.stream()
+                .map(ChatRoom::getMemId)
+                .distinct()
+                .toList();
+        // 중복 제거, 담당자가 없는 null값 제거한 관리자 id 목록
+        List<Long> memAdIds = chatRooms.stream()
+                .map(ChatRoom::getMemAdId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        // 채팅방 id 목록
+        List<Long> chatRoomIds = chatRooms.stream()
+                .map(ChatRoom::getChRoId)
+                .toList();
+
+        // 비어 있지 않으면 memberIds에 해당하는 회원들을 한 번에 조회 후 map(<memId, Member>)로 변환
+        Map<Long, Member> memberMap = memberIds.isEmpty()
+                ? Collections.emptyMap()
+                : memberRepository.findByMemIdIn(memberIds).stream()
+                .collect(Collectors.toMap(Member::getMemId, member -> member));
+
+        // 비어 있지 않으면 memAdIds에 해당하는 관리자들을 한 번에 조회 후 map(<memId, Member>)로 변환
+        Map<Long, Member> adminMap = memAdIds.isEmpty()
+                ? Collections.emptyMap()
+                : memberRepository.findByMemIdIn(memAdIds).stream()
+                .collect(Collectors.toMap(Member::getMemId, member -> member));
+
+        // 비어 있지 않으면 현재 관리자의 읽음 상태를 현재 페이지 채팅방 id들에 대해서 한 번에 조회 후 map(<chRoId, ChatRoomReadStatus>)로 변환
+        Map<Long, ChatRoomReadStatus> adminReadStatusMap = chatRoomIds.isEmpty()
+                ? Collections.emptyMap()
+                : chatRoomReadStatusRepository.findByMemIdAndChRoIdIn(memAdId, chatRoomIds).stream()
+                .collect(Collectors.toMap(ChatRoomReadStatus::getChRoId, readStatus -> readStatus));
+
+        // 미리 만들어 둔 memberMap, adminMap, adminReadStatusMap을 재사용 하여 최종 DTO 목록 생성
+        Map<Long, ChatMessage> lastMessageMap = chatRoomIds.isEmpty()
+                ? Collections.emptyMap()
+                : chatMessageRepository.findLatestMessagesByChRoIds(chatRoomIds).stream()
+                .collect(Collectors.toMap(ChatMessage::getChRoId, chatMessage -> chatMessage));
+
+        List<AdminChatRoomListDto> contents = chatRooms.stream()
+                .map(chatRoom -> mapToAdminChatRoomListDto(chatRoom, memberMap, adminMap, adminReadStatusMap, lastMessageMap))
+                .toList();
+
+        // DTO 목록을 다시 Page 형태로 감싸서 반환 (최종 DTO 목록, 페이지 번호/사이즈, 전체 개수)
+        // Page 객체로 만드는 생성자
+        return new PageImpl<>(contents, pageable, chatRoomPage.getTotalElements());
     }
 
     // 관리자 채팅 목록용 DTO 변환
-    private AdminChatRoomListDto mapToAdminChatRoomListDto(ChatRoom chatRoom) {
+    private AdminChatRoomListDto mapToAdminChatRoomListDto(
+            ChatRoom chatRoom,
+            Map<Long, Member> memberMap,
+            Map<Long, Member> adminMap,
+            Map<Long, ChatRoomReadStatus> adminReadStatusMap,
+            Map<Long, ChatMessage> lastMessageMap
+    ) {
         // 채팅방의 최근 메시지 1건 조회
-        Optional<ChatMessage> lastMessage = chatMessageRepository
-                .findFirstByChRoIdOrderByChMsCreDtDesc(chatRoom.getChRoId());
+        ChatMessage lastMessage = lastMessageMap.get(chatRoom.getChRoId());
 
         // 채팅방을 만든 사용자 정보 조회 -> 회사 상호명 조회
-        Member member = memberRepository.findById(chatRoom.getMemId())
-                .orElseGet(Member::new);
+        Member member = memberMap.getOrDefault(chatRoom.getMemId(), new Member());
 
         // 담당 관리자 조회 -> 담당자명 조회
-        Member admin = null;
-        if (chatRoom.getMemAdId() != null) {
-            admin = memberRepository.findById(chatRoom.getMemAdId())
-                    .orElseGet(Member::new);
-        }
+        Member admin = chatRoom.getMemAdId() != null
+                ? adminMap.getOrDefault(chatRoom.getMemAdId(), new Member())
+                : null;
 
         // 미읽음 상태 설정
         boolean unread = false;
         if (chatRoom.getChRoStt() == ChatRoomStatus.OPEN) { // 채팅방 상태가 OPEN 이면
             unread = true;
         } else if (chatRoom.getChRoStt() == ChatRoomStatus.ONGOING && chatRoom.getMemAdId() != null) { // 채팅방 상태가 ONGOING이고, 담당자가 있다면
-            unread = chatRoomReadStatusRepository
-                    .findByMemIdAndChRoId(chatRoom.getMemAdId(), chatRoom.getChRoId())
-                    .map(chatRoomReadStatus -> chatRoomReadStatus.getChRoReStUnrYn())
-                    .orElse(false);
+            ChatRoomReadStatus readStatus = adminReadStatusMap.get(chatRoom.getChRoId());
+            unread = readStatus != null && readStatus.getChRoReStUnrYn();
         }
 
         return AdminChatRoomListDto.builder()
                 .chRoId(chatRoom.getChRoId())
                 .memBizTtl(member.getMemBizTtl())
                 .memNm(member.getMemNm())
-                .lastMessageContent(lastMessage.map(chatMessage -> chatMessage.getChMsCon()).orElse(null))
-                .lastMessageCreatedAt(lastMessage.map(chatMessage -> chatMessage.getChMsCreDt()).orElse(null))
+                .lastMessageContent(lastMessage != null ? lastMessage.getChMsCon() : null)
+                .lastMessageCreatedAt(lastMessage != null ? lastMessage.getChMsCreDt() : null)
                 .chRoCreDt(chatRoom.getChRoCreDt())
                 .chRoStt(chatRoom.getChRoStt())
                 .unread(unread)
@@ -168,6 +231,18 @@ public class AdminChatService {
         chatRoom.setChRoClsDt(LocalDateTime.now()); // 상담 종료 시각 저장
 
         chatRoomRepository.save(chatRoom);
+        // 채팅방 종료 실시간 반영 (사용자/관리자)
+        chatRealtimeService.publishMemberSummary(chatRoom.getMemId());
+        chatRealtimeService.publishAdminSummary();
+        chatRealtimeService.publishRoomStatus(
+                chRoId,
+                ChatRoomStatusEventDto.builder()
+                        .eventType("ROOM_STATUS")
+                        .chRoId(chRoId)
+                        .chRoStt(chatRoom.getChRoStt())
+                        .chRoClsRsn(chatRoom.getChRoClsRsn())
+                        .build()
+        );
     }
 
     // 담당자(관리자)가 메시지를 전송하고 읽음 상태 갱신
