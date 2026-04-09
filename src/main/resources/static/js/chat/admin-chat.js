@@ -20,7 +20,12 @@
   var detailCanWrite = detailPage ? detailPage.dataset.canWrite === "true" : false;
   var stompClient = null;
   var roomSubscription = null;
+  var summarySubscription = null;
   var wsConnected = false;
+  var isListRefreshing = false;
+  var feedbackBox = document.querySelector("[data-admin-chat-feedback]");
+  var feedbackText = document.querySelector("[data-admin-chat-feedback-text]");
+  var feedbackTimer = null;
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -50,6 +55,113 @@
     return headers;
   }
 
+  function showAdminChatFeedback(message) {
+    if (!feedbackBox || !feedbackText) {
+      return;
+    }
+
+    if (feedbackTimer) {
+      window.clearTimeout(feedbackTimer);
+    }
+
+    feedbackText.textContent = message;
+    feedbackBox.classList.remove("is-hidden");
+    feedbackBox.setAttribute("aria-hidden", "false");
+
+    feedbackTimer = window.setTimeout(function () {
+      feedbackBox.classList.add("is-hidden");
+      feedbackBox.setAttribute("aria-hidden", "true");
+    }, 2500);
+  }
+
+   function setAdminChatListLoading(isLoading) {
+        if (!listPage) {
+          return;
+        }
+
+        var toolbar = document.querySelector(".admin-chat-shell--toolbar");
+        var list = document.querySelector(".admin-chat-shell--list");
+        var pagination = document.querySelector(".admin-chat-shell--pagination");
+
+        [toolbar, list, pagination].forEach(function (element) {
+          if (!element) {
+            return;
+          }
+
+          element.classList.toggle("is-loading", isLoading);
+          element.setAttribute("aria-busy", isLoading ? "true" : "false");
+        });
+   }
+
+   // 지금 커서가 검색창에 있는지 확인
+   function shouldPauseAdminChatSummaryRefresh() {
+       var searchInput = document.querySelector('[data-admin-chat-search-form] input[name="keyword"]');
+       if (!searchInput) {
+         return false;
+       }
+
+       var isFocused = document.activeElement === searchInput;
+       var hasDraft = searchInput.value !== searchInput.defaultValue;
+
+       return isFocused || hasDraft;
+   }
+
+  // /admin/chat/list?... HTML을 받아옴 -> 툴바, 목록, 페이지네이션만 추출해서 현재 화면이랑 교체, URL 최신화
+  async function refreshAdminChatList(requestUrl, pushHistory) {
+        if (!listPage) {
+          return;
+        }
+
+        if (isListRefreshing) { // 중복 클릭 잠금
+          return;
+        }
+
+        isListRefreshing = true;
+        setAdminChatListLoading(true); // 로딩 시각화
+
+        try {
+          var response = await fetch(requestUrl, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error("관리자 채팅 목록을 불러오지 못했습니다.");
+          }
+
+          var html = await response.text();
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(html, "text/html");
+
+          var nextToolbar = doc.querySelector(".admin-chat-shell--toolbar");
+          var nextList = doc.querySelector(".admin-chat-shell--list");
+          var nextPagination = doc.querySelector(".admin-chat-shell--pagination");
+
+          var currentToolbar = document.querySelector(".admin-chat-shell--toolbar");
+          var currentList = document.querySelector(".admin-chat-shell--list");
+          var currentPagination = document.querySelector(".admin-chat-shell--pagination");
+
+          if (!nextToolbar || !nextList || !nextPagination || !currentToolbar || !currentList || !currentPagination) {
+            throw new Error("관리자 채팅 목록 화면을 갱신할 수 없습니다.");
+          }
+
+          currentToolbar.replaceWith(nextToolbar);
+          currentList.replaceWith(nextList);
+          currentPagination.replaceWith(nextPagination);
+
+          if (pushHistory !== false) {
+            window.history.pushState({}, "", requestUrl);
+          }
+        } catch (error) {
+            console.error(error);
+            showAdminChatFeedback("목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        } finally { // 성공/실패 상관없이 잠금 해제
+          isListRefreshing = false;
+          setAdminChatListLoading(false);
+        }
+    }
+
   function setChatState(nextState) {
     if (!detailPage) {
       return;
@@ -68,6 +180,10 @@
     var closedPanel = document.querySelector("[data-closed-panel]");
     if (closedPanel) {
       closedPanel.classList.toggle("is-hidden", nextState !== "CLOSED");
+    }
+
+    if (nextState === "CLOSED") {
+        moveClosedPanelToBottom();
     }
 
     var closeTrigger = document.querySelector("[data-close-trigger]");
@@ -143,6 +259,7 @@
     if (adminMessageScrollBody) {
       adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
     }
+    moveClosedPanelToBottom();
   }
 
   function appendPendingAdminMessage(messageText) {
@@ -247,14 +364,18 @@
       if (adminMessageScrollBody) {
         adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
       }
+      moveClosedPanelToBottom();
     }
 
-  modalTriggers.forEach(function (trigger) {
-    trigger.addEventListener("click", function () {
-      pendingDetailUrl = trigger.dataset.detailUrl || "";
-      pendingRoomId = trigger.dataset.roomId || "";
-      toggleModal(trigger.dataset.modalOpen, true);
-    });
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest("[data-modal-open]");
+    if (!trigger) {
+      return;
+    }
+
+    pendingDetailUrl = trigger.dataset.detailUrl || "";
+    pendingRoomId = trigger.dataset.roomId || "";
+    toggleModal(trigger.dataset.modalOpen, true);
   });
 
   modalClosers.forEach(function (closer) {
@@ -353,68 +474,100 @@
     });
   }
 
-  // 관리자가 특정 채팅방을 실시간으로 구독(관리자 실시간 수신용 + 화면 반영)
-  function connectAdminChatSocket() {
-    // 현재 관리자 상세 화면이 보고 있는 채팅방을 실시간으로 구독
-    if (!detailPage || !detailRoomId || !window.StompJs) {
-        return;
+  // 관리자 채팅 목록 페이지에서 관리자 summary 채널 구독, 새 메시지 오면 목록 부분만 갱신
+  function subscribeAdminSummary() {
+    if (!stompClient || !wsConnected || !listPage) {
+      return;
     }
 
-    // WebSocket/STOMP 클라이언트 생성
-    stompClient = new StompJs.Client({
-        brokerURL: "ws://" + window.location.host + "/ws",
-        reconnectDelay: 5000,
-        debug: function () {}
-    });
+    if (summarySubscription) {
+      summarySubscription.unsubscribe();
+    }
 
-    stompClient.onConnect = function () {
-        wsConnected = true;
-
-        if (roomSubscription) {
-            roomSubscription.unsubscribe();
+    summarySubscription = stompClient.subscribe("/sub/chat/admin/summary", function () {
+        if (shouldPauseAdminChatSummaryRefresh()) {
+          return;
         }
 
-        // 연결 성공 시 해당 채팅방 구독
-        roomSubscription = stompClient.subscribe("/sub/chat/rooms/" + detailRoomId, function (frame) {
+        refreshAdminChatList(window.location.href, false);
+    });
+  }
+
+  // 관리자가 특정 채팅방을 실시간으로 구독(관리자 실시간 수신용 + 화면 반영)
+  function connectAdminChatSocket() {
+      // 상세 또는 목록 페이지에서만 소켓 연결 허용
+      if (!window.StompJs || (!listPage && !detailPage)) {
+        return;
+      }
+
+      // WebSocket/STOMP 클라이언트 생성
+      stompClient = new StompJs.Client({
+        brokerURL: "ws://" + window.location.host + "/ws",
+        reconnectDelay: 5000,
+        debug: function () {},
+
+        onConnect: function () {
+          wsConnected = true;
+          subscribeAdminSummary();
+
+          // 목록 페이지에서는 summary 채널만 구독
+          if (!detailPage || !detailRoomId) {
+            return;
+          }
+
+          if (roomSubscription) {
+            roomSubscription.unsubscribe();
+          }
+
+          // 연결 성공 시 해당 채팅방 구독
+          roomSubscription = stompClient.subscribe("/sub/chat/rooms/" + detailRoomId, function (frame) {
             var message = JSON.parse(frame.body);
+
+            if (message.eventType === "ROOM_STATUS") {
+                if (detailPage) {
+                  detailPage.dataset.chatStatus = message.chRoStt;
+                }
+                setChatState(message.chRoStt);
+                return;
+            }
 
             // 관리자 메시지면
             if (message.chMsSenTy === "ADMIN") {
-                var pendingMessage = adminMessageList ? adminMessageList.querySelector('[data-pending="true"]') : null;
+              var pendingMessage = adminMessageList ? adminMessageList.querySelector('[data-pending="true"]') : null;
 
-                if (pendingMessage) {
-                  pendingMessage.removeAttribute("data-pending");
+              if (pendingMessage) {
+                pendingMessage.removeAttribute("data-pending");
 
-                  var pendingTime = pendingMessage.querySelector(".admin-chat-detail-message__time");
-                  if (pendingTime) {
-                    pendingTime.textContent = new Date(message.chMsCreDt).toLocaleTimeString("ko-KR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false
-                    });
-                  }
-
-                  return;
+                var pendingTime = pendingMessage.querySelector(".admin-chat-detail-message__time");
+                if (pendingTime) {
+                  pendingTime.textContent = new Date(message.chMsCreDt).toLocaleTimeString("ko-KR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                  });
                 }
-
-                appendAdminMessage(message);
                 return;
+              }
+
+              appendAdminMessage(message);
+              return;
             }
 
             // 사용자 메시지면
             appendClientMessage(message);
-        });
-    };
+          });
+        },
 
-    stompClient.onWebSocketClose = function () {
-        wsConnected = false;
-    };
+        onWebSocketClose: function () {
+          wsConnected = false;
+        },
 
-    stompClient.onStompError = function (frame) {
-        console.error(frame);
-    };
+        onStompError: function (frame) {
+          console.error(frame);
+        }
+      });
 
-    stompClient.activate(); // 실제 연결
+      stompClient.activate(); // 실제 연결
   }
 
   if (assignConfirmButton) {
@@ -456,7 +609,58 @@
     if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING" && detailCanWrite) {
       adminMessageInput.focus();
     }
-
-    connectAdminChatSocket(); // 소켓 연결
   }
+
+  // 목록, 상세 어디서든 소켓 연결 시작
+  if (listPage || detailPage) {
+     connectAdminChatSocket();
+  }
+
+   // 상태, 담당 필터, 페이지네이션 클릭을 가로채서 비동기 목록 갱신
+   document.addEventListener("click", function (event) {
+        if (!listPage) {
+          return;
+        }
+
+        var filterLink = event.target.closest(
+          '.admin-chat-shell--toolbar a.admin-chat-filter, .admin-chat-shell--pagination a.admin-chat-page-button'
+        );
+
+        if (!filterLink) {
+          return;
+        }
+
+        event.preventDefault();
+
+        refreshAdminChatList(filterLink.href, true);
+   });
+
+   // 검색 폼 전체 새로고침 없이 목록만 갱신
+   document.addEventListener("submit", function (event) {
+         if (!listPage) {
+           return;
+         }
+
+         var searchForm = event.target.closest("[data-admin-chat-search-form]");
+         if (!searchForm) {
+           return;
+         }
+
+         event.preventDefault();
+
+         var formData = new FormData(searchForm);
+         var params = new URLSearchParams(formData);
+         var requestUrl = searchForm.action + "?" + params.toString();
+
+         refreshAdminChatList(requestUrl, true);
+   });
+
+   window.addEventListener("popstate", function () {
+        if (!listPage) {
+          return;
+        }
+
+        refreshAdminChatList(window.location.href, false);
+   });
+
 });

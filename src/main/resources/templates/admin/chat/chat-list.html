@@ -26,34 +26,54 @@
             </div>
         </header>
 
+        <div class="admin-chat-feedback is-hidden"
+             data-admin-chat-feedback
+             aria-live="polite" aria-hidden="true">
+            <span class="material-symbols-outlined">error</span>
+            <p data-admin-chat-feedback-text>목록을 불러오는 중 문제가 발생했습니다.</p>
+        </div>
+
         <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="채팅 목록 필터">
             <div class="admin-chat-toolbar">
                 <div class="admin-chat-toolbar__filters">
                     <div class="admin-chat-filter-set" data-filter-group="status">
                         <a class="admin-chat-filter"
                            th:classappend="${searchDto.status == 'ALL'} ? ' is-active' : ''"
-                           th:href="@{/admin/chat/list(status='ALL', myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">전체</a>
+                           th:href="@{/admin/chat/list(status='ALL', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">전체</a>
                         <a class="admin-chat-filter"
                            th:classappend="${searchDto.status == 'OPEN'} ? ' is-active' : ''"
-                           th:href="@{/admin/chat/list(status='OPEN', myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">신규</a>
+                           th:href="@{/admin/chat/list(status='OPEN', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">신규</a>
                         <a class="admin-chat-filter"
                            th:classappend="${searchDto.status == 'ONGOING'} ? ' is-active' : ''"
-                           th:href="@{/admin/chat/list(status='ONGOING', myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">진행중</a>
+                           th:href="@{/admin/chat/list(status='ONGOING', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">진행중</a>
                         <a class="admin-chat-filter"
                            th:classappend="${searchDto.status == 'CLOSED'} ? ' is-active' : ''"
-                           th:href="@{/admin/chat/list(status='CLOSED', myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">종료됨</a>
+                           th:href="@{/admin/chat/list(status='CLOSED', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">종료됨</a>
                     </div>
 
                     <div class="admin-chat-filter-set" data-filter-group="ownership">
                         <a class="admin-chat-filter"
                            th:classappend="${!searchDto.myAssignedOnly} ? ' is-active' : ''"
-                           th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=false, page=0)}">전체 상담</a>
+                           th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=false, page=0)}">전체 상담</a>
                         <a class="admin-chat-filter"
                            th:classappend="${searchDto.myAssignedOnly} ? ' is-active' : ''"
-                           th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=true, page=0)}">내 담당만</a>
+                           th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=true, page=0)}">내 담당만</a>
                     </div>
                 </div>
+                <form class="admin-chat-search-form" data-admin-chat-search-form
+                      th:action="@{/admin/chat/list}" method="get">
+                    <input type="hidden" name="status" th:value="${searchDto.status}">
+                    <input type="hidden" name="myAssignedOnly" th:value="${searchDto.myAssignedOnly}">
+                    <input type="hidden" name="page" value="0">
 
+                    <input type="text"
+                           class="admin-chat-search-form__input" name="keyword"
+                           th:value="${searchDto.keyword}" placeholder="상호명 또는 회원명 검색">
+
+                    <button type="submit" class="admin-chat-search-form__submit admin-chat-action-link">
+                        검색
+                    </button>
+                </form>
             </div>
         </section>
 
@@ -145,7 +165,7 @@
             <div class="admin-chat-pagination">
                 <a th:if="${chatRoomPage.totalPages > 0 and chatRoomPage.hasPrevious()}"
                    class="admin-chat-page-button admin-chat-page-button--wide"
-                   th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number - 1})}">Prev</a>
+                   th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number - 1})}">Prev</a>
                 <span th:unless="${chatRoomPage.totalPages > 0 and chatRoomPage.hasPrevious()}"
                       class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
 
@@ -154,7 +174,7 @@
                     <a class="admin-chat-page-button"
                        th:classappend="${pageNumber == chatRoomPage.number} ? ' is-current' : ''"
                        th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
-                       th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${pageNumber})}">01</a>
+                       th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${pageNumber})}">01</a>
                 </th:block>
 
                 <span th:if="${chatRoomPage.totalPages == 0}"
@@ -162,7 +182,7 @@
 
                 <a th:if="${chatRoomPage.totalPages > 0 and chatRoomPage.hasNext()}"
                    class="admin-chat-page-button admin-chat-page-button--wide"
-                   th:href="@{/admin/chat/list(status=${searchDto.status}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number + 1})}">Next</a>
+                   th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number + 1})}">Next</a>
                 <span th:unless="${chatRoomPage.totalPages > 0 and chatRoomPage.hasNext()}"
                       class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
             </div>
@@ -171,6 +191,7 @@
         <div th:replace="~{fragments/chat/admin-assign-modal :: assignConfirmModal}"></div>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
     <script defer th:src="@{/js/chat/admin-chat.js}"></script>
 </th:block>
 </html>
