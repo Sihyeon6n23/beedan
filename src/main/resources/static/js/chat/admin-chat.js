@@ -196,6 +196,26 @@
     });
   }
 
+  function removeEmptyDetailPlaceholder() {
+    if (!adminMessageList) {
+      return;
+    }
+
+    var messageArticles = adminMessageList.querySelectorAll(".admin-chat-detail-message");
+    if (messageArticles.length > 0) {
+      return;
+    }
+
+    var systemMessages = adminMessageList.querySelectorAll(".admin-chat-room__system--detail");
+    if (!systemMessages.length) {
+      return;
+    }
+
+    // 메시지가 하나도 없을 때 마지막에 렌더된 안내 문구가 빈 상태 문구
+    var emptyPlaceholder = systemMessages[systemMessages.length - 1];
+    emptyPlaceholder.remove();
+  }
+
   stateButtons.forEach(function (button) {
     button.addEventListener("click", function () {
       setChatState(button.dataset.chatStateTarget);
@@ -220,10 +240,7 @@
       return;
     }
 
-    var emptyMessage = adminMessageList.querySelector(".admin-chat-room__system--detail");
-    if (emptyMessage && emptyMessage.textContent.indexOf("메시지") !== -1) {
-      emptyMessage.remove();
-    }
+    removeEmptyDetailPlaceholder();
 
     var article = document.createElement("article");
     article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
@@ -268,10 +285,7 @@
       return null;
     }
 
-    var emptyMessage = adminMessageList.querySelector(".admin-chat-room__system--detail");
-    if (emptyMessage && emptyMessage.textContent.indexOf("메시지") !== -1) {
-      emptyMessage.remove();
-    }
+    removeEmptyDetailPlaceholder();
 
     var article = document.createElement("article");
     article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
@@ -310,10 +324,7 @@
       // 사용자가 보낸 메시지를 좌측 말풍선으로 그리고 회사/회원 정보를 함께 보여줌
       if (!adminMessageList || !message) return;
 
-      var emptyMessage = adminMessageList.querySelector(".admin-chat-room__system--detail");
-      if (emptyMessage && emptyMessage.textContent.indexOf("메시지") !== -1) {
-        emptyMessage.remove();
-      }
+      removeEmptyDetailPlaceholder();
 
       var article = document.createElement("article");
       article.className = "admin-chat-detail-message admin-chat-detail-message--client";
