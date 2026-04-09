@@ -23,5 +23,5 @@
   "is_chat_auto_close_enabled" : true,
   "chat_auto_close_start_dt" : "2026-04-01T00:00",
   "chat_auto_close_interval" : "1",
-  "last_chat_auto_close_run_time" : "2026-04-09T19:56:17.787171600"
+  "last_chat_auto_close_run_time" : "2026-04-09T20:57:15.785841600"
 }
