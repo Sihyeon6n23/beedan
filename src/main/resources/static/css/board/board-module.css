@@ -126,6 +126,20 @@
 
 .module-search-select {
     height: 2.5rem;
+    width: 7rem;
+    padding: 0 1.5rem 0 0.8rem;
+    border: 1px solid #e3ddcf;
+    background: #fffdfa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a7a7a' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+    appearance: none; /* 기본 화살표 제거 */
+    color: #1a1c1c;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.module-size-select {
+    height: 2.5rem;
+    width: 5rem;
     padding: 0 1.5rem 0 0.8rem;
     border: 1px solid #e3ddcf;
     background: #fffdfa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a7a7a' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
@@ -139,4 +153,20 @@
 .module-search-select:focus {
     outline: none;
     border-color: #9f8858;
+}
+
+.module-search-form {
+    display: flex;
+    justify-content: space-between; /* 양쪽 끝으로 배치 */
+    align-items: center;
+    gap: 10px;
+}
+
+.module-search-info {
+    font-size: 0.9rem;
+}
+
+.module-search-size-wrapper select {
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }

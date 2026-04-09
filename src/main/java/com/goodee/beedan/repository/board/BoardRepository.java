@@ -40,7 +40,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     @Query("SELECT b FROM Board b JOIN FETCH b.member WHERE b.brdTy = :type AND b.brdFixYn = true AND b.brdDelYn = false")
     List<Board> findTopFixedNotices(@Param("type") BoardType type, Pageable pageable);
 
-    @Query("select b from Board b join fetch b.member where b.brdId = :id and b.brdTy = :ty")
+    @Query("select b from Board b join fetch b.member " +
+            "where b.brdId = :id and b.brdTy = :ty and b.brdDelYn = false")
     Optional<Board> findDetailWithMember(@Param("id") Long id, @Param("ty") BoardType ty);
 
     @Query(value = "select b from Board b join fetch b.member " +

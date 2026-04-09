@@ -1,11 +1,14 @@
 package com.goodee.beedan.dto.board.notice;
 
+import com.goodee.beedan.common.constant.SearchType;
 import lombok.Data;
 import lombok.Setter;
 import lombok.ToString;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+
+import java.util.List;
 
 @Data
 @ToString

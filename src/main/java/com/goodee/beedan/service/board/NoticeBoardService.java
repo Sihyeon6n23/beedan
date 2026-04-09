@@ -134,8 +134,18 @@ public class NoticeBoardService {
                 boardRepository.findTopFixedNotices(boardType, PageRequest.of(0, 5, Sort.by("brdCreDt").descending()))
                 : Collections.emptyList();
 
+        // 2. 이미 가져온 리스트에서 ID만 추출 (CPU 연산만 발생, DB 비용 0)
+        List<Long> excludedIds = fixedEntities.stream()
+                .map(Board::getBrdId)
+                .collect(Collectors.toList());
+
+
         // 2. 일반글 페이징 조회
         Specification<Board> spec = BoardSpecs.isActive(boardType);
+        if (!excludedIds.isEmpty()) {
+            spec = spec.and(BoardSpecs.notInIds(excludedIds));
+        }
+
         if (boardType.isUseStatus() && searchDto.getBrdInqStt() != null) {
             spec = spec.and(BoardSpecs.withStatus(searchDto.getBrdInqStt()));
         }

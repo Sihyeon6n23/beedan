@@ -7,6 +7,8 @@ import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 public class BoardSpecs {
 
     public static Specification<Board> isActive(BoardType type) {
@@ -40,7 +42,7 @@ public class BoardSpecs {
             return switch (searchType != null ? searchType : "all") {
                 case "title" -> builder.like(root.get(Board_.brdTtl), pattern);
                 case "content" -> builder.like(root.get(Board_.brdCon), pattern);
-                case "writer" -> builder.like(root.get(Board_.member.getName()), pattern);
+                case "writer" -> builder.like(root.get(Board_.member).get("memNm"), pattern);
 
                 // 검색 타입이 지정되지 않았거나 '전체'일 경우: 제목 OR 내용 통합 검색
                 default -> builder.or(
@@ -59,6 +61,14 @@ public class BoardSpecs {
                 root.fetch(Board_.MEMBER, JoinType.LEFT);
             }
             return null; // 조건(Predicate)은 추가하지 않고 fetch만 수행
+        };
+    }
+
+    public static Specification<Board> notInIds(List<Long> excludedIds) {
+        return (root, query, builder) -> {
+            if (excludedIds == null || excludedIds.isEmpty()) return null;
+            // id NOT IN (...) 조건 생성
+            return builder.not(root.get(Board_.brdId).in(excludedIds));
         };
     }
 }

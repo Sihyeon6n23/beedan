@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ADMIN PAGE', 'Notice Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('Board', 'Board Management', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -11,7 +11,7 @@
 </title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notice','notice-write')}"></div>
+    <div th:replace="~{/board/board-sidebar :: sidebar('notice','notice-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -63,15 +63,15 @@
                                   th:field="*{brdCon}"></textarea>
                     </div>
 
-                    <div class="inquiry-write-field">
-                        <label class="inquiry-write-field__label">첨부 파일</label>
-                        <th:block th:if="${isEdit}">
+                    <th:block th:if="${isEdit}">
+                        <div class="inquiry-write-field">
+                            <label class="inquiry-write-field__label">첨부 파일</label>
                             <div th:replace="~{fragments/file/file-list :: display(list=${boardRequestDto.fileList})}"></div>
-                        </th:block>
-                        <th:block th:if="${!isEdit}">
-                            <div th:replace="~{fragments/file/file-list :: display(list=${boardRequestDto.fileList})}"></div>
-                        </th:block>
-                    </div>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${!isEdit}">
+                        <div th:replace="~{fragments/file/file-list :: display(null)}"></div>
+                    </th:block>
                 </div>
 
                 <div class="inquiry-write-form__actions">

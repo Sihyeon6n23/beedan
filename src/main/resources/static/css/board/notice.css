@@ -22,7 +22,6 @@
 .inquiry-shell--header, .inquiry-shell--toolbar, .inquiry-shell--pagination {
   background: transparent;
   box-shadow: none;
-  padding: 1.5rem 0;
 }
 
 .inquiry-shell__heading {
@@ -273,6 +272,45 @@
 .inquiry-page-button.is-current { background: var(--color-primary-container); border-color: #d7d2c6; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+.inquiry-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 1.5rem; /* 충분한 상하 여백으로 중앙 집중도 향상 */
+  text-align: center;
+  background: #fffdfa;
+  border-bottom: 1px solid #efefef;
+}
+
+/* "표시할 내용이 없습니다" 강하게 강조 */
+.inquiry-empty-state strong {
+  display: block;
+  color: #1a1c1c;
+  font-family: var(--font-headline);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+}
+
+/* "등록된 공지사항이 없습니다" 보조 문구 */
+.inquiry-empty-state p {
+  color: var(--color-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* (선택 사항) 아이콘을 추가하고 싶다면 HTML에 아이콘 태그를 넣고 아래 스타일 활용 */
+.inquiry-empty-state::before {
+  content: 'search_off'; /* 머티리얼 심볼 사용 시 */
+  font-family: 'Material Symbols Outlined';
+  font-size: 3rem;
+  color: #d8cfc2;
+  margin-bottom: 0.5rem;
+}
 
 /* ==========================================================================
    6. 반응형 (Mobile)

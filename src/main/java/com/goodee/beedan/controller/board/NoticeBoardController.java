@@ -1,6 +1,7 @@
 package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.common.constant.BoardType;
+import com.goodee.beedan.common.constant.SearchType;
 import com.goodee.beedan.dto.board.notice.*;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.service.board.NoticeBoardService;
@@ -60,8 +61,10 @@ public class NoticeBoardController {
         // 서비스 호출 (BoardType.NOTICE 명시)
         BoardListResponse response = noticeBoardService.getBoardList(BoardType.NOTICE, searchDto);
 
+        model.addAttribute("boardUri", "/notice/list");    // 고정글 + 페이징 결과 포함됨
         model.addAttribute("response", response);    // 고정글 + 페이징 결과 포함됨
         model.addAttribute("searchDto", searchDto);
+        model.addAttribute("searchTypes", SearchType.getSupportedTypes(BoardType.NOTICE));
 
         return "board/notice/notice-list";
     }

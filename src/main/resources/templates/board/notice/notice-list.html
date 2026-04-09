@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Notice Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('Board', 'Board Management', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 공지사항 목록</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notice','notice-list')}"></div>
+    <div th:replace="~{/board/board-sidebar :: sidebar('notice','notice-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -29,7 +29,7 @@
             <div class="inquiry-toolbar">
                 <div class="inquiry-toolbar__actions" style="margin-left: auto; display: flex; gap: 0.75rem; align-items: center;">
 
-                    <div th:replace="~{fragments/board/board-module :: searchBar('/notice/list', ${searchDto}, ${boardType})}"></div>
+                    <div th:replace="~{fragments/board/board-module :: searchBar(${boardUri}, ${searchDto}, ${searchTypes})}"></div>
 
                     <a th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')}"
                        th:href="@{/notice/write}" class="inquiry-action-link">
@@ -96,8 +96,7 @@
                         <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">날짜</span>
                     </div>
                 </a>
-
-                <th:block th:if="${#lists.size(response.pagination.content) < 10}"
+                <th:block th:if="${not #lists.isEmpty(response.pagination.content) and #lists.size(response.pagination.content) < 10}"
                           th:each="spacer : ${#numbers.sequence(1, 10 - #lists.size(response.pagination.content))}">
                     <div class="inquiry-row-spacer" aria-hidden="true" style="min-height: 2.68rem;"></div>
                 </th:block>
