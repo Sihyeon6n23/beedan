@@ -350,7 +350,19 @@
                 return parts.join('&');
             }
         })
-            .then(res => renderProducts(res.data))
+            .then(res => {
+                renderProducts(res.data);
+                const url = new URL(window.location);
+                url.searchParams.set('page', currentPage);
+                const kw = getKeyword();
+                kw ? url.searchParams.set('keyword', kw) : url.searchParams.delete('keyword');
+                url.searchParams.set('sort', getSort());
+                url.searchParams.delete('brands');
+                getSelectedBrands().forEach(b => url.searchParams.append('brands', b));
+                url.searchParams.delete('categories');
+                getSelectedCategories().forEach(c => url.searchParams.append('categories', c));
+                history.replaceState(null, '', url);
+            })
             .catch(err => console.error('Stock API error:', err));
     }
 
@@ -371,7 +383,25 @@
         searchTimer = setTimeout(() => loadProducts(0), 300);
     });
 
-    loadProducts(0);
+    // URL 파라미터에서 상태 복원
+    const urlParams = new URLSearchParams(window.location.search);
+    const initPage = parseInt(urlParams.get('page')) || 0;
+    const initKeyword = urlParams.get('keyword') || '';
+    const initSort = urlParams.get('sort') || 'recent';
+    const initBrands = urlParams.getAll('brands');
+    const initCategories = urlParams.getAll('categories');
+
+    document.getElementById('search-input').value = initKeyword;
+    document.getElementById('sort-select').value = initSort;
+    initBrands.forEach(id => {
+        const cb = document.querySelector('.brand-checkbox[data-brand-id="' + id + '"]');
+        if (cb) cb.checked = true;
+    });
+    initCategories.forEach(name => {
+        const cb = document.querySelector('.category-checkbox[data-category="' + name + '"]');
+        if (cb) cb.checked = true;
+    });
+    loadProducts(initPage);
 })();
 
 

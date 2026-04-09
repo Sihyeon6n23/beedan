@@ -34,7 +34,7 @@ public class WishlistController {
             Pageable pageable,
             Model model,
             @AuthenticationPrincipal MemberUserDetails userDetails) {
-        Long memId = userDetails != null ? userDetails.getMemberId() : null;
+        Long memId = userDetails.getMemberId();
         model.addAttribute("memberId", memId);
 
         // 해당 회원의 wishlist에 저장되어 있는 상품 목록

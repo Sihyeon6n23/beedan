@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.NoSuchElementException;
+
 
 @ControllerAdvice
 public class GlobalControllerAdvice {
@@ -40,6 +42,12 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(IllegalStateException.class)
     public String handleIllegalState(IllegalStateException e, Model model) {
+        model.addAttribute("message", e.getMessage());
+        return "error/common";
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public String handleNoSuchElement(NoSuchElementException e, Model model) {
         model.addAttribute("message", e.getMessage());
         return "error/common";
     }

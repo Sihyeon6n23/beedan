@@ -40,7 +40,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/quote")
 @RequiredArgsConstructor
-public class QuoteController {
+public class    QuoteController {
 
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;

@@ -95,7 +95,7 @@ public class CrawlingService {
         // 1단계: 저장된 방식이 있으면 먼저 시도, 없거나 실패 시 폴백
         String url = crawlingUrl.getUrlUrl();
         String method = crawlingUrl.getUrlTy();
-        List<RawProduct> rawList = null;
+        List<RawProduct> rawList = List.of();
         String usedMethod = null;
 
         if ("SHOPIFY".equals(method)) {
@@ -225,7 +225,7 @@ public class CrawlingService {
                 totalNewCount += count;
                 log.info("전체 크롤링 - 완료: urlId={}, 신규={}건", url.getUrlId(), count);
             } catch (Exception e) {
-                log.error("전체 크롤링 - 실패: urlId={}, 사유={}", url.getUrlId(), e.getMessage());
+                log.error("전체 크롤링 - 실패: urlId={}, 사유={}", url.getUrlId(), e.getMessage(), e);
             }
         }
 
@@ -272,32 +272,43 @@ public class CrawlingService {
 
     // Shopify 여부 판별 (외부에서 호출용)
     public boolean isShopify(String url) {
-
         return tryShopifyJson(url) != null;
     }
 
     // Playwright HTML 파싱 (JS 렌더링 사이트용)
     private List<RawProduct> crawlWithPlaywright(String url, String selItem, String selNm, String selPr, String selImg) {
         if (selItem == null || selItem.isBlank()) return List.of();
+        // playwright 엔진 초기화
         try (Playwright playwright = Playwright.create()) {
-            Browser browser = playwright.chromium().launch(
+
+            String html;
+
+            // 화면 없는 chrome 브라우저 실행
+            try (Browser browser = playwright.chromium().launch(
                     new BrowserType.LaunchOptions()
                             .setHeadless(true)
                             .setChannel("chrome")
-            );
-            Page page = browser.newPage();
-            page.navigate(url, new Page.NavigateOptions()
-                    .setTimeout(30_000));
-            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
-                    new Page.WaitForLoadStateOptions().setTimeout(15_000));
+            )) {
+                try (
+                        // 새 탭 열기
+                        Page page = browser.newPage()) {
+                    // 크롤링할 url 접속 + 타임아웃 30초
+                    page.navigate(url, new Page.NavigateOptions()
+                            .setTimeout(30_000));
 
-            String html = page.content();
-            browser.close();
+                    // 페이지 전체 로딩될때까지 대기
+                    page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
+                            new Page.WaitForLoadStateOptions().setTimeout(15_000));
+
+                    // 로딩 끝난 페이지의 HTML 가져오기
+                    html = page.content();
+                }
+            }
 
             Document doc = Jsoup.parse(html, url);  // base URL 전달 → abs:src 정상 동작
             Elements items = doc.select(selItem);
 
-            log.info("[Playwright] 찾은 아이템 수: {}", + items.size());
+            log.info("[Playwright] 찾은 아이템 수: {}",  items.size());
 
             List<RawProduct> list = new ArrayList<>();
             for (Element item : items) {

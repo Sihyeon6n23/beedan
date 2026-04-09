@@ -264,7 +264,7 @@ public class StockService {
         stockRepository.save(stock);
     }
 
-    // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개)
+    // 메인 화면 신상품 조회 (최근 30개 추출 후 랜덤 10개, 캐시 저장용)
     public List<StockListDto> findNewStocks() {
         List<Stock> newStocks = stockRepository.findTop30ByStExpYnTrueOrderByStCraDtDesc();
         Collections.shuffle(newStocks);
@@ -274,6 +274,7 @@ public class StockService {
                 .collect(Collectors.toList());
     }
 
+    // 메인 화면 전월 인기 상품 조회 (캐시 저장용)
     public List<StockListDto> findPopularStocks() {
         YearMonth lastMonth = YearMonth.now().minusMonths(1);
         LocalDateTime startDt = lastMonth.atDay(1).atStartOfDay();
