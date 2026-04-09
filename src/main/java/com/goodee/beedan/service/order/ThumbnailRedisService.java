@@ -44,9 +44,10 @@ public class ThumbnailRedisService {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             builder.size(100, 100)
                     .outputFormat("jpg")
+                    .outputQuality(0.6f)
                     .toOutputStream(baos);
 
-            redisTemplate.opsForValue().set(thumbKey, baos.toByteArray(), 1, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set(thumbKey, baos.toByteArray(), 3, TimeUnit.HOURS);
             log.info("썸네일 생성 및 캐싱 완료: {}", thumbKey);
 
         } catch (Exception e) {

@@ -163,7 +163,7 @@ public class OrderService {
             // 주문 상품, 배송 물품
             for (QuoteDetail detail : groupItems) {
                 Stock stock = stockRepository.findById(detail.getStId()).orElseThrow(()->new IllegalArgumentException("상품 정보가 없습니다."));
-                String thumbKey = "thumb:" + UUID.randomUUID().toString();
+                String thumbKey = "display:thumbnail:" + UUID.randomUUID().toString();
 
                 OrderItem orderItem = OrderItem.builder()
                         .order(order)
