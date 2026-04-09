@@ -72,6 +72,9 @@ dependencies {
 	// PDF 생성 (Flying Saucer + iText)
 	implementation 'org.xhtmlrenderer:flying-saucer-pdf:9.11.4'
 
+	// JPA Metamodel Generator (컴파일 시점에 _ 클래스 생성)
+	annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen'
+  
 	// 레디스
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 

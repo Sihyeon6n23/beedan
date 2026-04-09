@@ -6,16 +6,18 @@ import com.goodee.beedan.entity.Board;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BoardRepository extends JpaRepository<Board, Long> {
+public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
 
     // 1. 공통: 삭제 안 된 게시글 찾기 (관리자 문의 상세)
     Optional<Board> findByBrdIdAndBrdTyAndBrdDelYnFalse(Long brdId, BoardType brdTy);
@@ -23,25 +25,29 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     // 2. 공통: 삭제 안 된 게시글 페이징 목록
     Page<Board> findByBrdTyAndBrdDelYnFalse(BoardType brdTy, Pageable pageable);
 
-    // 3. 공지 특화: 상단 고정글 목록
-    List<Board> findByBrdTyAndBrdFixYnTrueAndBrdDelYnFalse(BoardType brdTy);
-
     // 4. 공지 특화: 조회수 증가 쿼리
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Board b SET b.brdVstCnt = b.brdVstCnt + 1 WHERE b.brdId = :brdId AND b.brdTy = :brdTy AND b.brdDelYn = false")
     int increaseViewCount(@Param("brdId") Long brdId, @Param("brdTy") BoardType brdTy);
     // ===============================================================
-    // 고정글 목록 (최신순)
-    List<Board> findByBrdTyAndBrdFixYnTrueAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType brdTy);
-
-    // 일반글 페이징 (최신순)
-    Page<Board> findByBrdTyAndBrdFixYnFalseAndBrdDelYnFalseOrderByBrdCreDtDesc(BoardType brdTy, Pageable pageable);
-
     // 이전글 (현재 ID보다 작으면서 가장 큰 ID)
     Optional<Board> findFirstByBrdIdLessThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdDesc(Long brdId, BoardType brdTy);
 
     // 다음글 (현재 ID보다 크면서 가장 작은 ID)
     Optional<Board> findFirstByBrdIdGreaterThanAndBrdTyAndBrdDelYnFalseOrderByBrdIdAsc(Long brdId, BoardType brdTy);
+
+    // 4. 고정 공지 (Fetch Join 추가로 쿼리 1회 감소)
+    @Query("SELECT b FROM Board b JOIN FETCH b.member WHERE b.brdTy = :type AND b.brdFixYn = true AND b.brdDelYn = false")
+    List<Board> findTopFixedNotices(@Param("type") BoardType type, Pageable pageable);
+
+    @Query("select b from Board b join fetch b.member " +
+            "where b.brdId = :id and b.brdTy = :ty and b.brdDelYn = false")
+    Optional<Board> findDetailWithMember(@Param("id") Long id, @Param("ty") BoardType ty);
+
+    @Query(value = "select b from Board b join fetch b.member " +
+            "where b.brdTy = :ty and b.brdDelYn = false",
+            countQuery = "select count(b) from Board b where b.brdTy = :ty and b.brdDelYn = false")
+    Page<Board> findListWithMember(@Param("ty") BoardType brdTy, Pageable pageable);
 
 
     // ===============================================================

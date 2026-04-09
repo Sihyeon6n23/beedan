@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Notice Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('Board', 'Board Management', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 공지사항 상세</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('notice','notice-list')}"></div>
+    <div th:replace="~{/board/board-sidebar :: sidebar('notice','notice-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -40,17 +40,17 @@
                 <div class="inquiry-detail-article__meta">
                     <span th:text="${#authorization.expression('hasAnyRole(''ADMIN'', ''ROOT'')')} ? ${notice.memNm} : '관리자'">작성자</span>
                     <span th:text="${#temporals.format(notice.brdCreDt, 'yyyy.MM.dd HH:mm')}">날짜</span>
-                    <span>조회수 <em th:text="${notice.brdVstCnt}" style="font-style: normal; font-weight: 600;">0</em></span>
+                    <span>조회수 <em th:text="${notice.brdHit}" style="font-style: normal; font-weight: 600;">0</em></span>
                 </div>
             </div>
 
             <div class="inquiry-detail-article__body">
                 <div class="inquiry-detail-article__content" th:utext="${notice.brdCon}">내용</div>
 
-                <div th:replace="~{fragments/file/file-list :: display(list=${fileList})}"></div>
+                <div th:replace="~{fragments/file/file-list :: display(list=${notice.fileList})}"></div>
             </div>
 
-            <div class="inquiry-detail-article__footer" th:if="${canModify}">
+            <div class="inquiry-detail-article__footer" th:if="${notice.canEdit}">
                 <div class="inquiry-detail-actions">
                     <a th:href="@{/notice/edit(id=${notice.brdId})}" class="inquiry-detail-action inquiry-detail-action--primary">공지 수정</a>
                     <form th:action="@{/notice/delete}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
@@ -61,18 +61,18 @@
             </div>
 
             <nav class="inquiry-detail-nav mt-12 border-t border-zinc-200">
-                <div class="flex items-center p-4 border-b border-zinc-100 group" th:if="${notice.prevNotice != null}">
+                <div class="flex items-center p-4 border-b border-zinc-100 group" th:if="${notice.prevBoard != null}">
                     <span class="text-zinc-400 text-xs w-20 flex-shrink-0 font-bold uppercase tracking-wider">Prev</span>
-                    <a th:href="@{/notice/detail(id=${notice.prevNotice.id})}"
+                    <a th:href="@{/notice/detail(id=${notice.prevBoard.brdId})}"
                        class="text-sm text-secondary hover:text-primary transition-colors truncate"
-                       th:text="${notice.prevNotice.title}">이전 공지사항 제목입니다.</a>
+                       th:text="${notice.prevBoard.brdTtl}">이전 공지사항 제목입니다.</a>
                 </div>
 
-                <div class="flex items-center p-4 border-b border-zinc-100 group" th:if="${notice.nextNotice != null}">
+                <div class="flex items-center p-4 border-b border-zinc-100 group" th:if="${notice.nextBoard != null}">
                     <span class="text-zinc-400 text-xs w-20 flex-shrink-0 font-bold uppercase tracking-wider">Next</span>
-                    <a th:href="@{/notice/detail(id=${notice.nextNotice.id})}"
+                    <a th:href="@{/notice/detail(id=${notice.nextBoard.brdId})}"
                        class="text-sm text-secondary hover:text-primary transition-colors truncate"
-                       th:text="${notice.nextNotice.title}">다음 공지사항 제목입니다.</a>
+                       th:text="${notice.nextBoard.brdTtl}">다음 공지사항 제목입니다.</a>
                 </div>
             </nav>
         </article>
