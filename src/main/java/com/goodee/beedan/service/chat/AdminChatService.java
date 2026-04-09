@@ -1,10 +1,9 @@
 package com.goodee.beedan.service.chat;
 
-import com.goodee.beedan.common.constant.ChatMessageSenderType;
-import com.goodee.beedan.common.constant.ChatRoomCloseReason;
-import com.goodee.beedan.common.constant.ChatRoomStatus;
-import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.*;
 import com.goodee.beedan.dto.chat.*;
+import com.goodee.beedan.dto.file.FileDto;
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.entity.ChatMessage;
 import com.goodee.beedan.entity.ChatRoom;
 import com.goodee.beedan.entity.ChatRoomReadStatus;
@@ -13,13 +12,16 @@ import com.goodee.beedan.repository.chat.ChatMessageRepository;
 import com.goodee.beedan.repository.chat.ChatRoomReadStatusRepository;
 import com.goodee.beedan.repository.chat.ChatRoomRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
+import com.goodee.beedan.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,7 @@ public class AdminChatService {
     private final MemberRepository memberRepository;
     private final ChatRoomReadStatusRepository chatRoomReadStatusRepository;
     private final ChatRealtimeService chatRealtimeService;
+    private final FileService fileService;
 
     // 관리자 채팅 목록 조회 (페이징 + 상태 필터링 + 담당 필터링)
     public Page<AdminChatRoomListDto> getAdminChatRooms(AdminChatRoomSearchDto searchDto, Long memAdId) {
@@ -275,6 +278,7 @@ public class AdminChatService {
 
         ChatMessage chatMessage = ChatMessage.builder()
                 .chMsSenTy(ChatMessageSenderType.ADMIN)
+                .chMsTp(ChatMessageType.TEXT)
                 .chMsCon(content.trim())
                 .chRoId(chRoId)
                 .memId(memAdId)
@@ -365,13 +369,180 @@ public class AdminChatService {
         return mapToAdminChatRoomDetailDto(chatRoom, member, admin, messageDtos, chatRoom.getMemAdId() != null && chatRoom.getMemAdId().equals(memAdId));
     }
 
+    // 관리자 채팅 이미지 메시지 전송
+    public AdminChatMessageDto sendAdminChatImage(Long chRoId,
+                                                  Long memAdId,
+                                                  AdminChatImageMessageSendDto adminChatImageMessageSendDto) throws IOException {
+        validateAdminAuthority(memAdId);
+        // 채팅방 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(chRoId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+        if (chatRoom.getChRoStt() == ChatRoomStatus.CLOSED) {
+            throw new IllegalStateException("종료된 채팅방에는 메시지를 보낼 수 없습니다.");
+        }
+
+        if (chatRoom.getMemAdId() == null) {
+            throw new IllegalStateException("담당자가 배정되지 않은 채팅방에는 메시지를 보낼 수 없습니다.");
+        }
+
+        if (!chatRoom.getMemAdId().equals(memAdId)) {
+            throw new IllegalStateException("담당자 본인만 메시지를 보낼 수 있습니다.");
+        }
+
+        validateChatImageFile(adminChatImageMessageSendDto.getImageFile());
+
+        ChatMessage chatMessage = ChatMessage.builder()
+                .chMsSenTy(ChatMessageSenderType.ADMIN)
+                .chMsTp(ChatMessageType.IMAGE)
+                .chMsCon(null)
+                .chRoId(chRoId)
+                .memId(memAdId)
+                .build();
+
+        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+
+        fileService.saveFile(
+                List.of(adminChatImageMessageSendDto.getImageFile()),
+                RefDto.builder()
+                        .refTy("CHAT_MESSAGE")
+                        .refNo(savedMessage.getChMsId())
+                        .build()
+        );
+
+        chatRoom.setChRoLastMsDt(savedMessage.getChMsCreDt());
+        chatRoomRepository.save(chatRoom);
+
+        ChatRoomReadStatus adminReadStatus = chatRoomReadStatusRepository
+                .findByMemIdAndChRoId(memAdId, chRoId)
+                .orElseGet(() -> ChatRoomReadStatus.builder()
+                        .memId(memAdId)
+                        .chRoId(chRoId)
+                        .build());
+
+        adminReadStatus.setChRoReStUnrYn(false);
+        adminReadStatus.setChMsLastId(savedMessage.getChMsId());
+        chatRoomReadStatusRepository.save(adminReadStatus);
+
+        ChatRoomReadStatus memberReadStatus = chatRoomReadStatusRepository
+                .findByMemIdAndChRoId(chatRoom.getMemId(), chRoId)
+                .orElseGet(() -> ChatRoomReadStatus.builder()
+                        .memId(chatRoom.getMemId())
+                        .chRoId(chRoId)
+                        .build());
+
+        memberReadStatus.setChRoReStUnrYn(true);
+        memberReadStatus.setChMsLastId(savedMessage.getChMsId());
+        chatRoomReadStatusRepository.save(memberReadStatus);
+
+        AdminChatMessageDto adminChatMessageDto = mapToAdminChatMessageDto(savedMessage);
+        chatRealtimeService.publishMessage(chRoId, adminChatMessageDto);
+        chatRealtimeService.publishMemberSummary(chatRoom.getMemId());
+        chatRealtimeService.publishAdminSummary();
+
+        return adminChatMessageDto;
+    }
+
+    // 관리자 채팅 견적 메시지 전송
+    public AdminChatMessageDto sendAdminQuoteCard(Long chRoId,
+                                                  Long memAdId,
+                                                  AdminChatQuoteCardMessageSendDto adminChatQuoteCardMessageSendDto) {
+        validateAdminAuthority(memAdId);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chRoId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+        if (chatRoom.getChRoStt() == ChatRoomStatus.CLOSED) {
+            throw new IllegalStateException("종료된 채팅방에는 메시지를 보낼 수 없습니다.");
+        }
+
+        if (chatRoom.getMemAdId() == null) {
+            throw new IllegalStateException("담당자가 배정되지 않은 채팅방에는 메시지를 보낼 수 없습니다.");
+        }
+
+        if (!chatRoom.getMemAdId().equals(memAdId)) {
+            throw new IllegalStateException("담당자 본인만 메시지를 보낼 수 있습니다.");
+        }
+
+        if (adminChatQuoteCardMessageSendDto.getChMsLnkTtl() == null || adminChatQuoteCardMessageSendDto.getChMsLnkTtl().isBlank()) {
+            throw new IllegalArgumentException("견적 카드 제목은 필수입니다.");
+        }
+
+        if (adminChatQuoteCardMessageSendDto.getChMsLnkUrl() == null || adminChatQuoteCardMessageSendDto.getChMsLnkUrl().isBlank()) {
+            throw new IllegalArgumentException("견적 링크는 필수입니다.");
+        }
+
+        ChatMessage chatMessage = ChatMessage.builder()
+                .chMsSenTy(ChatMessageSenderType.ADMIN)
+                .chMsTp(ChatMessageType.QUOTE_CARD)
+                .chMsCon(adminChatQuoteCardMessageSendDto.getChMsCon() != null
+                            && !adminChatQuoteCardMessageSendDto.getChMsCon().isBlank()
+                            ? adminChatQuoteCardMessageSendDto.getChMsCon().trim()
+                            : null)
+                .chMsLnkTtl(adminChatQuoteCardMessageSendDto.getChMsLnkTtl().trim())
+                .chMsLnkUrl(adminChatQuoteCardMessageSendDto.getChMsLnkUrl().trim())
+                .chRoId(chRoId)
+                .memId(memAdId)
+                .build();
+
+        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+
+        chatRoom.setChRoLastMsDt(savedMessage.getChMsCreDt());
+        chatRoomRepository.save(chatRoom);
+
+        ChatRoomReadStatus adminReadStatus = chatRoomReadStatusRepository
+                .findByMemIdAndChRoId(memAdId, chRoId)
+                .orElseGet(() -> ChatRoomReadStatus.builder()
+                        .memId(memAdId)
+                        .chRoId(chRoId)
+                        .build());
+
+        adminReadStatus.setChRoReStUnrYn(false);
+        adminReadStatus.setChMsLastId(savedMessage.getChMsId());
+        chatRoomReadStatusRepository.save(adminReadStatus);
+
+        ChatRoomReadStatus memberReadStatus = chatRoomReadStatusRepository
+                .findByMemIdAndChRoId(chatRoom.getMemId(), chRoId)
+                .orElseGet(() -> ChatRoomReadStatus.builder()
+                        .memId(chatRoom.getMemId())
+                        .chRoId(chRoId)
+                        .build());
+
+        memberReadStatus.setChRoReStUnrYn(true);
+        memberReadStatus.setChMsLastId(savedMessage.getChMsId());
+        chatRoomReadStatusRepository.save(memberReadStatus);
+
+        AdminChatMessageDto adminChatMessageDto = mapToAdminChatMessageDto(savedMessage);
+        chatRealtimeService.publishMessage(chRoId, adminChatMessageDto);
+        chatRealtimeService.publishMemberSummary(chatRoom.getMemId());
+        chatRealtimeService.publishAdminSummary();
+
+        return adminChatMessageDto;
+    }
+
     // 관리자 메시지 DTO 변환
     private AdminChatMessageDto mapToAdminChatMessageDto(ChatMessage chatMessage) {
+        FileDto imageFile = null;
+        if (chatMessage.getChMsTp() == ChatMessageType.IMAGE) {
+            imageFile = fileService.getFileList(
+                            RefDto.builder()
+                                    .refTy("CHAT_MESSAGE")
+                                    .refNo(chatMessage.getChMsId())
+                                    .build()
+                    ).stream()
+                    .findFirst()
+                    .orElse(null);
+        }
+
         return AdminChatMessageDto.builder()
                 .chMsId(chatMessage.getChMsId())
                 .chMsSenTy(chatMessage.getChMsSenTy())
+                .chMsTp(chatMessage.getChMsTp())
                 .chMsCon(chatMessage.getChMsCon())
+                .chMsLnkUrl(chatMessage.getChMsLnkUrl())
+                .chMsLnkTtl(chatMessage.getChMsLnkTtl())
                 .chMsCreDt(chatMessage.getChMsCreDt())
+                .imageFile(imageFile)
                 .build();
     }
 
@@ -405,6 +576,29 @@ public class AdminChatService {
         if (!admin.getMemAut().equals(MemberAuthority.ADMIN)
                 && !admin.getMemAut().equals(MemberAuthority.ROOT)) {
             throw new IllegalArgumentException("관리자만 사용할 수 있는 기능입니다.");
+        }
+    }
+
+    // 이미지 검증
+    private void validateChatImageFile(MultipartFile imageFile) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("이미지 파일은 필수입니다.");
+        }
+
+        String originalName = imageFile.getOriginalFilename();
+        if (originalName == null || !originalName.contains(".")) {
+            throw new IllegalArgumentException("올바르지 않은 이미지 파일명입니다.");
+        }
+
+        String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase().trim();
+        List<String> allowedExts = List.of("jpg", "jpeg", "png", "webp");
+        if (!allowedExts.contains(ext)) {
+            throw new IllegalArgumentException("채팅 이미지는 jpg, jpeg, png, webp만 업로드할 수 있습니다.");
+        }
+
+        long maxSize = 5L * 1024 * 1024;
+        if (imageFile.getSize() > maxSize) {
+            throw new IllegalArgumentException("채팅 이미지는 5MB 이하만 업로드할 수 있습니다.");
         }
     }
 }

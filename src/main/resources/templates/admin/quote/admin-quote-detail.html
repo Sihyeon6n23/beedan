@@ -36,9 +36,9 @@
                     목록으로
                 </a>
                 <span class="aqd-badge"
-                      th:classappend="'aqd-badge--' + ${quoteBase.quStt.name().toLowerCase()}"
+                      th:classappend="'aqd-badge--' + ${quoteBase.quStt.name() == 'SUBMITTED' ? (isSender ? 'submitted' : 'confirmed') : quoteBase.quStt.name().toLowerCase()}"
                       th:text="${quoteBase.quStt.name() == 'TEMP_SAVE' ? '임시저장' :
-                                 quoteBase.quStt.name() == 'SUBMITTED' ? (isAdmin != null and isAdmin ? '대기중' : '제출완료') :
+                                 quoteBase.quStt.name() == 'SUBMITTED' ? (isSender ? '제출완료' : '확인함') :
                                  quoteBase.quStt.name() == 'APPROVED' ? '승인' :
                                  quoteBase.quStt.name() == 'REJECTED' ? '반려' :
                                  quoteBase.quStt.name() == 'PAID' ? '결제완료' : '만료'}">상태</span>
@@ -128,7 +128,7 @@
                         <td class="col-price-total text-right"
                             th:text="${detail.quDtFgPr != null and detail.quDtQn != null ? detailExtras[__${idx.index}__]['stCur'] + #numbers.formatDecimal(detail.quDtFgPr * detail.quDtQn, 1, 'COMMA', 0, 'POINT') : '-'}">-</td>
                         <td class="col-subtotal text-right"
-                            th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">-</td>
+                            th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">-</td>
                     </tr>
                     </tbody>
                 </table>
@@ -190,12 +190,12 @@
             <div class="aqd-cost-card">
                 <div class="aqd-cost-card__label">품목 대금</div>
                 <div class="aqd-cost-card__amount"
-                     th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA') : '-'}">-</div>
+                     th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA') : '-'}">-</div>
             </div>
             <div class="aqd-cost-card">
                 <div class="aqd-cost-card__label">물류 비용</div>
                 <div class="aqd-cost-card__amount"
-                     th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 3, 'COMMA')}">-</div>
+                     th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 1, 'COMMA')}">-</div>
                 <div class="aqd-cost-card__desc">국제 운임 + 국내 배송</div>
             </div>
             <div class="aqd-cost-card">
@@ -206,15 +206,15 @@
                           style="color:#705d00; font-size:0.7rem; margin-left:4px;">-10%</span>
                 </div>
                 <div class="aqd-cost-card__amount"
-                     th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">-</div>
+                     th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">-</div>
                 <div class="aqd-cost-card__desc"
                      th:if="${quoteInfo.quInfoSrvFeR != null && quoteInfo.quInfoSrvFeR > 0}"
-                     th:text="'정가 ₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFe, 3, 'COMMA')} + ' 에서 할인'">할인</div>
+                     th:text="'정가 ₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFe, 1, 'COMMA')} + ' 에서 할인'">할인</div>
             </div>
             <div class="aqd-cost-card">
                 <div class="aqd-cost-card__label">관세 및 부가세</div>
                 <div class="aqd-cost-card__amount"
-                     th:text="${totalDutyVat != null ? '₩' + #numbers.formatInteger(totalDutyVat, 3, 'COMMA') : '-'}">-</div>
+                     th:text="${totalDutyVat != null ? '₩' + #numbers.formatInteger(totalDutyVat, 1, 'COMMA') : '-'}">-</div>
             </div>
             </div>
         </section>
@@ -236,7 +236,7 @@
                 <div class="modal-total-row">
                     <span class="modal-total-label">최종 결제 금액</span>
                     <span class="modal-total-value"
-                          th:text="${calculatedTotal != null ? '₩' + #numbers.formatInteger(calculatedTotal, 3, 'COMMA') : '-'}">-</span>
+                          th:text="${calculatedTotal != null ? '₩' + #numbers.formatInteger(calculatedTotal, 1, 'COMMA') : '-'}">-</span>
                 </div>
 
                 <!-- 01. 품목 소계 -->
@@ -247,12 +247,12 @@
                         <div class="modal-detail-row" th:each="detail, idx : ${details}">
                             <span class="modal-row-key" th:text="${detail.stNm} + ' × ' + ${detail.quDtQn}">상품 × 수량</span>
                             <span class="modal-row-val"
-                                  th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</span>
+                                  th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">₩0</span>
                         </div>
                         <div class="modal-detail-row row-subtotal">
                             <span class="modal-row-key">품목 소계</span>
                             <span class="modal-row-val"
-                                  th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA') : '-'}">₩0</span>
+                                  th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA') : '-'}">₩0</span>
                         </div>
                     </div>
                 </div>
@@ -271,23 +271,23 @@
                             <div class="modal-detail-row">
                                 <span class="modal-row-key" style="padding-left:12px;">해외 운임</span>
                                 <span class="modal-row-val"
-                                      th:text="${sf.qsfSrAm != null ? '₩' + #numbers.formatInteger(sf.qsfSrAm, 3, 'COMMA') : '-'}">-</span>
+                                      th:text="${sf.qsfSrAm != null ? '₩' + #numbers.formatInteger(sf.qsfSrAm, 1, 'COMMA') : '-'}">-</span>
                             </div>
                             <div class="modal-detail-row">
                                 <span class="modal-row-key" style="padding-left:12px;">항만/통관/HS</span>
                                 <span class="modal-row-val"
-                                      th:text="${'₩' + #numbers.formatInteger((sf.qsfPrtAm != null ? sf.qsfPrtAm : 0) + (sf.qsfCstAm != null ? sf.qsfCstAm : 0) + (sf.qsfHsCd != null ? sf.qsfHsCd : 0), 3, 'COMMA')}">-</span>
+                                      th:text="${'₩' + #numbers.formatInteger((sf.qsfPrtAm != null ? sf.qsfPrtAm : 0) + (sf.qsfCstAm != null ? sf.qsfCstAm : 0) + (sf.qsfHsCd != null ? sf.qsfHsCd : 0), 1, 'COMMA')}">-</span>
                             </div>
                             <div class="modal-detail-row" th:if="${sf.qsfInsYn != null and sf.qsfInsYn}">
                                 <span class="modal-row-key" style="padding-left:12px;">보험료</span>
                                 <span class="modal-row-val"
-                                      th:text="${sf.qsfInsAm != null ? '₩' + #numbers.formatInteger(sf.qsfInsAm, 3, 'COMMA') : '-'}">-</span>
+                                      th:text="${sf.qsfInsAm != null ? '₩' + #numbers.formatInteger(sf.qsfInsAm, 1, 'COMMA') : '-'}">-</span>
                             </div>
                         </th:block>
                         <div class="modal-detail-row row-subtotal">
                             <span class="modal-row-key">국제 운임 소계</span>
                             <span class="modal-row-val"
-                                  th:text="${intShipFeeOnly != null ? '₩' + #numbers.formatInteger(intShipFeeOnly, 3, 'COMMA') : '-'}">₩0</span>
+                                  th:text="${intShipFeeOnly != null ? '₩' + #numbers.formatInteger(intShipFeeOnly, 1, 'COMMA') : '-'}">₩0</span>
                         </div>
                     </div>
                 </div>
@@ -300,17 +300,17 @@
                         <div class="modal-detail-row">
                             <span class="modal-row-key">기본 배송비</span>
                             <span class="modal-row-val"
-                                  th:text="${quoteInfo.quInfoDdAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoDdAm, 3, 'COMMA') : '-'}">-</span>
+                                  th:text="${quoteInfo.quInfoDdAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoDdAm, 1, 'COMMA') : '-'}">-</span>
                         </div>
                         <div class="modal-detail-row" th:if="${quoteInfo.quInfoDdExAm != null and quoteInfo.quInfoDdExAm > 0}">
                             <span class="modal-row-key">추가 배송비 (도서산간)</span>
                             <span class="modal-row-val"
-                                  th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoDdExAm, 3, 'COMMA')}">-</span>
+                                  th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoDdExAm, 1, 'COMMA')}">-</span>
                         </div>
                         <div class="modal-detail-row row-subtotal">
                             <span class="modal-row-key">국내 배송비 소계</span>
                             <span class="modal-row-val"
-                                  th:text="${quoteInfo.quInfoDomShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoDomShiFe, 3, 'COMMA') : '-'}">₩0</span>
+                                  th:text="${quoteInfo.quInfoDomShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoDomShiFe, 1, 'COMMA') : '-'}">₩0</span>
                         </div>
                     </div>
                 </div>
@@ -327,7 +327,7 @@
                         <div class="modal-detail-row">
                             <span class="modal-row-key">정가 수수료</span>
                             <span class="modal-row-val"
-                                  th:text="${quoteInfo.quInfoSrvFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFe, 3, 'COMMA') : '-'}">-</span>
+                                  th:text="${quoteInfo.quInfoSrvFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFe, 1, 'COMMA') : '-'}">-</span>
                         </div>
                         <div class="modal-detail-row" th:if="${quoteInfo.quInfoSrvFeR != null and quoteInfo.quInfoSrvFeR > 0}">
                             <span class="modal-row-key">할인율</span>
@@ -337,7 +337,7 @@
                         <div class="modal-detail-row row-subtotal">
                             <span class="modal-row-key">적용 수수료</span>
                             <span class="modal-row-val"
-                                  th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">₩0</span>
+                                  th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">₩0</span>
                         </div>
                     </div>
                 </div>
@@ -357,18 +357,18 @@
                                     <span class="modal-row-key" style="padding-left:12px;"
                                           th:text="'관세 (' + ${sf.qsfDtyR != null ? #numbers.formatDecimal(sf.qsfDtyR * 100, 1, 'POINT', 1, 'POINT') + '%' : '13%'} + ')'">관세</span>
                                 <span class="modal-row-val"
-                                      th:text="${sf.qsfDty != null ? '₩' + #numbers.formatInteger(sf.qsfDty, 3, 'COMMA') : '-'}">-</span>
+                                      th:text="${sf.qsfDty != null ? '₩' + #numbers.formatInteger(sf.qsfDty, 1, 'COMMA') : '-'}">-</span>
                             </div>
                             <div class="modal-detail-row">
                                 <span class="modal-row-key" style="padding-left:12px;">부가세 (10%)</span>
                                 <span class="modal-row-val"
-                                      th:text="${sf.qsfVat != null ? '₩' + #numbers.formatInteger(sf.qsfVat, 3, 'COMMA') : '-'}">-</span>
+                                      th:text="${sf.qsfVat != null ? '₩' + #numbers.formatInteger(sf.qsfVat, 1, 'COMMA') : '-'}">-</span>
                             </div>
                         </th:block>
                         <div class="modal-detail-row row-subtotal">
                             <span class="modal-row-key">관세/부가세 소계</span>
                             <span class="modal-row-val"
-                                  th:text="${totalDutyVat != null ? '₩' + #numbers.formatInteger(totalDutyVat, 3, 'COMMA') : '-'}">₩0</span>
+                                  th:text="${totalDutyVat != null ? '₩' + #numbers.formatInteger(totalDutyVat, 1, 'COMMA') : '-'}">₩0</span>
                         </div>
                     </div>
                 </div>
@@ -387,7 +387,7 @@
             <div class="aqd-final__payment">
                 <span class="aqd-final__label">최종 결제 금액</span>
                 <span class="aqd-final__amount"
-                      th:text="${calculatedTotal != null and calculatedTotal.longValue() > 0 ? '₩' + #numbers.formatInteger(calculatedTotal, 3, 'COMMA') : '산출 중'}">산출 중</span>
+                      th:text="${calculatedTotal != null and calculatedTotal.longValue() > 0 ? '₩' + #numbers.formatInteger(calculatedTotal, 1, 'COMMA') : '산출 중'}">산출 중</span>
                 <span class="aqd-final__note">INC. VAT &amp; DELIVERY</span>
             </div>
 
@@ -415,7 +415,25 @@
 
             <!-- 결제 진행 (APPROVED + user만) -->
             <div class="aqd-final__actions" th:if="${quoteBase.quStt.name() == 'APPROVED' and (isAdmin == null or !isAdmin)}">
-                <a class="aqd-btn aqd-btn--approve" th:href="@{/payment/check(quId=${quoteBase.quId})}">결제 진행</a>
+                <button class="aqd-btn aqd-btn--approve" id="btnPayment"
+                        th:data-href="@{/payment/check(quId=${quoteBase.quId})}">결제 진행</button>
+            </div>
+            <script th:if="${quoteBase.quStt.name() == 'APPROVED' and (isAdmin == null or !isAdmin)}">
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('btnPayment');
+                if (btn) {
+                    btn.addEventListener('click', function () {
+                        showConfirmModal('결제 페이지로 이동하시겠습니까?', function () {
+                            window.location.href = btn.dataset.href;
+                        }, 'PAYMENT');
+                    });
+                }
+            });
+            </script>
+
+            <!-- 영수증 (PAID) -->
+            <div class="aqd-final__actions" th:if="${quoteBase.quStt.name() == 'PAID'}">
+                <a class="aqd-btn aqd-btn--approve" th:href="@{/payment/receipt(quId=${quoteBase.quId})}">영수증</a>
             </div>
 
             <!-- PDF 다운로드 -->
@@ -431,6 +449,9 @@
 
     </section>
 
+    <!-- 범용 모달 -->
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+
     <!-- 승인/반려 JS (공통) -->
     <script th:if="${quoteBase.quStt.name() == 'SUBMITTED' and (isSender == null or !isSender)}" th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {
@@ -440,13 +461,17 @@
         var btnApprove = document.getElementById('btnApprove');
         if (btnApprove) {
             btnApprove.addEventListener('click', function () {
-                if (!confirm('이 견적을 승인하시겠습니까?')) return;
-                var quId = btnApprove.dataset.quId;
-                var headers = {'Content-Type': 'application/json'};
-                headers[csrfHeader] = csrfToken;
-                fetch('/api/quote/' + quId + '/approve', {
-                    method: 'POST', headers: headers
-                }).then(function () { location.reload(); });
+                showConfirmModal('이 견적을 승인하시겠습니까?', function () {
+                    var quId = btnApprove.dataset.quId;
+                    var headers = {'Content-Type': 'application/json'};
+                    headers[csrfHeader] = csrfToken;
+                    fetch('/api/quote/' + quId + '/approve', {
+                        method: 'POST', headers: headers
+                    }).then(function (res) {
+                        if (res.ok) { location.reload(); }
+                        else { alert('승인 처리에 실패했습니다. (HTTP ' + res.status + ')'); }
+                    }).catch(function () { alert('승인 요청 중 오류가 발생했습니다.'); });
+                });
             });
         }
 

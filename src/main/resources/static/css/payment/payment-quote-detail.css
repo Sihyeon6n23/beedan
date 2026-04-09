@@ -27,7 +27,7 @@
     --font-body:    'Inter', 'Noto Sans KR', sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body {
     font-family: var(--font-body);
@@ -242,11 +242,11 @@ html, body {
 
 .inventory-item {
     display: grid;
-    grid-template-columns: 64px 1fr auto;
-    gap: 16px;
+    grid-template-columns: 64px 3fr 1fr;
+    gap: 24px;
     align-items: center;
     background: var(--color-surface);
-    padding: 24px;
+    padding: 24px 32px;
 }
 
 .inventory-thumb {

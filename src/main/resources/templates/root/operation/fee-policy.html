@@ -129,7 +129,7 @@
 
     <!-- 모달 -->
     <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container">
+        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container" style="outline: 2px solid #ffd700; outline-offset: -2px;">
             <div class="flex items-center justify-between p-6 border-b border-surface-container">
                 <h3 id="modalTitle" class="text-lg font-bold tracking-tight uppercase">수수료 추가</h3>
                 <button type="button" onclick="closeModal()" class="p-1 hover:bg-surface-container-high rounded transition-colors">
@@ -214,12 +214,14 @@
             const modal = document.getElementById('policyModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             const modal = document.getElementById('policyModal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+            document.body.style.overflow = '';
             document.getElementById('modalForm').reset();
         }
 

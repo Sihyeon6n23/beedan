@@ -646,7 +646,10 @@ document.addEventListener('DOMContentLoaded', function () {
             saveDraftBtn.textContent = '저장 중...';
             saveDraft()
             .then(function (data) {
-                if (data.status === 'ok') { alert('임시저장 완료'); }
+                if (data.status === 'ok') {
+                    if (typeof showGuideModal === 'function') { showGuideModal('임시저장이 완료되었습니다.'); }
+                    else { alert('임시저장 완료'); }
+                }
                 else { alert('저장 실패: ' + (data.message || '')); }
             })
             .catch(function (e) { alert('저장 실패: ' + e.message); })
@@ -728,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 resetAndOpen();
                 return;
             }
-            fetch('/api/quote/submit-checks')
+            fetch('/api/quote/submit-checks?category=quote')
                 .then(function (res) { return res.json(); })
                 .then(function (items) {
                     renderCheckItems(items);

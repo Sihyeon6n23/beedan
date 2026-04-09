@@ -9,20 +9,20 @@
 <title th:fragment="title">BEEDAN | My Page</title>
 
 <th:block th:fragment="content">
-    <section class="mb-12 flex flex-col md:flex-row justify-between items-end gap-8">
+    <section class="pt-8 mb-12 flex flex-col md:flex-row justify-between items-end gap-8">
         <div class="max-w-2xl">
             <h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter text-on-surface mb-4 uppercase leading-none">
-                관리자 홈
+                관리페이지
             </h1>
             <p class="font-body text-secondary max-w-lg text-lg opacity-80">
-                회원들의 개인 정보와 활동 내역을 한눈에 관리하십시오.
+                Manage member information and activity at a glance.
             </p>
         </div>
     </section>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+    <div class="flex flex-row gap-8 pb-20">
 
-        <a th:href="@{/admin/member/list}" class="group relative bg-white border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
+        <a th:href="@{/admin/member/list}" class="group relative flex-1 min-w-0 bg-white border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
             <div class="flex flex-col h-full">
                 <div class="flex justify-start mb-6">
                     <div class="inline-flex items-center justify-center p-3 bg-surface-container-low transition-all group-hover:bg-primary-container">
@@ -37,7 +37,7 @@
             </div>
         </a>
 
-        <a th:href="@{/admin/stock/list}" class="group relative bg-surface-container-low border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
+        <a th:href="@{/admin/stock/list}" class="group relative flex-1 min-w-0 bg-surface-container-low border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
             <div class="flex flex-col h-full">
                 <div class="flex justify-start mb-6">
                     <div class="inline-flex items-center justify-center p-3 bg-white transition-all group-hover:bg-primary-container">
@@ -52,7 +52,7 @@
             </div>
         </a>
 
-        <a th:href="@{/admin/negotiation/list}" class="group relative border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
+        <a th:href="@{/admin/negotiation/list}" class="group relative flex-1 min-w-0 border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
             <div class="flex flex-col h-full">
                 <div class="flex justify-start mb-6">
                     <div class="inline-flex items-center justify-center p-3 bg-surface-container-low transition-all group-hover:bg-primary-container">
@@ -67,7 +67,7 @@
             </div>
         </a>
 
-        <a th:href="@{/inquiry/list}" class="group relative bg-white bg-surface-container-low border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
+        <a th:href="@{/admin/inquiry/list}" class="group relative bg-white bg-surface-container-low border border-stone-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
             <div class="flex flex-col h-full">
                 <div class="flex justify-start mb-6">
                     <div class="inline-flex items-center justify-center p-3 bg-white transition-all group-hover:bg-primary-container">

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="guideModal">
+    <!-- 안내 모달 (alert 대체) -->
+    <div id="guide-modal"
+         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);"
+         onclick="if(event.target===this) closeGuideModal()">
+        <div style="background:#fff; border:1px solid #e0ddd6; width:420px; padding:48px; text-align:center;">
+            <span id="guide-modal-icon" class="material-symbols-outlined"
+                  style="font-size:48px; color:#c4b799; margin-bottom:20px; display:block;">check_circle</span>
+            <h3 id="guide-modal-title"
+                style="font-family:'Manrope',sans-serif; font-weight:800; font-size:18px; letter-spacing:-0.02em; color:#1a1c1c; margin:0 0 12px;">COMPLETE</h3>
+            <p id="guide-modal-message"
+               style="font-family:'Inter','Noto Sans KR',sans-serif; font-size:14px; color:#78716c; margin:0 0 36px; line-height:1.6;"></p>
+            <button id="guide-modal-btn"
+                    style="padding:12px 40px; background:#e8e0cc; color:#44403c; font-family:'Manrope',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; border:none; cursor:pointer;">
+                확인
+            </button>
+        </div>
+    </div>
+    <!-- 확인 모달 (confirm 대체) -->
+    <div id="confirm-modal"
+         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);"
+         onclick="if(event.target===this) closeConfirmModal()">
+        <div style="background:#fff; border:1px solid #e0ddd6; width:420px; padding:48px; text-align:center;">
+            <span id="confirm-modal-icon" class="material-symbols-outlined"
+                  style="font-size:48px; color:#c4b799; margin-bottom:20px; display:block;">help</span>
+            <h3 id="confirm-modal-title"
+                style="font-family:'Manrope',sans-serif; font-weight:800; font-size:18px; letter-spacing:-0.02em; color:#1a1c1c; margin:0 0 12px;">CONFIRM</h3>
+            <p id="confirm-modal-message"
+               style="font-family:'Inter','Noto Sans KR',sans-serif; font-size:14px; color:#78716c; margin:0 0 36px; line-height:1.6;"></p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button id="confirm-modal-cancel"
+                        style="padding:12px 32px; background:#fff; border:1px solid #e0ddd6; color:#44403c; font-family:'Manrope',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer;">
+                    취소
+                </button>
+                <button id="confirm-modal-ok"
+                        style="padding:12px 40px; background:#e8e0cc; color:#44403c; font-family:'Manrope',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; border:none; cursor:pointer;">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+    function showGuideModal(message, callback, title, icon) {
+        var m = document.getElementById('guide-modal');
+        document.getElementById('guide-modal-message').textContent = message;
+        document.getElementById('guide-modal-title').textContent = title || 'COMPLETE';
+        document.getElementById('guide-modal-icon').textContent = icon || 'check_circle';
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.getElementById('guide-modal-btn').onclick = function () { m.style.display = 'none'; document.body.style.overflow = ''; if (callback) callback(); };
+    }
+    function closeGuideModal() { document.getElementById('guide-modal').style.display = 'none'; document.body.style.overflow = ''; }
+    function showConfirmModal(message, onConfirm, title, icon) {
+        var m = document.getElementById('confirm-modal');
+        document.getElementById('confirm-modal-message').textContent = message;
+        document.getElementById('confirm-modal-title').textContent = title || 'CONFIRM';
+        document.getElementById('confirm-modal-icon').textContent = icon || 'help';
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.getElementById('confirm-modal-ok').onclick = function () { m.style.display = 'none'; document.body.style.overflow = ''; if (onConfirm) onConfirm(); };
+        document.getElementById('confirm-modal-cancel').onclick = function () { m.style.display = 'none'; document.body.style.overflow = ''; };
+    }
+    function closeConfirmModal() { document.getElementById('confirm-modal').style.display = 'none'; document.body.style.overflow = ''; }
+    </script>
+</th:block>
+</html>

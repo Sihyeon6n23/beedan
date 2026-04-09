@@ -7,7 +7,7 @@
   "is_session_timeout_enabled" : true,
   "session_timeout_minutes" : 0,
   "is_file_upload_allow_list_enabled" : false,
-  "file_upload_allow_list" : "jpg, pptx, xlsx, pdf, ppt, png, show, jpeg, cell",
+  "file_upload_allow_list" : "jpg, pptx, xlsx, pdf, ppt, png, show, jpeg, webp, cell",
   "is_audit_log_enabled" : false,
   "log_retention_days" : 0,
   "is_concurrent_login_prevented" : true,

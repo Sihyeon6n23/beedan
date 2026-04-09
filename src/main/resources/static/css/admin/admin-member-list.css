@@ -275,9 +275,6 @@ main > div {
 }
 
 
-
-
-
 /* --- 모달 오버레이 및 컨테이너 --- */
 .modal-overlay {
     position: fixed;
@@ -339,6 +336,7 @@ main > div {
     grid-template-columns: repeat(3, 1fr);
     overflow-y: auto;
 }
+
 .modal-col {
     display: flex;
     flex-direction: column;
@@ -369,7 +367,7 @@ main > div {
 .badge-yellow { background: #ffd700; color: #705d00; }
 
 /* --- 배송 카드 특화 --- */
-.shipping-card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 20px; border-left: 4px solid #ffd700; margin-bottom: 20px; }
+.shipping-card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 13px; border-left: 4px solid #ffd700; margin-bottom: 20px; height: 28%;}
 .shipping-status { font-size: 10px; font-weight: bold; color: #705d00; }
 .tracking-number { font-size: 14px; margin: 5px 0; }
 .tracking-label { font-size: 11px; color: #636262; }

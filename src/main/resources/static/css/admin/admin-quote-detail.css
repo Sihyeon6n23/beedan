@@ -31,7 +31,7 @@ main > div {
     width: 100%;
     max-width: 1080px;
     margin-left: 0;
-    padding: 0;
+    padding: 1.5rem 0 0 0;
     display: flex;
     flex-direction: column;
     gap: 48px;
@@ -436,7 +436,7 @@ main > div {
 /* Final Section */
 .aqd-final {
     background: var(--aqd-white);
-    border-left: 4px solid var(--aqd-gold);
+    border-top: 4px solid var(--aqd-gold);
     padding: 32px 36px;
     display: flex;
     flex-direction: column;
@@ -446,6 +446,8 @@ main > div {
 .aqd-final__payment {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: 6px;
 }
 
@@ -483,6 +485,8 @@ main > div {
     padding: 14px 28px;
     border: none;
     cursor: pointer;
+    text-align: center;
+    justify-content: center;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -494,6 +498,8 @@ main > div {
     background: var(--aqd-gold);
     color: var(--aqd-gold-dark);
     flex: 4;
+    text-align: center;
+    justify-content: center;
 }
 
 .aqd-btn--approve:hover {
@@ -521,13 +527,23 @@ main > div {
 }
 
 .aqd-btn--pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background: transparent;
     border: 1px solid #d0c6ab;
     color: var(--aqd-text-main);
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
 }
 
 .aqd-btn--pdf:hover {
     background: #fafaf7;
+    border-color: #b0a880;
 }
 
 /* Rejection banner */
@@ -607,6 +623,11 @@ main > div {
     background: #fef3c7;
     color: #92400e;
     flex: 4;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .aqd-btn--rewrite:hover {
@@ -722,5 +743,6 @@ main > div {
 .aqd-quick-actions {
     margin-top: 16px;
     display: flex;
+    justify-content: center;
     gap: 8px;
 }

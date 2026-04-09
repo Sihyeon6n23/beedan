@@ -1,10 +1,13 @@
 package com.goodee.beedan.service.chat;
 
 import com.goodee.beedan.common.constant.ChatMessageSenderType;
+import com.goodee.beedan.common.constant.ChatMessageType;
 import com.goodee.beedan.common.constant.ChatRoomCloseReason;
 import com.goodee.beedan.common.constant.ChatRoomStatus;
 import com.goodee.beedan.dto.chat.*;
 import com.goodee.beedan.dto.chatbot.ChatbotTopLevelTopicDto;
+import com.goodee.beedan.dto.file.FileDto;
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.entity.ChatMessage;
 import com.goodee.beedan.entity.ChatRoom;
 import com.goodee.beedan.entity.ChatRoomReadStatus;
@@ -12,9 +15,12 @@ import com.goodee.beedan.repository.chat.ChatMessageRepository;
 import com.goodee.beedan.repository.chat.ChatRoomReadStatusRepository;
 import com.goodee.beedan.repository.chat.ChatRoomRepository;
 import com.goodee.beedan.service.chatbot.ChatbotService;
+import com.goodee.beedan.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +35,7 @@ public class MemberChatService {
     private final ChatRoomReadStatusRepository chatRoomReadStatusRepository;
     private final ChatbotService chatbotService;
     private final ChatRealtimeService chatRealtimeService;
+    private final FileService fileService;
 
     // 챗봇 상담 연결 시 최상위 1차 질의명을 제목으로 사용해 채팅방 생성 또는 기존 활성방 반환
     public ChatRoomOpenResultDto openChatRoomFromChatbot(Long topicId, Long memId) {
@@ -154,27 +161,6 @@ public class MemberChatService {
         chatRoomReadStatusRepository.save(roomReadStatus);
     }
 
-    // 채팅 메시지 엔티티를 상세 화면용 메시지 DTO로 변환
-    private MemberChatMessageDto mapToMemberChatMessageDto(ChatMessage chatMessage) {
-        return MemberChatMessageDto.builder()
-                .chMsId(chatMessage.getChMsId())
-                .chMsSenTy(chatMessage.getChMsSenTy())
-                .chMsCon(chatMessage.getChMsCon())
-                .chMsCreDt(chatMessage.getChMsCreDt())
-                .build();
-    }
-
-    // 채팅방 정보와 메시지 목록을 상세 DTO로 변환
-    private MemberChatRoomDetailDto mapToMemberChatRoomDetailDto(ChatRoom chatRoom, List<MemberChatMessageDto> messageDtos) {
-        return MemberChatRoomDetailDto.builder()
-                .chRoId(chatRoom.getChRoId())
-                .chRoTtl(chatRoom.getChRoTtl())
-                .chRoStt(chatRoom.getChRoStt())
-                .messages(messageDtos)
-                .chRoClsRsn(chatRoom.getChRoClsRsn())
-                .build();
-    }
-
     // 회원이 메시지를 전송하고 읽음 상태 갱신
     public MemberChatMessageDto sendMemberChatMessage(Long chRoId, Long memId, String content) {
         // 채팅방 조회
@@ -195,6 +181,7 @@ public class MemberChatService {
         // 메시지 엔티티 객체 생성
         ChatMessage chatMessage = ChatMessage.builder()
                 .chMsSenTy(ChatMessageSenderType.USER)
+                .chMsTp(ChatMessageType.TEXT)
                 .chMsCon(content.trim())
                 .chRoId(chRoId)
                 .memId(memId)
@@ -246,6 +233,110 @@ public class MemberChatService {
         return memberChatMessageDto;
     }
 
+    // 사용자 채팅 이미지 메시지 전송
+    public MemberChatMessageDto sendMemberChatImage(Long chRoId,
+                                                    Long memId,
+                                                    MemberChatImageMessageSendDto memberChatImageMessageSendDto) throws IOException {
+        ChatRoom chatRoom = chatRoomRepository
+                .findByChRoIdAndMemId(chRoId, memId)
+                .orElseThrow(() -> new IllegalArgumentException("조회할 수 없는 채팅방입니다."));
+
+        if (chatRoom.getChRoStt() == ChatRoomStatus.CLOSED) {
+            throw new IllegalArgumentException("종료된 채팅방에는 메시지를 보낼 수 없습니다.");
+        }
+
+        validateChatImageFile(memberChatImageMessageSendDto.getImageFile());
+
+        ChatMessage chatMessage = ChatMessage.builder()
+                .chMsSenTy(ChatMessageSenderType.USER)
+                .chMsTp(ChatMessageType.IMAGE)
+                .chMsCon(null)
+                .chRoId(chRoId)
+                .memId(memId)
+                .build();
+
+        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+
+        fileService.saveFile(
+                List.of(memberChatImageMessageSendDto.getImageFile()),
+                RefDto.builder()
+                        .refTy("CHAT_MESSAGE")
+                        .refNo(savedMessage.getChMsId())
+                        .build()
+        );
+
+        chatRoom.setChRoLastMsDt(savedMessage.getChMsCreDt());
+        chatRoomRepository.save(chatRoom);
+
+        ChatRoomReadStatus memberReadStatus = chatRoomReadStatusRepository
+                .findByMemIdAndChRoId(memId, chRoId)
+                .orElseGet(() -> ChatRoomReadStatus.builder()
+                        .memId(memId)
+                        .chRoId(chRoId)
+                        .build());
+
+        memberReadStatus.setChRoReStUnrYn(false);
+        memberReadStatus.setChMsLastId(savedMessage.getChMsId());
+        chatRoomReadStatusRepository.save(memberReadStatus);
+
+        if (chatRoom.getChRoStt() == ChatRoomStatus.ONGOING && chatRoom.getMemAdId() != null) {
+            ChatRoomReadStatus adminReadStatus = chatRoomReadStatusRepository
+                    .findByMemIdAndChRoId(chatRoom.getMemAdId(), chRoId)
+                    .orElseGet(() -> ChatRoomReadStatus.builder()
+                            .memId(chatRoom.getMemAdId())
+                            .chRoId(chRoId)
+                            .build());
+
+            adminReadStatus.setChRoReStUnrYn(true);
+            adminReadStatus.setChMsLastId(savedMessage.getChMsId());
+            chatRoomReadStatusRepository.save(adminReadStatus);
+        }
+
+        MemberChatMessageDto memberChatMessageDto = mapToMemberChatMessageDto(savedMessage);
+        chatRealtimeService.publishMessage(chRoId, memberChatMessageDto);
+        chatRealtimeService.publishMemberSummary(memId);
+        chatRealtimeService.publishAdminSummary();
+
+        return memberChatMessageDto;
+    }
+
+    // 채팅방 정보와 메시지 목록을 상세 DTO로 변환
+    private MemberChatMessageDto mapToMemberChatMessageDto(ChatMessage chatMessage) {
+        FileDto imageFile = null;
+        if (chatMessage.getChMsTp() == ChatMessageType.IMAGE) {
+            imageFile = fileService.getFileList(
+                            RefDto.builder()
+                                    .refTy("CHAT_MESSAGE")
+                                    .refNo(chatMessage.getChMsId())
+                                    .build()
+                    ).stream()
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        return MemberChatMessageDto.builder()
+                .chMsId(chatMessage.getChMsId())
+                .chMsSenTy(chatMessage.getChMsSenTy())
+                .chMsTp(chatMessage.getChMsTp())
+                .chMsCon(chatMessage.getChMsCon())
+                .chMsLnkUrl(chatMessage.getChMsLnkUrl())
+                .chMsLnkTtl(chatMessage.getChMsLnkTtl())
+                .chMsCreDt(chatMessage.getChMsCreDt())
+                .imageFile(imageFile)
+                .build();
+    }
+
+    // 채팅 메시지 엔티티를 상세 화면용 메시지 DTO로 변환
+    private MemberChatRoomDetailDto mapToMemberChatRoomDetailDto(ChatRoom chatRoom, List<MemberChatMessageDto> messageDtos) {
+        return MemberChatRoomDetailDto.builder()
+                .chRoId(chatRoom.getChRoId())
+                .chRoTtl(chatRoom.getChRoTtl())
+                .chRoStt(chatRoom.getChRoStt())
+                .messages(messageDtos)
+                .chRoClsRsn(chatRoom.getChRoClsRsn())
+                .build();
+    }
+
     // 회원 본인 채팅방을 사용자 종료 상태로 변경
     public void closeMemberChatRoom(Long chRoId, Long memId) {
         // 채팅방 조회
@@ -276,5 +367,28 @@ public class MemberChatService {
                         .chRoClsRsn(chatRoom.getChRoClsRsn())
                         .build()
         );
+    }
+
+    // 이미지 검증
+    private void validateChatImageFile(MultipartFile imageFile) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("이미지 파일은 필수입니다.");
+        }
+
+        String originalName = imageFile.getOriginalFilename();
+        if (originalName == null || !originalName.contains(".")) {
+            throw new IllegalArgumentException("올바르지 않은 이미지 파일명입니다.");
+        }
+
+        String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase().trim();
+        List<String> allowedExts = List.of("jpg", "jpeg", "png", "webp");
+        if (!allowedExts.contains(ext)) {
+            throw new IllegalArgumentException("채팅 이미지는 jpg, jpeg, png, webp만 업로드할 수 있습니다.");
+        }
+
+        long maxSize = 5L * 1024 * 1024;
+        if (imageFile.getSize() > maxSize) {
+            throw new IllegalArgumentException("채팅 이미지는 5MB 이하만 업로드할 수 있습니다.");
+        }
     }
 }

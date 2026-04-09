@@ -1,6 +1,7 @@
 package com.goodee.beedan.entity;
 
 import com.goodee.beedan.common.constant.ChatMessageSenderType;
+import com.goodee.beedan.common.constant.ChatMessageType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,9 +29,19 @@ public class ChatMessage {
     @Column(name = "ch_ms_sen_ty", nullable = false, length = 20)
     private ChatMessageSenderType chMsSenTy;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ch_ms_tp", nullable = false)
+    private ChatMessageType chMsTp;
+
     @Lob
     @Column(name = "ch_ms_con", nullable = false)
     private String chMsCon;
+
+    @Column(name = "ch_ms_lnk_url")
+    private String chMsLnkUrl;
+
+    @Column(name = "ch_ms_lnk_ttl")
+    private String chMsLnkTtl;
 
     @CreatedDate
     @Column(name = "ch_ms_cre_dt", nullable = false, updatable = false)

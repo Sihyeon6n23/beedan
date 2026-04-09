@@ -25,6 +25,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     String mailUsername;
 
+    @Async
     public void sendMail(String emailAddress, NotificationType notificationType, Long targetId) {
         MimeMessage message = mailSender.createMimeMessage();
 
