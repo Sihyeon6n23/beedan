@@ -93,7 +93,8 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.5); /* 반투명한 검은색 */
+        background-color: rgba(26, 28, 28, 0.4);
+        backdrop-filter: blur(8px);
         z-index: 9999; /* 화면 최상단으로 끌어올림 */
         display: none; /* 평소엔 숨김 (JS에서 display: flex로 바꿈) */
         justify-content: center;
@@ -102,8 +103,8 @@
 
         .modal-container {
             background-color: #ffffff;
-            width: 100%;
-            max-width: 500px;
+            width: 95%;
+            max-width: 850px;
             max-height: 80vh;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -182,17 +183,12 @@
     -ms-overflow-style: none; /* IE 스크롤바 숨김 */
 }
 
-/* 크롬, 사파리 스크롤바 숨김 (깔끔한 디자인을 위해) */
-.admin-chat-row__images-container::-webkit-scrollbar {
-    display: none;
-}
 
 /* 이미지가 나열되는 트랙 */
 .admin-chat-row__images-track {
     display: flex;
     gap: 8px;
 }
-
 
 .order-thumb-img {
     width: 100px;
@@ -240,4 +236,53 @@
     font-size: 14px !important;
     color: #fff;
     text-shadow: 0 0 3px rgba(0,0,0,0.5); /* 화살표 가독성 */
+}
+
+.tracking-info-summary {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+/* 각 정보 항목 공통 스타일 */
+.info-item {
+    flex: 1;
+}
+
+.info-item .label {
+    font-size: 11px;
+    color: #888;
+    display: block;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+.info-item .value {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+/* 배송지 주소는 더 넓게 점유 */
+.info-item--address {
+    flex: 2.5;
+}
+
+/* 현재 상태 - 한 줄 고정 및 강조 */
+.info-item--status {
+    flex: 1.5;
+    text-align: right;
+    white-space: nowrap; /* 절대 줄바꿈 방지 */
+}
+
+.info-item--status .value {
+    font-size: 16px;
+    color: #d9534f;
+    display: inline-block;
 }

@@ -1,12 +1,12 @@
 {
-  "gradeResolveEnabled" : false,
   "chatAutoCloseEnabled" : true,
+  "gradeResolveEnabled" : false,
   "autoCrawlingEnabled" : true,
   "exchangeRateEnabled" : true,
   "is_auto_crawling_enabled" : true,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
   "auto_crawling_interval" : "6",
-  "last_crawling_run_time" : "2026-04-09T12:00:14.540245",
+  "last_crawling_run_time" : "2026-04-09T16:00:57.694924",
   "is_exchange_rate_enabled" : true,
   "exchange_rate_start_dt" : "2026-04-07T09:00",
   "exchange_rate_interval" : "6",
@@ -23,5 +23,5 @@
   "is_chat_auto_close_enabled" : true,
   "chat_auto_close_start_dt" : "2026-04-01T00:00",
   "chat_auto_close_interval" : "1",
-  "last_chat_auto_close_run_time" : "2026-04-09T14:59:25.844742300"
+  "last_chat_auto_close_run_time" : "2026-04-09T17:00:26.523437800"
 }

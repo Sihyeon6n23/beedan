@@ -67,16 +67,14 @@ public class TrackingService {
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-            return parseGraphQLResponse(response.getBody(), carrierId, trackingNumber);
+            return parseGraphQLResponse(response.getBody(), carrierId, trackingNumber, shipment);
         } catch (Exception e) {
             log.error("API 통신 실패: {}", e.getMessage());
             return createEmptyResponse(carrierId, trackingNumber, "조회 오류 (서버 통신 실패)");
         }
     }
 
-    private TrackingResponseDto parseGraphQLResponse(String json, String carrierId, String trackingNumber) throws Exception {
-        log.info("Delivery Tracker Response: {}", json);
-
+    private TrackingResponseDto parseGraphQLResponse(String json, String carrierId, String trackingNumber, Shipment shipment) throws Exception {
         JsonNode root = objectMapper.readTree(json);
         JsonNode trackNode = root.path("data").path("track");
 
@@ -84,6 +82,7 @@ public class TrackingService {
             log.error("GraphQL 에러 발생: {}", root.path("errors").toString());
             return createEmptyResponse(carrierId, trackingNumber, "조회 실패 (API 설정 확인)");
         }
+
 
         String carrierName = CARRIER_MAP.getOrDefault(carrierId, carrierId);
 
@@ -111,6 +110,8 @@ public class TrackingService {
                 .trackingNumber(trackingNumber)
                 .statusText(trackNode.path("lastEvent").path("status").path("name").asText())
                 .details(details)
+                .shRcvNm(shipment.getShRcvNm())
+                .shAdr(shipment.getShAdr())
                 .build();
     }
 
@@ -157,6 +158,8 @@ public class TrackingService {
                 .trackingNumber(shipment.getShTraNo())
                 .statusText(shipment.getShStt().getStatusName())
                 .details(details)
+                .shAdr(shipment.getShAdr())
+                .shRcvNm(shipment.getShRcvNm())
                 .build();
     }
 
