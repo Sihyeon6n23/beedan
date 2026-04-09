@@ -10,8 +10,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "board")
@@ -88,11 +86,6 @@ public class Board {
     // 게시글을 소프트 삭제 상태로 변경
     public void markAsDeleted() {
         this.brdDelYn = true;
-    }
-
-    // 게시글 조회수를 1 증가
-    public void increaseViewCount() {
-        this.brdVstCnt = this.brdVstCnt == null ? 1L : this.brdVstCnt + 1L;
     }
 
     // 문의글 제목과 내용을 수정
