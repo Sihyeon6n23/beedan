@@ -24,11 +24,14 @@ public class StockDisplayService {
     @PostConstruct
     public void init() {
         if(!redisTemplate.hasKey(KEY_NEW_STOCKS)) {
+            log.info("캐시에 신규 상품 데이터 x");
             refreshNewStocks();
         }
         if(!redisTemplate.hasKey(KEY_POPULAR_STOCKS)) {
+            log.info("캐시에 인기 상품 데이터 x");
             refreshPopularStocks();
         }
+        log.info("캐시에 데이터 존재");
     }
 
     public void refreshNewStocks() {

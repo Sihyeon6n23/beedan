@@ -76,7 +76,7 @@ public class BuyerGradePolicyService {
 
     public List<BuyerGradePolicy> findAllActiveOrdered(){
         return buyerGradePolicyRepository
-                .findAllByBgpAcYnTrueOrderByBgpMinOrdCntDesc();
+                .findAllByBgpAcYnTrueOrderByBgpMinOrdCntAsc();
     }
 
     public BuyerGradePolicy findActiveByGrade(String grade){

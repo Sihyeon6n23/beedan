@@ -45,7 +45,7 @@ public class WishlistApiController {
             @RequestParam(defaultValue = "popularity") String sort,
             @RequestParam(defaultValue = "0") int page,
             @AuthenticationPrincipal MemberUserDetails userDetails) {
-        Long memId = userDetails != null ? userDetails.getMemberId() : null;
+        Long memId = userDetails.getMemberId();
         return stockService.findWishedFiltered(brands, categories, keyword, sort, page, memId);
     }
 }
