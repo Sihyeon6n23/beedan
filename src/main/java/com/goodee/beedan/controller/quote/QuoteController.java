@@ -141,6 +141,16 @@ public class QuoteController {
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
 
+            // 표시용 상태
+            String displayStt = qb.getQuStt().name();
+            if (qb.getQuStt() == com.goodee.beedan.common.constant.QuoteStatus.SUBMITTED) {
+                boolean sender = memId.equals(qb.getQuSid()) || (qb.getQuSid() == null && memId.equals(qb.getQuRid()));
+                if (!sender) {
+                    displayStt = (qb.getQuUsOpYn() != null && qb.getQuUsOpYn()) ? "CONFIRMED" : "UNREAD";
+                }
+            }
+            item.put("displayStt", displayStt);
+
             quotes.add(item);
         }
 
@@ -433,6 +443,7 @@ public class QuoteController {
         boolean isSender = myId.equals(quoteBase.getQuSid())
                 || (quoteBase.getQuSid() == null && myId.equals(quoteBase.getQuRid()));
         model.addAttribute("isSender", isSender);
+        model.addAttribute("isAdmin", false);
 
         return "admin/quote/admin-quote-detail";
     }
@@ -504,6 +515,15 @@ public class QuoteController {
         // 해당 협상의 유효 견적 목록 (상대방 TEMP_SAVE 제외)
         List<QuoteBase> quoteList = quoteBaseRepository.findAllActiveByNgId(ngId, memId);
 
+        // 읽지 않음 카운트 (열람 처리 전에 계산)
+        long unreadCount = quoteList.stream()
+                .filter(qb -> qb.getQuStt() == com.goodee.beedan.common.constant.QuoteStatus.SUBMITTED)
+                .filter(qb -> {
+                    boolean sender = memId.equals(qb.getQuSid()) || (qb.getQuSid() == null && memId.equals(qb.getQuRid()));
+                    return !sender && (qb.getQuUsOpYn() == null || !qb.getQuUsOpYn());
+                })
+                .count();
+
         // 수신자 본인의 미열람 견적 열람 처리
         for (QuoteBase qb : quoteList) {
             if (memId.equals(qb.getQuRid()) && (qb.getQuUsOpYn() == null || !qb.getQuUsOpYn())) {
@@ -528,12 +548,23 @@ public class QuoteController {
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
 
+            // 표시용 상태
+            String displayStt = qb.getQuStt().name();
+            if (qb.getQuStt() == com.goodee.beedan.common.constant.QuoteStatus.SUBMITTED) {
+                boolean sender = memId.equals(qb.getQuSid()) || (qb.getQuSid() == null && memId.equals(qb.getQuRid()));
+                if (!sender) {
+                    displayStt = (qb.getQuUsOpYn() != null && qb.getQuUsOpYn()) ? "CONFIRMED" : "UNREAD";
+                }
+            }
+            item.put("displayStt", displayStt);
+
             quotes.add(item);
         }
 
         model.addAttribute("negotiation", negotiation);
         model.addAttribute("quotes", quotes);
         model.addAttribute("statusCounts", statusCounts);
+        model.addAttribute("unreadCount", unreadCount);
 
         return "/quote/negotiation-detail";
     }

@@ -48,38 +48,32 @@
                 <tr>
                     <th class="col-id">견적코드</th>
                     <th class="col-status">상태</th>
-                    <th class="col-date aq-sortable is-active" data-sort="quUpdDt" data-dir="desc">
-                        최근 업데이트 <span class="aq-sort-icon">▼</span>
-                    </th>
-                    <th class="col-date aq-sortable" data-sort="quCreDt" data-dir="desc">
-                        발행일 <span class="aq-sort-icon">▼</span>
-                    </th>
+                    <th class="col-date">발행일</th>
                 </tr>
                 </thead>
                 <tbody id="aqTableBody">
                 <th:block th:each="q : ${quotes}">
                     <tr th:data-qu-id="${q.quId}"
-                        th:data-qu-upd-dt="${q.quUpdDt}"
                         th:data-qu-cre-dt="${q.quCreDt}"
                         th:data-status="${q.quStt}"
                         th:data-search="${q.quCd != null ? q.quCd : ''}"
                         th:class="(${q.quStt == 'REJECTED' or q.quStt == 'EXPIRED'} ? 'aq-row--closed' : '') + ' ' + (${!q.quOpYn} ? 'aq-row--unread' : '')"
                         style="cursor:pointer">
                         <td class="col-id">
-                            <span th:text="${q.quCd}">QU0000</span>
+                            <span th:text="${q.ngNm + ' ' + q.quCd}">협상명 QU0001</span>
                             <span th:if="${!q.quOpYn}" class="aq-unread-dot"></span>
                         </td>
                         <td class="col-status">
                             <span class="aq-badge"
-                                  th:classappend="'aq-badge--' + ${q.quStt.toLowerCase()}"
-                                  th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
-                                             q.quStt == 'SUBMITTED' ? '대기중' :
-                                             q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '반려' :
-                                             q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
+                                  th:classappend="'aq-badge--' + ${q.displayStt.toLowerCase()}"
+                                  th:text="${q.displayStt == 'TEMP_SAVE' ? '임시저장' :
+                                             q.displayStt == 'SUBMITTED' ? '제출완료' :
+                                             q.displayStt == 'UNREAD' ? '읽지 않음' :
+                                             q.displayStt == 'CONFIRMED' ? '확인함' :
+                                             q.displayStt == 'APPROVED' ? '승인' :
+                                             q.displayStt == 'REJECTED' ? '반려' :
+                                             q.displayStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                         </td>
-                        <td class="col-date"
-                            th:text="${q.quUpdDt != null ? #temporals.format(q.quUpdDt, 'yyyy.MM.dd') : '-'}">-</td>
                         <td class="col-date"
                             th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd') : '-'}">-</td>
                     </tr>

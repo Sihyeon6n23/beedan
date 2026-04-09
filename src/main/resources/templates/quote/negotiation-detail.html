@@ -65,8 +65,8 @@
                     <span class="ngd-stat__value" th:text="${statusCounts['TEMP_SAVE']}">0</span>
                 </div>
                 <div class="ngd-stat">
-                    <span class="ngd-stat__label">제출완료</span>
-                    <span class="ngd-stat__value" th:text="${statusCounts['SUBMITTED']}">0</span>
+                    <span class="ngd-stat__label">읽지 않음</span>
+                    <span class="ngd-stat__value" th:text="${unreadCount}">0</span>
                 </div>
                 <div class="ngd-stat">
                     <span class="ngd-stat__label">승인</span>
@@ -110,12 +110,14 @@
                         </div>
                         <div class="ngd-row__status">
                             <span class="ngd-q-badge"
-                                  th:classappend="'ngd-q-badge--' + ${q.quStt.toLowerCase()}"
-                                  th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
-                                             q.quStt == 'SUBMITTED' ? '제출완료' :
-                                             q.quStt == 'APPROVED' ? '승인' :
-                                             q.quStt == 'REJECTED' ? '반려' :
-                                             q.quStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
+                                  th:classappend="'ngd-q-badge--' + ${q.displayStt.toLowerCase()}"
+                                  th:text="${q.displayStt == 'TEMP_SAVE' ? '임시저장' :
+                                             q.displayStt == 'SUBMITTED' ? '제출완료' :
+                                             q.displayStt == 'UNREAD' ? '읽지 않음' :
+                                             q.displayStt == 'CONFIRMED' ? '확인함' :
+                                             q.displayStt == 'APPROVED' ? '승인' :
+                                             q.displayStt == 'REJECTED' ? '반려' :
+                                             q.displayStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                         </div>
                         <div class="ngd-row__time">
                             <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2026.03.12</span>

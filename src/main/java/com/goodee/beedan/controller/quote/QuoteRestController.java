@@ -59,6 +59,7 @@ public class QuoteRestController {
     private final com.goodee.beedan.service.quote.NegotiationService negotiationService;
     private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
     private final QuoteNotificationService quoteNotificationService;
+    private final com.goodee.beedan.service.cart.CartService cartService;
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
@@ -212,14 +213,26 @@ public class QuoteRestController {
 
     // ── 제출 체크 항목 조회 ────────────────────────────
     @GetMapping("/submit-checks")
-    public ResponseEntity<List<QuoteSubmitCheck>> getSubmitChecks() {
-        return ResponseEntity.ok(quoteSubmitCheckService.findAllActive());
+    public ResponseEntity<List<QuoteSubmitCheck>> getSubmitChecks(
+            @RequestParam(required = false) String category) {
+        List<QuoteSubmitCheck> all = quoteSubmitCheckService.findAllActive();
+        if ("quote".equals(category)) {
+            // 견적 제출용: 결제/배송 알림 제외
+            all = all.stream()
+                    .filter(c -> c.getQscKey() == null
+                            || (!c.getQscKey().equals("emailOnPaid")
+                            && !c.getQscKey().equals("emailOnShipment")))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        return ResponseEntity.ok(all);
     }
 
     // ── 견적 제출 ─────────────────────────────────────
     @PostMapping("/submit")
     public ResponseEntity<Map<String, Object>> submitQuote(
-            @RequestBody SubmitRequest request) {
+            @RequestBody SubmitRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal
+            com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         try {
             // 재작성인 경우 기존 견적 거절 처리
             if (request.getFromQuId() != null) {
@@ -237,6 +250,17 @@ public class QuoteRestController {
             if (request.getFromQuId() != null) {
                 quoteNotificationService.notifyOnQuoteReply(request.getFromQuId(), submittedQuote.getNgId());
             }
+
+            // 견적에 포함된 상품만 장바구니에서 삭제
+            if (userDetails != null) {
+                try {
+                    List<Long> stIds = quoteDetailService.findAllByQuote(request.getQuId()).stream()
+                            .map(QuoteDetail::getStId)
+                            .distinct().collect(java.util.stream.Collectors.toList());
+                    cartService.clearCartItems(userDetails.getMemberId(), stIds);
+                } catch (Exception ignored) {}
+            }
+
             return ResponseEntity.ok(Map.of(
                     "status", "ok",
                     "redirectUrl", "/quote/detail?quId=" + request.getQuId()
@@ -263,7 +287,9 @@ public class QuoteRestController {
     @org.springframework.transaction.annotation.Transactional
     @PostMapping("/draft")
     public ResponseEntity<Map<String, Object>> saveDraft(
-            @RequestBody DraftRequest request) {
+            @RequestBody DraftRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal
+            com.goodee.beedan.config.security.MemberUserDetails userDetails) {
 
         try {
             QuoteBase quoteBase = quoteBaseService.findById(request.getQuId());
@@ -623,6 +649,16 @@ public class QuoteRestController {
                     .add(calcService).add(calcDutyVat);
             quoteInfo.updateGrandTotal(calculatedTotal);
             quoteInfoRepository.save(quoteInfo);
+
+            // 견적에 포함된 상품만 장바구니에서 삭제
+            if (userDetails != null) {
+                try {
+                    List<Long> stIds = request.getItems().stream()
+                            .map(DraftRequest.DraftItem::getStId)
+                            .distinct().collect(java.util.stream.Collectors.toList());
+                    cartService.clearCartItems(userDetails.getMemberId(), stIds);
+                } catch (Exception ignored) {}
+            }
 
             return ResponseEntity.ok(Map.of(
                     "status", "ok",

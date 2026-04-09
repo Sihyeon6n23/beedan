@@ -197,6 +197,45 @@ document.addEventListener('DOMContentLoaded', function () {
             window._prevShipFees = null; // 한 번만 적용
         }
 
+        // ── admin 수동 오버라이드 재적용 (estimate-fees 재호출 후에도 유지) ──
+        if (isAdmin && window._adminFeeOverrides && Object.keys(window._adminFeeOverrides).length > 0 && data.factories) {
+            data.factories.forEach(function (f, idx) {
+                var ov = window._adminFeeOverrides[idx];
+                if (!ov) return;
+
+                if (ov.shippingFee != null) f.shippingFee = ov.shippingFee;
+                if (ov.portFee != null) f.portFee = ov.portFee;
+                if (ov.customsFee != null) f.customsFee = ov.customsFee;
+                if (ov.hsCodeFee != null) f.hsCodeFee = ov.hsCodeFee;
+
+                // CIF 재계산 (상품가 + 운임 + 보험)
+                var supply = f.supplySubtotal || 0;
+                var ship = f.shippingFee || 0;
+                var ins = f.insuranceFee || 0;
+                f.cifAmount = supply + ship + ins;
+
+                // 관세/부가세 재계산
+                var dutyRate = f.dutyRate || 0.13;
+                f.dutyAmount = Math.round(f.cifAmount * dutyRate);
+                f.vatAmount = Math.round((f.cifAmount + f.dutyAmount) * 0.10);
+
+                // 소계 재계산
+                f.subtotal = ship + (f.portFee || 0) + (f.customsFee || 0) + (f.hsCodeFee || 0)
+                    + ins + f.dutyAmount + f.vatAmount;
+            });
+
+            // 총계 재계산
+            var ovLogistics = 0, ovDuty = 0, ovVat = 0;
+            data.factories.forEach(function (f) {
+                ovLogistics += (f.subtotal || 0);
+                ovDuty += (f.dutyAmount || 0);
+                ovVat += (f.vatAmount || 0);
+            });
+            data.logisticsTotal = ovLogistics;
+            data.dutyAmount = ovDuty;
+            data.vatAmount = ovVat;
+        }
+
         // ── 공장별 그룹 렌더링 ──
         var shippingRate = parseFloat(data.shippingDiscountRate) || 0;
         renderFactoryGroups(data.factories, shippingRate, data.buyerGrade || '');
@@ -386,43 +425,73 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // admin 수동 입력 이벤트 바인딩
             if (isAdmin) {
+                // 공장별 재계산 + 모달·총계 갱신 공통 함수
+                function recalcAdminOverride(fidx) {
+                    var f = data.factories[fidx];
+                    if (!f) return;
+                    var ov = window._adminFeeOverrides[fidx] || {};
+                    var ship = ov.shippingFee != null ? ov.shippingFee : (f.shippingFee || 0);
+                    var port = ov.portFee != null ? ov.portFee : (f.portFee || 0);
+                    var cust = ov.customsFee != null ? ov.customsFee : (f.customsFee || 0);
+                    var hs = ov.hsCodeFee != null ? ov.hsCodeFee : (f.hsCodeFee || 0);
+                    var ins = f.insuranceFee || 0;
+                    var supply = f.supplySubtotal || 0;
+
+                    var newCif = supply + ship + ins;
+                    var dutyRate = f.dutyRate || 0.13;
+                    var newDuty = Math.round(newCif * dutyRate);
+                    var newVat = Math.round((newCif + newDuty) * 0.10);
+                    var newSubtotal = ship + port + cust + hs + ins + newDuty + newVat;
+
+                    // 모달 내 해당 공장 갱신
+                    var cifEl = modalBody.querySelector('.admin-cif-val[data-idx="' + fidx + '"]');
+                    var dutyEl = modalBody.querySelector('.admin-duty-val[data-idx="' + fidx + '"]');
+                    var vatEl = modalBody.querySelector('.admin-vat-val[data-idx="' + fidx + '"]');
+                    var subEl = modalBody.querySelector('.admin-subtotal-val[data-idx="' + fidx + '"]');
+                    if (cifEl) cifEl.textContent = fmt(newCif);
+                    if (dutyEl) dutyEl.textContent = fmt(newDuty);
+                    if (vatEl) vatEl.textContent = fmt(newVat);
+                    if (subEl) subEl.textContent = fmt(newSubtotal);
+
+                    // 모달 총 운임 합계 갱신
+                    var totalLogistics = 0;
+                    data.factories.forEach(function (ff, ii) {
+                        var oov = window._adminFeeOverrides[ii] || {};
+                        var ss = oov.shippingFee != null ? oov.shippingFee : (ff.shippingFee || 0);
+                        var pp = oov.portFee != null ? oov.portFee : (ff.portFee || 0);
+                        var cc = oov.customsFee != null ? oov.customsFee : (ff.customsFee || 0);
+                        var hh = oov.hsCodeFee != null ? oov.hsCodeFee : (ff.hsCodeFee || 0);
+                        var ii2 = ff.insuranceFee || 0;
+                        var sp = ff.supplySubtotal || 0;
+                        var cif2 = sp + ss + ii2;
+                        var dr = ff.dutyRate || 0.13;
+                        var d2 = Math.round(cif2 * dr);
+                        var v2 = Math.round((cif2 + d2) * 0.10);
+                        totalLogistics += ss + pp + cc + hh + ii2 + d2 + v2;
+                    });
+                    var mdTotalEl = el('md-logistics-total');
+                    if (mdTotalEl) {
+                        var logWithExtras = totalLogistics + (insuranceExtra || 0) + (domesticFee || 0);
+                        mdTotalEl.textContent = fmt(logWithExtras);
+                    }
+                }
+
                 modalBody.querySelectorAll('.admin-fee-input').forEach(function (input) {
-                    input.addEventListener('change', function () {
+                    // input 이벤트: 실시간 계산
+                    input.addEventListener('input', function () {
                         var fidx = parseInt(input.dataset.idx);
                         var field = input.dataset.field;
                         var val = parseInt(input.value.replace(/[^\d]/g, '')) || 0;
-                        input.value = val;
 
-                        // 오버라이드 저장
                         if (!window._adminFeeOverrides[fidx]) window._adminFeeOverrides[fidx] = {};
                         window._adminFeeOverrides[fidx][field] = val;
 
-                        // 해당 공장의 관세/부가세 재계산
-                        var f = data.factories[fidx];
-                        if (!f) return;
-                        var ov = window._adminFeeOverrides[fidx];
-                        var ship = ov.shippingFee != null ? ov.shippingFee : (f.shippingFee || 0);
-                        var port = ov.portFee != null ? ov.portFee : (f.portFee || 0);
-                        var cust = ov.customsFee != null ? ov.customsFee : (f.customsFee || 0);
-                        var hs = ov.hsCodeFee != null ? ov.hsCodeFee : (f.hsCodeFee || 0);
-                        var ins = f.insuranceFee || 0;
-                        var supply = f.supplySubtotal || 0;
-
-                        var newCif = supply + ship + ins;
-                        var dutyRate = f.dutyRate || 0.13;
-                        var newDuty = Math.round(newCif * dutyRate);
-                        var newVat = Math.round((newCif + newDuty) * 0.10);
-                        var newSubtotal = ship + port + cust + hs + ins + newDuty + newVat;
-
-                        // 화면 갱신
-                        var cifEl = modalBody.querySelector('.admin-cif-val[data-idx="' + fidx + '"]');
-                        var dutyEl = modalBody.querySelector('.admin-duty-val[data-idx="' + fidx + '"]');
-                        var vatEl = modalBody.querySelector('.admin-vat-val[data-idx="' + fidx + '"]');
-                        var subEl = modalBody.querySelector('.admin-subtotal-val[data-idx="' + fidx + '"]');
-                        if (cifEl) cifEl.textContent = fmt(newCif);
-                        if (dutyEl) dutyEl.textContent = fmt(newDuty);
-                        if (vatEl) vatEl.textContent = fmt(newVat);
-                        if (subEl) subEl.textContent = fmt(newSubtotal);
+                        recalcAdminOverride(fidx);
+                    });
+                    // blur 이벤트: 값 정리 (포맷팅)
+                    input.addEventListener('blur', function () {
+                        var val = parseInt(input.value.replace(/[^\d]/g, '')) || 0;
+                        input.value = val;
                     });
                 });
             }

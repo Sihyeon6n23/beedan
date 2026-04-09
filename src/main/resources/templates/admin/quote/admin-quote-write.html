@@ -105,16 +105,16 @@
                                     </select>
                                 </div>
                             </td>
-                            <td class="col-price-unit text-right" th:text="${item.stCur} + ${#numbers.formatInteger(item.stPr, 3, 'COMMA')}">¥2,400</td>
+                            <td class="col-price-unit text-right" th:text="${item.stCur} + ${#numbers.formatInteger(item.stPr, 1, 'COMMA')}">¥2,400</td>
                             <td class="col-price-total text-right">
-                                <span class="total-pr-value" th:text="'¥' + ${#numbers.formatInteger(item.totalPr, 3, 'COMMA')}">¥2,400,000</span>
+                                <span class="total-pr-value" th:text="'¥' + ${#numbers.formatInteger(item.totalPr, 1, 'COMMA')}">¥2,400,000</span>
                             </td>
                             <td class="col-subtotal">
                                 <span class="subtotal-krw-total">-</span>
                                 <div class="subtotal-control">
                                     <span class="subtotal-currency">₩</span>
                                     <input type="text" class="subtotal-input" placeholder="자동 계산"
-                                           th:value="${item.savedSubtotalKrw != null ? #numbers.formatInteger(item.savedSubtotalKrw, 3, 'COMMA') : ''}"
+                                           th:value="${item.savedSubtotalKrw != null ? #numbers.formatInteger(item.savedSubtotalKrw, 1, 'COMMA') : ''}"
                                            th:data-user-edited="${item.savedSubtotalKrw != null ? 'true' : ''}" />
                                     <svg class="subtotal-edit-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M8.5 1.5l2 2M1 11l.7-2.8L9 1l2 2-7.2 7.2L1 11z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -203,9 +203,9 @@
                                     <input type="checkbox" class="quote-option-check qo-service-check" />
                                     <span class="quote-option-content">
                                         <span class="quote-option-name" th:text="${insp.stiNm}">1차 품질 검사</span>
-                                        <span class="quote-option-desc" th:text="${insp.stiAm == 0} ? '무료' : '₩' + ${#numbers.formatInteger(insp.stiAm, 3, 'COMMA')}">무료</span>
+                                        <span class="quote-option-desc" th:text="${insp.stiAm == 0} ? '무료' : '₩' + ${#numbers.formatInteger(insp.stiAm, 1, 'COMMA')}">무료</span>
                                     </span>
-                                    <span class="quote-option-value" th:text="${insp.stiAm == 0} ? '₩0' : '₩' + ${#numbers.formatInteger(insp.stiAm, 3, 'COMMA')}">-</span>
+                                    <span class="quote-option-value" th:text="${insp.stiAm == 0} ? '₩0' : '₩' + ${#numbers.formatInteger(insp.stiAm, 1, 'COMMA')}">-</span>
                                 </label>
                                 <button type="button" class="quote-option-toggle" th:if="${insp.stiDes != null}" aria-label="설명 보기">
                                     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
