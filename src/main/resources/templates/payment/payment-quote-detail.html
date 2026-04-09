@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('TRADE MANAGEMENT', 'Payment Complete', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('MEMBER', 'Payment Complete', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 결제 완료</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('payment', 'payment-list')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'payment-list')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -65,7 +65,7 @@
                                 </div>
                                 <div class="inventory-price">
                                     <p class="inventory-amount"
-                                       th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</p>
+                                       th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">₩0</p>
                                 </div>
                             </div>
                         </div>
@@ -134,27 +134,27 @@
                             <div class="summary-row">
                                 <span class="summary-label">상품 소계</span>
                                 <span class="summary-val"
-                                      th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA') : '-'}">₩0</span>
+                                      th:text="${itemTotalKrw != null ? '₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA') : '-'}">₩0</span>
                             </div>
                             <div class="summary-row" th:if="${quoteInfo != null and quoteInfo.quInfoTtlShiFe != null}">
                                 <span class="summary-label">운송 비용</span>
                                 <span class="summary-val"
-                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA')}">₩0</span>
+                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 1, 'COMMA')}">₩0</span>
                             </div>
                             <div class="summary-row" th:if="${quoteInfo != null and quoteInfo.quInfoSrvFeAm != null}">
                                 <span class="summary-label">큐레이션 수수료</span>
                                 <span class="summary-val"
-                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA')}">₩0</span>
+                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA')}">₩0</span>
                             </div>
                             <div class="summary-row" th:if="${quoteInfo != null and quoteInfo.quInfoTax != null}">
                                 <span class="summary-label">관세 + 부가세</span>
                                 <span class="summary-val"
-                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoTax, 3, 'COMMA')}">₩0</span>
+                                      th:text="'₩' + ${#numbers.formatInteger(quoteInfo.quInfoTax, 1, 'COMMA')}">₩0</span>
                             </div>
                             <div class="summary-total-row">
                                 <span class="summary-total-label">최종 결제 금액</span>
                                 <span class="summary-total-val"
-                                      th:text="${payment != null and payment.pyTtAm != null ? '₩' + #numbers.formatInteger(payment.pyTtAm, 3, 'COMMA') : (quoteInfo != null and quoteInfo.quInfoTp != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTp, 3, 'COMMA') : '-')}">₩0</span>
+                                      th:text="${payment != null and payment.pyTtAm != null ? '₩' + #numbers.formatInteger(payment.pyTtAm, 1, 'COMMA') : (quoteInfo != null and quoteInfo.quInfoTp != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTp, 1, 'COMMA') : '-')}">₩0</span>
                             </div>
                         </div>
                     </section>

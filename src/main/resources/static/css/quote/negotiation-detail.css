@@ -435,6 +435,16 @@
     color: #6a1b9a;
 }
 
+.ngd-q-badge--unread {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.ngd-q-badge--confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
 /* Empty state */
 .ngd-empty-state {
     display: flex;

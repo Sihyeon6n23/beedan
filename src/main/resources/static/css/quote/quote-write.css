@@ -858,6 +858,8 @@
     font-size: 12px;
     color: var(--color-text-muted);
     line-height: 16px;
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .value-bold {

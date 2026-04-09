@@ -35,11 +35,11 @@ public class ChatRoomCloseScheduler {
             return;
         }
 
-        log.info("chatAutoClose enabled={}", schedulerSetting.isChatAutoCloseEnabled());
-        log.info("chatAutoClose startDt={}, interval={}, lastRun={}",
-                schedulerSetting.getChatAutoCloseStartDt(),
-                schedulerSetting.getChatAutoCloseInterval(),
-                schedulerSetting.getLastChatAutoCloseRunTime());
+//        log.info("chatAutoClose enabled={}", schedulerSetting.isChatAutoCloseEnabled());
+//        log.info("chatAutoClose startDt={}, interval={}, lastRun={}",
+//                schedulerSetting.getChatAutoCloseStartDt(),
+//                schedulerSetting.getChatAutoCloseInterval(),
+//                schedulerSetting.getLastChatAutoCloseRunTime());
 
         // 현재 시각과 설정된 시작 시각을 비교하기 위해 LocalDateTime으로 변환
 //        LocalDateTime now = LocalDateTime.now();
@@ -49,7 +49,7 @@ public class ChatRoomCloseScheduler {
 
         // 아직 시작 시각 전이면 이번 실행은 건너뜀
         if (now.isBefore(start)) {
-            log.info("chatAutoClose skip: now is before start");
+//            log.info("chatAutoClose skip: now is before start");
             return;
         }
 
@@ -62,12 +62,12 @@ public class ChatRoomCloseScheduler {
         if (lastRunText != null) {
             LocalDateTime lastRun = LocalDateTime.parse(lastRunText);
             long hoursSinceLastRun = ChronoUnit.HOURS.between(lastRun, now);
-            log.info("chatAutoClose lastRun={}, hoursSinceLastRun={}, intervalHours={}",
-                    lastRun, hoursSinceLastRun, intervalHours);
+//            log.info("chatAutoClose lastRun={}, hoursSinceLastRun={}, intervalHours={}",
+//                    lastRun, hoursSinceLastRun, intervalHours);
 
             // 아직 실행 주기보다 덜 지났으면 종료
             if (hoursSinceLastRun < intervalHours) {
-                log.info("chatAutoClose skip: interval not reached");
+//                log.info("chatAutoClose skip: interval not reached");
                 return;
             }
         }
