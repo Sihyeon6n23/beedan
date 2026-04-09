@@ -108,7 +108,25 @@
             <footer class="admin-chat-detail-footer"
                     th:classappend="${chatRoomDetail.chRoStt.name() == 'ONGOING'} ? '' : ' is-hidden'"
                     data-composer="ONGOING">
+                <a th:href="@{/stock/list(chatRoomId=${chatRoomDetail.chRoId})}"
+                   class="admin-chat-quote-button"
+                   th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-quote-button--disabled' : ''"
+                   data-admin-quote-link>
+                    견적 보내기
+                </a>
                 <div class="admin-chat-detail-footer__composer admin-chat-detail-footer__composer--stitch">
+                    <button type="button"
+                            class="admin-chat-attach-button"
+                            th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-attach-button--disabled' : ''"
+                            th:disabled="${!chatRoomDetail.canWrite}"
+                            data-admin-image-trigger>
+                        <span class="material-symbols-outlined">image</span>
+                    </button>
+                    <input type="file"
+                           accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                           class="is-hidden"
+                           th:disabled="${!chatRoomDetail.canWrite}"
+                           data-admin-image-input>
                     <input type="text"
                            class="bd-input"
                            th:placeholder="${chatRoomDetail.canWrite} ? '메시지를 입력하세요...' : '다른 담당자가 진행 중인 상담입니다. 조회만 가능합니다.'"
@@ -121,6 +139,12 @@
                             data-admin-message-send>
                         <span class="material-symbols-outlined">send</span>
                     </button>
+                    <a th:href="@{/stock/list(chatRoomId=${chatRoomDetail.chRoId})}"
+                       class="admin-chat-quote-button"
+                       th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-quote-button--disabled' : ''"
+                       data-admin-quote-link>
+                        견적 보내기
+                    </a>
                 </div>
             </footer>
 
