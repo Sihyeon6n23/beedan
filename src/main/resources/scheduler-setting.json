@@ -1,8 +1,8 @@
 {
-  "exchangeRateEnabled" : true,
-  "chatAutoCloseEnabled" : true,
   "autoCrawlingEnabled" : true,
+  "exchangeRateEnabled" : true,
   "gradeResolveEnabled" : false,
+  "chatAutoCloseEnabled" : true,
   "is_auto_crawling_enabled" : true,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
   "auto_crawling_interval" : "6",
@@ -23,5 +23,5 @@
   "is_chat_auto_close_enabled" : true,
   "chat_auto_close_start_dt" : "2026-04-01T00:00",
   "chat_auto_close_interval" : "1",
-  "last_chat_auto_close_run_time" : "2026-04-09T18:15:43.781826300"
+  "last_chat_auto_close_run_time" : "2026-04-09T19:56:17.787171600"
 }
