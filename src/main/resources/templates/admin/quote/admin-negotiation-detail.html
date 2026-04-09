@@ -121,11 +121,14 @@
                             <td class="col-qu-id" th:text="${q.quCd}">QU0000</td>
                             <td class="col-status">
                                 <span class="and-q-badge"
-                                      th:classappend="'and-q-badge--' + ${q.quStt.toLowerCase()}"
-                                      th:text="${q.quStt == 'TEMP_SAVE' ? '임시저장' :
-                                                 q.quStt == 'SUBMITTED' ? '대기중' :
-                                                 q.quStt == 'APPROVED' ? '승인' :
-                                                 q.quStt == 'REJECTED' ? '반려' : '만료'}">상태</span>
+                                      th:classappend="'and-q-badge--' + ${q.displayStt.toLowerCase()}"
+                                      th:text="${q.displayStt == 'TEMP_SAVE' ? '임시저장' :
+                                                 q.displayStt == 'SUBMITTED' ? '제출완료' :
+                                                 q.displayStt == 'UNREAD' ? '읽지 않음' :
+                                                 q.displayStt == 'CONFIRMED' ? '확인함' :
+                                                 q.displayStt == 'APPROVED' ? '승인' :
+                                                 q.displayStt == 'REJECTED' ? '반려' :
+                                                 q.displayStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
                             </td>
                             <td class="col-items" th:text="${q.itemCount}">0</td>
                             <td class="col-first-item" th:text="${q.firstItemName != null ? q.firstItemName : '-'}">-</td>

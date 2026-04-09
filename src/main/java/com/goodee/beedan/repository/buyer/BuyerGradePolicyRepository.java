@@ -19,6 +19,5 @@ public interface BuyerGradePolicyRepository extends JpaRepository<BuyerGradePoli
     Optional<BuyerGradePolicy> findTopByBgpAcYnTrueOrderByBgpMinOrdCntAsc();
 
 
-
-
+    List<BuyerGradePolicy> findAllByBgpAcYnTrueOrderByBgpMinOrdCntAsc();
 }

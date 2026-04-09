@@ -101,7 +101,7 @@
                                 <td class="col-price-total text-right"
                                     th:text="${detail.quDtFgPr != null and detail.quDtQn != null ? detailExtras[__${idx.index}__]['stCur'] + #numbers.formatDecimal(detail.quDtFgPr * detail.quDtQn, 1, 'COMMA', 0, 'POINT') : '-'}">0</td>
                                 <td class="col-subtotal text-right value-bold"
-                                    th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</td>
+                                    th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">₩0</td>
                             </tr>
                             </tbody>
                         </table>
@@ -125,7 +125,7 @@
                                 <span class="cost-card-label">운송 비용 합계</span>
                             </div>
                             <div class="cost-card-amount"
-                                 th:text="${quoteInfo.quInfoTtlShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 3, 'COMMA') : '-'}">₩0</div>
+                                 th:text="${quoteInfo.quInfoTtlShiFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTtlShiFe, 1, 'COMMA') : '-'}">₩0</div>
                             <div class="cost-card-desc">국제 운임 + 국내 배송비</div>
                         </div>
                         <div class="cost-card">
@@ -136,10 +136,10 @@
                                       th:text="'-' + ${#numbers.formatDecimal(quoteInfo.quInfoSrvFeR * 100, 1, 'POINT', 0, 'POINT')} + '%'">-10%</span>
                             </div>
                             <div class="cost-card-amount"
-                                 th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">₩0</div>
+                                 th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">₩0</div>
                             <div class="cost-card-desc"
                                  th:if="${quoteInfo.quInfoSrvFeR != null && quoteInfo.quInfoSrvFeR > 0}"
-                                 th:text="'정가 ₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFe, 3, 'COMMA')} + ' 에서 할인 적용'">정가에서 할인 적용</div>
+                                 th:text="'정가 ₩' + ${#numbers.formatInteger(quoteInfo.quInfoSrvFe, 1, 'COMMA')} + ' 에서 할인 적용'">정가에서 할인 적용</div>
                             <div class="cost-card-desc"
                                  th:if="${quoteInfo.quInfoSrvFeR == null || quoteInfo.quInfoSrvFeR == 0}">서비스 수수료</div>
                         </div>
@@ -148,7 +148,7 @@
                                 <span class="cost-card-label">관세 및 부가세</span>
                             </div>
                             <div class="cost-card-amount"
-                                 th:text="${quoteInfo.quInfoTax != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTax, 3, 'COMMA') : '-'}">₩0</div>
+                                 th:text="${quoteInfo.quInfoTax != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoTax, 1, 'COMMA') : '-'}">₩0</div>
                             <div class="cost-card-desc">관세 + 부가세 합계</div>
                         </div>
                     </div>
@@ -178,7 +178,7 @@
                 <div class="payment-info">
                     <span class="payment-label">최종 결제 금액</span>
                     <span class="payment-amount"
-                          th:text="${quoteInfo != null && quoteInfo.quInfoTp != null ? '₩ ' + #numbers.formatInteger(quoteInfo.quInfoTp, 3, 'COMMA') : '산출 중'}">₩ 0</span>
+                          th:text="${quoteInfo != null && quoteInfo.quInfoTp != null ? '₩ ' + #numbers.formatInteger(quoteInfo.quInfoTp, 1, 'COMMA') : '산출 중'}">₩ 0</span>
                     <span class="payment-note">INC. VAT &amp; DELIVERY</span>
                 </div>
                 <div class="payment-actions" th:if="${quoteBase.quStt.name() == 'APPROVED'}">

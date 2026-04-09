@@ -19,7 +19,7 @@ public class BoardCoreService {
     private final BoardRepository boardRepository;
 
     public Board getBoard(Long boardId, BoardType boardType) {
-        return boardRepository.findByBrdIdAndBrdTyAndBrdDelYnFalse(boardId, boardType)
+        return boardRepository.findDetailWithMember(boardId, boardType)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
     }
 

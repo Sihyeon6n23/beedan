@@ -28,7 +28,7 @@ public class AdminRequirementController {
                                 @AuthenticationPrincipal MemberUserDetails user,
                                 Model model) {
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || auth.getAuthority().equals("ROLE_ROOT"));
 
         RequireForm form = requirementService.getRequireForm(id, user.getMemberId(), isAdmin);
         model.addAttribute("require", form);

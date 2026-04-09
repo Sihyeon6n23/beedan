@@ -315,11 +315,22 @@ main > div {
     color: #0369a1;
 }
 
+.aq-badge--unread {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.aq-badge--confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
 /* Pagination */
 .aq-pagination-wrapper {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    gap: 0.5rem;
     padding: 1.5rem 0;
     margin-top: 1rem;
     border-top: 1px solid var(--aq-border);

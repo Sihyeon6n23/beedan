@@ -86,13 +86,13 @@
                 <td class="text-right"
                     th:text="${detail.quDtFgPr != null and detail.quDtQn != null ? detailExtras[__${idx.index}__]['stCur'] + #numbers.formatDecimal(detail.quDtFgPr * detail.quDtQn, 1, 'COMMA', 0, 'POINT') : '-'}">-</td>
                 <td class="text-right bold"
-                    th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 3, 'COMMA') : '-'}">₩0</td>
+                    th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">₩0</td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
                 <td colspan="6" class="text-right bold">품목 소계</td>
-                <td class="text-right bold" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA')}">₩0</td>
+                <td class="text-right bold" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA')}">₩0</td>
             </tr>
         </tfoot>
     </table>
@@ -108,27 +108,27 @@
         <table>
             <tr>
                 <th style="width:150px;">해외 운임</th>
-                <td class="text-right" th:text="${sf.qsfSrAm != null ? '₩' + #numbers.formatInteger(sf.qsfSrAm, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfSrAm != null ? '₩' + #numbers.formatInteger(sf.qsfSrAm, 1, 'COMMA') : '-'}">-</td>
                 <th style="width:150px;">항만비</th>
-                <td class="text-right" th:text="${sf.qsfPrtAm != null ? '₩' + #numbers.formatInteger(sf.qsfPrtAm, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfPrtAm != null ? '₩' + #numbers.formatInteger(sf.qsfPrtAm, 1, 'COMMA') : '-'}">-</td>
             </tr>
             <tr>
                 <th>통관비</th>
-                <td class="text-right" th:text="${sf.qsfCstAm != null ? '₩' + #numbers.formatInteger(sf.qsfCstAm, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfCstAm != null ? '₩' + #numbers.formatInteger(sf.qsfCstAm, 1, 'COMMA') : '-'}">-</td>
                 <th>HS 신고비</th>
-                <td class="text-right" th:text="${sf.qsfHsCd != null ? '₩' + #numbers.formatInteger(sf.qsfHsCd, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfHsCd != null ? '₩' + #numbers.formatInteger(sf.qsfHsCd, 1, 'COMMA') : '-'}">-</td>
             </tr>
             <tr>
                 <th>보험료</th>
-                <td class="text-right" th:text="${sf.qsfInsYn != null and sf.qsfInsYn and sf.qsfInsAm != null ? '₩' + #numbers.formatInteger(sf.qsfInsAm, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfInsYn != null and sf.qsfInsYn and sf.qsfInsAm != null ? '₩' + #numbers.formatInteger(sf.qsfInsAm, 1, 'COMMA') : '-'}">-</td>
                 <th>CIF</th>
-                <td class="text-right" th:text="${sf.qsfCifAm != null ? '₩' + #numbers.formatInteger(sf.qsfCifAm, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfCifAm != null ? '₩' + #numbers.formatInteger(sf.qsfCifAm, 1, 'COMMA') : '-'}">-</td>
             </tr>
             <tr>
                 <th>관세 (<span th:if="${sf.qsfDtyR != null}" th:text="${#numbers.formatDecimal(sf.qsfDtyR * 100, 1, 'POINT', 1, 'POINT')} + '%'">13%</span><span th:if="${sf.qsfDtyR == null}">13%</span>)</th>
-                <td class="text-right" th:text="${sf.qsfDty != null ? '₩' + #numbers.formatInteger(sf.qsfDty, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfDty != null ? '₩' + #numbers.formatInteger(sf.qsfDty, 1, 'COMMA') : '-'}">-</td>
                 <th>부가세 (10%)</th>
-                <td class="text-right" th:text="${sf.qsfVat != null ? '₩' + #numbers.formatInteger(sf.qsfVat, 3, 'COMMA') : '-'}">-</td>
+                <td class="text-right" th:text="${sf.qsfVat != null ? '₩' + #numbers.formatInteger(sf.qsfVat, 1, 'COMMA') : '-'}">-</td>
             </tr>
         </table>
     </th:block>
@@ -157,13 +157,13 @@
             <th style="width:150px;">적용 등급</th>
             <td th:text="${buyerGrade}">STANDARD</td>
             <th style="width:150px;">정가 수수료</th>
-            <td class="text-right" th:text="${quoteInfo.quInfoSrvFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFe, 3, 'COMMA') : '-'}">-</td>
+            <td class="text-right" th:text="${quoteInfo.quInfoSrvFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFe, 1, 'COMMA') : '-'}">-</td>
         </tr>
         <tr>
             <th>할인율</th>
             <td th:text="${quoteInfo.quInfoSrvFeR != null and quoteInfo.quInfoSrvFeR > 0 ? #numbers.formatDecimal(quoteInfo.quInfoSrvFeR * 100, 1, 'POINT', 1, 'POINT') + '%' : '없음'}">-</td>
             <th>적용 수수료</th>
-            <td class="text-right bold" th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">-</td>
+            <td class="text-right bold" th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">-</td>
         </tr>
     </table>
 </div>
@@ -173,23 +173,23 @@
     <h2>비용 명세 요약</h2>
     <div class="summary-row">
         <span class="summary-label">품목 대금</span>
-        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 3, 'COMMA')}">₩0</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA')}">₩0</span>
     </div>
     <div class="summary-row">
         <span class="summary-label">물류 비용 (국제 운임 + 국내 배송)</span>
-        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 3, 'COMMA')}">₩0</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 1, 'COMMA')}">₩0</span>
     </div>
     <div class="summary-row">
         <span class="summary-label">큐레이션 수수료</span>
-        <span class="summary-value" th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 3, 'COMMA') : '-'}">₩0</span>
+        <span class="summary-value" th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">₩0</span>
     </div>
     <div class="summary-row">
         <span class="summary-label">관세 및 부가세</span>
-        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(totalDutyVat, 3, 'COMMA')}">₩0</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(totalDutyVat, 1, 'COMMA')}">₩0</span>
     </div>
     <div class="total-row">
         <span class="summary-label">최종 결제 금액</span>
-        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(calculatedTotal, 3, 'COMMA')}">₩0</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(calculatedTotal, 1, 'COMMA')}">₩0</span>
     </div>
 </div>
 

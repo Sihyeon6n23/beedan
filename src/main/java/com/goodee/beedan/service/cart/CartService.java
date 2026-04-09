@@ -64,6 +64,18 @@ public class CartService {
         cartRepository.deleteById(caId);
     }
 
+    // 회원의 장바구니 전체 비우기
+    public void clearCart(Long memId) {
+        cartRepository.deleteAllByMemId(memId);
+    }
+
+    // 회원의 장바구니에서 특정 상품만 삭제
+    public void clearCartItems(Long memId, java.util.List<Long> stIds) {
+        if (stIds != null && !stIds.isEmpty()) {
+            cartRepository.deleteAllByMemIdAndStock_StIdIn(memId, stIds);
+        }
+    }
+
     // 장바구니 상품 수량 수정
     public void updateCart(List<CartUpdateDto> updates, Long memId) {
         for (CartUpdateDto dto : updates) {

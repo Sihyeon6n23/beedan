@@ -108,14 +108,16 @@ public class AdminQuoteController {
     }
 
     @GetMapping("/negotiation/detail")
-    public String negotiationDetail(@RequestParam Long ngId, Model model) {
+    public String negotiationDetail(@RequestParam Long ngId, Model model,
+                                    @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
+        Long myId = userDetails != null ? userDetails.getMemberId() : null;
         Negotiation negotiation = negotiationService.findById(ngId);
 
         // 회원 정보
         Member member = memberRepository.findById(negotiation.getMemId()).orElse(null);
 
-        // 견적 목록
-        List<QuoteBase> quoteList = quoteBaseService.findAllByNego(ngId);
+        // 견적 목록 (상대방 TEMP_SAVE 제외)
+        List<QuoteBase> quoteList = quoteBaseRepository.findAllActiveByNgId(ngId, myId);
 
         // 상태별 카운트
         Map<String, Long> statusCounts = new LinkedHashMap<>();
@@ -135,6 +137,16 @@ public class AdminQuoteController {
             item.put("quOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
+
+            // 표시용 상태 (SUBMITTED → 보낸 사람/받은 사람 구분)
+            String displayStt = qb.getQuStt().name();
+            if (qb.getQuStt() == QuoteStatus.SUBMITTED && myId != null) {
+                boolean sender = myId.equals(qb.getQuSid()) || (qb.getQuSid() == null && myId.equals(qb.getQuRid()));
+                if (!sender) {
+                    displayStt = (qb.getQuAdOpYn() != null && qb.getQuAdOpYn()) ? "CONFIRMED" : "UNREAD";
+                }
+            }
+            item.put("displayStt", displayStt);
 
             List<QuoteDetail> details = quoteDetailService.findAllByQuote(qb.getQuId());
             item.put("itemCount", details != null ? details.size() : 0);
@@ -166,10 +178,26 @@ public class AdminQuoteController {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("quId", qb.getQuId());
             item.put("quCd", qb.getQuCd());
+            try {
+                Negotiation ng = negotiationService.findById(qb.getNgId());
+                item.put("ngNm", ng.getNgNm());
+            } catch (Exception e) {
+                item.put("ngNm", "");
+            }
             item.put("quStt", qb.getQuStt().name());
             item.put("quOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
             item.put("quCreDt", qb.getQuCreDt());
             item.put("quUpdDt", qb.getQuUpdDt());
+
+            // 표시용 상태
+            String displayStt = qb.getQuStt().name();
+            if (qb.getQuStt() == QuoteStatus.SUBMITTED && myId != null) {
+                boolean sender = myId.equals(qb.getQuSid()) || (qb.getQuSid() == null && myId.equals(qb.getQuRid()));
+                if (!sender) {
+                    displayStt = (qb.getQuAdOpYn() != null && qb.getQuAdOpYn()) ? "CONFIRMED" : "UNREAD";
+                }
+            }
+            item.put("displayStt", displayStt);
 
             quotes.add(item);
         }
@@ -184,6 +212,11 @@ public class AdminQuoteController {
                               @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         if (quoteBase == null) return "redirect:/admin/quote/list";
+
+        // TEMP_SAVE 상태면 write 페이지로 이동 (이어서 작성)
+        if (quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE) {
+            return "redirect:/admin/quote/write?quId=" + quId;
+        }
 
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         Member member = memberRepository.findById(negotiation.getMemId()).orElse(null);

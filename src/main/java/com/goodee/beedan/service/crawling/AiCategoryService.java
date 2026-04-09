@@ -63,11 +63,27 @@ public class AiCategoryService {
         Map<String, String> result = new HashMap<>();
         String defaultCategory = fallbackCategory.isEmpty() ? "" : fallbackCategory.get(0);
 
+        if (responseBody == null || responseBody.isBlank()) {
+            log.error("AI API 응답이 비어있음");
+            productNames.forEach(name -> result.put(name, defaultCategory));
+            return result;
+        }
+
         try {
             JsonNode root = objectMapper.readTree(responseBody);
-            String text = root.path("candidates").get(0)
-                    .path("content").path("parts").get(0)
-                    .path("text").asText();
+            JsonNode candidates = root.path("candidates");
+            if (!candidates.isArray() || candidates.isEmpty()) {
+                log.error("AI 응답에 candidates 없음");
+                productNames.forEach(name -> result.put(name, defaultCategory));
+                return result;
+            }
+            JsonNode parts = candidates.get(0).path("content").path("parts");
+            if (!parts.isArray() || parts.isEmpty()) {
+                log.error("AI 응답에 parts 없음");
+                productNames.forEach(name -> result.put(name, defaultCategory));
+                return result;
+            }
+            String text = parts.get(0).path("text").asText();
 
             // JSON 블록 추출 (```json ... ``` 형식 대응)
             if (text.contains("{")) {
@@ -78,7 +94,7 @@ public class AiCategoryService {
             mapping.fields().forEachRemaining(entry ->
                     result.put(entry.getKey(), entry.getValue().asText()));
         } catch (Exception e) {
-            log.error("AI 응답 파싱 실패: {}", e.getMessage());
+            log.error("AI 응답 파싱 실패: {}", e.getMessage(), e);
             productNames.forEach(name -> result.put(name, defaultCategory));
         }
 

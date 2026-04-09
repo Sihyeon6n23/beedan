@@ -1,5 +1,6 @@
 package com.goodee.beedan.service.file;
 
+import com.goodee.beedan.common.constant.BoardType;
 import com.goodee.beedan.dto.file.FileDownloadDto;
 import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
@@ -26,10 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -315,5 +313,11 @@ public class FileService {
     public Boolean isFileYn(RefDto refDto) {
         if (refDto == null || refDto.getRefNo() == null) return false;
         return fileRepository.existsByRefDto(refDto);
+    }
+
+    public Set<Long> getFileYnSet(String Type, List<Long> RefNos) {
+        return new HashSet<>(
+                fileRepository.findExistingRefNos(Type, RefNos)
+        );
     }
 }

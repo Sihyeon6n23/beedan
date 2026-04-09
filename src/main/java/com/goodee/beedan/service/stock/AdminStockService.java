@@ -85,8 +85,11 @@ public class AdminStockService {
         stockRepository.save(stock);
 
 
-        Long fileId = fileRepository.findByBrdRefTyAndBrdRefNo("STOCK", stId).getFileId();
-        fileService.deleteFileById(fileId);
+        var file = fileRepository.findByBrdRefTyAndBrdRefNo("STOCK", stId);
+        if (file == null) {
+            return;
+        }
+        fileService.deleteFileById(file.getFileId());
     }
 
     // 상품 정보 수정

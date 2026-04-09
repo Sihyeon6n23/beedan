@@ -69,8 +69,6 @@ function loadMemberList(page) {
             return response.json();
         })
        .then(data => {
-                   console.log('API Response:', data);
-                   console.log('isRoot value:', data.isRoot);
                    renderMemberList(data.memberList.content, data.isRoot);
                    renderPagination(data.memberList);
        })
@@ -262,16 +260,16 @@ function renderModalShipments(shipments) {
 
         html += `
             <div class="shipping-card border-yellow">
-                <span class="shipping-status">배송 상태: ${sttName}</span>
+                <span class="shipping-status">운송장 번호: ${shipment.shTraNo || '운송장 미등록'}</span>
 
                 <span class="tracking-label">
-                    <p class="tracking-number">운송장 번호: ${shipment.shTraNo || '운송장 미등록'}</p>
+                    <p class="tracking-number">배송 상태: ${sttName}</p>
                 </span>
 
                 <div class="shipping-address">
                     <div class="address-content">
                         <span class="material-symbols-outlined icon-yellow">location_on</span>
-                        <span class="address-text">배송지: ${shipment.shAdr || '주소 정보 없음'}</span>
+                        <span class="address-text" style="font-size: 13px;">배송지: ${shipment.shAdr || '주소 정보 없음'}</span>
                     </div>
                 </div>
 
@@ -515,7 +513,7 @@ async function viewFullOrderList(memId, page = 0) {
     }
 }
 
-// =============================== 배송 상세 목록 조회 영역 =================================
+// =============================== 전체 배송 목록 조회 =================================
 
 function getShipmentBadgeTheme(status) {
     switch(status) {
