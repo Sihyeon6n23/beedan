@@ -25,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.management.relation.Role;
 import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -185,6 +186,39 @@ public class MemberService {
 
         // tokenEntity.useToken(); 만료처리는 비밀번호 초기화가 완료된 이후?
         return tokenEntity.getMember();
+    }
+
+    public void saveMember(MemberCreateFormDto memberFormDto) {
+// 1. 아이디 중복 체크 (컨트롤러에서도 하지만 서비스에서 한 번 더 검증하면 안전합니다)
+        memberRepository.findByMemLgnId(memberFormDto.getUserLoginId())
+                .ifPresent(m -> {
+                    throw new IllegalStateException("이미 존재하는 아이디입니다.");
+                });
+
+        Member member = Member.builder()
+                // [실데이터 영역]
+                .memLgnId(memberFormDto.getUserLoginId())
+                .memLgnPw(passwordEncoder.encode(memberFormDto.getPassword()))
+                .memEml(memberFormDto.getEmail())
+                .memAut(memberFormDto.getAuthority())          // 권한: ADMIN
+                .memStt(MemberStatus.ACTIVE.toString()) // 상태: 활성화
+                .memMbPhn(memberFormDto.getPhone())
+
+                // [나머지 NULL 영역]
+                .memCi(null)
+                .memBizNo(null)
+                .memBizCreDt(null)
+                .memBizTtl(null)
+                .memCeoNm(null)
+                .memPosCd(null)
+                .memBizAdr(null)
+                .memBizDtAdr(null)
+                .memCmpTel(null)
+                .memLgnTr(0L) // 로그인 시도는 0으로 초기화
+                .build();
+
+        // 3. DB 저장
+        memberRepository.save(member);
     }
 
     private Boolean checkMemberAuthority(Long memId){
