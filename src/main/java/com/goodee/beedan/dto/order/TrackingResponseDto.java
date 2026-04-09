@@ -12,5 +12,7 @@ public class TrackingResponseDto {
     private String carrierName;
     private String trackingNumber;
     private String statusText;
+    private String shAdr;
+    private String shRcvNm;
     private List<TrackingDetailDto> details;
 }

@@ -7,6 +7,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -17,6 +18,7 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final String SITE_URL = "http://localhost:8080";
 
+    @Async
     public void sendMail(String emailAddress, NotificationType notificationType, Long targetId) {
         MimeMessage message = mailSender.createMimeMessage();
 
@@ -46,5 +48,8 @@ public class MailService {
             e.printStackTrace();
         }
     }
+
+
+
 
 }

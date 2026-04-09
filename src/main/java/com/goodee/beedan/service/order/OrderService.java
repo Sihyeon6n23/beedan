@@ -12,6 +12,7 @@ import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.*;
+import com.goodee.beedan.repository.stock.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,9 @@ public class OrderService {
     private final QuoteInfoRepository  quoteInfoRepository;
     private final PaymentRepository paymentRepository;
     private final QuoteBaseRepository quoteBaseRepository;
+    private final StockRepository stockRepository;
+
+    private final ThumbnailRedisService thumbnailRedisService;
 
     public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
         if(!memberRepository.existsById(memId)) return null;
@@ -113,7 +117,7 @@ public class OrderService {
     }
 
     @Transactional
-    public String createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
+    public void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
         // quId (QouteBase) 사용 Payment 총 결제금액 확인
         // quId 사용 QuoteDetail에서 주문한 상품 목록 및 배송지 정보 (수령인, 주소)
         // memId가 들어가 있는 곳은 negotiation
@@ -130,7 +134,6 @@ public class OrderService {
                 .member(member)
                 .ordBaseStt(OrderStatus.PREPARING)
                 .ordBaseRcvNm(firstItem.getQuDtRcNm())
-                .ordBaseAdr(firstItem.getQuDtRcAdr())
                 .ordBaseTtAm(payment.getPyTtAm())
                 .ordBaseNo(quoteBase.getQuCd())
                 .build();
@@ -149,36 +152,41 @@ public class OrderService {
                     .order(order)
                     .shRcvNm(addressInfo.getQuDtRcNm())
                     .shAdr(addressInfo.getQuDtRcAdr())
-                    .shAdrDt(addressInfo.getQuDtRcPhn()) // DB 컬럼 상황에 맞춰 전화번호나 상세주소 매핑
+                    .shAdrDt(addressInfo.getQuDtRcPhn())
                     .shStt(ShipmentStatus.PREPARING)
-                    .shCarCd(webhookRequest.getShCarNo())    // 해외 물류사 코드
-                    .shTraNo(webhookRequest.getShTraNo())    // 해외 통합 송장 번호
+                    .shCarCd(webhookRequest.getShCarNo())
+                    .shTraNo(webhookRequest.getShTraNo())
                     .shCanYn(false)
                     .build();
             shipmentRepository.save(shipment);
 
-            // Shipment에 속한 상품들 처리
+            // 주문 상품, 배송 물품
             for (QuoteDetail detail : groupItems) {
+                Stock stock = stockRepository.findById(detail.getStId()).orElseThrow(()->new IllegalArgumentException("상품 정보가 없습니다."));
+                String thumbKey = "display:thumbnail:" + UUID.randomUUID().toString();
+
                 OrderItem orderItem = OrderItem.builder()
                         .order(order)
                         .ordItmQn(detail.getQuDtQn())
                         .ordItmNm(detail.getStNm())
+                        .ordItmThumbKey(thumbKey)
+                        .ordItmStUrl(stock.getStImgUrl())
                         .build();
                 orderItemRepository.save(orderItem);
+
+                thumbnailRedisService.generateAndCache(thumbKey, stock.getStImgUrl());
 
                 // ShipmentItem 생성 (Shipment와 OrderItem 연결)
                 ShipmentItem shipmentItem = ShipmentItem.builder()
                         .shipment(shipment)
                         .orderItem(orderItem)
                         .shQn(detail.getQuDtQn())
-                        .ordItmNm(detail.getStNm()) // 추후 국내 배송 시 업데이트될 필드
+                        .ordItmNm(detail.getStNm())
                         .build();
                 shipmentItemRepository.save(shipmentItem);
             }
         }
 
-        log.info("주문 생성 성공: {}", order.getOrdBaseId());
-        return "주문 생성 완료";
     }
 
     @Transactional
@@ -264,17 +272,32 @@ public class OrderService {
     }
 
     public OrderDto mapToOrderDto(Order order) {
-        String summaryName = "상품명";
+        String summaryName = "상품 없음";
+        String repThumbUrl = null;
+        List<OrderDto.OrderItemResponseDto> orderItemDtos = new ArrayList<>(); // 초기화
 
-        if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
-            int totalItems = order.getOrderItems().size();
-            String firstItemName = order.getOrderItems().get(0).getOrdItmNm();
+        List<OrderItem> orderItems = order.getOrderItems();
 
-            if (totalItems > 1) {
-                summaryName = firstItemName + " 외 " + (totalItems - 1) + "건";
-            } else {
-                summaryName = firstItemName;
+        // 주문 상품이 여러개 있는 경우 (대표명, 대표 썸네일, 개별 DTO 변환을 한 번에 처리)
+        if (orderItems != null && !orderItems.isEmpty()) {
+            int totalItems = orderItems.size();
+            OrderItem firstItem = orderItems.get(0);
+            String firstItemName = firstItem.getOrdItmNm();
+
+            summaryName = (totalItems > 1) ? firstItemName + " 외 " + (totalItems - 1) + "건" : firstItemName;
+
+            if (firstItem.getOrdItmThumbKey() != null) {
+                repThumbUrl = "/api/images/thumb/" + firstItem.getOrdItmThumbKey();
             }
+
+            orderItemDtos = orderItems.stream()
+                    .map(item -> OrderDto.OrderItemResponseDto.builder()
+                            .ordItmNm(item.getOrdItmNm())
+                            .ordItmQn(item.getOrdItmQn())
+                            .ordItmThumbKey(item.getOrdItmThumbKey())
+                            .ordItmThumbUrl(item.getOrdItmThumbKey() != null ? "/api/images/thumb/" + item.getOrdItmThumbKey() : null)
+                            .build())
+                    .collect(Collectors.toList());
         }
 
         OrderDto orderDto = OrderDto.builder()
@@ -288,6 +311,8 @@ public class OrderService {
                 .ordBaseTtAm(order.getOrdBaseTtAm())
                 .ordBaseCreDt(order.getOrdBaseCreDt())
                 .ordSummaryNm(summaryName)
+                .ordThumbUrl(repThumbUrl)
+                .orderItems(orderItemDtos)
                 .build();
 
         if (order.getShipments() != null) {

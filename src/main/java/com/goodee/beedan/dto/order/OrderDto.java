@@ -2,6 +2,7 @@ package com.goodee.beedan.dto.order;
 
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.entity.OrderItem;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.*;
@@ -19,14 +20,17 @@ public class OrderDto {
     private String ordBaseAdr;
     private String ordBaseAdrDt;
     private String ordBaseMsg;
-    private String ordBaseNo; // 주문 번호 QU + 4글자
+    private String ordBaseNo;
     private BigDecimal ordBaseTtAm;
     private OrderStatus ordBaseStt;
     private LocalDateTime ordBaseCreDt;
 
     private String ordSummaryNm;
-    private List<ShipmentRequestDto> shipmentRequests; // 주문 생성시 이용
-    private List<ShipmentResponseDto> shipmentResponses; // 주문 상세 조회용
+    private String ordThumbUrl;
+
+    private List<ShipmentRequestDto> shipmentRequests;
+    private List<ShipmentResponseDto> shipmentResponses;
+    private List<OrderItemResponseDto> orderItems;
 
     @Data
     public static class ShipmentRequestDto {
@@ -55,12 +59,13 @@ public class OrderDto {
         private String shAdrDt;
         private String shMsg;
         private Boolean shCanYn;
+
         private List<ShipmentItemResponseDto> shipmentItems;
+        private List<OrderItemResponseDto> orderItems;
 
         public String getShCarNm() {
-            if (this.shCarCd == null || this.shCarCd.isEmpty()) {
-                return "미정";
-            }
+            if (this.shCarCd == null || this.shCarCd.isEmpty()) return "미정";
+
             switch (this.shCarCd) {
                 case "kr.cjlogistics": return "CJ대한통운";
                 case "kr.epost":       return "우체국택배";
@@ -82,4 +87,14 @@ public class OrderDto {
         private Integer shQn;
         private Long prodId;
     }
+
+    @Data @Builder
+    @NoArgsConstructor @AllArgsConstructor
+    public static class OrderItemResponseDto {
+        private String ordItmNm;
+        private Integer ordItmQn;
+        private String ordItmThumbKey;
+        private String ordItmThumbUrl;
+    }
+
 }
