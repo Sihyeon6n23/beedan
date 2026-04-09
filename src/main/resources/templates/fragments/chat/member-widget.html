@@ -5,7 +5,9 @@
 
     <section class="member-chat-widget"
              data-member-chat
-             th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')}, data-login-url=@{/auth/signin}">
+             th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')},
+                    data-login-url=@{/auth/signin},
+                    data-member-id=${#authorization.expression('isAuthenticated()') ? #authentication.principal.memberId : ''}">
         <button type="button" class="member-chat-launcher" data-widget-toggle aria-expanded="false" aria-controls="member-chat-panel">
             <span class="material-symbols-outlined">chat</span>
             <svg class="member-chat-launcher__badge" aria-hidden="true" viewBox="0 0 10 10" focusable="false">

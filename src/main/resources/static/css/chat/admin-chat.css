@@ -1,4 +1,4 @@
-/* 관리자 채팅: 공통 ?�이지 ?�이?�웃 */
+/* 관리자 채팅: 공통 페이지 레이아웃 */
 .admin-chat-page {
   display: flex;
   flex-direction: column;
@@ -18,7 +18,7 @@
   }
 }
 
-/* 관리자 채팅: 공통 블록�????�역 */
+/* 관리자 채팅: 공통 블록 영역 */
 .admin-chat-shell {
   background: var(--color-surface-container-lowest);
   box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
@@ -65,6 +65,13 @@
   width: 11rem;
   height: 100%;
   background: var(--color-primary-container);
+}
+
+.admin-chat-shell.is-loading {
+    opacity: 0.86;
+    pointer-events: none;
+    cursor: progress;
+    transition: opacity 0.12s ease;
 }
 
 .admin-chat-toolbar {
@@ -195,7 +202,7 @@
   color: var(--color-on-background);
 }
 
-/* 관리자 채팅 목록: ?�이지 ?�용 ?�이?�웃 */
+/* 관리자 채팅 목록: 페이지 전용 레이아웃 */
 .admin-chat-list-page {
   max-width: 1220px;
 }
@@ -295,7 +302,7 @@
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .admin-chat-row:hover {
@@ -449,7 +456,7 @@
   color: var(--color-secondary);
 }
 
-/* 관리자 채팅 ?�세: ?�이지 ?�용 ?�이?�웃 */
+/* 관리자 채팅 상세: 페이지 전용 레이아웃 */
 .admin-chat-detail-page {
   max-width: 1040px;
   padding-bottom: 1rem;
@@ -534,7 +541,7 @@
   background: var(--color-surface-container-lowest);
 }
 
-/* 관리자 채팅 ?�세: ?�더, 보드, 메시지, ?�력 ?�역 */
+/* 관리자 채팅 상세: 헤더, 보드, 메시지, 입력 영역 */
 .admin-chat-detail-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
@@ -948,7 +955,7 @@
   margin-top: 0;
 }
 
-/* 관리자 채팅: 공통 모달�??�틸리티 ?�태 */
+/* 관리자 채팅: 공통 모달 및 유틸리티 상태 */
 .admin-chat-modal {
   position: fixed;
   inset: 0;
@@ -1116,7 +1123,34 @@
   display: none !important;
 }
 
-/* 관리자 채팅: 반응??조정 */
+.admin-chat-feedback {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0 0 1rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid rgba(181, 82, 82, 0.18);
+    border-radius: 14px;
+    background: #fff6f6;
+    color: #8b2e2e;
+    box-shadow: 0 8px 24px rgba(139, 46, 46, 0.08);
+}
+
+.admin-chat-feedback.is-hidden {
+    display: none;
+}
+
+.admin-chat-feedback .material-symbols-outlined {
+    font-size: 1.125rem;
+}
+
+.admin-chat-feedback p {
+    margin: 0;
+    font-size: 0.94rem;
+    line-height: 1.4;
+}
+
+/* 관리자 채팅: 반응형 조정 */
 @media (max-width: 900px) {
   .sidebar-frame {
     width: 100%;
