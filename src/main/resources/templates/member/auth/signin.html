@@ -64,7 +64,11 @@
 
             <div class="flex flex-col gap-4 pt-4">
               <div class="flex justify-between items-center text-[10px] font-medium tracking-[0.2em] text-secondary uppercase">
-                <a th:href="@{/auth/find}" class="hover:text-primary transition-colors duration-300">아이디/비밀번호 찾기</a>
+                <button type="button"
+                        onclick="openModal()"
+                        class="hover:text-primary transition-colors duration-300 text-[10px] font-medium tracking-[0.2em] text-secondary uppercase text-left">
+                  아이디/비밀번호 찾기
+                </button>
               </div>
             </div>
           </div>
@@ -88,9 +92,205 @@
           </div>
         </div>
       </div>
+      <div id="recoveryModal"
+           class="fixed inset-0 z-[100] items-center justify-center hidden backdrop-blur-sm bg-black/60 transition-opacity duration-300"
+           onclick="handleBackdropClick(event)">
 
+        <div class="bg-surface-container-lowest border border-outline-variant w-[360px] shadow-2xl relative animate-in fade-in zoom-in duration-200"
+             onclick="event.stopPropagation()">
+
+          <button type="button" onclick="closeModal()" class="absolute top-4 right-4 text-secondary/40 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+
+          <span class="material-symbols-outlined text-4xl text-primary mb-4 block text-center">person_search</span>
+          <h3 class="font-headline font-extrabold text-lg tracking-tight text-on-surface mb-6 text-center uppercase">Identity Recovery</h3>
+
+          <div class="flex justify-center gap-6 mb-8 border-b border-outline-variant/30">
+            <button type="button" onclick="switchTab('findId')" id="tab-findId"
+                    class="text-[10px] font-bold tracking-[0.2em] uppercase transition-all border-b-2 border-primary text-primary pb-2">Find ID</button>
+            <button type="button" onclick="switchTab('findPw')" id="tab-findPw"
+                    class="text-[10px] font-bold tracking-[0.2em] uppercase transition-all border-b-2 border-transparent text-secondary hover:text-primary pb-2">Find PW</button>
+          </div>
+
+          <div id="form-findId" class="space-y-4">
+            <div class="space-y-1">
+              <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/60">Name Identifier</label>
+              <input type="text" id="findIdName" class="bd-input bg-surface-container-high border-none text-sm py-3" placeholder="이름 입력">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/60">Email Address</label>
+              <input type="email" id="findIdEmail" class="bd-input bg-surface-container-high border-none text-sm py-3" placeholder="이메일 입력">
+            </div>
+            <div id="idResult" class="hidden py-4 bg-primary/5 border-y border-primary/10 text-center my-4">
+              <p class="text-[9px] text-secondary tracking-widest uppercase mb-1">Found Identifier</p>
+              <p class="text-sm font-black text-primary tracking-widest" id="foundIdText"></p>
+            </div>
+            <button type="button" onclick="handleFindId()" class="w-full py-4 bg-primary text-white font-headline font-black text-[10px] tracking-[0.2em] uppercase hover:bg-primary/90 transition-all shadow-lg active:scale-[0.98]">
+              Retrieve ID
+            </button>
+          </div>
+
+          <div id="form-findPw" class="hidden space-y-4">
+            <div class="space-y-1">
+              <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/60">Login Identifier</label>
+              <input type="text" id="findPwId" class="bd-input bg-surface-container-high border-none text-sm py-3" placeholder="아이디 입력">
+            </div>
+            <div class="space-y-1">
+              <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/60">Registered Email</label>
+              <input type="email" id="findPwEmail" class="bd-input bg-surface-container-high border-none text-sm py-3" placeholder="이메일 입력">
+            </div>
+            <div id="pwResult" class="hidden py-4 bg-primary/5 border-y border-primary/10 text-center my-4">
+              <p class="text-[10px] text-primary font-black tracking-widest uppercase">Verification Link Sent</p>
+            </div>
+            <button type="button" onclick="handleFindPw()" class="w-full py-4 bg-primary text-white font-headline font-black text-[10px] tracking-[0.2em] uppercase hover:bg-primary/90 transition-all shadow-lg active:scale-[0.98]">
+              Reset via Email
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    /* 1. Modal Toggle 로직 */
+    function openModal() {
+      const modal = document.getElementById('recoveryModal');
+      if (modal) {
+        modal.classList.remove('hidden'); // 숨김 해제
+        modal.classList.add('flex');      // 중앙 정렬 레이아웃 적용
+        document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+      }
+    }
+
+    /**
+     * 모달 닫기: flex 제거 + hidden 추가
+     */
+    function closeModal() {
+      const modal = document.getElementById('recoveryModal');
+      if (modal) {
+        modal.classList.remove('flex');   // 레이아웃 제거
+        modal.classList.add('hidden');    // 확실하게 숨김
+        document.body.style.overflow = ''; // 배경 스크롤 복구
+
+        // 결과창 초기화
+        document.getElementById('idResult')?.classList.add('hidden');
+        document.getElementById('pwResult')?.classList.add('hidden');
+      }
+    }
+
+    /* 2. 배경 클릭 핸들러 (e.target 활용) */
+    function handleBackdropClick(e) {
+      // 클릭된 대상이 정확히 배경(recoveryModal)일 때만 닫기
+      if (e.target === e.currentTarget) {
+        closeModal();
+      }
+    }
+
+    /* 3. 탭 전환 (디자인 클래스 교체) */
+    function switchTab(type) {
+      const idForm = document.getElementById('form-findId');
+      const pwForm = document.getElementById('form-findPw');
+      const idTab = document.getElementById('tab-findId');
+      const pwTab = document.getElementById('tab-findPw');
+
+      if (type === 'findId') {
+        idForm.classList.remove('hidden');
+        pwForm.classList.add('hidden');
+        // Tab 스타일 교체
+        idTab.classList.replace('border-transparent', 'border-primary');
+        idTab.classList.replace('text-secondary', 'text-primary');
+        pwTab.classList.replace('border-primary', 'border-transparent');
+        pwTab.classList.replace('text-primary', 'text-secondary');
+      } else {
+        idForm.classList.add('hidden');
+        pwForm.classList.remove('hidden');
+        // Tab 스타일 교체
+        pwTab.classList.replace('border-transparent', 'border-primary');
+        pwTab.classList.replace('text-secondary', 'text-primary');
+        idTab.classList.replace('border-primary', 'border-transparent');
+        idTab.classList.replace('text-primary', 'text-secondary');
+      }
+    }
+
+    /* 4. 공통: ESC 키로 닫기 */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+  <script>
+    /**
+     * 1. 아이디 찾기 로직 (Axios)
+     */
+    async function handleFindId() {
+      const name = document.getElementById('findIdName').value.trim();
+      const email = document.getElementById('findIdEmail').value.trim();
+      const resultDiv = document.getElementById('idResult');
+      const resultText = document.getElementById('foundIdText');
+
+      if (!name || !email) {
+        alert('이름과 이메일을 모두 입력해 주세요.');
+        return;
+      }
+
+      try {
+        // Axios GET 요청
+        const response = await axios.get('/api/auth/find-id', {
+          params: { name, email } // 쿼리 스트링으로 자동 변환
+        });
+
+        // Axios는 응답 데이터를 response.data에 담습니다.
+        if (response.data && response.data.loginId) {
+          resultText.innerText = response.data.loginId;
+          resultDiv.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('ID 찾기 실패:', error);
+        const message = error.response?.data?.message || '일치하는 정보가 없습니다.';
+        alert(message);
+        resultDiv.classList.add('hidden');
+      }
+    }
+
+    /**
+     * 2. 비밀번호 찾기 로직 (Axios)
+     */
+    async function handleFindPw() {
+      const loginId = document.getElementById('findPwId').value.trim();
+      const email = document.getElementById('findPwEmail').value.trim();
+      const resultDiv = document.getElementById('pwResult');
+
+      if (!loginId || !email) {
+        alert('아이디와 이메일을 모두 입력해 주세요.');
+        return;
+      }
+
+      // Spring Security CSRF 토큰 추출
+      const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
+
+      try {
+        // Axios POST 요청 (Form Data 형식)
+        const params = new URLSearchParams();
+        params.append('loginId', loginId);
+        params.append('email', email);
+
+        const response = await axios.post('/api/auth/passwd/reset/request', params, {
+          headers: {
+            'X-CSRF-TOKEN': csrfToken // 보안을 위한 CSRF 토큰 전송
+          }
+        });
+
+        if (response.status === 200) {
+          resultDiv.classList.remove('hidden');
+          alert('비밀번호 재설정 링크가 발송되었습니다.');
+          closeModal();
+        }
+      } catch (error) {
+        console.error('PW 리셋 요청 실패:', error);
+        alert('정보가 일치하지 않거나 메일 전송 중 오류가 발생했습니다.');
+        resultDiv.classList.add('hidden');
+      }
+    }
+  </script>
 </th:block>
 </html>
