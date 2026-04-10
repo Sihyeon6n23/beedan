@@ -1,6 +1,7 @@
 package com.goodee.beedan.service.file;
 
 import com.goodee.beedan.common.constant.BoardType;
+import com.goodee.beedan.dto.board.notice.BoardResultMessage;
 import com.goodee.beedan.dto.file.FileDownloadDto;
 import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
@@ -19,6 +20,10 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
+import org.apache.tika.mime.MimeTypes;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +45,32 @@ public class FileService {
     @Value("${file.upload.path}")
     private String uploadPath;
     private final SecurityService securityService;
+
+    private static final MimeTypes TIKA_MIME_TYPES = MimeTypes.getDefaultMimeTypes();
+
+    private static final Map<String, Set<String>> MIME_EXTENSION_MAP = new HashMap<>();
+    static {
+        MIME_EXTENSION_MAP.put("application/x-tika-ooxml",
+                new HashSet<>(Arrays.asList(".xlsx", ".docx", ".pptx", ".xlsm", ".docm", ".pptm", ".ppsx")));
+        MIME_EXTENSION_MAP.put("application/zip",
+                new HashSet<>(Arrays.asList(".xlsx", ".xltx", ".docx", ".dotx", ".pptx", ".ppsx", ".hwpx", ".pdf", ".zip")));
+
+        Set<String> excelExts = new HashSet<>(Arrays.asList(".xls", ".xlsx", ".xml", ".csv", ".xlsm"));
+        MIME_EXTENSION_MAP.put("application/vnd.ms-spreadsheetml", excelExts);
+        MIME_EXTENSION_MAP.put("application/vnd.ms-excel", excelExts);
+        MIME_EXTENSION_MAP.put("application/msexcel", excelExts);
+
+        Set<String> wordExts = new HashSet<>(Arrays.asList(".doc", ".docx", ".dot", ".dotx"));
+        MIME_EXTENSION_MAP.put("application/msword", wordExts);
+        MIME_EXTENSION_MAP.put("application/vnd.ms-word", wordExts);
+
+        Set<String> pptExts = new HashSet<>(Arrays.asList(".ppt", ".pptx", ".pps", ".ppsx"));
+        MIME_EXTENSION_MAP.put("application/vnd.ms-powerpoint", pptExts);
+        MIME_EXTENSION_MAP.put("application/powerpoint", pptExts);
+
+        MIME_EXTENSION_MAP.put("application/octet-stream",
+                new HashSet<>(Arrays.asList(".xlsx", ".docx", ".pptx", ".pdf", ".zip")));
+    }
 
     /**
      * [FileService] - 파일 관리 비즈니스 로직
@@ -74,39 +105,66 @@ public class FileService {
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
 
-
             if (file.isEmpty() || file.getOriginalFilename().isEmpty()) {
                 continue;
             }
 
-            String mimeType = getMimeType(file);
-            validateFilePolicy(file); // 파일업로드 화이트리스트 정책
-
             String originalName = file.getOriginalFilename();
-            String ext = "";
-            if (originalName != null && originalName.contains(".")) {
-                ext = originalName.substring(originalName.lastIndexOf(".") + 1);
-            }
-            String uuid = UUID.randomUUID().toString();
-            String datePath = getDatePath();
+            String mimeType = getMimeType(file);
+            long fileSize = file.getSize();
 
             if (originalName == null || originalName.isEmpty()) {
                 throw new IllegalIdentifierException("파일 이름이 없습니다.");
             }
 
+            String errorMsg = null;
+            String ext = "";
+
+            int lastDotIndex = originalName.lastIndexOf(".");
+            if (lastDotIndex == -1) {
+                errorMsg = "확장자가 존재하지 않는 파일은 업로드 불가능합니다.";
+            } else {
+                ext = originalName.substring(lastDotIndex + 1);
+
+                // 3. 파일 정책 검증 (화이트리스트 등)
+                if (!isValidateFilePolicy(originalName)) {
+                    errorMsg = "업로드 불가능한 확장자입니다.";
+                }
+                // 4. 마임타입 위변조 검증
+                else if (!isMimeExtensionMatched(mimeType, ext)) {
+                    errorMsg = "파일의 데이터 규격이 확장자 정보와 다릅니다. 원본 파일을 확인해 주세요.";
+                }
+            }
+
+            if (errorMsg != null) {
+                fileListDtoList.add(FileDto.builder()
+                        .fileNm(originalName)
+                        .fileExt(ext)
+                        .fileSz(fileSize)
+                        .isUploaded(false)
+                        .errorMessage(String.format("[%s] 업로드 실패: %s", originalName, errorMsg))
+                        .build());
+                continue;
+            }
+
+            // 6. 모든 검증 통과 시 저장 진행
+            // 저장시 파일명에서 확장자 .을 제외한 나머지 .은 _처리 후 업로드
+            String uuid = UUID.randomUUID().toString();
+            String datePath = getDatePath();
             uploadToDisk(file, uuid, ext);
 
-            // FileListDto 생성 및 추가
             fileListDtoList.add(FileDto.builder()
                     .fileUuid(uuid)
-                    .fileNm(originalName)
+                    .fileNm(sanitizeFileName(originalName)) // 아까 만든 마침표 정화 로직 적용 추천
                     .fileExt(ext)
-                    .fileSz(file.getSize())
+                    .fileSz(fileSize)
                     .filePat(datePath)
+                    .isUploaded(true)
+                    .isDeleted(false)
                     .build());
 
             FileUpload fileUpload = FileUpload.builder()
-                    .fileNm(originalName)
+                    .fileNm(sanitizeFileName(originalName))
                     .fileUuid(uuid)
                     .brdRefTy(refDto.getRefTy())
                     .brdRefNo(refDto.getRefNo())
@@ -122,6 +180,7 @@ public class FileService {
         }
         return fileListDtoList;
     }
+
     // 물리파일 다운로드 서비스
     public FileDownloadDto prepareDownload(String fileUuId) {
         // 1. DB에서 파일 정보 조회 (없으면 예외 발생)
@@ -177,21 +236,25 @@ public class FileService {
     }
 
     // 파일 단건 삭제
-    public void deleteFile(String fileUuid) {
+    public FileDto deleteFile(String fileUuid) {
         FileUpload fileUpload = fileRepository.findFileUploadByFileUuid(fileUuid)
                 .orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다."));
 
         fileUpload.setFileDelYn(true);
-        deletePhysicalFile(fileUpload.getFilePat(), fileUpload.getFileUuid(), fileUpload.getFileExt());
-    }
+        boolean isDeleted = deletePhysicalFile(
+                fileUpload.getFilePat(),
+                fileUpload.getFileUuid(),
+                fileUpload.getFileExt()
+        );
 
-    // 파일 단건 삭제
-    public void deleteFileById(Long fileId) {
-        FileUpload fileUpload = fileRepository.findById(fileId)
-                .orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다."));
-
-        fileUpload.setFileDelYn(true);
-        deletePhysicalFile(fileUpload.getFilePat(), fileUpload.getFileUuid(), fileUpload.getFileExt());
+        // 3. 결과를 DTO에 담아 반환
+        return FileDto.builder()
+                .fileUuid(fileUuid)
+                .fileNm(fileUpload.getFileNm())
+                .isDeleted(isDeleted)
+                .isUploaded(false)
+                .errorMessage(isDeleted ? "" : fileUpload.getFileNm() + "파일 삭제를 실패했습니다.(잠금 또는 권한)")
+                .build();
     }
 
     // 파일 일괄 삭제(참조버전)
@@ -207,8 +270,6 @@ public class FileService {
         }
         deleteFilesById(fileIdList);
     }
-
-
     public void deleteFilesById(List<Long> fileIdList) {
         if (fileIdList == null || fileIdList.isEmpty()) return;
 
@@ -217,15 +278,23 @@ public class FileService {
             deleteFileById(fileid);
         }
     }
+    public void deleteFileById(Long fileId) {
+        FileUpload fileUpload = fileRepository.findById(fileId)
+                .orElseThrow(() -> new EntityNotFoundException("파일을 찾을 수 없습니다."));
 
-    // 파일 일괄 삭제(아이디리스트)
-    public void deleteFiles(List<String> fileUuidList) {
-        if (fileUuidList == null || fileUuidList.isEmpty()) return;
+        fileUpload.setFileDelYn(true);
+        deletePhysicalFile(fileUpload.getFilePat(), fileUpload.getFileUuid(), fileUpload.getFileExt());
+    }
 
-        for (int i = 0; i < fileUuidList.size(); i++) {
-            String fileUuid = fileUuidList.get(i);
-            deleteFile(fileUuid);
+    // 파일 다중 삭제(아이디리스트)
+    public List<FileDto> deleteFiles(List<String> fileUuidList) {
+        if (fileUuidList == null || fileUuidList.isEmpty()) return new ArrayList<>();
+
+        List<FileDto> fileDtoList = new ArrayList<>();
+        for (String fileUuid : fileUuidList) {
+            fileDtoList.add(deleteFile(fileUuid));
         }
+        return fileDtoList;
     }
 
     // 물리파일 저장
@@ -236,9 +305,9 @@ public class FileService {
     }
 
     // 물리 파일 삭제
-    private void deletePhysicalFile(String path, String uuid, String ext) {
+    private boolean deletePhysicalFile(String path, String uuid, String ext) {
         if (path == null || uuid == null || ext == null) {
-            return;
+            return false;
         }
 
         try {
@@ -248,6 +317,7 @@ public class FileService {
         } catch (IOException e) {
             log.error("물리 파일 삭제 실패: {}", e.getMessage());
         }
+        return true;
     }
 
     // 파일 날짜경로 생성 메소드
@@ -276,48 +346,101 @@ public class FileService {
             return "application/octet-stream";
         }
     }
+
+    // MIME 타입 인자, 업로드 가능여부 반환
+    public boolean isMimeExtensionMatched(String detectedMime, String extension) {
+        try {
+            // 1. MIME 타입 문자열을 통해 Tika의 MimeType 객체 획득
+            MimeType mimeType = TIKA_MIME_TYPES.forName(detectedMime);
+
+            // 2. 해당 MIME 타입이 허용하는 모든 확장자 리스트 가져오기
+            List<String> extensionList = mimeType.getExtensions();
+            // 리스트가 비어있거나, application/zip 인 경우 정해진 리스트 반환 및 SET으로 변경
+            Set<String> validExtensions = getFallbackExtensions(mimeType.toString(), extensionList);
+
+
+            log.info("추출된마임타입: {} ,검증할 확장자 목록 크기: {}", mimeType.toString(),validExtensions.size());
+            validExtensions.forEach(f -> log.info("{}",f));
+
+            // 3. 사용자가 보낸 확장자에 점(.)이 없다면 추가하여 비교 (Tika는 .jpg 형태를 반환)
+            String extensionWithDot = extension.startsWith(".") ? extension.toLowerCase() : "." + extension.toLowerCase();
+
+            // 4. 매핑 테이블 내에 존재 여부 확인 (Containment Check)
+            return validExtensions.contains(extensionWithDot);
+
+        } catch (MimeTypeException e) {
+            // 정의되지 않은 MIME 타입일 경우 보안상 false 반환 (Fail-Close)
+            return false;
+        }
+    }
+
     // 업로드 파일 화이트리스트 검사
-    public void validateFilePolicy(MultipartFile file) {
+    public boolean isValidateFilePolicy(String filename) {
         SecurityPolicyDto policy = securityService.getCachedPolicy();
         // 0. 정책 객체가 로드되지 않았을 경우에 대한 방어 로직
         if (policy == null) {
-            return; // 혹은 기본 보안 정책 적용
+            return true; // 혹은 기본 보안 정책 적용
+        }
+
+        int lastDotIndex = filename.lastIndexOf(".");
+        if (lastDotIndex <= 0 || lastDotIndex == filename.length() - 1) {
+            return false;
         }
 
         // 1. 파일 업로드 허용 리스트 정책이 켜져 있는지 확인
         if (Boolean.TRUE.equals(policy.getIsFileUploadAllowListEnabled())) {
+            String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase().trim();
 
-            String originalName = file.getOriginalFilename();
-            if (originalName == null || !originalName.contains(".")) {
-                throw new IllegalArgumentException("올바르지 않은 파일명입니다.");
-            }
-
-            // 2. 확장자 추출 및 소문자 변환 (비교 규격 통일)
-            String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase().trim();
-
-            // 3. 화이트리스트 확인
-            // DTO 내부의 setFileUploadAllowList에 의해 이미 Set<String>으로 변환된 상태임
-            // 주의: getFileUploadAllowList()는 String을 반환하므로,
-            // 필드(Set)에 직접 접근하거나 별도의 전용 Getter를 사용하는 것이 성능상 유리합니다.
-
-            Set<String> allowSet = policy.getFileUploadAllowSet(); // (아래 DTO 수정 참고)
+            Set<String> allowSet = policy.getFileUploadAllowSet();
 
             if (allowSet != null && !allowSet.isEmpty()) {
-                if (!allowSet.contains(ext)) {
-                    throw new SecurityException("허용되지 않는 파일 확장자입니다: " + ext);
-                }
+                return allowSet.contains(ext);
             }
         }
-    }
-
-    public Boolean isFileYn(RefDto refDto) {
-        if (refDto == null || refDto.getRefNo() == null) return false;
-        return fileRepository.existsByRefDto(refDto);
+        return true;
     }
 
     public Set<Long> getFileYnSet(String Type, List<Long> RefNos) {
         return new HashSet<>(
                 fileRepository.findExistingRefNos(Type, RefNos)
         );
+    }
+
+    public Set<String> getFallbackExtensions(String mimeType, List<String> existingExtensions) {
+        Set<String> validExtensions = new HashSet<>();
+
+        // 1. 기존 리스트가 있다면 일단 추가 (Tika가 기본적으로 찾은 것들)
+        if (existingExtensions != null && !existingExtensions.isEmpty()) {
+            validExtensions.addAll(existingExtensions);
+        }
+
+        // 2. 리스트가 비어있거나, 'application/zip' 등 확장자 보충이 필요한 특정 마임타입인 경우
+        // MIME_EXTENSION_MAP에서 우리가 정의한 "정해진 매칭" 확장자들을 추가함
+        if (validExtensions.isEmpty() || "application/zip".equals(mimeType) || "application/octet-stream".equals(mimeType)) {
+            Set<String> customMatch = MIME_EXTENSION_MAP.get(mimeType);
+            if (customMatch != null) {
+                validExtensions.addAll(customMatch);
+            }
+        }
+
+        return validExtensions;
+    }
+
+    public String sanitizeFileName(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return fileName;
+        }
+
+        int lastDotIndex = fileName.lastIndexOf(".");
+
+        if (lastDotIndex <= 0) {
+            return fileName;
+        }
+
+        String namePart = fileName.substring(0, lastDotIndex);
+        String extensionPart = fileName.substring(lastDotIndex); // .pdf 포함
+
+        // 이름 부분의 모든 마침표를 언더바로 치환 후 결합
+        return namePart.replace(".", "_") + extensionPart;
     }
 }

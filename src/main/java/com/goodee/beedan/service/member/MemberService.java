@@ -123,6 +123,10 @@ public class MemberService {
     public void resetPassword(String token, PasswordResetDto resetDto) {
         Member member = findMemberByToken(token);
         member.setMemLgnPw(passwordEncoder.encode(resetDto.getPassword()));
+
+        // 토큰 만료처리를 위한 재 확인.
+        Token tokenEntity = tokenRepository.findByTkVl(token).orElseThrow(() -> new EntityNotFoundException("토큰을 찾을 수 없습니다."));
+        tokenEntity.useToken();
     }
 
     public void processPasswordReset(String loginId, String email) {
@@ -181,10 +185,10 @@ public class MemberService {
         Token tokenEntity = tokenRepository.findByTkVl(token).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 토큰입니다."));
 
         if (tokenEntity.isExpired()) {
+            tokenEntity.useToken(); // 기간이 지났을 경우 만료처리.
             throw new IllegalIdentifierException("토큰이 이미 사용되었거나, 기간이 만료된 토큰입니다.");
         }
 
-        // tokenEntity.useToken(); 만료처리는 비밀번호 초기화가 완료된 이후?
         return tokenEntity.getMember();
     }
 
