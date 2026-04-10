@@ -56,13 +56,14 @@
                     <!-- 상담 시작 시각 출력 -->
                     <div class="admin-chat-room__system admin-chat-room__system--detail"
                          th:if="${chatRoomDetail.chRoAsgDt != null}"
-                         th:text="${'상담 시작 · ' + #temporals.format(chatRoomDetail.chRoAsgDt, 'yyyy.MM.dd HH:mm')}">상담 시작</div>
+                         th:text="${'상담 시작 · ' + #temporals.format(chatRoomDetail.chRoAsgDt, 'yyyy.MM.dd')}">상담 시작</div>
 
                     <!-- 실제 메시지 출력 -->
                     <th:block th:if="${!#lists.isEmpty(chatRoomDetail.messages)}"
                               th:each="message, messageStat : ${chatRoomDetail.messages}">
                         <article class="admin-chat-detail-message"
                                  style="animation-delay: [[${messageStat.index * 45}]]ms;"
+                                 th:attr="data-message-created-at=${#temporals.format(message.chMsCreDt, 'yyyy-MM-dd''T''HH:mm:ss')}"
                                  th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message--admin' : ' admin-chat-detail-message--client'">
                             <div class="admin-chat-detail-message__avatar"
                                  th:if="${message.chMsSenTy.name() != 'ADMIN'}">
@@ -77,9 +78,56 @@
                                     </th:block>
                                 </div>
 
-                                <div class="admin-chat-detail-message__bubble"
-                                     th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''"
-                                     th:text="${message.chMsCon}">메시지</div>
+                                <th:block th:switch="${message.chMsTp != null ? message.chMsTp.name() : 'TEXT'}">
+                                    <div th:case="'TEXT'"
+                                         class="admin-chat-detail-message__bubble"
+                                         th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''"
+                                         th:text="${message.chMsCon}">메시지</div>
+
+                                    <div th:case="'IMAGE'"
+                                         class="admin-chat-detail-message__bubble admin-chat-detail-message__bubble--image"
+                                         th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''">
+                                        <a class="admin-chat-detail-message__image-link"
+                                           th:if="${message.imageFile != null}"
+                                           th:href="@{/api/files/view/{fileUuid}(fileUuid=${message.imageFile.fileUuid})}"
+                                           target="_blank"
+                                           rel="noopener noreferrer">
+                                            <img class="admin-chat-detail-message__image"
+                                                 th:src="@{/api/files/view/{fileUuid}(fileUuid=${message.imageFile.fileUuid})}"
+                                                 alt="첨부 이미지">
+                                        </a>
+                                        <p class="admin-chat-detail-message__image-empty"
+                                           th:if="${message.imageFile == null}">
+                                            이미지를 불러올 수 없습니다.
+                                        </p>
+                                    </div>
+
+                                    <div th:case="'QUOTE_CARD'"
+                                         class="admin-chat-detail-message__bubble admin-chat-detail-message__bubble--quote-card"
+                                         th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''">
+                                        <div class="admin-chat-quote-card">
+                                            <strong class="admin-chat-quote-card__title"
+                                                    th:text="${message.chMsLnkTtl}">견적 초안</strong>
+
+                                            <p class="admin-chat-quote-card__desc"
+                                               th:if="${message.chMsCon != null and !#strings.isEmpty(message.chMsCon)}"
+                                               th:text="${message.chMsCon}">설명</p>
+
+                                            <a class="admin-chat-quote-card__link"
+                                               th:href="${message.chMsLnkUrl}"
+                                               target="_blank"
+                                               rel="noopener noreferrer">
+                                                견적 보기
+                                            </a>
+
+                                            <img class="admin-chat-quote-card__qr"
+                                                 th:if="${message.chMsLnkUrl != null}"
+                                                 th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + #strings.urlEncode(message.chMsLnkUrl)}"
+                                                 alt="견적 QR 코드">
+                                        </div>
+                                    </div>
+                                </th:block>
+
                                 <span class="admin-chat-detail-message__time"
                                       th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__time--admin' : ''"
                                       th:text="${#temporals.format(message.chMsCreDt, 'HH:mm')}">시간</span>
@@ -120,7 +168,7 @@
                             th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-attach-button--disabled' : ''"
                             th:disabled="${!chatRoomDetail.canWrite}"
                             data-admin-image-trigger>
-                        <span class="material-symbols-outlined">image</span>
+                        <span class="material-symbols-outlined">attach_file</span>
                     </button>
                     <input type="file"
                            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"

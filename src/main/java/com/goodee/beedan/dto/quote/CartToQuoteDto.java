@@ -46,9 +46,11 @@ public class CartToQuoteDto {
         @Builder
         public static class ShipCard {
             private int qty;
-            private String region;
+            private Long rcId;
+            private Boolean isIsland;
             private String name;
             private String addr;
+            private String addrDetail;
             private String phone;
             private String memo;
         }
@@ -134,8 +136,11 @@ public class CartToQuoteDto {
             java.util.List<ShipCard> shipCards = group.stream()
                     .map(d -> ShipCard.builder()
                             .qty(d.getQuDtQn() != null ? d.getQuDtQn() : 0)
+                            .rcId(d.getRcId())
+                            .isIsland(d.getQuDtRcIamYn())
                             .name(d.getQuDtRcNm())
                             .addr(d.getQuDtRcAdr())
+                            .addrDetail(d.getQuDtRcAdrDt())
                             .phone(d.getQuDtRcPhn())
                             .memo(d.getQuDtRcMemo())
                             .build())
@@ -159,7 +164,7 @@ public class CartToQuoteDto {
                     .hsDuRa(hsCode != null ? hsCode.getHsDuRa() : null)
                     .savedSubtotalKrw(totalSubtotal)
                     .savedRcId(first.getRcId())
-                    .savedShipCards(shipCards.size() > 1 ? shipCards : null)
+                    .savedShipCards(shipCards)
                     .build();
         }
     }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -112,18 +113,22 @@ public class NoticeBoardController {
     /** 4. 작성 실행 (CommonBoardRequestDto 사용) */
     @PostMapping("/write")
     public String postWrite(@ModelAttribute CommonBoardRequestDto boardRequestDto,
-                            Principal principal) throws IOException {
+                            Principal principal,
+                            RedirectAttributes reAttr) throws IOException {
 
-        noticeBoardService.writeNotice(boardRequestDto, principal.getName());
+        String boardResultMessage = noticeBoardService.writeNotice(boardRequestDto, principal.getName());
+        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
         return "redirect:/notice/list";
     }
 
     /** 5. 수정 실행 (CommonBoardRequestDto 사용) */
     @PostMapping("/edit")
     public String postUpdate(@ModelAttribute CommonBoardRequestDto boardRequestDto,
-                             Principal principal) throws IOException {
+                             Principal principal,
+                             RedirectAttributes reAttr) throws IOException {
 
-        noticeBoardService.updateNotice(boardRequestDto, principal.getName());
+        String boardResultMessage = noticeBoardService.updateNotice(boardRequestDto, principal.getName());
+        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
         return "redirect:/notice/detail?id=" + boardRequestDto.getBrdId();
     }
 

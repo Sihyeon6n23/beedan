@@ -252,6 +252,44 @@ public class SalesService {
         return counts;
     }
 
+    /**
+     * 최근 6개월 월별 매출 추이 (상품/서비스/운임/관세 분류)
+     */
+    public List<Map<String, Object>> getMonthlyTrend(int year, int month) {
+        List<Map<String, Object>> trend = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            java.time.YearMonth ym = java.time.YearMonth.of(year, month).minusMonths(i);
+            LocalDateTime from = ym.atDay(1).atStartOfDay();
+            LocalDateTime to = ym.atEndOfMonth().atTime(23, 59, 59);
+
+            List<QuoteBase> paid = quoteBaseRepository.findAllByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
+
+            BigDecimal itemTotal = BigDecimal.ZERO;
+            BigDecimal serviceTotal = BigDecimal.ZERO;
+            BigDecimal shippingTotal = BigDecimal.ZERO;
+            BigDecimal taxTotal = BigDecimal.ZERO;
+
+            for (QuoteBase qb : paid) {
+                QuoteInfo info = quoteInfoRepository.findByQuId(qb.getQuId()).orElse(null);
+                if (info == null) continue;
+                serviceTotal = serviceTotal.add(nullToZero(info.getQuInfoSrvFeAm()));
+                shippingTotal = shippingTotal.add(nullToZero(info.getQuInfoTtlShiFe()));
+                taxTotal = taxTotal.add(nullToZero(info.getQuInfoTax()));
+                itemTotal = itemTotal.add(calculateItemAmount(info));
+            }
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("label", ym.getMonthValue() + "월");
+            row.put("item", itemTotal);
+            row.put("service", serviceTotal);
+            row.put("shipping", shippingTotal);
+            row.put("tax", taxTotal);
+            row.put("total", itemTotal.add(serviceTotal).add(shippingTotal).add(taxTotal));
+            trend.add(row);
+        }
+        return trend;
+    }
+
     // ===== private helpers =====
 
     private BigDecimal calculateItemAmount(QuoteInfo info) {

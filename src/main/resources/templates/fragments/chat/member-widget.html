@@ -58,66 +58,6 @@
                 </header>
 
                 <div class="member-chat-content member-chat-content--list">
-                    <button type="button" class="member-chat-room-item member-chat-room-item--ongoing is-active" data-view-target="chat-room">
-                        <div class="member-chat-room-item__icon">
-                            <span class="material-symbols-outlined">description</span>
-                        </div>
-                        <div class="member-chat-room-item__body">
-                            <div class="member-chat-room-item__head">
-                                <div class="member-chat-room-item__title">
-                                    <strong>견적 문의</strong>
-                                    <span class="member-chat-state member-chat-state--ongoing">상담중</span>
-                                </div>
-                                <span class="member-chat-room-item__time">14:02 PM</span>
-                            </div>
-                            <div class="member-chat-room-item__summary">
-                                <p>요청하신 커스텀 가구 견적을 보내드렸습니다. 확인 부탁드립니다.</p>
-                                <svg class="member-chat-room-item__unread" aria-hidden="true" viewBox="0 0 10 10" focusable="false">
-                                    <circle cx="5" cy="5" r="5"></circle>
-                                </svg>
-                            </div>
-                        </div>
-                        <span class="member-chat-room-item__blade" aria-hidden="true"></span>
-                    </button>
-
-                    <button type="button" class="member-chat-room-item" data-view-target="chat-room">
-                        <div class="member-chat-room-item__icon">
-                            <span class="material-symbols-outlined">local_shipping</span>
-                        </div>
-                        <div class="member-chat-room-item__body">
-                            <div class="member-chat-room-item__head">
-                                <div class="member-chat-room-item__title">
-                                    <strong>배송 문의</strong>
-                                    <span class="member-chat-state member-chat-state--closed">종료됨</span>
-                                </div>
-                                <span class="member-chat-room-item__time">Yesterday</span>
-                            </div>
-                            <div class="member-chat-room-item__summary">
-                                <p>배송 일정과 출고 안내까지 모두 마무리된 상담입니다.</p>
-                            </div>
-                        </div>
-                        <span class="member-chat-room-item__blade" aria-hidden="true"></span>
-                    </button>
-
-                    <button type="button" class="member-chat-room-item" data-view-target="chat-room">
-                        <div class="member-chat-room-item__icon">
-                            <span class="material-symbols-outlined">payments</span>
-                        </div>
-                        <div class="member-chat-room-item__body">
-                            <div class="member-chat-room-item__head">
-                                <div class="member-chat-room-item__title">
-                                    <strong>결제 문의</strong>
-                                    <span class="member-chat-state member-chat-state--closed">종료됨</span>
-                                </div>
-                                <span class="member-chat-room-item__time">Monday</span>
-                            </div>
-                            <div class="member-chat-room-item__summary">
-                                <p>결제 수단 변경과 영수증 발급 안내까지 전달드린 상담입니다.</p>
-                            </div>
-                        </div>
-                        <span class="member-chat-room-item__blade" aria-hidden="true"></span>
-                    </button>
-
                     <div class="member-chat-list-end">
                         <p>End of consultation history</p>
                         <span></span>
@@ -146,8 +86,28 @@
                 <div class="member-chat-content member-chat-content--room" data-chat-room-messages></div>
 
                 <footer class="member-chat-room-footer">
-                    <input type="text" placeholder="메시지를 입력해 주세요..">
-                    <button type="button" class="member-chat-send-button">전송</button>
+                    <!-- 이미지 첨부 버튼: 클릭하면 숨김 file input 열기 -->
+                    <button type="button"
+                            class="member-chat-attach-button"
+                            data-member-image-trigger>
+                        <span class="material-symbols-outlined">attach_file</span>
+                    </button>
+
+                    <!-- 실제 이미지 파일 선택 input: UI에는 숨기고 JS로만 사용 -->
+                    <input type="file"
+                           accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                           class="is-hidden"
+                           data-member-image-input>
+
+                    <!-- 텍스트 메시지 입력창 -->
+                    <input type="text"
+                           placeholder="메시지를 입력해 주세요."
+                           data-member-message-input>
+
+                    <!-- 기존 텍스트 전송 버튼 -->
+                    <button type="button"
+                            class="member-chat-send-button"
+                            data-member-message-send>전송</button>
                 </footer>
             </section>
 

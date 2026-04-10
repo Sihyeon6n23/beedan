@@ -26,7 +26,7 @@ public enum NotificationType {
     REQUIREMENT_REJECT("상품 요청 반려", "상품 요청이 반려되었습니다.", "/require/detail?id=%s"),
     REQUIREMENT_CHANGE("상품 요청 변경", "상품 요청 답변이 수정되었습니다.", "/require/detail?id=%s"),
 
-    PASSWORD_RESET("비밀번호 재설정 안내", "비밀번호 초기화를 위한 인증 번호가 발급되었습니다.", "/");
+    PASSWORD_RESET("비밀번호 재설정 안내", "비밀번호 초기화를 위한 인증 번호가 발급되었습니다.", "/auth/passwd/change?token_id=%s");
 
     private final String defaultTitle;
     private final String message;

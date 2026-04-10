@@ -17,6 +17,8 @@ public class QuoteRequestDto {
     @Valid
     private List<QuoteRequestItemDto> items;
 
+    private Long chatRoomId;
+
     @Getter
     @NoArgsConstructor
     public static class QuoteRequestItemDto {

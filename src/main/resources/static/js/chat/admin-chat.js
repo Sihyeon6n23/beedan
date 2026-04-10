@@ -10,6 +10,8 @@
   var adminMessageInput = document.querySelector("[data-admin-message-input]");
   var adminMessageSendButton = document.querySelector("[data-admin-message-send]");
   var adminMessageList = document.querySelector("[data-admin-message-list]");
+  var adminImageTrigger = document.querySelector("[data-admin-image-trigger]");
+  var adminImageInput = document.querySelector("[data-admin-image-input]");
   var adminMessageScrollBody = document.querySelector(".admin-chat-detail-body");
   var pendingDetailUrl = "";
   var pendingRoomId = "";
@@ -196,6 +198,19 @@
     });
   }
 
+  function moveClosedPanelToBottom() {
+    if (!adminMessageList) {
+      return;
+    }
+
+    var closedPanel = adminMessageList.querySelector("[data-closed-panel]");
+    if (!closedPanel) {
+      return;
+    }
+
+    adminMessageList.appendChild(closedPanel);
+  }
+
   function removeEmptyDetailPlaceholder() {
     if (!adminMessageList) {
       return;
@@ -213,7 +228,224 @@
 
     // 메시지가 하나도 없을 때 마지막에 렌더된 안내 문구가 빈 상태 문구
     var emptyPlaceholder = systemMessages[systemMessages.length - 1];
-    emptyPlaceholder.remove();
+        emptyPlaceholder.remove();
+  }
+
+  function formatAdminChatMessageTime(createdAtValue) {
+    var createdAt = createdAtValue ? new Date(createdAtValue) : new Date();
+    return createdAt.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+  }
+
+  function getAdminChatMessageDateKey(createdAtValue) {
+    if (!createdAtValue) {
+      return "";
+    }
+
+    var createdAt = new Date(createdAtValue);
+    if (Number.isNaN(createdAt.getTime())) {
+      return "";
+    }
+
+    var year = createdAt.getFullYear();
+    var month = String(createdAt.getMonth() + 1).padStart(2, "0");
+    var day = String(createdAt.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+  }
+
+  function formatAdminChatDateDivider(createdAtValue) {
+    if (!createdAtValue) {
+      return "";
+    }
+
+    var createdAt = new Date(createdAtValue);
+    if (Number.isNaN(createdAt.getTime())) {
+      return "";
+    }
+
+    var now = new Date();
+    var year = createdAt.getFullYear();
+    var month = String(createdAt.getMonth() + 1).padStart(2, "0");
+    var day = String(createdAt.getDate()).padStart(2, "0");
+
+    if (year === now.getFullYear()) {
+      return month + "." + day;
+    }
+
+    return year + "." + month + "." + day;
+  }
+
+  function createAdminChatDateDivider(createdAtValue) {
+    var divider = document.createElement("div");
+    divider.className = "admin-chat-room__system admin-chat-room__system--detail admin-chat-room__system--date";
+    divider.dataset.dateKey = getAdminChatMessageDateKey(createdAtValue);
+    divider.textContent = formatAdminChatDateDivider(createdAtValue);
+    return divider;
+  }
+
+  function getLastAdminMessageDateKey() {
+    if (!adminMessageList) {
+      return "";
+    }
+
+    var messageArticles = adminMessageList.querySelectorAll(".admin-chat-detail-message");
+    if (!messageArticles.length) {
+      return "";
+    }
+
+    return messageArticles[messageArticles.length - 1].dataset.messageDateKey || "";
+  }
+
+  function appendAdminDateDividerIfNeeded(createdAtValue) {
+    if (!adminMessageList) {
+      return;
+    }
+
+    var nextDateKey = getAdminChatMessageDateKey(createdAtValue);
+    var lastDateKey = getLastAdminMessageDateKey();
+
+    if (!nextDateKey || !lastDateKey || nextDateKey === lastDateKey) {
+      return;
+    }
+
+    adminMessageList.appendChild(createAdminChatDateDivider(createdAtValue));
+  }
+
+  function renderExistingAdminDateDividers() {
+    if (!adminMessageList) {
+      return;
+    }
+
+    adminMessageList.querySelectorAll(".admin-chat-room__system--date").forEach(function (divider) {
+      divider.remove();
+    });
+
+    var messageArticles = adminMessageList.querySelectorAll(".admin-chat-detail-message");
+    var previousDateKey = "";
+
+    messageArticles.forEach(function (article, index) {
+      var createdAtValue = article.dataset.messageCreatedAt;
+      var dateKey = getAdminChatMessageDateKey(createdAtValue);
+      article.dataset.messageDateKey = dateKey;
+
+      if (index > 0 && dateKey && previousDateKey && previousDateKey !== dateKey) {
+        adminMessageList.insertBefore(createAdminChatDateDivider(createdAtValue), article);
+      }
+
+      previousDateKey = dateKey || previousDateKey;
+    });
+  }
+
+  function scrollAdminChatToBottom() {
+    if (!adminMessageScrollBody) {
+      return;
+    }
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
+      });
+    });
+  }
+
+  // 견적 카드(제목 + 링크 + QR Code) 만들기
+  function buildAdminChatQuoteCard(message) {
+    var card = document.createElement("div");
+    card.className = "admin-chat-quote-card";
+
+    var title = document.createElement("strong");
+    title.className = "admin-chat-quote-card__title";
+    title.textContent = message.chMsLnkTtl || "견적 초안";
+    card.appendChild(title);
+
+    if (message.chMsCon) {
+      var desc = document.createElement("p");
+      desc.className = "admin-chat-quote-card__desc";
+      desc.textContent = message.chMsCon;
+      card.appendChild(desc);
+    }
+
+    var link = document.createElement("a");
+    link.className = "admin-chat-quote-card__link";
+    link.href = message.chMsLnkUrl || "#";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "견적 보기";
+    card.appendChild(link);
+
+    if (message.chMsLnkUrl) {
+      var qr = document.createElement("img");
+      qr.className = "admin-chat-quote-card__qr";
+      qr.alt = "견적 QR 코드";
+      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
+      card.appendChild(qr);
+    }
+
+    return card;
+  }
+
+  // 이미지 메시지 버블 만들기
+  function buildAdminChatImageBubble(message, isAdmin) {
+    var bubble = document.createElement("div");
+    bubble.className = "admin-chat-detail-message__bubble admin-chat-detail-message__bubble--image";
+    if (isAdmin) {
+      bubble.classList.add("admin-chat-detail-message__bubble--admin");
+    }
+
+    if (message.imageFile && message.imageFile.fileUuid) {
+      var link = document.createElement("a");
+      link.className = "admin-chat-detail-message__image-link";
+      // 원본 이미지 보기와 채팅 미리보기 모두 파일 view API 사용
+      link.href = "/api/files/view/" + message.imageFile.fileUuid;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+
+      var image = document.createElement("img");
+      image.className = "admin-chat-detail-message__image";
+      image.src = "/api/files/view/" + message.imageFile.fileUuid;
+      image.alt = "첨부 이미지";
+      image.addEventListener("load", scrollAdminChatToBottom);
+
+      link.appendChild(image);
+      bubble.appendChild(link);
+    } else {
+      var empty = document.createElement("p");
+      empty.className = "admin-chat-detail-message__image-empty";
+      empty.textContent = "이미지를 불러올 수 없습니다.";
+      bubble.appendChild(empty);
+    }
+
+    return bubble;
+  }
+
+  // 메시지(이미지/견적 카드) 버블 만들기
+  function buildAdminChatMessageBubble(message, isAdmin) {
+    var type = message.chMsTp || "TEXT";
+
+    if (type === "IMAGE") {
+      return buildAdminChatImageBubble(message, isAdmin);
+    }
+
+    if (type === "QUOTE_CARD") {
+      var quoteBubble = document.createElement("div");
+      quoteBubble.className = "admin-chat-detail-message__bubble admin-chat-detail-message__bubble--quote-card";
+      if (isAdmin) {
+        quoteBubble.classList.add("admin-chat-detail-message__bubble--admin");
+      }
+      quoteBubble.appendChild(buildAdminChatQuoteCard(message));
+      return quoteBubble;
+    }
+
+    var textBubble = document.createElement("div");
+    textBubble.className = "admin-chat-detail-message__bubble";
+    if (isAdmin) {
+      textBubble.classList.add("admin-chat-detail-message__bubble--admin");
+    }
+    textBubble.textContent = message.chMsCon || "";
+    return textBubble;
   }
 
   stateButtons.forEach(function (button) {
@@ -253,29 +485,24 @@
     meta.className = "admin-chat-detail-message__meta admin-chat-detail-message__meta--admin";
 
     var time = document.createElement("span");
-    var createdAt = message.chMsCreDt ? new Date(message.chMsCreDt) : new Date();
-    time.textContent = createdAt.toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false
-    });
+    time.textContent = formatAdminChatMessageTime(message.chMsCreDt);
 
-    var bubble = document.createElement("div");
-    bubble.className = "admin-chat-detail-message__bubble admin-chat-detail-message__bubble--admin";
-    bubble.textContent = message.chMsCon;
+    appendAdminDateDividerIfNeeded(message.chMsCreDt);
+
+    var bubble = buildAdminChatMessageBubble(message, true);
 
     var messageTime = document.createElement("span");
     messageTime.className = "admin-chat-detail-message__time admin-chat-detail-message__time--admin";
     messageTime.textContent = time.textContent;
 
+    article.dataset.messageCreatedAt = message.chMsCreDt || "";
+    article.dataset.messageDateKey = getAdminChatMessageDateKey(message.chMsCreDt);
     content.appendChild(meta);
     content.appendChild(bubble);
     content.appendChild(messageTime);
     article.appendChild(content);
     adminMessageList.appendChild(article);
-    if (adminMessageScrollBody) {
-      adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
-    }
+    scrollAdminChatToBottom();
     moveClosedPanelToBottom();
   }
 
@@ -312,9 +539,7 @@
     article.appendChild(content);
     adminMessageList.appendChild(article);
 
-    if (adminMessageScrollBody) {
-      adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
-    }
+    scrollAdminChatToBottom();
 
     return article;
   }
@@ -348,18 +573,13 @@
       sender.textContent = (detailMemberBizName || "상호명 미등록") + " · " + (detailMemberName || "이름 미등록");
 
       var time = document.createElement("span");
-      var createdAt = message.chMsCreDt ? new Date(message.chMsCreDt) : new Date();
-      time.textContent = createdAt.toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
+      time.textContent = formatAdminChatMessageTime(message.chMsCreDt);
 
       meta.appendChild(sender);
 
-      var bubble = document.createElement("div");
-      bubble.className = "admin-chat-detail-message__bubble";
-      bubble.textContent = message.chMsCon;
+      appendAdminDateDividerIfNeeded(message.chMsCreDt);
+
+      var bubble = buildAdminChatMessageBubble(message, false);
 
       var messageTime = document.createElement("span");
       messageTime.className = "admin-chat-detail-message__time";
@@ -368,13 +588,13 @@
       content.appendChild(meta);
       content.appendChild(bubble);
       content.appendChild(messageTime);
+      article.dataset.messageCreatedAt = message.chMsCreDt || "";
+      article.dataset.messageDateKey = getAdminChatMessageDateKey(message.chMsCreDt);
       article.appendChild(avatar);
       article.appendChild(content);
       adminMessageList.appendChild(article);
 
-      if (adminMessageScrollBody) {
-        adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
-      }
+      scrollAdminChatToBottom();
       moveClosedPanelToBottom();
     }
 
@@ -482,6 +702,38 @@
         pendingMessageElement.remove();
       }
       console.error(error);
+    });
+  }
+
+  // 관리자 이미지 메시지 전송 비동기 요청
+  function sendAdminChatImage(file) {
+    if (!detailRoomId || !detailCanWrite || !file) {
+      return;
+    }
+
+    var formData = new FormData();
+    formData.append("imageFile", file);
+
+    fetch("/api/admin/chat/rooms/" + detailRoomId + "/image", {
+      method: "POST",
+      headers: getCsrfHeaders(),
+      body: formData
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error("이미지 전송 요청에 실패했습니다.");
+      }
+
+      return response.json();
+    }).then(function () {
+      if (adminImageInput) {
+        adminImageInput.value = "";
+      }
+    }).catch(function (error) {
+      console.error(error);
+      showAdminChatFeedback("이미지 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      if (adminImageInput) {
+        adminImageInput.value = "";
+      }
     });
   }
 
@@ -599,6 +851,23 @@
     });
   }
 
+  if (adminImageTrigger && adminImageInput) {
+    adminImageTrigger.addEventListener("click", function () {
+      if (!detailCanWrite) {
+        return;
+      }
+      adminImageInput.click();
+    });
+
+    adminImageInput.addEventListener("change", function () {
+      var file = adminImageInput.files && adminImageInput.files[0];
+      if (!file) {
+        return;
+      }
+      sendAdminChatImage(file);
+    });
+  }
+
   // Enter 키 입력 시 관리자 메시지 전송
   if (adminMessageInput) {
     adminMessageInput.addEventListener("keydown", function (event) {
@@ -613,10 +882,9 @@
 
   // 상세 진입 시
   if (detailPage) {
+    renderExistingAdminDateDividers();
     setChatState(detailPage.dataset.chatStatus || "ONGOING");
-    if (adminMessageScrollBody) {
-      adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
-    }
+    scrollAdminChatToBottom();
     if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING" && detailCanWrite) {
       adminMessageInput.focus();
     }
