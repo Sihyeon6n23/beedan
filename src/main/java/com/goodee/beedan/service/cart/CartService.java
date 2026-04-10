@@ -28,8 +28,18 @@ public class CartService {
 
     // 장바구니 목록 (페이징 포함)
     public List<CartDto> findByMemId(Long memId) {
-        return cartRepository.findByMemId(memId)
-                .stream()
+        List<Cart> carts = cartRepository.findByMemId(memId);
+
+        List<Cart> invalidCarts = carts.stream()
+                .filter(cart -> cart.getStock() == null)
+                .toList();
+
+        if (!invalidCarts.isEmpty()) {
+            cartRepository.deleteAll(invalidCarts);
+        }
+
+        return carts.stream()
+                .filter(cart -> cart.getStock() != null)
                 .map(this::mapToCartDto)
                 .toList();
     }
