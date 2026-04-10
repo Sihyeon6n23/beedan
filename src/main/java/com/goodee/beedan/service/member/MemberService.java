@@ -3,6 +3,7 @@ package com.goodee.beedan.service.member;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.dto.admin.MemberListDto;
+import com.goodee.beedan.dto.mail.PasswordResetMailRequest;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.Member;
@@ -10,10 +11,12 @@ import com.goodee.beedan.entity.Token;
 import com.goodee.beedan.mapper.member.MemberMapper;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.token.TokenRepository;
+import com.goodee.beedan.service.mail.MailNotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +25,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.management.relation.Role;
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -35,6 +41,10 @@ public class MemberService {
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
+    private final MailNotificationService mailNotificationService;
+
+    @Value("${site.url}")
+    private String siteUrl;
 
     public Member getMemberById(Long userId) {
         return memberRepository.findById(userId)
@@ -115,28 +125,41 @@ public class MemberService {
         member.setMemLgnPw(passwordEncoder.encode(resetDto.getPassword()));
     }
 
-    public void resetPasswordRequest(String loginId, String email) {
-        Member member = memberRepository.findByMemLgnIdAndMemEml(loginId, email).orElseThrow(()
-                 -> new EntityNotFoundException("일치하는 계정을 찾을 수 없습니다."));
-        String tkVl = UUID.randomUUID().toString();
+    public void processPasswordReset(String loginId, String email) {
+        // 1. 아이디와 이메일이 동시에 일치하는 회원 조회
+        Member member = memberRepository.findByMemLgnIdAndMemEml(loginId, email)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+
+        String tokenValue = UUID.randomUUID().toString();
 
         PasswordResetTokenDto tokenDto = PasswordResetTokenDto.builder()
-                .tkVl(tkVl)
+                .tkVl(tokenValue)
+                .memId(member.getMemId()) // 회원 PK 연결
+                .tkTy("PASSWORD_RESET")   // 토큰 타입 구분
                 .build();
 
         createToken(tokenDto);
 
-        // member.getMemEml();
-        // 메일전송
+        PasswordResetMailRequest mailRequest = new PasswordResetMailRequest(
+                member.getMemEml(),
+                member.getMemId(),
+                tokenValue,
+                siteUrl
+        );
+
+        mailNotificationService.sendNotification(mailRequest);
     }
 
-    public String findLoginId(String username, String email) {
-        Member member = memberRepository.findByMemNmAndMemEml(username, email).orElseThrow(() -> new EntityNotFoundException(""));
-        String memberLoginId = member.getMemLgnId();
-        if (memberLoginId == null || memberLoginId.length() < 4) {
-            return "****";
-        }
-        return memberLoginId.substring(0,memberLoginId.length()-4) + "****";
+
+    public Optional<String> findLoginId(String username, String email) {
+        return memberRepository.findByMemNmAndMemEml(username, email)
+                .map(member -> {
+                    String rawId = member.getMemLgnId();
+                    if (rawId.length() > 4) {
+                        return rawId.substring(0, rawId.length() - 4) + "****";
+                    }
+                    return rawId + "****";
+                });
     }
 
     private void createToken(PasswordResetTokenDto tokenDto) {
@@ -154,15 +177,48 @@ public class MemberService {
         tokenRepository.save(token);
     }
 
-    private Member findMemberByToken(String token) {
+    public Member findMemberByToken(String token) {
         Token tokenEntity = tokenRepository.findByTkVl(token).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 토큰입니다."));
 
         if (tokenEntity.isExpired()) {
             throw new IllegalIdentifierException("토큰이 이미 사용되었거나, 기간이 만료된 토큰입니다.");
         }
 
-        tokenEntity.useToken();
+        // tokenEntity.useToken(); 만료처리는 비밀번호 초기화가 완료된 이후?
         return tokenEntity.getMember();
+    }
+
+    public void saveMember(MemberCreateFormDto memberFormDto) {
+// 1. 아이디 중복 체크 (컨트롤러에서도 하지만 서비스에서 한 번 더 검증하면 안전합니다)
+        memberRepository.findByMemLgnId(memberFormDto.getUserLoginId())
+                .ifPresent(m -> {
+                    throw new IllegalStateException("이미 존재하는 아이디입니다.");
+                });
+
+        Member member = Member.builder()
+                // [실데이터 영역]
+                .memLgnId(memberFormDto.getUserLoginId())
+                .memLgnPw(passwordEncoder.encode(memberFormDto.getPassword()))
+                .memEml(memberFormDto.getEmail())
+                .memAut(memberFormDto.getAuthority())          // 권한: ADMIN
+                .memStt(MemberStatus.ACTIVE.toString()) // 상태: 활성화
+                .memMbPhn(memberFormDto.getPhone())
+
+                // [나머지 NULL 영역]
+                .memCi(null)
+                .memBizNo(null)
+                .memBizCreDt(null)
+                .memBizTtl(null)
+                .memCeoNm(null)
+                .memPosCd(null)
+                .memBizAdr(null)
+                .memBizDtAdr(null)
+                .memCmpTel(null)
+                .memLgnTr(0L) // 로그인 시도는 0으로 초기화
+                .build();
+
+        // 3. DB 저장
+        memberRepository.save(member);
     }
 
     private Boolean checkMemberAuthority(Long memId){
