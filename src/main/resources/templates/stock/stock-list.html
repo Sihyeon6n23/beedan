@@ -87,6 +87,8 @@
     const memberId = /*[[${memberId}]]*/ null;
     const pageMode = /*[[${mode}]]*/ null;
     const apiUrl = pageMode === 'wishlist' ? '/api/wishlist/list' : '/api/stock/list';
+
+    const chatRoomId = /*[[${chatRoomId}]]*/ null;
 </script>
 <script>
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
@@ -266,7 +268,7 @@
         items.forEach(item => {
             const hasImg = item.stImgUrl && item.stImgUrl.length > 0;
             html += `
-            <div class="group cursor-pointer" onclick="location.href='/stock/detail/${item.stId}'">
+            <div class="group cursor-pointer" onclick="location.href='${chatRoomId ? `/stock/detail/${item.stId}?chatRoomId=${chatRoomId}` : `/stock/detail/${item.stId}`}'">
                 <div class="relative mb-6 overflow-hidden bg-white w-full aspect-[4/5]">
                     ${hasImg
                         ? `<img src="${item.stImgUrl}" alt="${item.stNm}" class="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"/>`

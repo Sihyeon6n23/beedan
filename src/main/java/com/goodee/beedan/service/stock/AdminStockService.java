@@ -108,6 +108,16 @@ public class AdminStockService {
         stockRepository.save(stock);
     }
 
+    // 일괄 카테고리 변경
+    public void batchUpdateCategory(List<Long> stIds, String catNm) {
+        List<Stock> stocks = stockRepository.findAllById(stIds);
+        for (Stock stock : stocks) {
+            stock.setStCatNm(catNm);
+            stock.setStUpdDt(LocalDateTime.now());
+        }
+        stockRepository.saveAll(stocks);
+    }
+
     // stock 객체를 AdminStockDto로 매핑
     private AdminStockDto mapToAdminStockDto(Stock stock) {
         return AdminStockDto.builder()

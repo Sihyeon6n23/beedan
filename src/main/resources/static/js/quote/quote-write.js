@@ -1293,4 +1293,66 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.target === shippingOverlay) closeShippingModal();
         });
     }
+
+
+    // 채팅으로 보내기 클릭 시 chatRoomId를 제외한 Url 링크 전송
+    var sendQuoteToChatBtn = document.getElementById('btnSendQuoteToChat');
+
+          if (sendQuoteToChatBtn) {
+              sendQuoteToChatBtn.addEventListener('click', function () {
+                  var chatRoomId = parseInt(sendQuoteToChatBtn.dataset.chatRoomId, 10);
+                  var quId = parseInt(sendQuoteToChatBtn.dataset.quId, 10);
+
+                  if (!chatRoomId || !quId) {
+                      alert('채팅 전송에 필요한 정보가 없습니다.');
+                      return;
+                  }
+
+                  var requestUrl = new URL(window.location.href);
+                  requestUrl.searchParams.delete('chatRoomId');
+                  requestUrl.searchParams.set('quId', String(quId));
+
+                  var quoteLinkUrl = requestUrl.toString();
+                  var quoteLinkTitle = '견적 초안';
+
+                  var headers = {
+                      'Content-Type': 'application/json'
+                  };
+
+                  if (csrfHeader && csrfToken) {
+                      headers[csrfHeader] = csrfToken;
+                  }
+
+                  sendQuoteToChatBtn.disabled = true;
+                  sendQuoteToChatBtn.style.pointerEvents = 'none';
+                  sendQuoteToChatBtn.style.opacity = '0.6';
+
+                  fetch('/api/admin/chat/rooms/' + chatRoomId + '/quote-card', {
+                      method: 'POST',
+                      headers: headers,
+                      body: JSON.stringify({
+                          chMsCon: null,
+                          chMsLnkTtl: quoteLinkTitle,
+                          chMsLnkUrl: quoteLinkUrl
+                      })
+                  })
+                      .then(function (response) {
+                          if (!response.ok) {
+                              throw new Error('견적 링크를 채팅으로 보내지 못했습니다.');
+                          }
+                          return response.json();
+                      })
+                      .then(function () {
+                          window.location.href = '/admin/chat/detail?id=' + chatRoomId;
+                      })
+                      .catch(function (error) {
+                          console.error(error);
+                          alert('채팅 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+                          sendQuoteToChatBtn.disabled = false;
+                          sendQuoteToChatBtn.style.pointerEvents = '';
+                          sendQuoteToChatBtn.style.opacity = '';
+                      });
+              });
+          }
+
 });

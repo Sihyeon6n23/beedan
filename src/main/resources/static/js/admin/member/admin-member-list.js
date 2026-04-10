@@ -746,31 +746,64 @@ async function shipmentDetail(shId, memId, page) {
 
         const timelineArea = document.getElementById('trackingTimeline');
 
-        if (!data.details || data.details.length === 0) {
+        let html = '<ul class="tracking-timeline-list">';
+
+        // 1. 통관 내역이 있다면 '하나의 스텝'으로 묶어서 아코디언으로 출력
+        if (data.customsDetails && data.customsDetails.length > 0) {
+            html += `
+                <li class="timeline-step">
+                    <div class="step-time">통관 단계</div>
+                    <div class="step-content">
+                        <details style="background: #f8f9fa; padding: 10px; border-radius: 6px; cursor: pointer;">
+                            <summary style="font-weight: bold; color: #0056b3; outline: none;">
+                                해외 통관 상세 내역 보기 (${data.customsDetails.length}건)
+                            </summary>
+                            <div style="margin-top: 10px; font-size: 13px; color: #555;">
+            `;
+
+            // 통관 세부 내역 반복
+            data.customsDetails.forEach(c => {
+                html += `
+                    <div style="margin-bottom: 8px; border-left: 2px solid #ddd; padding-left: 10px;">
+                        <span style="display:block; font-size:11px; color:#888;">${c.time}</span>
+                        <strong>${c.status}</strong> - ${c.description}
+                    </div>
+                `;
+            });
+
+            html += `
+                            </div>
+                        </details>
+                    </div>
+                </li>
+            `;
+        }
+
+        // 2. 국내 배송 내역 출력
+        if (data.details && data.details.length > 0) {
+            data.details.forEach((item, index) => {
+                const isLast = (index === data.details.length - 1);
+                const activeClass = isLast ? 'active' : '';
+
+                html += `
+                    <li class="timeline-step ${activeClass}">
+                        <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
+                        <div class="step-content">
+                            <strong>${item.status}</strong>
+                            <p>${item.description}</p>
+                        </div>
+                    </li>`;
+            });
+        }
+
+        if ((!data.details || data.details.length === 0) && (!data.customsDetails || data.customsDetails.length === 0)) {
             timelineArea.innerHTML = `
                 <div style="text-align:center; padding: 40px; color:#888; background:#f8f9fa; border-radius:8px;">
-                    <span class="material-symbols-outlined" style="font-size:40px; color:#ccc; margin-bottom:10px;">local_shipping</span>
-                    <p style="margin:0;">아직 택배사에 배송 정보가 등록되지 않았거나,<br>유효하지 않은 송장 번호입니다.</p>
+                    <p>조회된 배송 정보가 없습니다.</p>
                 </div>
             `;
             return;
         }
-
-        let html = '<ul class="tracking-timeline-list">';
-
-        data.details.forEach((item, index) => {
-            const isLast = (index === data.details.length - 1);
-            const activeClass = isLast ? 'active' : '';
-
-            html += `
-                <li class="timeline-step ${activeClass}">
-                    <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
-                    <div class="step-content">
-                        <strong>${item.status}</strong>
-                        <p>${item.description}</p>
-                    </div>
-                </li>`;
-        });
 
         html += '</ul>';
         timelineArea.innerHTML = html;

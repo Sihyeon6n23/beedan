@@ -115,12 +115,28 @@ public class MemberChatService {
                 .chRoId(chatRoom.getChRoId())
                 .chRoTtl(chatRoom.getChRoTtl())
                 .chRoStt(chatRoom.getChRoStt())
-                .lastMessageContent(lastMessage.map(chatMessage -> chatMessage.getChMsCon()).orElse(null))
-                .lastMessageCreatedAt(lastMessage.map(chatMessage -> chatMessage.getChMsCreDt()).orElse(null))
+                .lastMessageContent(lastMessage.map(this::getChatRoomListSummary).orElse(null))
+                .lastMessageCreatedAt(lastMessage.map(ChatMessage::getChMsCreDt).orElse(null))
                 .chRoCreDt(chatRoom.getChRoCreDt())
-                .unread(roomReadStatus.map(chatRoomReadStatus -> chatRoomReadStatus.getChRoReStUnrYn()).orElse(false))
+                .unread(roomReadStatus.map(ChatRoomReadStatus::getChRoReStUnrYn).orElse(false))
                 .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
+    }
+
+    private String getChatRoomListSummary(ChatMessage lastMessage) {
+        if (lastMessage == null) {
+            return null;
+        }
+
+        if (lastMessage.getChMsTp() == ChatMessageType.IMAGE) {
+            return "이미지를 보냈습니다.";
+        }
+
+        if (lastMessage.getChMsTp() == ChatMessageType.QUOTE_CARD) {
+            return "견적을 보냈습니다.";
+        }
+
+        return lastMessage.getChMsCon();
     }
 
     // 회원 본인 채팅방 상세 조회와 마지막 메시지 기준 읽음 상태 갱신
@@ -146,7 +162,7 @@ public class MemberChatService {
     private void updateChatRoomReadStatus(Long memId, Long chRoId, List<ChatMessage> messages) {
         if (messages.isEmpty()) return;
         // 마지막 메시지 조회
-        ChatMessage lastMessage = messages.get(messages.size() - 1);
+        ChatMessage lastMessage = messages.getLast();
         // 읽음 상태 조회 또는 생성
         ChatRoomReadStatus roomReadStatus = chatRoomReadStatusRepository
                 .findByMemIdAndChRoId(memId, chRoId)
@@ -332,6 +348,7 @@ public class MemberChatService {
                 .chRoId(chatRoom.getChRoId())
                 .chRoTtl(chatRoom.getChRoTtl())
                 .chRoStt(chatRoom.getChRoStt())
+                .chRoCreDt(chatRoom.getChRoCreDt())
                 .messages(messageDtos)
                 .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();

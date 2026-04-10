@@ -1725,3 +1725,19 @@
     opacity: 0.75;
     resize: none;
 }
+
+
+
+.btn-send-chat {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid #d9c96c;
+    background: #fff8d9;
+    color: #705d00;
+    font-weight: 700;
+    cursor: pointer;
+  }

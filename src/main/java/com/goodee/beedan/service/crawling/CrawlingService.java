@@ -73,6 +73,28 @@ public class CrawlingService {
         url.setUrlSelPr(dto.getSelPr());
         url.setUrlSelImg(dto.getSelImg());
         url.setUrlCur(dto.getCurrency());
+
+        if (dto.getBrNm() != null && !dto.getBrNm().isBlank()) {
+            Brand brand = brandRepository.findByBrNm(dto.getBrNm())
+                    .orElseGet(() -> brandRepository.save(Brand.builder().brNm(dto.getBrNm()).build()));
+            url.setBrId(brand.getBrId());
+        }
+        if (dto.getCatNm() != null && !dto.getCatNm().isBlank()) {
+            if ("AI 자동 분류".equals(dto.getCatNm())) {
+                url.setCatId(0L);
+            } else {
+                Category category = categoryRepository.findByCatNm(dto.getCatNm())
+                        .orElseGet(() -> categoryRepository.save(Category.builder().catNm(dto.getCatNm()).build()));
+                url.setCatId(category.getCatId());
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteUrl(Long urlId) {
+        CrawlingUrl url = crawlingUrlRepository.findById(urlId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
+        url.setUrlDelYn(true);
     }
 
 
@@ -102,8 +124,12 @@ public class CrawlingService {
             rawList = tryShopifyJson(url);
             if (rawList != null) usedMethod = "SHOPIFY";
         } else if ("JSOUP".equals(method)) {
-            rawList = crawlHtml(url, selItem, selNm, selPr, selImg);
-            if (!rawList.isEmpty()) usedMethod = "JSOUP";
+            try {
+                rawList = crawlHtml(url, selItem, selNm, selPr, selImg);
+                if (!rawList.isEmpty()) usedMethod = "JSOUP";
+            } catch (IOException e) {
+                log.warn("JSOUP 실패({}), Playwright 폴백 시도", e.getMessage());
+            }
         } else if ("PLAYWRIGHT".equals(method)) {
             rawList = crawlWithPlaywright(url, selItem, selNm, selPr, selImg);
             if (!rawList.isEmpty()) usedMethod = "PLAYWRIGHT";
@@ -115,10 +141,13 @@ public class CrawlingService {
             if (rawList != null) {
                 usedMethod = "SHOPIFY";
             } else {
-                rawList = crawlHtml(url, selItem, selNm, selPr, selImg);
-                if (!rawList.isEmpty()) {
-                    usedMethod = "JSOUP";
-                } else {
+                try {
+                    rawList = crawlHtml(url, selItem, selNm, selPr, selImg);
+                    if (!rawList.isEmpty()) usedMethod = "JSOUP";
+                } catch (IOException e) {
+                    log.warn("JSOUP 폴백 실패({}), Playwright 시도", e.getMessage());
+                }
+                if (usedMethod == null) {
                     rawList = crawlWithPlaywright(url, selItem, selNm, selPr, selImg);
                     if (!rawList.isEmpty()) usedMethod = "PLAYWRIGHT";
                 }
@@ -254,6 +283,7 @@ public class CrawlingService {
             for (JsonNode p : products) {
                 String name = p.path("title").asText();
                 if (name.isBlank()) continue;
+                if (name.length() > 250) name = name.substring(0, 250);
 
                 String priceText = p.path("variants").path(0).path("price").asText("");
                 BigDecimal price = BigDecimal.ZERO;
@@ -308,11 +338,13 @@ public class CrawlingService {
             Document doc = Jsoup.parse(html, url);  // base URL 전달 → abs:src 정상 동작
             Elements items = doc.select(selItem);
 
-            log.info("[Playwright] 찾은 아이템 수: {}",  items.size());
+            log.info("[Playwright] 찾은 아이템 수: {}, HTML 길이: {}, title: {}", items.size(), html.length(), doc.title());
 
             List<RawProduct> list = new ArrayList<>();
             for (Element item : items) {
-                String name = item.select(selNm).text();
+                Element nmEl = item.select(selNm).first();
+                String name = nmEl != null ? nmEl.text() : "";
+                if (name.isBlank() && nmEl != null) name = nmEl.attr("alt");
                 if (name.isBlank()) continue;
 
                 String priceText = item.select(selPr).text().replaceAll("[^0-9.]", "");
@@ -344,7 +376,9 @@ public class CrawlingService {
         List<RawProduct> list = new ArrayList<>();
 
         for (Element item : items) {
-            String name = item.select(selNm).text();
+            Element nmEl = item.select(selNm).first();
+            String name = nmEl != null ? nmEl.text() : "";
+            if (name.isBlank() && nmEl != null) name = nmEl.attr("alt");
             if (name.isBlank()) continue;
 
             String priceText = item.select(selPr).text().replaceAll("[^0-9.]", "");
