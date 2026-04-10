@@ -59,6 +59,7 @@ public class OrderDto {
         private String shAdrDt;
         private String shMsg;
         private Boolean shCanYn;
+        private String shCusStt;
 
         private List<ShipmentItemResponseDto> shipmentItems;
         private List<OrderItemResponseDto> orderItems;

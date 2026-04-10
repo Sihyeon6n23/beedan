@@ -1,5 +1,7 @@
 package com.goodee.beedan.repository.order;
 
+import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.entity.Shipment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,4 +21,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
             "WHERE o.member.memId = :memId " +
             "AND s.shCanYn = false")
     Page<Shipment> findByMemberId(@Param("memId") Long memId, Pageable pageable);
+
+    List<Shipment> findByShStt(ShipmentStatus status);
+
+    List<Shipment> findByOrder(Order order);
 }

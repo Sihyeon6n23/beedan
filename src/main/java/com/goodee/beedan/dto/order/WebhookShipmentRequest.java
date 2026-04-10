@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class WebhookShipmentRequest {  // shTraNo, shCarNo, quId 필수
+public class WebhookShipmentRequest {  // shTraNo, shCarNo, quId, shHblNo 필요
     private Long quId;
     private Long pyId;
 
@@ -13,4 +13,5 @@ public class WebhookShipmentRequest {  // shTraNo, shCarNo, quId 필수
     private String shCarNo;
     private String shStaAdr;
     private String shRcvNm;
+    private String shHblNo;
 }

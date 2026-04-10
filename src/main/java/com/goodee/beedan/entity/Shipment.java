@@ -23,8 +23,8 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sh_id")
     private Long shId;
-    private String shTraNo;
-	private String shCarCd;
+    private String shTraNo; // 국내 운송장 번호
+	private String shCarCd; // 국내 배송 업체
     @Enumerated(EnumType.STRING)
     private ShipmentStatus shStt;
     @CreatedDate
@@ -41,6 +41,9 @@ public class Shipment {
     private String shAdr;
     private String shAdrDt;
     private String shMsg;
+
+    private String shCusStt;
+    private String shHblNo;
 
     @Builder.Default
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
