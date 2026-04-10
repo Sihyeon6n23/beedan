@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.board;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.board.inquiry.InquiryBoardDetailDto;
@@ -7,6 +8,7 @@ import com.goodee.beedan.dto.board.inquiry.InquiryBoardListDto;
 import com.goodee.beedan.dto.board.inquiry.InquiryBoardSearchDto;
 import com.goodee.beedan.dto.board.inquiry.InquiryReplyDto;
 import com.goodee.beedan.dto.board.inquiry.InquiryReplySaveDto;
+import com.goodee.beedan.dto.board.notice.BoardResultResponseDto;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 
@@ -28,6 +31,7 @@ import java.io.IOException;
 @RequestMapping("/api/admin/inquiries")
 public class AdminInquiryBoardRestController {
     private final InquiryBoardService inquiryBoardService;
+    private final ObjectMapper objectMapper;
 
     // 답글 조회
     @GetMapping("/{id}/reply")
@@ -44,11 +48,17 @@ public class AdminInquiryBoardRestController {
     public ResponseEntity<Long> createInquiryReply(@PathVariable("id") Long brdId,
                                                    @AuthenticationPrincipal MemberUserDetails userDetails,
                                                    @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
-        Long replyId = inquiryBoardService.createInquiryReply(
+        BoardResultResponseDto boardResultResponseDto = inquiryBoardService.createInquiryReply(
                 brdId,
                 userDetails.getMemberId(),
                 inquiryReplySaveDto
         );
+        Long replyId = boardResultResponseDto.getTargetId();
+
+        // 객체 -> JSON (직렬화)
+         String json = objectMapper.writeValueAsString(boardResultResponseDto);
+
+        // return값 json으로 반환 필요
         return ResponseEntity.ok(replyId);
     }
 
@@ -56,12 +66,18 @@ public class AdminInquiryBoardRestController {
     @PostMapping("/{id}/reply/edit")
     public ResponseEntity<Void> updateInquiryReply(@PathVariable("id") Long brdId,
                                                    @AuthenticationPrincipal MemberUserDetails userDetails,
-                                                   @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto) throws IOException {
-        inquiryBoardService.updateInquiryReply(
+                                                   @ModelAttribute InquiryReplySaveDto inquiryReplySaveDto,
+                                                   RedirectAttributes reAttr) throws IOException {
+        BoardResultResponseDto boardResultResponseDto = inquiryBoardService.updateInquiryReply(
                 brdId,
                 userDetails.getMemberId(),
                 inquiryReplySaveDto
         );
+
+        // 객체 -> JSON (직렬화)
+        String json = objectMapper.writeValueAsString(boardResultResponseDto);
+
+        // return값 json으로 반환 필요
         return ResponseEntity.ok().build();
     }
 
@@ -72,6 +88,7 @@ public class AdminInquiryBoardRestController {
                                                     @RequestParam("status") InquiryStatus inquiryStatus,
                                                     @RequestParam(value = "brdCanRe", required = false) String brdCanRe) {
         inquiryBoardService.updateInquiryStatus(brdId, userDetails.getMemberId(), inquiryStatus, brdCanRe);
+
         return ResponseEntity.ok().build();
     }
 

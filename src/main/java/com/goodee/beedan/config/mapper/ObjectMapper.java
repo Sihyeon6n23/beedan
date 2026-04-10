@@ -1,13 +1,15 @@
 package com.goodee.beedan.config.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ObjectMapper {
+
     @Bean
-    public ObjectMapper objectMapperConfig() {
-        return new ObjectMapper();
+    public ObjectMapper objectMapper() { // 2. 반환 타입은 Jackson의 ObjectMapper
+        ObjectMapper mapper = new ObjectMapper();
+
+        return mapper;
     }
 }
