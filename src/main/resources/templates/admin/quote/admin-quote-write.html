@@ -128,7 +128,7 @@
                             </td>
                             <td class="col-shipping">
                                 <button type="button" class="shipping-btn"
-                                        th:data-region="${defaultReceiver != null ? defaultReceiver.rcRgn : 'SEOUL'}"
+                                        th:data-island="${defaultReceiver != null and defaultReceiver.rcIamYn != null ? defaultReceiver.rcIamYn : false}"
                                         onclick="openShippingModal(this)">
                                     <span class="shipping-addr" th:text="${defaultReceiver != null ? defaultReceiver.rcAdr : '배송지를 선택하세요'}">배송지를 선택하세요</span>
                                     <span class="shipping-meta"
@@ -347,7 +347,7 @@
       th:data-si-id="${draftSiId != null ? draftSiId : ''}"
       th:data-sti-id="${draftStiId != null ? draftStiId : ''}" style="display:none"></span>
 <span id="js-default-region"
-      th:data-region="${defaultReceiver != null && defaultReceiver.rcRgn != null ? defaultReceiver.rcRgn : 'SEOUL'}"
+      th:data-island="${defaultReceiver != null and defaultReceiver.rcIamYn != null ? defaultReceiver.rcIamYn : false}"
       th:data-name="${defaultReceiver != null ? defaultReceiver.rcNm : ''}"
       th:data-addr="${defaultReceiver != null ? defaultReceiver.rcAdr : ''}"
       th:data-rcid="${defaultReceiver != null ? defaultReceiver.rcId : ''}" style="display:none"></span>

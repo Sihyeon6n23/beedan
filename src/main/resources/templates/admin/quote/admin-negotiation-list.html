@@ -249,14 +249,6 @@
             if (!row || !row.dataset.ngId) return;
 
             if (row.classList.contains('ang-row--unread')) {
-                var ids = (row.dataset.unreadQuIds || '').split(',').filter(Boolean);
-                var headers = {};
-                headers[csrfHeader] = csrfToken;
-                ids.forEach(function (id) {
-                    fetch('/api/quote/' + id + '/admin-opened', {
-                        method: 'POST', headers: headers
-                    });
-                });
                 row.classList.remove('ang-row--unread');
                 var dot = row.querySelector('.ang-unread-dot');
                 if (dot) dot.remove();
