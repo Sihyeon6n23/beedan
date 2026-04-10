@@ -104,7 +104,13 @@ public class    QuoteController {
         // 3. 세션에 견적 항목 저장 (getWrite에서 사용)
         session.setAttribute("quoteItems_" + quoteBase.getQuId(), dto.getItems());
 
-        return ResponseEntity.ok(Map.of("redirectUrl", "/quote/write?quId=" + quoteBase.getQuId()));
+        String redirectUrl = "/quote/write?quId=" + quoteBase.getQuId();
+
+        if (dto.getChatRoomId() != null) {
+            redirectUrl += "&chatRoomId=" + dto.getChatRoomId();
+        }
+
+        return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
     }
 
     @GetMapping("/list")
@@ -171,6 +177,7 @@ public class    QuoteController {
     @GetMapping("/write")
     public String getWrite(@RequestParam(required = false) Long quId,
                            @RequestParam(required = false) Long fromQuId,
+                           @RequestParam(required = false) Long chatRoomId,
                            Model model,
                            HttpSession session,
                            @AuthenticationPrincipal MemberUserDetails userDetails) {
@@ -224,6 +231,8 @@ public class    QuoteController {
         UnitGroup defaultUnit = unitGroups.isEmpty() ? null : unitGroups.get(0);
         model.addAttribute("unitGroups", unitGroups);
         model.addAttribute("quId", quId);
+
+        model.addAttribute("chatRoomId", chatRoomId);
 
         // 견적 코드 + 협상명
         model.addAttribute("quCd", quoteBase.getQuCd());

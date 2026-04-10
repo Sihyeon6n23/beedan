@@ -339,6 +339,15 @@
                         </svg>
                         PDF 다운로드
                     </a>
+
+                    <button type="button"
+                            class="btn-send-chat"
+                            th:if="${chatRoomId != null}"
+                            th:data-chat-room-id="${chatRoomId}"
+                            th:data-qu-id="${quId}"
+                            id="btnSendQuoteToChat">
+                        채팅으로 보내기
+                    </button>
                 </div>
             </div>
 
@@ -413,6 +422,12 @@
       th:data-from-qu-id="${rewriteFromQuId}" style="display:none"></span>
 <!-- 관리자 여부 (JS용) -->
 <span id="js-is-admin" th:if="${isAdmin}" style="display:none"></span>
+
+<span id="js-chat-room"
+      th:if="${chatRoomId != null}"
+      th:data-chat-room-id="${chatRoomId}"
+      style="display:none"></span>
+
 <!-- 기존 견적 운임 데이터 (재작성 시 admin 수동 입력값 유지) -->
 <script th:if="${prevShipFees != null}" th:inline="javascript">
     window._prevShipFees = /*[[${prevShipFees}]]*/ [];
