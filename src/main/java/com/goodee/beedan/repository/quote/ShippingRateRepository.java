@@ -18,4 +18,8 @@ public interface ShippingRateRepository extends JpaRepository<ShippingRate, Long
 
     // 활성 운임표 전체 조회
     List<ShippingRate> findAllBySrYnTrue();
+
+    // 활성 운임이 등록된 국가 코드 목록
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT sr.srCCd FROM ShippingRate sr WHERE sr.srYn = true ORDER BY sr.srCCd")
+    List<String> findDistinctCountryCodes();
 }

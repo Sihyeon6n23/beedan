@@ -164,8 +164,11 @@
                             </td>
                             <td class="col-shipping">
                                 <button type="button" class="shipping-btn"
-                                        th:data-region="${defaultReceiver != null ? defaultReceiver.rcRgn : 'SEOUL'}"
-                                        onclick="openShippingModal(this)">
+                                        th:data-island="${defaultReceiver != null and defaultReceiver.rcIamYn != null ? defaultReceiver.rcIamYn : false}"
+                                        th:data-rc-id="${item.savedRcId != null ? item.savedRcId : (defaultReceiver != null ? defaultReceiver.rcId : '')}"
+                                        th:disabled="${isAdmin != null and isAdmin}"
+                                        th:onclick="${isAdmin != null and isAdmin} ? '' : 'openShippingModal(this)'"
+                                        th:classappend="${isAdmin != null and isAdmin} ? ' shipping-btn--disabled' : ''">
                                     <span class="shipping-addr" th:text="${defaultReceiver != null ? defaultReceiver.rcAdr : '배송지를 선택하세요'}">배송지를 선택하세요</span>
                                     <span class="shipping-meta"
                                           th:text="${item.savedShipCards != null && item.savedShipCards.size() > 1
@@ -417,12 +420,19 @@
 <script th:if="${prevShipFees != null}" th:inline="javascript">
     window._prevShipFees = /*[[${prevShipFees}]]*/ [];
 </script>
+<!-- 저장된 배송지 목록 (JS용) -->
+<script th:inline="javascript">
+    window._savedReceivers = /*[[${receivers != null ? receivers : T(java.util.Collections).emptyList()}]]*/ [];
+</script>
 <!-- 국내 배송·수령지 데이터 (JS용) -->
 <span id="js-default-region"
-      th:data-region="${defaultReceiver != null && defaultReceiver.rcRgn != null ? defaultReceiver.rcRgn : 'SEOUL'}"
+      th:data-island="${defaultReceiver != null and defaultReceiver.rcIamYn != null ? defaultReceiver.rcIamYn : false}"
       th:data-name="${defaultReceiver != null ? defaultReceiver.rcNm : ''}"
       th:data-addr="${defaultReceiver != null ? defaultReceiver.rcAdr : ''}"
       th:data-rcid="${defaultReceiver != null ? defaultReceiver.rcId : ''}" style="display:none"></span>
+<select id="js-country-codes" style="display:none">
+    <option th:each="cc : ${countryCodes}" th:value="${cc}" th:text="${cc}"></option>
+</select>
 <select id="js-domestic-regions" style="display:none">
     <option th:each="dr : ${domesticRates}" th:value="${dr.ddrRgn}" th:data-am="${dr.ddrAm}" th:data-eam="${dr.ddrEAm != null ? dr.ddrEAm : 0}">지역</option>
 </select>
@@ -470,6 +480,7 @@
 </div>
 
 <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+<script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script th:src="@{/js/quote/quote-write.js}"></script>
 </body>
 </html>

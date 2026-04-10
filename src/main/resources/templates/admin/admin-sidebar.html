@@ -36,6 +36,11 @@
                    th:classappend="${activeSub == 'stock-new'} ? ' sidebar-menu__child-link--current' : ''">
                     상품 등록
                 </a>
+                <a th:href="@{/admin/brand/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'brand-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    브랜드 목록
+                </a>
             </div>
         </div>
 

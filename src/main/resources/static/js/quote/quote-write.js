@@ -263,21 +263,30 @@ document.addEventListener('DOMContentLoaded', function () {
     var shipCards = [];
     var totalItemQty = 0;
     var rcEl = document.getElementById('js-default-region');
-    var defaultRegion = rcEl ? (rcEl.dataset.region || 'SEOUL') : 'SEOUL';
+    var defaultIsIsland = rcEl ? (rcEl.dataset.island === 'true') : false;
     var defaultReceiverName = rcEl ? (rcEl.dataset.name || '') : '';
     var defaultReceiverAddr = rcEl ? (rcEl.dataset.addr || '') : '';
     var rowShipMap = {}; // key: row index, value: { type: 'single'|'split', cards: [...] }
 
-    // 임시저장 복원: data-ship-cards → rowShipMap
+    // 임시저장 복원: data-ship-cards → rowShipMap + 배송지 버튼 텍스트
     rows.forEach(function (row, idx) {
         var json = row.dataset.shipCards;
         if (json) {
             try {
                 var cards = JSON.parse(json);
-                if (cards && cards.length > 1) {
-                    rowShipMap[idx] = { type: 'split', cards: cards };
-                } else if (cards && cards.length === 1) {
-                    rowShipMap[idx] = { type: 'single', cards: cards };
+                if (cards && cards.length > 0) {
+                    rowShipMap[idx] = { type: cards.length > 1 ? 'split' : 'single', cards: cards };
+                    // 버튼 텍스트 갱신
+                    var btn = row.querySelector('.shipping-btn');
+                    if (btn) {
+                        var addrEl = btn.querySelector('.shipping-addr');
+                        var first = cards[0];
+                        if (addrEl && first) {
+                            var txt = first.addr || '';
+                            if (first.addrDetail) txt += ' ' + first.addrDetail;
+                            if (txt) addrEl.textContent = txt;
+                        }
+                    }
                 }
             } catch (e) { /* 파싱 실패 무시 */ }
         }
@@ -335,14 +344,14 @@ document.addEventListener('DOMContentLoaded', function () {
         var headers = { 'Content-Type': 'application/json' };
         if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
 
-        // 배송지 지역 코드 수집 (rowShipMap에서 전체 행의 배송지 취합)
-        var shipRegions = [];
+        // 배송지 도서산간 여부 수집 (rowShipMap에서 전체 행의 배송지 취합)
+        var shipIslands = [];
         rows.forEach(function (row, idx) {
             var data = rowShipMap[idx];
             if (data && data.cards.length > 0) {
-                data.cards.forEach(function (c) { shipRegions.push(c.region || defaultRegion); });
+                data.cards.forEach(function (c) { shipIslands.push(!!c.isIsland); });
             } else {
-                shipRegions.push(defaultRegion);
+                shipIslands.push(defaultIsIsland);
             }
         });
 
@@ -359,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 itemTotalKrw: itemTotalKrw,
                 insuranceYn: isAnyInsuranceChecked(),
                 insuranceRate: insuranceInfo.rate || 0,
-                shipRegions: shipRegions.length > 0 ? shipRegions : null
+                shipIslands: shipIslands.length > 0 ? shipIslands : null
             })
         })
         .then(function (res) {
@@ -529,30 +538,34 @@ document.addEventListener('DOMContentLoaded', function () {
                         cardSubtotal = Math.round(perQty * card.qty);
                         usedSubtotal += cardSubtotal;
                     }
+                    var cardRcId = (card.rcId && card.rcId !== 'new') ? parseInt(card.rcId) || null : rcId;
                     items.push({
                         stId: stId, qty: card.qty,
                         unGId: unGId, unGNm: unGNm, unGQn: unGQn,
-                        subtotalKrw: cardSubtotal, rcId: rcId,
+                        subtotalKrw: cardSubtotal, rcId: cardRcId,
                         grp: rowIdx,
-                        rcRgn: card.region || defaultRegion,
                         rcNm: card.name || '',
                         rcAdr: card.addr || '',
+                        rcAdrDt: card.addrDetail || '',
                         rcPhn: card.phone || '',
+                        rcIamYn: !!card.isIsland,
                         rcMemo: card.memo || ''
                     });
                 });
             } else {
                 // 단일배송
                 var singleCard = (shipData && shipData.cards.length > 0) ? shipData.cards[0] : null;
+                var singleRcId = (singleCard && singleCard.rcId && singleCard.rcId !== 'new') ? parseInt(singleCard.rcId) || rcId : rcId;
                 items.push({
                     stId: stId, qty: qty,
                     unGId: unGId, unGNm: unGNm, unGQn: unGQn,
-                    subtotalKrw: subtotalKrw, rcId: rcId,
+                    subtotalKrw: subtotalKrw, rcId: singleRcId,
                     grp: rowIdx,
-                    rcRgn: singleCard ? singleCard.region : defaultRegion,
                     rcNm: singleCard ? singleCard.name : defaultReceiverName,
                     rcAdr: singleCard ? singleCard.addr : defaultReceiverAddr,
+                    rcAdrDt: singleCard ? (singleCard.addrDetail || '') : '',
                     rcPhn: singleCard ? singleCard.phone : '',
+                    rcIamYn: singleCard ? !!singleCard.isIsland : defaultIsIsland,
                     rcMemo: singleCard ? singleCard.memo : ''
                 });
             }
@@ -891,8 +904,31 @@ document.addEventListener('DOMContentLoaded', function () {
             currentShipType = rowShipMap[rowIdx].type;
             shipCards = JSON.parse(JSON.stringify(rowShipMap[rowIdx].cards));
         } else {
+            // 저장된 rcId로 receiver 자동 매칭
+            var btnRcId = btn.dataset.rcId || '';
+            var receivers = window._savedReceivers || [];
+            var matched = null;
+            if (btnRcId) {
+                for (var i = 0; i < receivers.length; i++) {
+                    var rid = String(receivers[i].rcId || receivers[i].rc_id || '');
+                    if (rid === btnRcId) { matched = receivers[i]; break; }
+                }
+            }
             currentShipType = 'single';
-            shipCards = [{ qty: totalItemQty, region: defaultRegion, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
+            if (matched) {
+                shipCards = [{
+                    qty: totalItemQty,
+                    rcId: matched.rcId || matched.rc_id,
+                    isIsland: matched.rcIamYn || matched.rc_iam_yn || false,
+                    name: matched.rcNm || matched.rc_nm || '',
+                    addr: matched.rcAdr || matched.rc_adr || '',
+                    addrDetail: matched.rcAdrDt || matched.rc_adr_dt || '',
+                    phone: matched.rcPhn || matched.rc_phn || '',
+                    memo: ''
+                }];
+            } else {
+                shipCards = [{ qty: totalItemQty, isIsland: defaultIsIsland, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
+            }
         }
 
         updateShipTypeUI();
@@ -914,12 +950,43 @@ document.addEventListener('DOMContentLoaded', function () {
             // rowShipMap에 저장
             rowShipMap[rowIdx] = { type: currentShipType, cards: JSON.parse(JSON.stringify(shipCards)) };
 
+            // 테이블 버튼에 선택된 주소 반영
+            var addrEl = currentShippingBtn.querySelector('.shipping-addr');
+            if (addrEl && shipCards.length > 0) {
+                var first = shipCards[0];
+                var addrText = first.addr || '';
+                if (first.addrDetail) addrText += ' ' + first.addrDetail;
+                addrEl.textContent = addrText || '배송지를 선택하세요';
+            }
+
             var meta = currentShippingBtn.querySelector('.shipping-meta');
             if (meta) {
                 meta.textContent = currentShipType === 'split'
                     ? '분할배송 (' + shipCards.length + '건)'
                     : '단일배송';
             }
+
+            // 새 배송지 입력인 카드는 receiver DB에 저장
+            shipCards.forEach(function (card) {
+                if (card.rcId === 'new' && card.addr) {
+                    var rcHeaders = { 'Content-Type': 'application/json' };
+                    if (csrfHeader && csrfToken) rcHeaders[csrfHeader] = csrfToken;
+                    fetch('/api/receiver', {
+                        method: 'POST',
+                        headers: rcHeaders,
+                        body: JSON.stringify({
+                            rcNm: card.name || '',
+                            rcPhn: card.phone || '',
+                            rcAdr: card.addr || '',
+                            rcAdrDt: card.addrDetail || ''
+                        })
+                    }).then(function (res) { return res.json(); })
+                    .then(function (list) {
+                        // 저장된 receiver 목록 갱신
+                        if (Array.isArray(list)) window._savedReceivers = list;
+                    }).catch(function () {});
+                }
+            });
         }
         closeShippingModal();
         fetchEstimateFees();
@@ -934,7 +1001,7 @@ document.addEventListener('DOMContentLoaded', function () {
         b.addEventListener('click', function () {
             currentShipType = b.dataset.type;
             if (currentShipType === 'single') {
-                shipCards = [{ qty: totalItemQty, region: defaultRegion, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
+                shipCards = [{ qty: totalItemQty, isIsland: defaultIsIsland, name: defaultReceiverName, addr: defaultReceiverAddr, phone: '', memo: '' }];
             }
             updateShipTypeUI();
             renderAddrCards();
@@ -959,7 +1026,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var base = Math.floor(totalItemQty / count);
         var remainder = totalItemQty % count;
 
-        shipCards.push({ qty: 0, region: defaultRegion, name: '수령인 ' + count, addr: '주소를 입력하세요', phone: '-', memo: '' });
+        shipCards.push({ qty: 0, isIsland: false, name: '', addr: '', phone: '', memo: '' });
 
         for (var i = 0; i < shipCards.length; i++) {
             shipCards[i].qty = base + (i < remainder ? 1 : 0);
@@ -976,6 +1043,29 @@ document.addEventListener('DOMContentLoaded', function () {
         shipCards.forEach(function (card, idx) {
             var el = document.createElement('div');
             el.className = 'ship-addr-card';
+            // 저장된 배송지 옵션 빌드
+            var receivers = window._savedReceivers || [];
+
+            // receiver 매칭 여부 + 새 배송지 폼 표시 여부 먼저 계산
+            var hasMatchedReceiver = false;
+            if (card.rcId && card.rcId !== 'new') {
+                for (var ri = 0; ri < receivers.length; ri++) {
+                    if (String(receivers[ri].rcId || receivers[ri].rc_id) === String(card.rcId)) { hasMatchedReceiver = true; break; }
+                }
+            }
+            var showNewForm = (card.rcId === 'new' || (!hasMatchedReceiver && card.addr && card.addr !== ''));
+
+            var receiverOpts = '<option value="">-- 배송지를 선택하세요 --</option>';
+            receivers.forEach(function (r) {
+                var rcId = r.rcId || r.rc_id;
+                var rcNm = r.rcNm || r.rc_nm || '';
+                var rcAdr = r.rcAdr || r.rc_adr || '';
+                var rcPhn = r.rcPhn || r.rc_phn || '';
+                var selected = (card.rcId && card.rcId == rcId) ? ' selected' : '';
+                receiverOpts += '<option value="' + rcId + '"' + selected + '>' + rcNm + ' - ' + rcAdr + (rcPhn ? ' (' + rcPhn + ')' : '') + '</option>';
+            });
+            receiverOpts += '<option value="new"' + (showNewForm ? ' selected' : '') + '>+ 새 배송지 입력</option>';
+
             el.innerHTML =
                 '<div class="ship-addr-card-header">' +
                     '<span class="ship-addr-card-no">' + (idx + 1) + '</span>' +
@@ -985,14 +1075,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</div>' +
                     (shipCards.length > 1 ? '<button type="button" class="ship-addr-remove" data-idx="' + idx + '" aria-label="삭제">&#10005;</button>' : '') +
                 '</div>' +
-                '<div class="ship-addr-region">' +
-                    '<label class="ship-addr-region-label">배송 지역</label>' +
-                    '<select class="ship-region-select" data-idx="' + idx + '">' + buildRegionOptions(card.region) + '</select>' +
+                '<div class="ship-island-check">' +
+                    '<label class="ship-island-label">' +
+                        '<input type="checkbox" class="ship-island-input" data-idx="' + idx + '"' + (card.isIsland ? ' checked' : '') + ' />' +
+                        '<span>도서산간 지역</span>' +
+                    '</label>' +
                 '</div>' +
-                '<div class="ship-addr-preview">' +
-                    '<span class="ship-addr-name">수령인: ' + card.name + '</span>' +
-                    '<span class="ship-addr-detail">' + card.addr + '</span>' +
-                    '<span class="ship-addr-phone">' + card.phone + '</span>' +
+                '<div class="ship-receiver-pick">' +
+                    '<select class="ship-receiver-select" data-idx="' + idx + '">' + receiverOpts + '</select>' +
+                '</div>' +
+                '<div class="ship-addr-new-form" data-idx="' + idx + '" style="display:' + (showNewForm ? 'flex' : 'none') + ';">' +
+                    '<input type="text" class="ship-new-name" placeholder="수령인명" value="' + (showNewForm ? (card.name || '') : '') + '" />' +
+                    '<input type="text" class="ship-new-phone" placeholder="연락처" value="' + (showNewForm ? (card.phone || '') : '') + '" />' +
+                    '<div class="ship-new-addr-row">' +
+                        '<input type="text" class="ship-new-addr" placeholder="주소 검색" value="' + (showNewForm ? (card.addr || '') : '') + '" readonly />' +
+                        '<button type="button" class="ship-new-addr-btn" data-idx="' + idx + '">검색</button>' +
+                    '</div>' +
+                    '<input type="text" class="ship-new-addr-detail" placeholder="상세주소" value="' + (showNewForm ? (card.addrDetail || '') : '') + '" />' +
                 '</div>' +
                 '<textarea class="ship-addr-memo" data-idx="' + idx + '" placeholder="배달 요구사항 (예: 경비실 보관, 전화 후 배송 등)">' + (card.memo || '') + '</textarea>';
             list.appendChild(el);
@@ -1050,11 +1149,11 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // 지역 변경 이벤트
-        list.querySelectorAll('.ship-region-select').forEach(function (sel) {
-            sel.addEventListener('change', function () {
-                var idx = parseInt(sel.dataset.idx);
-                shipCards[idx].region = sel.value;
+        // 도서산간 체크 이벤트
+        list.querySelectorAll('.ship-island-input').forEach(function (chk) {
+            chk.addEventListener('change', function () {
+                var idx = parseInt(chk.dataset.idx);
+                shipCards[idx].isIsland = chk.checked;
                 fetchShippingFee();
             });
         });
@@ -1067,13 +1166,83 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
+        // 저장된 배송지 선택 이벤트
+        list.querySelectorAll('.ship-receiver-select').forEach(function (sel) {
+            sel.addEventListener('change', function () {
+                var idx = parseInt(sel.dataset.idx);
+                var val = sel.value;
+                var newForm = list.querySelector('.ship-addr-new-form[data-idx="' + idx + '"]');
+                if (val === 'new') {
+                    shipCards[idx].rcId = 'new';
+                    shipCards[idx].name = '';
+                    shipCards[idx].addr = '';
+                    shipCards[idx].addrDetail = '';
+                    shipCards[idx].phone = '';
+                    if (newForm) newForm.style.display = 'flex';
+                } else if (val) {
+                    var receivers = window._savedReceivers || [];
+                    var rc = null;
+                    for (var i = 0; i < receivers.length; i++) {
+                        var rid = receivers[i].rcId || receivers[i].rc_id;
+                        if (String(rid) === val) { rc = receivers[i]; break; }
+                    }
+                    if (rc) {
+                        shipCards[idx].rcId = rc.rcId || rc.rc_id;
+                        shipCards[idx].name = rc.rcNm || rc.rc_nm || '';
+                        shipCards[idx].addr = rc.rcAdr || rc.rc_adr || '';
+                        shipCards[idx].addrDetail = rc.rcAdrDt || rc.rc_adr_dt || '';
+                        shipCards[idx].phone = rc.rcPhn || rc.rc_phn || '';
+                        // 도서산간 자동 체크
+                        var isIsland = rc.rcIamYn || rc.rc_iam_yn || false;
+                        shipCards[idx].isIsland = isIsland;
+                        var islandChk = list.querySelector('.ship-island-input[data-idx="' + idx + '"]');
+                        if (islandChk) islandChk.checked = isIsland;
+                    }
+                    if (newForm) newForm.style.display = 'none';
+                    fetchShippingFee();
+                } else {
+                    if (newForm) newForm.style.display = 'none';
+                }
+            });
+        });
+
+        // 새 배송지 입력 이벤트
+        list.querySelectorAll('.ship-addr-new-form').forEach(function (form) {
+            var idx = parseInt(form.dataset.idx);
+            var nameInp = form.querySelector('.ship-new-name');
+            var phoneInp = form.querySelector('.ship-new-phone');
+            var addrInp = form.querySelector('.ship-new-addr');
+            var detailInp = form.querySelector('.ship-new-addr-detail');
+            if (nameInp) nameInp.addEventListener('input', function () { shipCards[idx].name = nameInp.value; });
+            if (phoneInp) phoneInp.addEventListener('input', function () { shipCards[idx].phone = phoneInp.value; });
+            if (detailInp) detailInp.addEventListener('input', function () { shipCards[idx].addrDetail = detailInp.value; });
+        });
+
+        // 주소 검색 버튼 (다음 우편번호 API)
+        list.querySelectorAll('.ship-new-addr-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var idx = parseInt(btn.dataset.idx);
+                var form = list.querySelector('.ship-addr-new-form[data-idx="' + idx + '"]');
+                if (!form) return;
+                var addrInp = form.querySelector('.ship-new-addr');
+                var detailInp = form.querySelector('.ship-new-addr-detail');
+                new daum.Postcode({
+                    oncomplete: function (data) {
+                        var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+                        if (addrInp) { addrInp.value = addr; shipCards[idx].addr = addr; }
+                        if (detailInp) detailInp.focus();
+                    }
+                }).open();
+            });
+        });
+
         document.getElementById('smCount').textContent = shipCards.length + '건';
     }
 
-    // 배달비 비동기 조회 (지역별 그룹핑)
+    // 배달비 비동기 조회 (도서산간 여부 기준)
     function fetchShippingFee() {
         var items = shipCards.map(function (c) {
-            return { region: c.region || defaultRegion, qty: c.qty, splitShipment: false };
+            return { isIsland: !!c.isIsland, qty: c.qty };
         });
 
         var headers = { 'Content-Type': 'application/json' };

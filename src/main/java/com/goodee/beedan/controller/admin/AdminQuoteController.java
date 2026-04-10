@@ -49,6 +49,7 @@ public class AdminQuoteController {
     private final ReceiverRepository receiverRepository;
     private final QuoteShipFeeService quoteShipFeeService;
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
+    private final com.goodee.beedan.repository.quote.ShippingRateRepository shippingRateRepository;
 
     @GetMapping("/negotiation/list")
     public String negotiationList(Model model,
@@ -212,6 +213,11 @@ public class AdminQuoteController {
                               @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         if (quoteBase == null) return "redirect:/admin/quote/list";
+
+        // TEMP_SAVE 상태면 write 페이지로 이동 (이어서 작성)
+        if (quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE) {
+            return "redirect:/admin/quote/write?quId=" + quId;
+        }
 
         // TEMP_SAVE 상태면 write 페이지로 이동 (이어서 작성)
         if (quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE) {
@@ -449,6 +455,7 @@ public class AdminQuoteController {
         }
 
         model.addAttribute("isAdmin", true);
+        model.addAttribute("countryCodes", shippingRateRepository.findDistinctCountryCodes());
         return "quote/quote-write";
     }
 }

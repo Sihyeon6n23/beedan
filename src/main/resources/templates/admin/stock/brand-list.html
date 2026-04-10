@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN', 'Brand Management', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 브랜드 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'brand-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}"/>
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+
+<section class="admin-chat-page admin-chat-list-page" style="max-width:1280px;">
+    <!-- 헤더 -->
+    <header class="admin-chat-shell admin-chat-shell--header">
+        <div class="admin-chat-shell__heading">
+            <span class="admin-chat-kicker">Brand Management</span>
+            <h2 class="admin-chat-title">브랜드 목록</h2>
+            <p style="color:#78716c; font-size:13px; margin-top:4px;">브랜드별 공장 매핑을 관리합니다. 공장이 없는 브랜드는 견적 운임 산출이 불가합니다.</p>
+        </div>
+        <div class="admin-chat-shell__rule"><span></span></div>
+    </header>
+
+    <!-- 필터 -->
+    <section style="display:flex; gap:12px; margin-bottom:20px; align-items:center;">
+        <div style="flex:1; display:flex; align-items:center; background:#e8e8e8; padding:8px 16px;">
+            <input type="text" id="brandSearch" placeholder="브랜드명 검색"
+                   style="flex:1; border:none; background:transparent; outline:none; font-size:13px;">
+            <span class="material-symbols-outlined" style="color:#78716c; font-size:20px;">search</span>
+        </div>
+        <select id="brandFilter" style="padding:8px 16px; border:1px solid #e7e5e4; font-size:13px; font-weight:700;">
+            <option value="all">전체</option>
+            <option value="unmapped">미매핑</option>
+            <option value="mapped">매핑 완료</option>
+        </select>
+    </section>
+
+    <!-- 테이블 -->
+    <div style="overflow-x:auto; background:#fff; border:1px solid #e7e5e4;">
+        <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
+            <thead>
+            <tr style="background:#f3f3f3;">
+                <th style="width:60px; padding:12px 14px; text-align:center; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">ID</th>
+                <th style="width:200px; padding:12px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">브랜드명</th>
+                <th style="width:80px; padding:12px 14px; text-align:center; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">상태</th>
+                <th style="padding:12px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">매핑된 공장</th>
+                <th style="width:120px; padding:12px 14px; text-align:center; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">관리</th>
+            </tr>
+            </thead>
+            <tbody id="brandTbody">
+            <th:block th:each="b : ${brands}">
+                <tr class="brand-row"
+                    th:data-br-id="${b.brId}"
+                    th:data-br-nm="${b.brNm}"
+                    th:data-mapped="${b.hasMapped}"
+                    style="border-bottom:1px solid #e7e5e4;">
+                    <td style="padding:14px; text-align:center; font-size:12px; color:#a3a3a3;" th:text="${b.brId}">1</td>
+                    <td style="padding:14px; font-size:14px; font-weight:700; color:#1a1c1c;" th:text="${b.brNm}">Brand</td>
+                    <td style="padding:14px; text-align:center;">
+                        <span th:if="${b.hasMapped}"
+                              style="display:inline-block; padding:3px 10px; font-size:10px; font-weight:800; letter-spacing:0.08em; background:#e8f5e9; color:#2e7d32;">매핑</span>
+                        <span th:unless="${b.hasMapped}"
+                              style="display:inline-block; padding:3px 10px; font-size:10px; font-weight:800; letter-spacing:0.08em; background:#fff3e0; color:#e65100;">미매핑</span>
+                    </td>
+                    <td style="padding:14px; font-size:13px; color:#4d4732;">
+                        <th:block th:if="${b.factoryCount > 0}">
+                            <div th:each="f : ${b.factories}" style="margin-bottom:4px;">
+                                <span th:text="${f.faNm}" style="font-weight:600;"></span>
+                                <span th:if="${f.faCCd != null}" th:text="'(' + ${f.faCCd} + ')'" style="color:#78716c; font-size:12px;"></span>
+                                <span th:if="${f.faCty != null}" th:text="${f.faCty}" style="color:#a3a3a3; font-size:11px; margin-left:4px;"></span>
+                                <button type="button" class="btn-delete-factory"
+                                        th:data-fa-id="${f.faId}"
+                                        style="margin-left:8px; border:none; background:none; color:#c53030; cursor:pointer; font-size:11px; font-weight:700;">삭제</button>
+                            </div>
+                        </th:block>
+                        <span th:if="${b.factoryCount == 0}" style="color:#a3a3a3;">-</span>
+                    </td>
+                    <td style="padding:14px; text-align:center;">
+                        <button type="button" class="btn-add-factory"
+                                th:data-br-id="${b.brId}" th:data-br-nm="${b.brNm}"
+                                style="padding:6px 16px; background:#ffd700; color:#705d00; border:none; cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase;">+ 공장</button>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+
+    <p style="text-align:center; padding:20px; color:#a3a3a3; font-size:12px;"
+       th:text="'총 ' + ${brands.size()} + '개 브랜드'"></p>
+</section>
+
+<!-- 공장 추가 모달 -->
+<div id="factoryModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);"
+     onclick="if(event.target===this){ this.style.display='none'; document.body.style.overflow=''; }">
+    <div style="background:#fff; border:1px solid #e0ddd6; width:440px; padding:40px; outline:2px solid #ffd700; outline-offset:-2px;">
+        <h3 style="font-family:'Manrope',sans-serif; font-weight:800; font-size:16px; color:#1a1c1c; margin:0 0 6px;">공장 매핑 추가</h3>
+        <p id="factoryModalBrand" style="font-size:13px; color:#78716c; margin:0 0 24px;">브랜드: -</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <input type="text" id="fmFaNm" placeholder="공장명 *" style="padding:10px 12px; border:1px solid #e7e5e4; font-size:13px;">
+            <select id="fmFaCCd" style="padding:10px 12px; border:1px solid #e7e5e4; font-size:13px;">
+                <option value="">국가 선택 *</option>
+                <option th:each="cc : ${countryCodes}" th:value="${cc}" th:text="${cc}"></option>
+            </select>
+            <input type="text" id="fmFaCty" placeholder="도시 (선택)" style="padding:10px 12px; border:1px solid #e7e5e4; font-size:13px;">
+            <input type="text" id="fmFaAd" placeholder="주소 (선택)" style="padding:10px 12px; border:1px solid #e7e5e4; font-size:13px;">
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:24px;">
+            <button type="button" onclick="document.getElementById('factoryModal').style.display='none'; document.body.style.overflow='';"
+                    style="padding:10px 24px; border:1px solid #e0ddd6; background:#fff; cursor:pointer; font-size:12px; font-weight:700;">취소</button>
+            <button type="button" id="btnFactorySubmit"
+                    style="padding:10px 28px; background:#ffd700; color:#705d00; border:none; cursor:pointer; font-size:12px; font-weight:800;">추가</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    var currentBrId = null;
+
+    // 검색 + 필터
+    var searchInput = document.getElementById('brandSearch');
+    var filterSelect = document.getElementById('brandFilter');
+
+    function applyFilter() {
+        var keyword = searchInput.value.trim().toLowerCase();
+        var filter = filterSelect.value;
+        document.querySelectorAll('.brand-row').forEach(function (row) {
+            var name = (row.dataset.brNm || '').toLowerCase();
+            var mapped = row.dataset.mapped === 'true';
+            var matchSearch = !keyword || name.includes(keyword);
+            var matchFilter = filter === 'all' || (filter === 'mapped' && mapped) || (filter === 'unmapped' && !mapped);
+            row.style.display = (matchSearch && matchFilter) ? '' : 'none';
+        });
+    }
+    searchInput.addEventListener('input', applyFilter);
+    filterSelect.addEventListener('change', applyFilter);
+
+    // 공장 추가 모달 열기
+    document.querySelectorAll('.btn-add-factory').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            currentBrId = btn.dataset.brId;
+            document.getElementById('factoryModalBrand').textContent = '브랜드: ' + btn.dataset.brNm;
+            document.getElementById('fmFaNm').value = '';
+            document.getElementById('fmFaCCd').value = '';
+            document.getElementById('fmFaCty').value = '';
+            document.getElementById('fmFaAd').value = '';
+            var modal = document.getElementById('factoryModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    // 공장 추가 제출
+    document.getElementById('btnFactorySubmit').addEventListener('click', function () {
+        var faNm = document.getElementById('fmFaNm').value.trim();
+        var faCCd = document.getElementById('fmFaCCd').value;
+        if (!faNm || !faCCd) { alert('공장명과 국가는 필수입니다.'); return; }
+
+        var headers = { 'Content-Type': 'application/json' };
+        headers[csrfHeader] = csrfToken;
+
+        fetch('/admin/brand/' + currentBrId + '/factory', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                faNm: faNm,
+                faCCd: faCCd,
+                faCty: document.getElementById('fmFaCty').value.trim() || null,
+                faAd: document.getElementById('fmFaAd').value.trim() || null
+            })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.status === 'ok') { location.reload(); }
+            else { alert('실패: ' + (data.message || '')); }
+        });
+    });
+
+    // 공장 삭제
+    document.querySelectorAll('.btn-delete-factory').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (!confirm('이 공장을 삭제하시겠습니까?')) return;
+            var faId = btn.dataset.faId;
+            var headers = {};
+            headers[csrfHeader] = csrfToken;
+
+            fetch('/admin/brand/factory/' + faId, {
+                method: 'DELETE',
+                headers: headers
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.status === 'ok') { location.reload(); }
+                else { alert('삭제 실패: ' + (data.message || '')); }
+            });
+        });
+    });
+});
+</script>
+</th:block>
+</html>
