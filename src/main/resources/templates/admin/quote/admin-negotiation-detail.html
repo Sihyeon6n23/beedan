@@ -115,6 +115,7 @@
                     <tbody>
                     <th:block th:each="q : ${quotes}">
                         <tr th:data-qu-id="${q.quId}"
+                            th:data-display-stt="${q.displayStt}"
                             th:class="${q.quStt == 'REJECTED' or q.quStt == 'EXPIRED'} ? 'and-row--closed' : ''"
                             style="cursor:pointer">
                             <td class="col-no" th:text="${q.no}">1</td>
@@ -149,11 +150,22 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
         var tbody = document.querySelector('.and-table tbody');
         if (tbody) {
             tbody.addEventListener('click', function (e) {
                 var row = e.target.closest('tr');
                 if (row && row.dataset.quId) {
+                    // 미열람 견적이면 열람 처리
+                    if (row.dataset.displayStt === 'UNREAD') {
+                        var headers = {};
+                        headers[csrfHeader] = csrfToken;
+                        fetch('/api/quote/' + row.dataset.quId + '/admin-opened', {
+                            method: 'POST', headers: headers
+                        });
+                    }
                     window.location.href = '/admin/quote/detail?quId=' + row.dataset.quId;
                 }
             });
