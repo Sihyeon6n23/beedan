@@ -77,5 +77,20 @@
             </nav>
         </article>
     </section>
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // 타임리프를 통해 서버에서 넘어온 FlashAttribute 추출
+            const serverMessage = [[${serverMessage}]];
+
+            if (serverMessage) {
+                // \n을 브라우저가 인식할 수 있게 유지하면서 alert 실행
+                alert(serverMessage);
+            }
+        });
+        /*]]>*/
+    </script>
 </th:block>
 </html>
