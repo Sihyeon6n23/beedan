@@ -2,8 +2,12 @@ package com.goodee.beedan.controller.root;
 
 import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.dto.root.sales.*;
+import com.goodee.beedan.service.pdf.SalesPdfService;
 import com.goodee.beedan.service.root.SalesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +26,7 @@ import java.util.Map;
 public class SalesController {
 
     private final SalesService salesService;
+    private final SalesPdfService salesPdfService;
 
     @GetMapping("/root/sales")
     public String getSales(
@@ -81,14 +86,29 @@ public class SalesController {
         List<GradeDistribution> gradeDist = salesService.getGradeDistribution(from, to);
         model.addAttribute("gradeDist", gradeDist);
 
-        // 상태별 건수
-        Map<QuoteStatus, Long> statusCounts = salesService.getStatusCounts(from, to);
-        model.addAttribute("statusCounts", statusCounts);
-
-        // 최근 견적 목록
-        List<RecentQuoteRow> recentQuotes = salesService.getRecentQuotes(from, to, 10);
-        model.addAttribute("recentQuotes", recentQuotes);
+        // 월별 추이 (최근 6개월)
+        model.addAttribute("monthlyTrend", salesService.getMonthlyTrend(y, m));
 
         return "/root/sales/root-sales";
+    }
+
+    @GetMapping("/root/sales/pdf")
+    public ResponseEntity<byte[]> downloadSalesPdf(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+        java.time.LocalDate now = java.time.LocalDate.now();
+        int y = (year != null) ? year : now.getYear();
+        int m = (month != null) ? month : now.getMonthValue();
+
+        try {
+            byte[] pdf = salesPdfService.generateSalesPdf(y, m);
+            String filename = "sales-report-" + y + "-" + String.format("%02d", m) + ".pdf";
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
