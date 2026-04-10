@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -18,6 +19,7 @@ public class MemberChatRoomDetailDto {
     private Long chRoId;
     private String chRoTtl;
     private ChatRoomStatus chRoStt;
+    private LocalDateTime chRoCreDt;
     private List<MemberChatMessageDto> messages;
 
     private ChatRoomCloseReason chRoClsRsn;

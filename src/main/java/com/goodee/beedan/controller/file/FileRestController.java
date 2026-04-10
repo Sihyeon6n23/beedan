@@ -39,4 +39,15 @@ public class FileRestController {
                 .body(downloadDto.getResource());
     }
 
+    // 채팅/미리보기용: 브라우저가 이미지를 바로 렌더할 수 있게 inline으로 응답
+    @GetMapping("/view/{fileUuid}")
+    public ResponseEntity<Resource> viewFile(@PathVariable String fileUuid) {
+        FileDownloadDto downloadDto = fileService.prepareDownload(fileUuid);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .contentType(MediaType.parseMediaType(downloadDto.getContentType()))
+                .contentLength(downloadDto.getContentLength())
+                .body(downloadDto.getResource());
+    }
 }

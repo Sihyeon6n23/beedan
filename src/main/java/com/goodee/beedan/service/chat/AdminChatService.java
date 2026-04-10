@@ -163,7 +163,7 @@ public class AdminChatService {
                 .chRoId(chatRoom.getChRoId())
                 .memBizTtl(member.getMemBizTtl())
                 .memNm(member.getMemNm())
-                .lastMessageContent(lastMessage != null ? lastMessage.getChMsCon() : null)
+                .lastMessageContent(getChatRoomListSummary(lastMessage))
                 .lastMessageCreatedAt(lastMessage != null ? lastMessage.getChMsCreDt() : null)
                 .chRoCreDt(chatRoom.getChRoCreDt())
                 .chRoStt(chatRoom.getChRoStt())
@@ -171,6 +171,22 @@ public class AdminChatService {
                 .adminName(admin != null ? admin.getMemNm() : null)
                 .chRoClsRsn(chatRoom.getChRoClsRsn())
                 .build();
+    }
+
+    private String getChatRoomListSummary(ChatMessage lastMessage) {
+        if (lastMessage == null) {
+            return null;
+        }
+
+        if (lastMessage.getChMsTp() == ChatMessageType.IMAGE) {
+            return "이미지를 보냈습니다.";
+        }
+
+        if (lastMessage.getChMsTp() == ChatMessageType.QUOTE_CARD) {
+            return "견적을 보냈습니다.";
+        }
+
+        return lastMessage.getChMsCon();
     }
 
     // 채팅방 시작 상태를 ONGOING으로 변경하고 담당자를 지정
@@ -200,7 +216,7 @@ public class AdminChatService {
                 .memId(memAdId)
                 .chRoId(chRoId)
                 .chRoReStUnrYn(false)
-                .chMsLastId(lastMessage.map(chatMessage -> chatMessage.getChMsId()).orElse(null))
+                .chMsLastId(lastMessage.map(ChatMessage::getChMsId).orElse(null))
                 .build();
 
         chatRoomReadStatusRepository.save(adminReadStatus);
@@ -317,6 +333,8 @@ public class AdminChatService {
         AdminChatMessageDto adminChatMessageDto = mapToAdminChatMessageDto(savedMessage);
         // 채팅방 구독자들에게 실시간으로 메시지를 뿌림
         chatRealtimeService.publishMessage(chRoId, adminChatMessageDto);
+        chatRealtimeService.publishMemberSummary(chatRoom.getMemId());
+        chatRealtimeService.publishAdminSummary();
 
         return adminChatMessageDto;
     }
@@ -465,7 +483,7 @@ public class AdminChatService {
         }
 
         if (adminChatQuoteCardMessageSendDto.getChMsLnkTtl() == null || adminChatQuoteCardMessageSendDto.getChMsLnkTtl().isBlank()) {
-            throw new IllegalArgumentException("견적 카드 제목은 필수입니다.");
+            throw new IllegalArgumentException("견적 제목은 필수입니다.");
         }
 
         if (adminChatQuoteCardMessageSendDto.getChMsLnkUrl() == null || adminChatQuoteCardMessageSendDto.getChMsLnkUrl().isBlank()) {
