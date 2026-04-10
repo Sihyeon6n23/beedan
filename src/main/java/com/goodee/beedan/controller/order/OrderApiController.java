@@ -25,18 +25,6 @@ import java.util.List;
 public class OrderApiController {
     private final OrderService orderService;
 
-    @PostMapping
-    public ResponseEntity<OrderDto> createOrder(@AuthenticationPrincipal MemberUserDetails userDetails,
-                                                @RequestBody OrderDto orderDto){
-        Long memId = userDetails.getMemberId();
-
-        Long createdOrdId = orderService.createOrder(memId, orderDto);
-
-        OrderDto ordResponseDto = orderService.getOrderDetail(createdOrdId, userDetails);
-
-        return ResponseEntity.ok(ordResponseDto);
-    }
-
     @GetMapping("/list")
     public ResponseEntity<Page<OrderDto>> getOrders(
             @AuthenticationPrincipal MemberUserDetails userDetails,

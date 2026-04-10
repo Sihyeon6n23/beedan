@@ -1,13 +1,17 @@
 package com.goodee.beedan.service.order;
 
+import com.goodee.beedan.dto.order.TrackingResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,36 +19,46 @@ import java.nio.charset.StandardCharsets;
 public class UnipassService {
     private final XmlToJsonService xmlToJsonService;
 
-    @Value("${unipass.api.key:NONE}")
+    @Value("${unipass.api.key:}")
     private String apiKey;
 
-    @Value("${unipass.api.url:https://unipass.customs.go.kr:38010/ext/rest/cargCsclPrgsInfoQry/retrieveCargCsclPrgsInfo}")
+    @Value("${unipass.api.url:}")
     private String apiUrl;
 
-    public String getCargoStatus(String hblNo, String blYear) {
+    @Cacheable(value = "shipment:customs", key = "#hblNo + '_' + #blYear", unless = "#result == null")
+    public String getCargoStatus(String hblNo, String blYear) { // 통관 조회시 동기화를 위해 사용
         RestTemplate restTemplate = new RestTemplate();
 
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 
-        // api 문서 확인할 것
-        String fullUrl = apiUrl + "?crkyCn=" + apiKey.trim()
-                + "&hblNo=" + hblNo.trim()
-                + "&blYy=" + blYear.trim();
-
-        System.out.println("호출 URL: " + fullUrl);
+        String fullUrl = apiUrl + "?crkyCn=" + apiKey.trim()+ "&hblNo=" + hblNo.trim() + "&blYy=" + blYear.trim();
 
         try {
             String response = restTemplate.getForObject(fullUrl, String.class);
 
-            String jsonResult = xmlToJsonService.convertXmlToJson(response);
-            log.info("최종 변환된 JSON 결과:\n{}", jsonResult);
-
-            // 3. 특정 필드 파싱 확인 (디버깅용)
-            xmlToJsonService.logExtractData(response);
-
-            return jsonResult;
+            return xmlToJsonService.extractProgressStatus(response);
         } catch (Exception e) {
-            return " 호출 실패: " + e.getMessage();
+            log.error("UNIPASS API 호출 실패 (HBL: {}): {}", hblNo, e.getMessage());
+            return null;
         }
     }
+
+    @Cacheable(value = "shipment:customs", key = "'timeline_' + #hblNo + '_' + #blYear", unless = "#result == null")
+    public List<TrackingResponseDto.TrackingDetail> getCustomsTimeline(String hblNo, String blYear) {  // shipment 안에 통관 타임라인 포함시키기 위해 사용
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
+        String fullUrl = apiUrl + "?crkyCn=" + apiKey.trim() + "&hblNo=" + hblNo.trim() + "&blYy=" + blYear.trim();
+
+        try {
+            log.info("==> [Redis Cache Miss] 통관 타임라인 API 호출: {}", hblNo);
+            String response = restTemplate.getForObject(fullUrl, String.class);
+
+            return xmlToJsonService.extractCustomsTimeline(response);
+        } catch (Exception e) {
+            log.error("통관 타임라인 조회 실패: {}", e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
 }

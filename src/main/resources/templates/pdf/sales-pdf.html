@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        @page { size: A4; margin: 28px 32px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'NotoSansKR', sans-serif; font-size: 10px; color: #1a1c1c; }
+        table { border-collapse: collapse; }
+
+        /* Header */
+        .header { border-bottom: 3px solid #daa520; padding-bottom: 14px; margin-bottom: 20px; }
+        .header h1 { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; }
+        .header-sub { font-size: 10px; color: #999; font-weight: 700; letter-spacing: 0.12em; margin-top: 2px; }
+        .header-period { font-size: 11px; font-weight: 700; color: #705d00; margin-top: 6px; }
+
+        /* KPI */
+        .kpi-table { width: 100%; margin-bottom: 20px; }
+        .kpi-table td { width: 25%; padding: 12px; background: #f9f9f9; border-top: 3px solid #daa520; vertical-align: top; }
+        .kpi-table td:nth-child(2) { border-top-color: #bbb; }
+        .kpi-table td:nth-child(3) { border-top-color: #999; }
+        .kpi-table td:nth-child(4) { border-top-color: #ddd; }
+        .kpi-label { font-size: 8px; font-weight: 700; color: #888; letter-spacing: 0.1em; margin-bottom: 4px; }
+        .kpi-value { font-size: 17px; font-weight: 900; }
+        .kpi-unit { font-size: 11px; color: #888; }
+
+        /* Section */
+        .section-title { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; border-bottom: 2px solid #daa520; padding-bottom: 4px; margin-bottom: 12px; margin-top: 20px; }
+
+        /* Chart area */
+        .chart-table { width: 100%; margin-bottom: 20px; }
+        .chart-table > tbody > tr > td { vertical-align: top; padding: 0; }
+        .chart-left { width: 65%; padding-right: 12px; }
+        .chart-right { width: 35%; }
+        .chart-box { background: #f9f9f9; border: 1px solid #e5e5e5; padding: 14px; }
+        .chart-label { font-size: 9px; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 10px; }
+
+        /* Bar chart */
+        .bar-table { width: 100%; }
+        .bar-table td { text-align: center; vertical-align: bottom; padding: 0 3px; }
+        .bar-cell { width: 100%; }
+        .bar-seg { width: 100%; display: block; }
+        .bar-month { font-size: 8px; font-weight: 700; color: #888; padding-top: 4px; }
+        .bar-amt { font-size: 7px; font-weight: 700; color: #1a1c1c; padding-bottom: 2px; }
+        .legend-table { margin-top: 8px; }
+        .legend-table td { padding: 2px 4px; font-size: 8px; color: #888; }
+        .legend-dot { width: 8px; height: 8px; display: inline-block; }
+
+        /* Composition */
+        .comp-table { width: 100%; }
+        .comp-table td { padding: 4px 0; vertical-align: middle; }
+        .comp-dot { width: 10px; height: 10px; display: inline-block; }
+        .comp-name { font-size: 9px; font-weight: 600; color: #555; }
+        .comp-pct { font-size: 10px; font-weight: 800; text-align: right; }
+        .comp-bar-bg { width: 100%; height: 5px; background: #e5e5e5; }
+        .comp-bar-fill { height: 5px; display: block; }
+
+        /* Summary */
+        .summary-table { width: 100%; margin-bottom: 20px; }
+        .summary-table td { width: 33.33%; padding: 10px; border: 1px solid #e5e5e5; vertical-align: top; }
+        .sum-label { font-size: 8px; font-weight: 700; color: #888; letter-spacing: 0.1em; margin-bottom: 3px; }
+        .sum-value { font-size: 14px; font-weight: 900; }
+        .sum-count { font-size: 9px; color: #aaa; }
+
+        /* Detail table */
+        .detail-table { width: 100%; margin-bottom: 20px; }
+        .detail-table th { background: #f3f3f3; padding: 6px 8px; font-size: 8px; font-weight: 700; color: #888; letter-spacing: 0.06em; border-bottom: 1px solid #ddd; text-align: left; }
+        .detail-table td { padding: 5px 8px; font-size: 9px; border-bottom: 1px solid #f3f3f3; }
+        .detail-table tfoot td { background: #f3f3f3; font-weight: 700; }
+        .text-right { text-align: right; }
+        .bold { font-weight: 700; }
+        .gold { color: #705d00; }
+
+        /* Grade */
+        .grade-table { width: 100%; }
+        .grade-table td { padding: 10px; background: #f9f9f9; vertical-align: top; }
+        .grade-name { font-size: 10px; font-weight: 800; margin-bottom: 3px; }
+        .grade-rev { font-size: 13px; font-weight: 900; margin-bottom: 3px; }
+        .grade-meta { font-size: 8px; color: #888; }
+        .grade-bar { width: 100%; height: 4px; background: #e5e5e5; margin-top: 5px; }
+        .grade-fill { height: 4px; background: #daa520; display: block; }
+
+        .footer { margin-top: 24px; text-align: center; font-size: 8px; color: #aaa; border-top: 1px solid #e5e5e5; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1>매출 보고서</h1>
+    <div class="header-sub">BEEDAN REVENUE REPORT</div>
+    <div class="header-period" th:text="${periodLabel + '  ·  ' + periodRange}"></div>
+</div>
+
+<!-- KPI -->
+<table class="kpi-table">
+    <tr>
+        <td><div class="kpi-label">총 매출</div><div class="kpi-value" th:text="'₩' + ${#numbers.formatInteger(kpi.totalRevenue, 1, 'COMMA')}">₩0</div></td>
+        <td><div class="kpi-label">총 주문</div><div class="kpi-value"><span th:text="${kpi.totalOrders}">0</span><span class="kpi-unit">건</span></div></td>
+        <td><div class="kpi-label">평균 주문 금액</div><div class="kpi-value" th:text="'₩' + ${#numbers.formatInteger(kpi.avgOrderAmount, 1, 'COMMA')}">₩0</div></td>
+        <td><div class="kpi-label">신규 고객</div><div class="kpi-value"><span th:text="${kpi.newCustomers}">0</span><span class="kpi-unit">명</span></div></td>
+    </tr>
+</table>
+
+<!-- Charts -->
+<table class="chart-table"><tr>
+    <td class="chart-left">
+        <div class="chart-box">
+            <div class="chart-label">월별 매출 추이 (최근 6개월)</div>
+            <table class="bar-table">
+                <tr>
+                    <th:block th:each="t : ${monthlyTrend}">
+                        <td><div class="bar-amt" th:text="'₩' + ${#numbers.formatInteger(t['total'], 1, 'COMMA')}"></div></td>
+                    </th:block>
+                </tr>
+                <tr>
+                    <th:block th:each="t : ${monthlyTrend}">
+                        <td th:with="pct=${trendMax > 0 ? t['total'].longValue() * 90 / trendMax : 0},
+                                     total=${t['total'].longValue()},
+                                     itemH=${total > 0 ? t['item'].longValue() * pct / total : 0},
+                                     svcH=${total > 0 ? t['service'].longValue() * pct / total : 0},
+                                     shpH=${total > 0 ? t['shipping'].longValue() * pct / total : 0},
+                                     taxH=${total > 0 ? t['tax'].longValue() * pct / total : 0}">
+                            <div class="bar-cell">
+                                <div class="bar-seg" th:style="'height:' + ${taxH} + 'px; background:#ddd;'"></div>
+                                <div class="bar-seg" th:style="'height:' + ${shpH} + 'px; background:#999;'"></div>
+                                <div class="bar-seg" th:style="'height:' + ${svcH} + 'px; background:#bba;'"></div>
+                                <div class="bar-seg" th:style="'height:' + ${itemH} + 'px; background:#daa520;'"></div>
+                            </div>
+                        </td>
+                    </th:block>
+                </tr>
+                <tr>
+                    <th:block th:each="t : ${monthlyTrend}">
+                        <td><div class="bar-month" th:text="${t['label']}"></div></td>
+                    </th:block>
+                </tr>
+            </table>
+            <table class="legend-table"><tr>
+                <td><span class="legend-dot" style="background:#daa520;"></span> 상품</td>
+                <td><span class="legend-dot" style="background:#bba;"></span> 서비스</td>
+                <td><span class="legend-dot" style="background:#999;"></span> 운임</td>
+                <td><span class="legend-dot" style="background:#ddd;"></span> 관세</td>
+            </tr></table>
+        </div>
+    </td>
+    <td class="chart-right">
+        <div class="chart-box" th:with="totalAll=${commItemTotal.add(commSummary['serviceFee']).add(commSummary['shippingFee']).add(commSummary['customsFee'])},
+                      itemPct=${totalAll.longValue() > 0 ? commItemTotal.longValue() * 100 / totalAll.longValue() : 0},
+                      svcPct=${totalAll.longValue() > 0 ? commSummary['serviceFee'].longValue() * 100 / totalAll.longValue() : 0},
+                      shpPct=${totalAll.longValue() > 0 ? commSummary['shippingFee'].longValue() * 100 / totalAll.longValue() : 0},
+                      taxPct=${totalAll.longValue() > 0 ? commSummary['customsFee'].longValue() * 100 / totalAll.longValue() : 0}">
+            <div class="chart-label">매출 구성 비율</div>
+            <table class="comp-table">
+                <tr><td><span class="comp-dot" style="background:#daa520;"></span></td><td class="comp-name">상품 대금</td><td class="comp-pct" th:text="${itemPct} + '%'"></td></tr>
+                <tr><td colspan="3"><div class="comp-bar-bg"><span class="comp-bar-fill" style="background:#daa520;" th:style="'width:' + ${itemPct} + '%; background:#daa520;'"></span></div></td></tr>
+                <tr><td><span class="comp-dot" style="background:#bba;"></span></td><td class="comp-name">서비스 수수료</td><td class="comp-pct" th:text="${svcPct} + '%'"></td></tr>
+                <tr><td colspan="3"><div class="comp-bar-bg"><span class="comp-bar-fill" th:style="'width:' + ${svcPct} + '%; background:#bba;'"></span></div></td></tr>
+                <tr><td><span class="comp-dot" style="background:#999;"></span></td><td class="comp-name">운임</td><td class="comp-pct" th:text="${shpPct} + '%'"></td></tr>
+                <tr><td colspan="3"><div class="comp-bar-bg"><span class="comp-bar-fill" th:style="'width:' + ${shpPct} + '%; background:#999;'"></span></div></td></tr>
+                <tr><td><span class="comp-dot" style="background:#ddd;"></span></td><td class="comp-name">관세/부가세</td><td class="comp-pct" th:text="${taxPct} + '%'"></td></tr>
+                <tr><td colspan="3"><div class="comp-bar-bg"><span class="comp-bar-fill" th:style="'width:' + ${taxPct} + '%; background:#ddd;'"></span></div></td></tr>
+            </table>
+        </div>
+    </td>
+</tr></table>
+
+<!-- 수수료 요약 -->
+<table class="summary-table">
+    <tr>
+        <td><div class="sum-label">서비스 수수료</div><div class="sum-value" th:text="'₩' + ${#numbers.formatInteger(commSummary['serviceFee'], 1, 'COMMA')}">₩0</div><div class="sum-count" th:text="${#numbers.formatInteger(commSummary['serviceCount'], 1, 'COMMA')} + '건'"></div></td>
+        <td><div class="sum-label">배송 수수료</div><div class="sum-value" th:text="'₩' + ${#numbers.formatInteger(commSummary['shippingFee'], 1, 'COMMA')}">₩0</div><div class="sum-count" th:text="${#numbers.formatInteger(commSummary['shippingCount'], 1, 'COMMA')} + '건'"></div></td>
+        <td><div class="sum-label">관세 / 부가세</div><div class="sum-value" th:text="'₩' + ${#numbers.formatInteger(commSummary['customsFee'], 1, 'COMMA')}">₩0</div><div class="sum-count" th:text="${#numbers.formatInteger(commSummary['customsCount'], 1, 'COMMA')} + '건'"></div></td>
+    </tr>
+</table>
+
+<!-- 수수료 상세 -->
+<div class="section-title">수수료 매출 상세</div>
+<table class="detail-table">
+    <thead><tr>
+        <th>일자</th><th>견적번호</th><th>고객사</th><th>등급</th>
+        <th class="text-right">물품 대금</th><th class="text-right">서비스 수수료</th>
+        <th class="text-right">배송 수수료</th><th class="text-right">합계</th>
+    </tr></thead>
+    <tbody>
+    <tr th:if="${#lists.isEmpty(commRows)}"><td colspan="8" style="text-align:center; padding:16px; color:#aaa;">해당 기간에 결제된 견적이 없습니다.</td></tr>
+    <tr th:each="row : ${commRows}">
+        <td th:text="${#temporals.format(row.date, 'yyyy.MM.dd')}"></td>
+        <td class="bold" th:text="${row.quoteCd}"></td>
+        <td th:text="${row.buyerName}"></td>
+        <td th:text="${row.grade}"></td>
+        <td class="text-right" th:text="'₩' + ${#numbers.formatInteger(row.itemAmount, 1, 'COMMA')}"></td>
+        <td class="text-right" th:text="'₩' + ${#numbers.formatInteger(row.serviceFee, 1, 'COMMA')}"></td>
+        <td class="text-right" th:text="'₩' + ${#numbers.formatInteger(row.shippingFee, 1, 'COMMA')}"></td>
+        <td class="text-right bold" th:text="'₩' + ${#numbers.formatInteger(row.totalFee, 1, 'COMMA')}"></td>
+    </tr>
+    </tbody>
+    <tfoot th:if="${!#lists.isEmpty(commRows)}"><tr>
+        <td colspan="4">합계</td>
+        <td class="text-right" th:text="'₩' + ${#numbers.formatInteger(commItemTotal, 1, 'COMMA')}"></td>
+        <td class="text-right" th:text="'₩' + ${#numbers.formatInteger(commServiceTotal, 1, 'COMMA')}"></td>
+        <td class="text-right" th:text="'₩' + ${#numbers.formatInteger(commShippingTotal, 1, 'COMMA')}"></td>
+        <td class="text-right gold" th:text="'₩' + ${#numbers.formatInteger(commFeeTotal, 1, 'COMMA')}"></td>
+    </tr></tfoot>
+</table>
+
+<!-- 등급별 분포 -->
+<div class="section-title">등급별 매출 분포</div>
+<table class="grade-table"><tr>
+    <th:block th:each="gd : ${gradeDist}">
+        <td>
+            <div class="grade-name" th:text="${gd.grade}"></div>
+            <div class="grade-rev" th:text="'₩' + ${#numbers.formatInteger(gd.revenue, 1, 'COMMA')}">₩0</div>
+            <div class="grade-meta" th:text="${gd.orderCount + '건 · ' + gd.buyerCount + '개사 · ' + gd.percentage + '%'}"></div>
+            <div class="grade-bar"><span class="grade-fill" th:style="'width:' + ${gd.percentage} + '%'"></span></div>
+        </td>
+    </th:block>
+</tr></table>
+
+<div class="footer">BEEDAN · Generated automatically · Confidential</div>
+
+</body>
+</html>

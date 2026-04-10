@@ -9,6 +9,7 @@ import com.goodee.beedan.dto.quote.QuoteRequestDto;
 import com.goodee.beedan.entity.*;
 
 import com.goodee.beedan.repository.member.MemberRepository;
+import com.goodee.beedan.repository.quote.FactoryRepository;
 import com.goodee.beedan.repository.quote.HsCodeRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
 import com.goodee.beedan.repository.quote.ShippingInsuranceRepository;
@@ -59,6 +60,8 @@ public class    QuoteController {
     private final MemberRepository memberRepository;
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final QuoteNameService quoteNameService;
+    private final FactoryRepository factoryRepository;
+    private final com.goodee.beedan.repository.quote.ShippingRateRepository shippingRateRepository;
 
     @PostMapping("/request")
     @ResponseBody
@@ -104,7 +107,13 @@ public class    QuoteController {
         // 3. 세션에 견적 항목 저장 (getWrite에서 사용)
         session.setAttribute("quoteItems_" + quoteBase.getQuId(), dto.getItems());
 
-        return ResponseEntity.ok(Map.of("redirectUrl", "/quote/write?quId=" + quoteBase.getQuId()));
+        String redirectUrl = "/quote/write?quId=" + quoteBase.getQuId();
+
+        if (dto.getChatRoomId() != null) {
+            redirectUrl += "&chatRoomId=" + dto.getChatRoomId();
+        }
+
+        return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
     }
 
     @GetMapping("/list")
@@ -171,6 +180,7 @@ public class    QuoteController {
     @GetMapping("/write")
     public String getWrite(@RequestParam(required = false) Long quId,
                            @RequestParam(required = false) Long fromQuId,
+                           @RequestParam(required = false) Long chatRoomId,
                            Model model,
                            HttpSession session,
                            @AuthenticationPrincipal MemberUserDetails userDetails) {
@@ -224,6 +234,8 @@ public class    QuoteController {
         UnitGroup defaultUnit = unitGroups.isEmpty() ? null : unitGroups.get(0);
         model.addAttribute("unitGroups", unitGroups);
         model.addAttribute("quId", quId);
+
+        model.addAttribute("chatRoomId", chatRoomId);
 
         // 견적 코드 + 협상명
         model.addAttribute("quCd", quoteBase.getQuCd());
@@ -309,6 +321,8 @@ public class    QuoteController {
             } catch (Exception ignored) {}
         }
 
+        model.addAttribute("countryCodes", shippingRateRepository.findDistinctCountryCodes());
+
         return "/quote/quote-write";
     }
 
@@ -357,6 +371,18 @@ public class    QuoteController {
             } else {
                 extra.put("spec", null);
             }
+            // Factory name lookup
+            String faNm = null;
+            if (d.getFaId() != null) {
+                try { faNm = factoryRepository.findById(d.getFaId()).map(Factory::getFaNm).orElse(null); } catch (Exception ignored) {}
+            }
+            extra.put("faNm", faNm);
+            // UnitGroup name lookup
+            String unGNm = null;
+            if (d.getUnGId() != null) {
+                try { unGNm = unitGroupService.findById(d.getUnGId()).getUnGNm(); } catch (Exception ignored) {}
+            }
+            extra.put("unGNm", unGNm);
             detailExtras.add(extra);
         }
 

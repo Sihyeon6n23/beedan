@@ -34,7 +34,7 @@ public class ChatMessage {
     private ChatMessageType chMsTp;
 
     @Lob
-    @Column(name = "ch_ms_con", nullable = false)
+    @Column(name = "ch_ms_con")
     private String chMsCon;
 
     @Column(name = "ch_ms_lnk_url")

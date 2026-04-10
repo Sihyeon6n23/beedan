@@ -11,6 +11,7 @@ import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.ShipmentRepository;
+import com.goodee.beedan.scheduler.Order.UnipassScheduler;
 import com.goodee.beedan.service.admin.AdminMemberService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.order.TrackingService;
@@ -42,6 +43,7 @@ public class AdminMemberApiController {
     private final ShipmentService shipmentService;
 
     private final ShipmentRepository shipmentRepository;
+    private final UnipassScheduler unipassScheduler;
 
     @GetMapping("/list")
     public ResponseEntity<MemberListResponse> getMemberList(
@@ -116,6 +118,12 @@ public class AdminMemberApiController {
         shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), dto);
 
         return ResponseEntity.ok("배송 상태가 " + nextStatus.name() + " (으)로 변경되었습니다.");
+    }
+
+    @PostMapping("/shipment/sync-unipass")
+    public ResponseEntity<String> syncUnipassManually() {
+        unipassScheduler.runUnipassTracking();
+        return ResponseEntity.ok("통관 정보 수동 동기화가 완료되었습니다.");
     }
 
 }

@@ -63,15 +63,16 @@
                                   th:field="*{brdCon}"></textarea>
                     </div>
 
-                    <th:block th:if="${isEdit}">
                         <div class="inquiry-write-field">
                             <label class="inquiry-write-field__label">첨부 파일</label>
-                            <div th:replace="~{fragments/file/file-list :: display(list=${boardRequestDto.fileList})}"></div>
+                            <th:block th:if="${isEdit}">
+                            <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${boardRequestDto.fileList}, isMultiple=true)}"></div>
+                            </th:block>
+                            <th:block th:if="${!isEdit}">
+                                <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=null, isMultiple=true)}"></div>
+                            </th:block>
                         </div>
-                    </th:block>
-                    <th:block th:if="${!isEdit}">
-                        <div th:replace="~{fragments/file/file-list :: display(null)}"></div>
-                    </th:block>
+
                 </div>
 
                 <div class="inquiry-write-form__actions">

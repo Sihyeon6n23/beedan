@@ -1,128 +1,150 @@
+function openShipmentModal(shId) {
+    const modalBody = document.querySelector('#orderTrackingModal');
+    modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
 
-           document.addEventListener('DOMContentLoaded', function () {
-            const swiper = new Swiper('.mySwiper', {
-                // 한 번에 1개만 보여줌
-                slidesPerView: 1,
-                spaceBetween: 0,
-                loop: true, // 마지막에서 다시 처음으로 회전 (선택)
-
-                // 내부 페이지네이션 설정
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true, // 점 클릭 시 이동 가능
-                },
-
-                // 화살표 설정
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-            });
-            });
+    fetch(`/api/shipments/${shId}/track`)
+        .then(response => {
+            if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
+            return response.json();
+        })
+        .then(data => {
+            const html = loadShipmentDetail(data);
+            modalBody.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalBody.innerHTML = '<div style="text-align:center; padding:30px; color:red;">배송 정보를 가져오는데 실패했습니다.</div>';
+        });
+}
 
 
-            function cancelOrder(ordId) {
-                if (!ordId) return;
-                if (confirm("이 주문을 정말로 취소하시겠습니까?\n(모든 배송지의 발송이 취소됩니다.)")) {
-                    const form = document.getElementById('cancelForm-' + ordId);
-                    console.log(form);
-                    if (form) form.submit();
-                }
-            }
+function loadShipmentDetail(data) {
+    if (!data) return '<div style="padding:20px; text-align:center;">데이터를 불러올 수 없습니다.</div>';
 
-            async function loadShipmentDetail(shId) {
-                const modal = document.getElementById('orderTrackingModal');
-                const modalBody = modal.querySelector('.modal-body');
+    // 국내 배송 데이터 존재 여부 확인
+    const hasDomesticDetails = data.details && data.details.length > 0;
+    // 국내 배송이 없으면 통관 내역을 열어둠(open), 있으면 닫아둠
+    const customsAccordionOpen = !hasDomesticDetails ? 'open' : '';
 
-                modal.style.display = 'flex';
-                modalBody.innerHTML = `
-                    <div style="text-align: center; padding: 50px;">
-                        <p style="color: #666;">배송 정보를 불러오는 중입니다...</p>
+    let html = `
+        <div class="tracking-info-summary">
+            <div class="info-item">
+                <span class="label">택배사</span>
+                <div class="value">${data.carrierName || '-'}</div>
+            </div>
+            <div class="info-item">
+                <span class="label">수령인</span>
+                <div class="value">${data.shRcvNm || '-'}</div>
+            </div>
+            <div class="info-item info-item--address">
+                <span class="label">배송지</span>
+                <div class="value" style="line-height: 1.4; word-break: keep-all;">${data.shAdr || '-'}</div>
+            </div>
+            <div class="info-item">
+                <span class="label">송장번호</span>
+                <div class="value">${data.trackingNumber || '정보 없음'}</div>
+            </div>
+            <div class="info-item info-item--status">
+                <span class="label">현재 상태</span>
+                <div class="value">
+                    <span style="font-size: 14px; color: #d9534f; font-weight: bold;">${data.statusText || '-'}</span>
+                </div>
+            </div>
+        </div>
+        <div class="tracking-timeline" style="margin-top: 20px;">
+    `;
+
+    // 1. 해외 통관 내역 (동적 open 적용)
+    if (data.customsDetails && data.customsDetails.length > 0) {
+        html += `
+            <div style="margin-bottom: 20px;">
+                <details style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;" ${customsAccordionOpen}>
+                    <summary style="padding: 12px 15px; cursor: pointer; font-weight: bold; color: #0056b3; outline: none; display: flex; justify-content: space-between; align-items: center;">
+                        <span>해외 통관 상세 내역 (${data.customsDetails.length}건)</span>
+                        <span style="font-size: 12px;">▼</span>
+                    </summary>
+                    <div style="padding: 0 15px 15px 15px; border-top: 1px dashed #dee2e6; margin-top: 5px;">
+        `;
+
+        data.customsDetails.forEach((c, index) => {
+            const isLast = index === data.customsDetails.length - 1;
+            html += `
+                <div style="padding: 10px 0; ${isLast ? '' : 'border-bottom: 1px solid #f1f3f5;'}">
+                    <div style="font-size: 11px; color: #adb5bd;">${c.time}</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #343a40;">${c.status}</div>
+                    <div style="font-size: 12px; color: #6c757d;">${c.description}</div>
+                </div>
+            `;
+        });
+
+        html += `</div></details></div>`;
+    }
+
+    // 2. 국내 배송 내역
+    if (!hasDomesticDetails) {
+        // 국내 배송도 없고 통관 내역도 없는 경우
+        if (!data.customsDetails || data.customsDetails.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 40px; color: #888; background: #fafafa; border-radius: 8px;">
+                    <p style="margin: 0;">아직 배송 정보가 등록되지 않았습니다.</p>
+                </div>
+            `;
+        }
+    } else {
+        html += '<h4 style="font-size: 15px; margin-bottom: 15px; color: #333; padding-left: 5px;">국내 배송 현황</h4>';
+        html += '<ul class="tracking-timeline-list" style="padding-left: 20px; list-style: none; margin: 0;">';
+
+        data.details.forEach((item, index) => {
+            const isFirst = index === 0;
+            const dotColor = isFirst ? '#d9534f' : '#ccc';
+            // 시간 포맷 처리 (T 제거 및 16자 커팅)
+            const timeStr = item.time ? item.time.replace('T', ' ').substring(0, 16) : '';
+
+            html += `
+                <li style="margin-bottom: 20px; position: relative; padding-left: 20px; border-left: 2px solid #eee;">
+                    <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px; background: ${dotColor}; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px ${dotColor};"></div>
+                    <div style="font-size: 12px; color: #999;">${timeStr}</div>
+                    <div style="margin-top: 4px;">
+                        <strong style="font-size: 14px; color: ${isFirst ? '#333' : '#666'};">${item.status}</strong>
+                        <p style="font-size: 13px; color: #777; margin: 2px 0 0 0;">${item.description || ''}</p>
                     </div>
-                `;
+                </li>`;
+        });
+        html += '</ul>';
+    }
 
-                try {
-                    const trackResponse = await fetch(`/api/shipments/${shId}/track`);
+    html += '</div>';
+    return html;
+}
 
-                    if (!trackResponse.ok) throw new Error("배송 현황을 가져올 수 없습니다.");
-                    const trackData = await trackResponse.json();
+function openShipmentModal(shId) {
+    const modal = document.querySelector('#orderTrackingModal');
+    const modalBody = modal.querySelector('.modal-body'); // 뼈대가 아닌 내용이 들어갈 곳 타겟팅
 
-                    modalBody.innerHTML = buildTrackingHtml(trackData);
+    // 1. 모달 창 화면에 띄우기 (CSS 구조에 따라 'block' 또는 'flex' 사용)
+    modal.style.display = 'flex';
 
-                } catch (error) {
-                    console.error(error);
-                    modalBody.innerHTML = `<div style="text-align: center; padding: 40px; color: red;">오류: ${error.message}</div>`;
-                }
-            }
+    // 2. 로딩 메시지 출력
+    modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
 
-            function buildTrackingHtml(data) {
-                let html = `
-                   <div class="tracking-info-summary">
-                           <div class="info-item">
-                               <span class="label">택배사</span>
-                               <div class="value">${data.carrierName}</div>
-                           </div>
+    // 3. 데이터 가져오기
+    fetch(`/api/shipments/${shId}/track`)
+        .then(response => {
+            if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
+            return response.json();
+        })
+        .then(data => {
+            // 4. HTML 생성 후 모달 바디에 삽입
+            const html = loadShipmentDetail(data);
+            modalBody.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalBody.innerHTML = '<div style="text-align:center; padding:30px; color:red;">배송 정보를 가져오는데 실패했습니다.</div>';
+        });
+}
 
-                           <div class="info-item">
-                               <span class="label">수령인</span>
-                               <div class="value">${data.shRcvNm}</div>
-                           </div>
-
-                           <div class="info-item info-item--address">
-                               <span class="label">배송지</span>
-                               <div class="value" style="line-height: 1.4; word-break: keep-all;">${data.shAdr}</div>
-                           </div>
-
-                           <div class="info-item">
-                               <span class="label">송장번호</span>
-                               <div class="value">${data.trackingNumber}</div>
-                           </div>
-
-                           <div class="info-item info-item--status">
-                               <span class="label">현재 상태</span>
-                               <div class="value">
-                                   <span style="font-size: 12px; color: #0056b3; font-weight: normal; margin-right: 4px;">${data.statusText}</span>
-                               </div>
-                           </div>
-                       </div>
-
-                       <div class="tracking-timeline">
-                           </div>
-                `;
-
-                if (!data.details || data.details.length === 0) {
-                    html += `
-                        <div style="text-align: center; padding: 20px; color: #888; background: #fafafa; border-radius: 8px;">
-                            <p style="margin: 0;">아직 택배사에 배송 정보가 등록되지 않았습니다.</p>
-                        </div>
-                    `;
-                    return html;
-                }
-
-                html += '<ul class="tracking-timeline-list" style="padding-left: 20px;">';
-                data.details.forEach((item, index) => {
-                    const activeClass = (index === 0) ? 'active' : '';
-                    html += `
-                        <li class="timeline-step ${activeClass}" style="margin-bottom: 15px;">
-                            <div style="font-size: 12px; color: #999;">${item.time.replace('T', ' ').substring(0, 16)}</div>
-                            <div style="margin-top: 4px;">
-                                <strong style="font-size: 14px; color: #333;">${item.status}</strong>
-                                <p style="font-size: 13px; color: #666; margin: 2px 0 0 0;">${item.description}</p>
-                            </div>
-                        </li>`;
-                });
-                html += '</ul><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">';
-
-                return html;
-            }
-
-            function closeModal() {
-                document.getElementById('orderTrackingModal').style.display = 'none';
-            }
-
-            window.addEventListener('click', function(event) {
-                const modal = document.getElementById('orderTrackingModal');
-                if (event.target === modal) {
-                    closeModal();
-                }
-            });
+// 모달 닫기 함수 (js 파일에 없었다면 추가해 주세요)
+function closeModal() {
+    document.querySelector('#orderTrackingModal').style.display = 'none';
+}

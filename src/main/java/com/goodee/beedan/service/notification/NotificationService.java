@@ -59,6 +59,29 @@ public class NotificationService {
                 .toList();
     }
 
+    /**
+     * 인앱 알림만 생성 (이메일 발송 없음)
+     */
+    public void createInAppNotification(Long memId, NotificationType notiTp, Long targetId) {
+        try {
+            Member member = memberRepositroy.findById(memId).orElse(null);
+            if (member == null) return;
+
+            Notification notification = Notification.builder()
+                    .member(member)
+                    .notiTtl(notiTp.getDefaultTitle())
+                    .notiCon(notiTp.getMessage())
+                    .notiRef(notiTp.generateUrl(targetId))
+                    .notiReaYn(false)
+                    .notiDelYn(false)
+                    .notiCreDt(LocalDateTime.now())
+                    .build();
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            log.warn("인앱 알림 생성 실패: {}", e.getMessage());
+        }
+    }
+
     public void createNotification(Long memId, NotificationType notiTp, Long targetId){
         Member member = memberRepositroy.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
 

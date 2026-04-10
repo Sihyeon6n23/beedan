@@ -1,10 +1,14 @@
 package com.goodee.beedan.service.mail;
 
 import com.goodee.beedan.common.constant.NotificationType;
+import com.goodee.beedan.dto.mail.MailRequest;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -16,7 +20,10 @@ import java.io.UnsupportedEncodingException;
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender mailSender;
-    private final String SITE_URL = "http://localhost:8080";
+    @Value("${site.url}")
+    String SITE_URL;
+    @Value("${spring.mail.username}")
+    String mailUsername;
 
     @Async
     public void sendMail(String emailAddress, NotificationType notificationType, Long targetId) {
@@ -49,7 +56,22 @@ public class MailService {
         }
     }
 
+    @Async
+    public void sendRowLevelMail(String to, String subject, String content, MailRequest originalRequest) {
+        MimeMessage message = mailSender.createMimeMessage();
 
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom("Beedan 서비스 < "+ mailUsername +">");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(content, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new MailSendException("메일전송을 실패했습니다.");
+        }
+    }
 
 }

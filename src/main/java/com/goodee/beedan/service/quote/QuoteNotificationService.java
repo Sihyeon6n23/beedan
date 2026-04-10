@@ -24,6 +24,7 @@ public class QuoteNotificationService {
     private final MemberRepository memberRepository;
     private final NegotiationService negotiationService;
     private final MailService mailService;
+    private final com.goodee.beedan.service.notification.NotificationService notificationService;
 
     /**
      * 특정 견적에서 해당 qscKey의 알림이 체크되었는지 확인
@@ -41,12 +42,23 @@ public class QuoteNotificationService {
     }
 
     /**
+     * 고객 memId 조회 (협상의 memId 기준)
+     */
+    private Long getCustomerMemId(Long ngId) {
+        try {
+            return negotiationService.getMemId(ngId);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * 고객 이메일 조회 (협상의 memId 기준)
      */
     private String getCustomerEmail(Long ngId) {
         try {
-            Long memId = negotiationService.getMemId(ngId);
-            Member member = memberRepository.findById(memId).orElse(null);
+            Long memId = getCustomerMemId(ngId);
+            Member member = memId != null ? memberRepository.findById(memId).orElse(null) : null;
             return member != null ? member.getMemEml() : null;
         } catch (Exception e) {
             return null;
@@ -58,13 +70,18 @@ public class QuoteNotificationService {
      */
     public void notifyOnReview(QuoteBase quoteBase) {
         try {
-            if (!isChecked(quoteBase.getQuId(), "emailOnReview")) return;
-            String email = getCustomerEmail(quoteBase.getNgId());
-            if (email == null) return;
-            mailService.sendMail(email, NotificationType.QUOTATION_REVIEW, quoteBase.getQuId());
-            log.info("견적 확인 알림 발송. quId: {}, email: {}", quoteBase.getQuId(), email);
+            Long memId = getCustomerMemId(quoteBase.getNgId());
+            // 인앱 알림 (항상)
+            if (memId != null) {
+                notificationService.createInAppNotification(memId, NotificationType.QUOTATION_REVIEW, quoteBase.getQuId());
+            }
+            // 이메일 (옵트인 시)
+            if (isChecked(quoteBase.getQuId(), "emailOnReview")) {
+                String email = getCustomerEmail(quoteBase.getNgId());
+                if (email != null) mailService.sendMail(email, NotificationType.QUOTATION_REVIEW, quoteBase.getQuId());
+            }
         } catch (Exception e) {
-            log.warn("견적 확인 알림 발송 실패: {}", e.getMessage());
+            log.warn("견적 확인 알림 실패: {}", e.getMessage());
         }
     }
 
@@ -73,13 +90,16 @@ public class QuoteNotificationService {
      */
     public void notifyOnQuoteReply(Long originalQuId, Long ngId) {
         try {
-            if (!isChecked(originalQuId, "emailOnQuoteReply")) return;
-            String email = getCustomerEmail(ngId);
-            if (email == null) return;
-            mailService.sendMail(email, NotificationType.QUOTATION_REPLY, originalQuId);
-            log.info("견적 회신 알림 발송. quId: {}, email: {}", originalQuId, email);
+            Long memId = getCustomerMemId(ngId);
+            if (memId != null) {
+                notificationService.createInAppNotification(memId, NotificationType.QUOTATION_REPLY, originalQuId);
+            }
+            if (isChecked(originalQuId, "emailOnQuoteReply")) {
+                String email = getCustomerEmail(ngId);
+                if (email != null) mailService.sendMail(email, NotificationType.QUOTATION_REPLY, originalQuId);
+            }
         } catch (Exception e) {
-            log.warn("견적 회신 알림 발송 실패: {}", e.getMessage());
+            log.warn("견적 회신 알림 실패: {}", e.getMessage());
         }
     }
 
@@ -88,13 +108,16 @@ public class QuoteNotificationService {
      */
     public void notifyOnApprove(QuoteBase quoteBase) {
         try {
-            if (!isChecked(quoteBase.getQuId(), "emailOnApprove")) return;
-            String email = getCustomerEmail(quoteBase.getNgId());
-            if (email == null) return;
-            mailService.sendMail(email, NotificationType.QUOTATION_APPROVE, quoteBase.getQuId());
-            log.info("견적 승인 알림 발송. quId: {}, email: {}", quoteBase.getQuId(), email);
+            Long memId = getCustomerMemId(quoteBase.getNgId());
+            if (memId != null) {
+                notificationService.createInAppNotification(memId, NotificationType.QUOTATION_APPROVE, quoteBase.getQuId());
+            }
+            if (isChecked(quoteBase.getQuId(), "emailOnApprove")) {
+                String email = getCustomerEmail(quoteBase.getNgId());
+                if (email != null) mailService.sendMail(email, NotificationType.QUOTATION_APPROVE, quoteBase.getQuId());
+            }
         } catch (Exception e) {
-            log.warn("견적 승인 알림 발송 실패: {}", e.getMessage());
+            log.warn("견적 승인 알림 실패: {}", e.getMessage());
         }
     }
 
@@ -103,13 +126,16 @@ public class QuoteNotificationService {
      */
     public void notifyOnPaid(QuoteBase quoteBase) {
         try {
-            if (!isChecked(quoteBase.getQuId(), "emailOnPaid")) return;
-            String email = getCustomerEmail(quoteBase.getNgId());
-            if (email == null) return;
-            mailService.sendMail(email, NotificationType.PAYMENT_COMPLETE, quoteBase.getQuId());
-            log.info("결제 완료 알림 발송. quId: {}, email: {}", quoteBase.getQuId(), email);
+            Long memId = getCustomerMemId(quoteBase.getNgId());
+            if (memId != null) {
+                notificationService.createInAppNotification(memId, NotificationType.PAYMENT_COMPLETE, quoteBase.getQuId());
+            }
+            if (isChecked(quoteBase.getQuId(), "emailOnPaid")) {
+                String email = getCustomerEmail(quoteBase.getNgId());
+                if (email != null) mailService.sendMail(email, NotificationType.PAYMENT_COMPLETE, quoteBase.getQuId());
+            }
         } catch (Exception e) {
-            log.warn("결제 완료 알림 발송 실패: {}", e.getMessage());
+            log.warn("결제 완료 알림 실패: {}", e.getMessage());
         }
     }
 
@@ -118,13 +144,16 @@ public class QuoteNotificationService {
      */
     public void notifyOnShipment(QuoteBase quoteBase) {
         try {
-            if (!isChecked(quoteBase.getQuId(), "emailOnShipment")) return;
-            String email = getCustomerEmail(quoteBase.getNgId());
-            if (email == null) return;
-            mailService.sendMail(email, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
-            log.info("배송 상태 알림 발송. quId: {}, email: {}", quoteBase.getQuId(), email);
+            Long memId = getCustomerMemId(quoteBase.getNgId());
+            if (memId != null) {
+                notificationService.createInAppNotification(memId, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
+            }
+            if (isChecked(quoteBase.getQuId(), "emailOnShipment")) {
+                String email = getCustomerEmail(quoteBase.getNgId());
+                if (email != null) mailService.sendMail(email, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
+            }
         } catch (Exception e) {
-            log.warn("배송 상태 알림 발송 실패: {}", e.getMessage());
+            log.warn("배송 상태 알림 실패: {}", e.getMessage());
         }
     }
 }

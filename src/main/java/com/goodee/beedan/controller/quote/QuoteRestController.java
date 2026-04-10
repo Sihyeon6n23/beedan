@@ -151,7 +151,7 @@ public class QuoteRestController {
         private String city;       // 도시
     }
 
-    // ── 국내 배달비 계산 (지역별 그룹핑) ──────────────
+    // ── 국내 배달비 계산 (도서산간 여부 기준) ──────────────
     @PostMapping("/delivery-fee")
     public ResponseEntity<DeliveryFeeResponse> calculateDeliveryFee(
             @RequestBody DeliveryFeeRequest request) {
@@ -160,50 +160,45 @@ public class QuoteRestController {
             return ResponseEntity.ok(DeliveryFeeResponse.empty());
         }
 
-        // 지역별 그룹핑
-        Map<String, Integer> regionCounts = new LinkedHashMap<>();
-        for (DeliveryFeeRequest.Item item : request.getItems()) {
-            String rgn = item.getRegion();
-            if (rgn != null && !rgn.isEmpty()) {
-                regionCounts.merge(rgn, 1, Integer::sum);
-            }
-        }
-
-        if (regionCounts.isEmpty()) {
-            return ResponseEntity.ok(DeliveryFeeResponse.empty());
-        }
-
         try {
+            // 기본 배달비 조회 (첫 번째 활성 요율 사용)
+            List<DomesticDeliveryRate> allRates = domesticDeliveryRateService.findAllActive();
+            if (allRates.isEmpty()) return ResponseEntity.ok(DeliveryFeeResponse.empty());
+            DomesticDeliveryRate baseRate = allRates.get(0);
+
+            BigDecimal baseFee = baseRate.getDdrAm();
+            BigDecimal extraFee = baseRate.getDdrEAm() != null ? baseRate.getDdrEAm() : BigDecimal.ZERO;
+
+            int normalCount = 0;
+            int islandCount = 0;
+            for (DeliveryFeeRequest.Item item : request.getItems()) {
+                if (item.isIsland()) islandCount++;
+                else normalCount++;
+            }
+
             List<DeliveryFeeResponse.RegionGroup> groups = new ArrayList<>();
             BigDecimal totalFee = BigDecimal.ZERO;
-            int totalCount = 0;
 
-            for (Map.Entry<String, Integer> entry : regionCounts.entrySet()) {
-                String rgn = entry.getKey();
-                int count = entry.getValue();
-                DomesticDeliveryRate rate = domesticDeliveryRateService.findActiveByRegion(rgn);
-
-                BigDecimal baseFeeUnit = rate.getDdrAm();
-                BigDecimal extraFeeUnit = rate.getDdrEAm() != null ? rate.getDdrEAm() : BigDecimal.ZERO;
-                BigDecimal subtotal = baseFeeUnit.add(extraFeeUnit).multiply(BigDecimal.valueOf(count));
-
+            if (normalCount > 0) {
+                BigDecimal sub = baseFee.multiply(BigDecimal.valueOf(normalCount));
                 groups.add(DeliveryFeeResponse.RegionGroup.builder()
-                        .regionCode(rgn)
-                        .regionName(REGION_NAMES.getOrDefault(rgn, rgn))
-                        .count(count)
-                        .baseFeeUnit(baseFeeUnit)
-                        .extraFeeUnit(extraFeeUnit)
-                        .subtotal(subtotal)
-                        .build());
-
-                totalFee = totalFee.add(subtotal);
-                totalCount += count;
+                        .regionCode("STANDARD").regionName("일반 지역")
+                        .count(normalCount).baseFeeUnit(baseFee).extraFeeUnit(BigDecimal.ZERO).subtotal(sub).build());
+                totalFee = totalFee.add(sub);
+            }
+            if (islandCount > 0) {
+                BigDecimal islandUnit = baseFee.add(extraFee);
+                BigDecimal sub = islandUnit.multiply(BigDecimal.valueOf(islandCount));
+                groups.add(DeliveryFeeResponse.RegionGroup.builder()
+                        .regionCode("ISLAND").regionName("도서산간 지역")
+                        .count(islandCount).baseFeeUnit(baseFee).extraFeeUnit(extraFee).subtotal(sub).build());
+                totalFee = totalFee.add(sub);
             }
 
             return ResponseEntity.ok(DeliveryFeeResponse.builder()
                     .regions(groups)
                     .totalFee(totalFee)
-                    .totalCount(totalCount)
+                    .totalCount(normalCount + islandCount)
                     .build());
 
         } catch (Exception e) {
@@ -427,8 +422,9 @@ public class QuoteRestController {
                             item.getUnGId(), item.getUnGNm(), item.getUnGQn(),
                             stock.getStPr(), item.getSubtotalKrw(),
                             item.getRcId(),
-                            item.getRcRgn(), item.getRcNm(), item.getRcAdr(),
-                            item.getRcPhn(), item.getRcMemo()
+                            item.getRcNm(), item.getRcAdr(), item.getRcAdrDt(),
+                            item.getRcPhn(), item.getRcIamYn(),
+                            item.getRcMemo()
                     );
                     processedDetailIds.add(detail.getQuDtId());
                 } else {
@@ -448,10 +444,11 @@ public class QuoteRestController {
                             .krwTotal(item.getSubtotalKrw())
                             .receiverId(item.getRcId())
                             .group(item.getGrp())
-                            .rcRegion(item.getRcRgn())
                             .rcName(item.getRcNm())
                             .rcAddress(item.getRcAdr())
+                            .rcAddressDetail(item.getRcAdrDt())
                             .rcPhone(item.getRcPhn())
+                            .rcIsIsland(item.getRcIamYn())
                             .rcMemo(item.getRcMemo())
                             .build();
                 }
@@ -814,6 +811,8 @@ public class QuoteRestController {
                 BigDecimal grpSubtotal = grpShipping.add(grpPort).add(grpCustoms).add(grpHsCode)
                         .add(grpInsurance).add(grpDuty).add(grpVat);
 
+                List<Long> grpStIds = groupItems.stream()
+                        .map(EstimateItem::getStId).collect(java.util.stream.Collectors.toList());
                 factoryGroups.add(FactoryFeeGroup.builder()
                         .factoryName(factoryName)
                         .factoryCity(factoryCity)
@@ -822,6 +821,7 @@ public class QuoteRestController {
                         .sizeType(sizeType)
                         .itemCount(groupItems.size())
                         .totalDozen(groupDozen)
+                        .stIds(grpStIds)
                         .supplySubtotal(groupSupply)
                         .shippingFee(grpShipping)
                         .portFee(grpPort)
@@ -1048,9 +1048,10 @@ public class QuoteRestController {
         @Getter
         @NoArgsConstructor
         public static class Item {
-            private String region;
+            private String region;      // 하위호환
             private int qty;
             private boolean splitShipment;
+            private boolean island;   // 도서산간 여부
         }
     }
 
@@ -1131,10 +1132,12 @@ public class QuoteRestController {
             private Long rcId;               // 수령지 ID
             // 분할배송
             private Integer grp;             // 그룹 인덱스 (행 번호)
-            private String rcRgn;            // 배송 지역
+            private String rcRgn;            // 배송 지역 (하위호환용, 미사용)
             private String rcNm;             // 수령인명
             private String rcAdr;            // 수령지 주소
+            private String rcAdrDt;          // 수령지 상세주소
             private String rcPhn;            // 수령인 연락처
+            private Boolean rcIamYn;         // 도서산간 여부
             private String rcMemo;           // 배달 요청사항
         }
     }
@@ -1172,6 +1175,7 @@ public class QuoteRestController {
         private String sizeType;
         private int itemCount;
         private int totalDozen;
+        private List<Long> stIds;  // 이 그룹에 포함된 상품 ID 목록
         private BigDecimal supplySubtotal;
         private BigDecimal shippingFee;
         private BigDecimal portFee;
