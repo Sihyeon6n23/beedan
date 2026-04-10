@@ -4,11 +4,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ObjectMapper {
+public class ObjectMapperConfig {
 
     @Bean
-    public ObjectMapper objectMapper() { // 2. 반환 타입은 Jackson의 ObjectMapper
-        ObjectMapper mapper = new ObjectMapper();
+    public ObjectMapperConfig objectMapper() { // 2. 반환 타입은 Jackson의 ObjectMapper
+        ObjectMapperConfig mapper = new ObjectMapperConfig();
 
         return mapper;
     }

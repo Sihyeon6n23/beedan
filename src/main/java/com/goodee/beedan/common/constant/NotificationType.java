@@ -11,6 +11,7 @@ public enum NotificationType {
     QUOTATION_REVIEW("견적 확인", "큐레이터가 견적 요청서를 확인하였습니다.", "/quote/detail?quId=%s"),
     QUOTATION_REPLY("견적 회신", "견적서가 회신되었습니다.", "/quote/detail?quId=%s"),
     PAYMENT_COMPLETE("결제 완료", "결제가 정상적으로 완료되었습니다.", "/payment/quote-detail?quId=%s"),
+    SHIPMENT_UPDATE("배송 상태 변경", "배송 상태가 변경되었습니다.", "/order/detail?quId=%s"),
 
     INQUIRY_ANSWER_CREATE("문의 답변 등록", "문의에 대한 답변이 등록되었습니다.", "/inquiry/detail?id=%s"),
     INQUIRY_ANSWER_UPDATE("문의 답변 수정", "문의 답변 내용이 수정되었습니다.", "/inquiry/detail?id=%s"),
