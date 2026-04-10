@@ -603,7 +603,10 @@
   min-height: 0;
   overflow-y: auto;
   padding: 1.4rem 1.5rem;
-  background: #fffdf8;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(53, 41, 10, 0.035) 1px, transparent 0);
+  background-size: 10px 10px;
+  background-color: #faf7f0;
 }
 
 .admin-chat-detail-body__stack {
@@ -626,6 +629,16 @@
   text-align: center;
 }
 
+.admin-chat-room__system--date {
+  padding: 0.28rem 0.8rem;
+  background: rgba(226, 226, 226, 0.62);
+  color: #8f8f8f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .admin-chat-detail-message {
   display: flex;
   gap: 0.85rem;
@@ -635,6 +648,7 @@
   transform: translateY(10px);
   animation: admin-chat-message-enter 0.28s ease forwards;
 }
+
 
 .admin-chat-detail-message--admin {
   justify-content: flex-end;
@@ -674,17 +688,112 @@
 
 .admin-chat-detail-message__bubble {
   padding: 1rem 1.1rem;
-  background: rgba(255, 255, 255, 0.96);
-  border-left: 4px solid #e0e0e0;
-  box-shadow: 0 10px 24px rgba(26, 28, 28, 0.03);
+  background: #fffdf8;
+  border: 1px solid rgba(123, 108, 62, 0.16);
+  box-shadow: 0 10px 22px rgba(53, 41, 10, 0.06);
   font-size: 0.88rem;
   line-height: 1.65;
 }
 
 .admin-chat-detail-message__bubble--admin {
-  border-left: 0;
-  background: #171717;
-  color: var(--color-white);
+  background: #ffe7a3;
+  border-color: rgba(181, 142, 16, 0.26);
+  color: #473400;
+}
+
+/* 이미지 메시지 말풍선: 텍스트 대신 이미지를 담는 박스 */
+.admin-chat-detail-message__bubble--image {
+    padding: 0.5rem;
+}
+
+/* 이미지 링크: 블록으로 잡아서 클릭 영역을 이미지와 맞춤 */
+.admin-chat-detail-message__image-link {
+    display: block;
+    width: 240px;
+    max-width: min(240px, 100%);
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f1eee6;
+    text-decoration: none;
+}
+
+/* 채팅 이미지: 말풍선 안에서 너무 커지지 않게 제한 */
+.admin-chat-detail-message__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 이미지가 없을 때 표시하는 안내 문구 */
+.admin-chat-detail-message__image-empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-secondary);
+}
+
+/* 견적 카드 말풍선: 카드 내부 여백을 별도로 주기 위해 패딩 제거 */
+.admin-chat-detail-message__bubble--quote-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+/* 견적 카드 전체 박스 */
+.admin-chat-quote-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 240px;
+    max-width: 280px;
+    padding: 1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 100%);
+}
+
+/* 견적 카드 제목 */
+.admin-chat-quote-card__title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--color-on-background);
+    line-height: 1.4;
+}
+
+/* 견적 카드 설명 문구 */
+.admin-chat-quote-card__desc {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-secondary);
+}
+
+/* 견적 보기 링크 버튼 */
+.admin-chat-quote-card__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    padding: 0 0.875rem;
+    border: 1px solid rgba(112, 93, 0, 0.18);
+    background: #fff4b8;
+    color: #705d00;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+/* 견적 보기 hover */
+.admin-chat-quote-card__link:hover {
+    background: #ffe98a;
+}
+
+/* QR 이미지: 카드 안에서 정사각형으로 정리 */
+.admin-chat-quote-card__qr {
+    width: 160px;
+    height: 160px;
+    align-self: center;
+    border: 1px solid rgba(112, 93, 0, 0.12);
+    background: #ffffff;
+    object-fit: contain;
 }
 
 .admin-chat-detail-message__time {
@@ -901,7 +1010,7 @@
 
 .admin-chat-detail-footer {
   border-top: 1px solid var(--color-surface-container-highest);
-  padding-top: 1rem;
+  padding: 16px;
   background: rgba(255, 255, 255, 0.96);
 }
 
@@ -912,7 +1021,7 @@
 }
 
 .admin-chat-detail-footer__composer--stitch {
-  padding: 0.85rem 1rem 1rem;
+  padding: 0;
 }
 
 .admin-chat-detail-footer > .admin-chat-quote-button {
@@ -924,12 +1033,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 3rem;
+  height: 3.125rem;
   flex-shrink: 0;
 }
 
 .admin-chat-attach-button {
-  width: 3rem;
+  width: 3.125rem;
   border: 1px solid var(--color-surface-container-highest);
   background: var(--color-surface-container-lowest);
   color: var(--color-on-background);
@@ -943,16 +1052,25 @@
 }
 
 .admin-chat-quote-button {
-  padding: 0 1rem;
+  width: 3.125rem;
+  min-width: 3.125rem;
+  padding: 0;
   border: 1px solid var(--color-surface-container-highest);
   background: var(--color-surface-container-lowest);
   color: var(--color-on-background);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 0;
   text-decoration: none;
   white-space: nowrap;
+}
+
+.admin-chat-quote-button::before {
+  content: "receipt_long";
+  font-family: "Material Symbols Outlined";
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .admin-chat-quote-button:hover {
@@ -970,17 +1088,25 @@
 .admin-chat-detail-footer__composer .bd-input {
   flex: 1 1 auto;
   min-width: 0;
+  height: 3.125rem;
+  padding: 0 0.95rem;
 }
 
 .admin-chat-send-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 3.125rem;
+  min-width: 3.125rem;
+  height: 3.125rem;
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
   cursor: pointer;
+}
+
+.admin-chat-attach-button .material-symbols-outlined,
+.admin-chat-send-button .material-symbols-outlined {
+  font-size: 1.25rem;
 }
 
 .admin-chat-send-button--disabled {

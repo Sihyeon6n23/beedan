@@ -63,6 +63,8 @@
 <script th:inline="javascript">
     const memberId = /*[[${memberId}]]*/ null;
     const stockId = /*[[${stock.stId}]]*/ null;
+
+    const chatRoomId = /*[[${chatRoomId}]]*/ null;
 </script>
 <script>
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
@@ -511,7 +513,8 @@
                     class="flex-1 py-3 border border-outline-variant ...">
                 계속 쇼핑하기
             </button>
-            <a href="/cart" class="flex-1 py-3 bg-primary-container ...">
+            <a th:href="${chatRoomId != null} ? @{/cart(chatRoomId=${chatRoomId})} : @{/cart}"
+               class="flex-1 py-3 bg-primary-container ...">
                 장바구니 이동
             </a>
         </div>

@@ -15,4 +15,8 @@ public class FileDto {
     private Integer fileOr;
 
     private String filePat;
+
+    private boolean isUploaded;     // 업로드 성공 여부 (Flag)
+    private boolean isDeleted;
+    private String errorMessage;    // 실패 시 사용자에게 보여줄 사유
 }
