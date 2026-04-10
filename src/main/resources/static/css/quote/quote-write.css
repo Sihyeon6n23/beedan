@@ -359,9 +359,15 @@
     transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.shipping-btn:hover {
+.shipping-btn:hover:not(:disabled) {
     border-color: var(--color-gold, #ffd700);
     background: var(--color-gold-bg, #fffdf0);
+}
+
+.shipping-btn--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .shipping-addr {
@@ -590,6 +596,96 @@
     font-size: 13px;
     color: var(--color-text-warm, #4d4732);
     line-height: 20px;
+}
+
+/* ---- 도서산간 체크 ---- */
+.ship-island-check {
+    margin-top: 4px;
+}
+
+.ship-island-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-warm, #4d4732);
+    cursor: pointer;
+}
+
+.ship-island-input {
+    width: 16px;
+    height: 16px;
+    accent-color: #ffd700;
+    cursor: pointer;
+}
+
+/* ---- 배송지 선택 드롭다운 ---- */
+.ship-receiver-pick {
+    margin-top: 4px;
+}
+
+.ship-receiver-select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: #fff;
+    color: var(--color-text-primary, #1a1c1c);
+    cursor: pointer;
+    appearance: auto;
+}
+
+.ship-receiver-select:focus {
+    outline: 2px solid #ffd700;
+    outline-offset: -2px;
+}
+
+/* ---- 새 배송지 입력 폼 ---- */
+.ship-addr-new-form {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 14px;
+    background: var(--color-surface, #f5f5f4);
+    border: 1px solid var(--color-border, #e7e5e4);
+}
+
+.ship-addr-new-form input {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 13px;
+    border: 1px solid var(--color-border, #e7e5e4);
+    background: #fff;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.ship-addr-new-form input:focus {
+    outline: 2px solid #ffd700;
+    outline-offset: -2px;
+}
+
+.ship-new-addr-row {
+    display: flex;
+    gap: 8px;
+}
+
+.ship-new-addr-row .ship-new-addr {
+    flex: 1;
+    cursor: pointer;
+    background: #fafaf9;
+}
+
+.ship-new-addr-btn {
+    flex-shrink: 0;
+    padding: 9px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #ffd700;
+    color: #705d00;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.05em;
 }
 
 .ship-addr-phone {

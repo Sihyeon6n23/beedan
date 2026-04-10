@@ -47,12 +47,13 @@ public class QuoteDetail {
     private Long rcId;  // 수령지 ID
 
     // 분할배송
-    private Integer quDtGrp;      // 그룹 인덱스 (같은 grp = 같은 테이블 행)
-    private String quDtRcRgn;     // 배송 지역
-    private String quDtRcNm;      // 수령인명
-    private String quDtRcAdr;     // 수령지 주소
-    private String quDtRcPhn;     // 수령인 연락처
-    private String quDtRcMemo;    // 배달 요청사항
+    private Integer quDtGrp;         // 그룹 인덱스 (같은 grp = 같은 테이블 행)
+    private String quDtRcNm;         // 수령인명
+    private String quDtRcAdr;        // 수령지 주소
+    private String quDtRcAdrDt;      // 수령지 상세 주소
+    private String quDtRcPhn;        // 수령인 연락처
+    private Boolean quDtRcIamYn;     // 산간지역 여부
+    private String quDtRcMemo;       // 배달 요청사항
 
     @Builder
     public QuoteDetail(
@@ -71,10 +72,11 @@ public class QuoteDetail {
             BigDecimal krwTotal,
             Long receiverId,
             Integer group,
-            String rcRegion,
             String rcName,
             String rcAddress,
+            String rcAddressDetail,
             String rcPhone,
+            Boolean rcIsIsland,
             String rcMemo
     ){
         this.quInfoId = quoteInfoId;
@@ -92,10 +94,11 @@ public class QuoteDetail {
         this.quDtPr = krwTotal;
         this.rcId = receiverId;
         this.quDtGrp = group;
-        this.quDtRcRgn = rcRegion;
         this.quDtRcNm = rcName;
         this.quDtRcAdr = rcAddress;
+        this.quDtRcAdrDt = rcAddressDetail;
         this.quDtRcPhn = rcPhone;
+        this.quDtRcIamYn = rcIsIsland;
         this.quDtRcMemo = rcMemo;
     }
 
@@ -119,10 +122,11 @@ public class QuoteDetail {
             BigDecimal foreignPrice,
             BigDecimal krwTotal,
             Long receiverId,
-            String rcRegion,
             String rcName,
             String rcAddress,
+            String rcAddressDetail,
             String rcPhone,
+            Boolean rcIsIsland,
             String rcMemo
     ) {
         this.quDtQn = stockQuantity;
@@ -135,10 +139,11 @@ public class QuoteDetail {
         this.quDtFgPr = foreignPrice;
         this.quDtPr = krwTotal;
         this.rcId = receiverId;
-        this.quDtRcRgn = rcRegion;
         this.quDtRcNm = rcName;
         this.quDtRcAdr = rcAddress;
+        this.quDtRcAdrDt = rcAddressDetail;
         this.quDtRcPhn = rcPhone;
+        this.quDtRcIamYn = rcIsIsland;
         this.quDtRcMemo = rcMemo;
     }
 
