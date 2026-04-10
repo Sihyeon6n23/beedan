@@ -205,6 +205,13 @@
                                    : '실행 기록 없음'}"
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>
+
+                    <button type="button" id="refreshPopularBtn"
+                            onclick="refreshDisplay('popular')"
+                            class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 text-sm font-bold uppercase tracking-wide hover:brightness-95 transition-all">
+                        <span class="material-symbols-outlined text-base">refresh</span>
+                        즉시 갱신
+                    </button>
                 </section>
 
                 <!-- 5. 전시용 신규 상품 갱신 -->
@@ -241,6 +248,13 @@
                                    : '실행 기록 없음'}"
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>
+
+                    <button type="button" id="refreshNewBtn"
+                            onclick="refreshDisplay('new')"
+                            class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 text-sm font-bold uppercase tracking-wide hover:brightness-95 transition-all">
+                        <span class="material-symbols-outlined text-base">refresh</span>
+                        즉시 갱신
+                    </button>
                 </section>
 
                 <!-- 통관 물품 갱신 주기 설정 -->
@@ -315,6 +329,30 @@
     </div>
 
     <script th:inline="javascript">
+        function refreshDisplay(type) {
+            const btn = document.getElementById(type === 'popular' ? 'refreshPopularBtn' : 'refreshNewBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">refresh</span> 갱신 중...';
+
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+            fetch(`/root/scheduler/refresh/${type}`, {
+                method: 'POST',
+                headers: { [csrfHeader]: csrfToken }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('갱신 실패');
+                    location.reload();
+                })
+                .catch(err => {
+                    alert('갱신에 실패했습니다.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const policyForm = document.getElementById('policyForm');
 
