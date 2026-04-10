@@ -148,7 +148,6 @@ public class AuthController {
     public String getFind() {
         return "/member/auth/find";
     }
-
     @GetMapping("/kakao/link")
     public String initiateKakaoLink(HttpSession session) {
         String state = UUID.randomUUID().toString(); // 1회용 암호 생성

@@ -26,19 +26,25 @@ public class XmlToJsonService {
         }
     }
 
+    public String extractProgressStatus(String xml) {
+        if (xml == null || xml.isBlank()) return null;
+
+        try {
+            JsonNode root = xmlMapper.readTree(xml.getBytes(StandardCharsets.UTF_8));
+            JsonNode summary = root.path("cargCsclPrgsInfoQryVo");
+
+            return summary.path("prgsStts").asText(null);
+        } catch (Exception e) {
+            log.error("XML에서 상태값 추출 중 오류 발생: {}", e.getMessage());
+            return null;
+        }
+    }
+
     public void logExtractData(String xml) {
         try {
             JsonNode root = xmlMapper.readTree(xml);
 
-            // 최상위 요약 정보 추출
-            JsonNode summary = root.path("cargCsclPrgsInfoQryVo");
-            log.info("================ [화물 요약 정보] ================");
-            log.info("운송장 번호: {}", summary.path("hblNo").asText());
-            log.info("현재 상태: {}", summary.path("prgsStts").asText());
-            log.info("품명: {}", summary.path("prnm").asText());
-
             JsonNode details = root.path("cargCsclPrgsInfoDtlQryVo");
-            log.info("================ [진행 이력 리스트] ================");
 
             if (details.isArray()) {
                 details.forEach(detail -> printDetail(detail));

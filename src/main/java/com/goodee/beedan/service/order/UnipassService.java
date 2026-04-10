@@ -15,10 +15,10 @@ import java.nio.charset.StandardCharsets;
 public class UnipassService {
     private final XmlToJsonService xmlToJsonService;
 
-    @Value("${unipass.api.key:NONE}")
+    @Value("${unipass.api.key:}")
     private String apiKey;
 
-    @Value("${unipass.api.url:https://unipass.customs.go.kr:38010/ext/rest/cargCsclPrgsInfoQry/retrieveCargCsclPrgsInfo}")
+    @Value("${unipass.api.url:}")
     private String apiUrl;
 
     public String getCargoStatus(String hblNo, String blYear) {
@@ -31,20 +31,14 @@ public class UnipassService {
                 + "&hblNo=" + hblNo.trim()
                 + "&blYy=" + blYear.trim();
 
-        System.out.println("호출 URL: " + fullUrl);
-
         try {
             String response = restTemplate.getForObject(fullUrl, String.class);
 
-            String jsonResult = xmlToJsonService.convertXmlToJson(response);
-            log.info("최종 변환된 JSON 결과:\n{}", jsonResult);
-
-            // 3. 특정 필드 파싱 확인 (디버깅용)
-            xmlToJsonService.logExtractData(response);
-
-            return jsonResult;
+            // String jsonResult = xmlToJsonService.convertXmlToJson(response); 전체 json 데이터 필요시 사용0
+            return xmlToJsonService.extractProgressStatus(response);
         } catch (Exception e) {
-            return " 호출 실패: " + e.getMessage();
+            log.error("UNIPASS API 호출 실패 (HBL: {}): {}", hblNo, e.getMessage());
+            return null;
         }
     }
 }

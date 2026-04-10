@@ -242,6 +242,60 @@
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>
                 </section>
+
+                <!-- 통관 물품 갱신 주기 설정 -->
+                <section class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">Custom Item</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">5. 통관 물품 갱신</h2>
+                    </div>
+
+                    <!-- ON/OFF 라디오 -->
+                    <div class="flex items-center gap-8 py-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isUnipassEnabled" value="true"
+                                   th:checked="${setting.isUnipassEnabled}">
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isUnipassEnabled" value="false"
+                                   th:checked="${!setting.isUnipassEnabled}">
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <!-- 시작 일시 -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="unipassStartDt"
+                               th:value="${setting.unipassStartDt}"
+                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all">
+                    </div>
+
+                    <!-- 주기 selectbox -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">갱신 주기</label>
+                        <select name="unipassInterval"
+                                class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.unipassInterval == '1'}">1시간</option>
+                            <option value="3" th:selected="${setting.unipassInterval == '3'}">3시간</option>
+                            <option value="6" th:selected="${setting.unipassInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.unipassInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.unipassInterval == '24'}">1일</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 갱신 시간 -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 통관 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastUnipassRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastUnipassRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
             </form>
 
             <div class="pt-8 border-t border-zinc-100 flex justify-end">
