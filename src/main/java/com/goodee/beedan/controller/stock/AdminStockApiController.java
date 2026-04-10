@@ -66,6 +66,17 @@ public class AdminStockApiController {
         return ResponseEntity.ok().build();
     }
 
+    // 일괄 카테고리 변경
+    @PatchMapping("/batch-category")
+    public ResponseEntity<Void> batchCategory(@RequestBody java.util.Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Integer> ids = (List<Integer>) body.get("stIds");
+        String catNm = (String) body.get("catNm");
+        List<Long> stIds = ids.stream().map(Integer::longValue).toList();
+        adminStockService.batchUpdateCategory(stIds, catNm);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/brands")
     public List<Brand> getBrands() {
         return stockService.findAllBrands();

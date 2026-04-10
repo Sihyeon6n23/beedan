@@ -196,6 +196,14 @@ public class NewStockController {
         return "redirect:/admin/newstock";
     }
 
+    // URL 삭제
+    @PostMapping("/delete/{id}")
+    @ResponseBody
+    public Map<String, String> deleteUrl(@PathVariable Long id) {
+        crawlingService.deleteUrl(id);
+        return Map.of("status", "ok");
+    }
+
     // 자동 포함 토글 (urlUseYn)
 //    @PostMapping("/toggle-use/{id}")
 //    @ResponseBody
