@@ -121,7 +121,7 @@ public class QuoteNotificationService {
             if (!isChecked(quoteBase.getQuId(), "emailOnShipment")) return;
             String email = getCustomerEmail(quoteBase.getNgId());
             if (email == null) return;
-            mailService.sendMail(email, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
+            mailService.sendMail(email, NotificationType.DELIVERING_START, quoteBase.getQuId());
             log.info("배송 상태 알림 발송. quId: {}, email: {}", quoteBase.getQuId(), email);
         } catch (Exception e) {
             log.warn("배송 상태 알림 발송 실패: {}", e.getMessage());

@@ -134,7 +134,6 @@ public class CartToQuoteDto {
             java.util.List<ShipCard> shipCards = group.stream()
                     .map(d -> ShipCard.builder()
                             .qty(d.getQuDtQn() != null ? d.getQuDtQn() : 0)
-                            .region(d.getQuDtRcRgn())
                             .name(d.getQuDtRcNm())
                             .addr(d.getQuDtRcAdr())
                             .phone(d.getQuDtRcPhn())

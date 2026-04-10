@@ -103,6 +103,22 @@ public class OrderService {
     }
 
     @Transactional
+    public void updateOrderIfAllShipmentsComplete(Long ordId) {
+        Order order = orderRepository.findById(ordId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        // 1. 해당 주문에 속한 모든 배송지 조회
+        List<Shipment> shipments = shipmentRepository.findByOrder(order);
+
+        // 2. 모든 배송지가 '배송완료' 상태인지 확인
+        boolean allComplete = shipments.stream().allMatch(s -> s.getShStt() == ShipmentStatus.DELIVERED);
+
+        if (allComplete && !shipments.isEmpty()) {
+            log.info("주문 번호 {} : 모든 배송 완료 확인. 주문 상태를 배송완료로 변경합니다.", ordId);
+            order.setOrdBaseStt(OrderStatus.DELIVERED); // 주문 상태 변경
+        }
+    }
+
+    @Transactional
     public void cancelOrder(Long ordId, Long memId) {
         if(!memberRepository.existsById(memId)) throw new IllegalArgumentException("회원이 존재하지 않습니다.");
 
@@ -151,7 +167,6 @@ public class OrderService {
                     .order(order)
                     .shRcvNm(addressInfo.getQuDtRcNm())
                     .shAdr(addressInfo.getQuDtRcAdr())
-                    .shAdrDt(addressInfo.getQuDtRcPhn())
                     .shStt(ShipmentStatus.PREPARING)
                     .shCarCd(webhookRequest.getShCarNo())
                     .shTraNo(webhookRequest.getShTraNo())

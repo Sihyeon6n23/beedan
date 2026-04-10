@@ -31,7 +31,6 @@ public abstract class QuoteDetail_ {
 	public static final String RC_ID = "rcId";
 	public static final String QU_DT_RC_PHN = "quDtRcPhn";
 	public static final String QU_DT_FG_PR = "quDtFgPr";
-	public static final String QU_DT_RC_RGN = "quDtRcRgn";
 
 	
 	/**
@@ -143,11 +142,6 @@ public abstract class QuoteDetail_ {
 	 * @see com.goodee.beedan.entity.QuoteDetail
 	 **/
 	public static volatile EntityType<QuoteDetail> class_;
-	
-	/**
-	 * @see com.goodee.beedan.entity.QuoteDetail#quDtRcRgn
-	 **/
-	public static volatile SingularAttribute<QuoteDetail, String> quDtRcRgn;
 
 }
 

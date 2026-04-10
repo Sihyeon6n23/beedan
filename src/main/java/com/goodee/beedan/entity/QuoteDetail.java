@@ -48,7 +48,6 @@ public class QuoteDetail {
 
     // 분할배송
     private Integer quDtGrp;      // 그룹 인덱스 (같은 grp = 같은 테이블 행)
-    private String quDtRcRgn;     // 배송 지역
     private String quDtRcNm;      // 수령인명
     private String quDtRcAdr;     // 수령지 주소
     private String quDtRcPhn;     // 수령인 연락처
@@ -92,7 +91,6 @@ public class QuoteDetail {
         this.quDtPr = krwTotal;
         this.rcId = receiverId;
         this.quDtGrp = group;
-        this.quDtRcRgn = rcRegion;
         this.quDtRcNm = rcName;
         this.quDtRcAdr = rcAddress;
         this.quDtRcPhn = rcPhone;
@@ -135,7 +133,6 @@ public class QuoteDetail {
         this.quDtFgPr = foreignPrice;
         this.quDtPr = krwTotal;
         this.rcId = receiverId;
-        this.quDtRcRgn = rcRegion;
         this.quDtRcNm = rcName;
         this.quDtRcAdr = rcAddress;
         this.quDtRcPhn = rcPhone;
