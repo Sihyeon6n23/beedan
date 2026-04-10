@@ -27,9 +27,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class TrackingService {
-
     private final ShipmentRepository shipmentRepository;
     private final ObjectMapper objectMapper;
+
+    private final UnipassService unipassService;
 
     @Value("${tracker.client.id:}")
     private String clientId;
@@ -40,12 +41,17 @@ public class TrackingService {
     public TrackingResponseDto getTrackingInfo(Long shId) {
         Shipment shipment = shipmentRepository.findById(shId).orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
 
+        List<TrackingResponseDto.TrackingDetail> customsDetails = new ArrayList<>();
+        if (shipment.getShHblNo() != null) {
+            String blYear = String.valueOf(shipment.getShCreDt().getYear());
+            customsDetails = unipassService.getCustomsTimeline(shipment.getShHblNo(), blYear);
+        }
+
         String carrierId = shipment.getShCarCd();
         String trackingNumber = shipment.getShTraNo();
 
-        if (trackingNumber.startsWith("TEST-")) {
-            return generateMockTrackingResponse(shipment);
-        }
+        if (trackingNumber.startsWith("TEST-")) return generateMockTrackingResponse(shipment);
+
 
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://apis.tracker.delivery/graphql";
@@ -67,14 +73,20 @@ public class TrackingService {
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-            return parseGraphQLResponse(response.getBody(), carrierId, trackingNumber, shipment);
+            return parseGraphQLResponse(response.getBody(), carrierId, trackingNumber, shipment, customsDetails);
         } catch (Exception e) {
             log.error("API 통신 실패: {}", e.getMessage());
+            TrackingResponseDto errorResponse = createEmptyResponse(carrierId, trackingNumber, "조회 오류");   // 에러 발생 시에도 통관 정보는 보여줄 수 있도록 처리
+            errorResponse.setCustomsDetails(customsDetails);
             return createEmptyResponse(carrierId, trackingNumber, "조회 오류 (서버 통신 실패)");
         }
     }
 
-    private TrackingResponseDto parseGraphQLResponse(String json, String carrierId, String trackingNumber, Shipment shipment) throws Exception {
+    private TrackingResponseDto parseGraphQLResponse(String json,
+                                                     String carrierId,
+                                                     String trackingNumber,
+                                                     Shipment shipment,
+                                                     List<TrackingResponseDto.TrackingDetail> customsDetails) throws Exception {
         JsonNode root = objectMapper.readTree(json);
         JsonNode trackNode = root.path("data").path("track");
 
@@ -110,6 +122,7 @@ public class TrackingService {
                 .trackingNumber(trackingNumber)
                 .statusText(trackNode.path("lastEvent").path("status").path("name").asText())
                 .details(details)
+                .customsDetails(customsDetails) // 해외 통관 (추가)
                 .shRcvNm(shipment.getShRcvNm())
                 .shAdr(shipment.getShAdr())
                 .build();

@@ -78,7 +78,7 @@
                             </div>
 
                             <div class="action-btns">
-                                <button type="button" class="btn-detail" th:disabled="${order.ordBaseStt.name() == 'CANCELED'}" th:onclick="loadShipmentDetail([[${ship.shId}]])">
+                                <button type="button" class="btn-detail" th:disabled="${order.ordBaseStt.name() == 'CANCELED'}" th:onclick="openShipmentModal([[${ship.shId}]])">
                                     배송 현황
                                 </button>
 
@@ -118,7 +118,7 @@
                             </div>
 
                             <div class="action-btns">
-                                <button type="button" class="btn-detail" th:disabled="${order.ordBaseStt.name() == 'CANCELED'}" th:onclick="loadShipmentDetail([[${ship.shId}]])">
+                                <button type="button" class="btn-detail" th:disabled="${order.ordBaseStt.name() == 'CANCELED'}" th:onclick="openShipmentModal([[${ship.shId}]])">
                                     배송 현황
                                 </button>
 

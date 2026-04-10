@@ -13,10 +13,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/api/shipments")
@@ -24,6 +21,7 @@ import java.util.List;
 public class ShipmentApiController {
     private final ShipmentService shipmentService;
     private final TrackingService trackingService;
+
 
     @GetMapping("/list")
     public ResponseEntity<Page<ShipmentDto>> getShipmentList(
@@ -75,6 +73,5 @@ public class ShipmentApiController {
         TrackingResponseDto result = trackingService.getTrackingInfo(shId);
         return ResponseEntity.ok(result);
     }
-
 
 }

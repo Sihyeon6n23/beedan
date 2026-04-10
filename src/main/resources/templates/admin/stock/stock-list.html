@@ -42,6 +42,13 @@
         </div>
         <button class="btn-search" onclick="searchStock()">검색</button>
         <button class="btn-reset" onclick="resetSearch()">초기화</button>
+        <div class="batch-actions" id="batch-actions" style="display:none;">
+            <span class="batch-count" id="batch-count">0개 선택</span>
+            <select id="batch-category-select">
+                <option value="">카테고리 선택</option>
+            </select>
+            <button class="btn-batch-category" onclick="batchChangeCategory()">카테고리 변경</button>
+        </div>
     </section>
 
     <!-- 테이블 -->
@@ -49,6 +56,7 @@
         <table class="stock-table">
             <thead>
             <tr>
+                <th class="col-check" onclick="var cb=document.getElementById('check-all'); cb.checked=!cb.checked; toggleCheckAll(cb);"><input type="checkbox" id="check-all"></th>
                 <th class="col-id">ID</th>
                 <th class="col-code">상품코드</th>
                 <th class="col-img">사진</th>
@@ -167,8 +175,29 @@
     let brandsList = [];
     let categoriesList = [];
 
+    // ===== 상태 저장/복원 (detail 갔다가 뒤로올 때) =====
+    function saveListState() {
+        sessionStorage.setItem('stockListState', JSON.stringify({
+            page: currentPage,
+            keyword: document.getElementById('search-keyword').value.trim(),
+            startDate: document.getElementById('search-start-date').value,
+            endDate: document.getElementById('search-end-date').value
+        }));
+    }
+
+    function restoreListState() {
+        const saved = sessionStorage.getItem('stockListState');
+        if (!saved) return;
+        const state = JSON.parse(saved);
+        document.getElementById('search-keyword').value = state.keyword || '';
+        document.getElementById('search-start-date').value = state.startDate || '';
+        document.getElementById('search-end-date').value = state.endDate || '';
+        currentPage = state.page || 0;
+    }
+
     // ===== 초기 로드 (pageshow: bfcache 복원 시에도 input 값 반영) =====
     window.addEventListener('pageshow', function() {
+        restoreListState();
         loadStockList(currentPage);
     });
     loadBrandsAndCategories();
@@ -184,12 +213,52 @@
             categoriesList = res.data;
             const dl = document.getElementById('category-list');
             dl.innerHTML = categoriesList.map(c => '<option value="' + c.catNm + '">').join('');
+            const sel = document.getElementById('batch-category-select');
+            sel.innerHTML = '<option value="">카테고리 선택</option>' + categoriesList.map(c => '<option value="' + c.catNm + '">' + c.catNm + '</option>').join('');
         });
     }
+
+    // ===== 체크박스 =====
+    window.toggleCheckAll = function(el) {
+        document.querySelectorAll('.stock-check').forEach(cb => cb.checked = el.checked);
+        updateBatchUI();
+    };
+
+    window.updateBatchUI = function() {
+        const checked = document.querySelectorAll('.stock-check:checked');
+        const bar = document.getElementById('batch-actions');
+        const count = document.getElementById('batch-count');
+        if (checked.length > 0) {
+            bar.style.display = '';
+            count.textContent = checked.length + '개 선택';
+        } else {
+            bar.style.display = 'none';
+        }
+        // 전체 체크 동기화
+        const all = document.querySelectorAll('.stock-check');
+        document.getElementById('check-all').checked = all.length > 0 && checked.length === all.length;
+    };
+
+    window.batchChangeCategory = function() {
+        const catNm = document.getElementById('batch-category-select').value;
+        if (!catNm) { alert('카테고리를 선택하세요.'); return; }
+        const stIds = Array.from(document.querySelectorAll('.stock-check:checked')).map(cb => Number(cb.value));
+        if (stIds.length === 0) return;
+        if (!confirm(stIds.length + '개 상품의 카테고리를 "' + catNm + '"(으)로 변경하시겠습니까?')) return;
+
+        axios.patch('/api/admin/stock/batch-category', { stIds, catNm })
+            .then(() => {
+                document.getElementById('check-all').checked = false;
+                loadStockList(currentPage);
+            })
+            .catch(() => alert('카테고리 변경 실패'));
+    };
 
     // ===== 상품 목록 로드 =====
     function loadStockList(page) {
         currentPage = page;
+        document.getElementById('check-all').checked = false;
+        document.getElementById('batch-actions').style.display = 'none';
         const keyword = document.getElementById('search-keyword').value.trim();
         const startDate = document.getElementById('search-start-date').value;
         const endDate = document.getElementById('search-end-date').value;
@@ -198,6 +267,8 @@
         if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
         if (startDate) params += '&startDate=' + startDate;
         if (endDate) params += '&endDate=' + endDate;
+
+        saveListState();
 
         axios.get('/api/admin/stock/list?' + params)
             .then(res => {
@@ -215,7 +286,7 @@
     function renderTable(stocks) {
         const tbody = document.getElementById('stock-tbody');
         if (!stocks || stocks.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="12">등록된 상품이 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="13">등록된 상품이 없습니다.</td></tr>';
             return;
         }
 
@@ -229,6 +300,7 @@
                 : s.stCur + ' ' + Number(s.stPr).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
             return '<tr onclick="openEditModal(' + s.stId + ')">'
+                + '<td class="col-check" onclick="event.stopPropagation(); var cb=this.querySelector(\'input\'); cb.checked=!cb.checked; updateBatchUI();"><input type="checkbox" class="stock-check" value="' + s.stId + '"></td>'
                 + '<td class="col-id">' + s.stId + '</td>'
                 + '<td class="col-code">' + (s.stCd || '-') + '</td>'
                 + '<td class="col-img">' + imgCell + '</td>'
@@ -469,6 +541,7 @@
         document.getElementById('search-keyword').value = '';
         document.getElementById('search-start-date').value = '';
         document.getElementById('search-end-date').value = '';
+        sessionStorage.removeItem('stockListState');
         loadStockList(0);
     };
 

@@ -91,4 +91,20 @@ public class SchedulerSettingDto {
     // 6.4 마지막 실행 시각
     @JsonProperty("last_chat_auto_close_run_time")
     private String lastChatAutoCloseRunTime;
+
+    // 7. UNIPASS API 호출 (해외 배송/통관 상태 추적)
+    @JsonProperty("is_unipass_enabled")
+    private boolean isUnipassEnabled = false;
+
+    @JsonProperty("unipass_start_dt")
+    private String unipassStartDt;
+
+    @JsonProperty("unipass_interval")
+    private String unipassInterval;
+
+    @JsonProperty("last_unipass_run_time")
+    private String lastUnipassRunTime;
+
+
+
 }

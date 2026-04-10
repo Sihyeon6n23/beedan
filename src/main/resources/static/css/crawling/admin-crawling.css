@@ -115,7 +115,7 @@
 
 /* URL 테이블 */
 .admin-crawling-table-wrap {
-  max-height: 288px;
+  max-height: 480px;
   overflow-y: auto;
   border: 1px solid var(--color-outline-variant);
 }

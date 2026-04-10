@@ -11,4 +11,6 @@ public class SelectorForm {
     private String selPr;
     private String selImg;
     private String currency;
+    private String brNm;
+    private String catNm;
 }

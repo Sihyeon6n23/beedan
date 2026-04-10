@@ -162,18 +162,104 @@ main > div {
 }
 
 /* 컬럼 너비 */
-.col-id { width: 5%; }
-.col-code { width: 8%; }
+.col-check { width: 3%; }
+.col-id { width: 4%; }
+.col-code { width: 7%; }
 .col-img { width: 5%; }
 .col-brand { width: 8%; }
 .col-category { width: 8%; }
-.col-name { width: 16%; text-align: left !important; }
+.col-name { width: 15%; text-align: left !important; }
 .col-price { width: 10%; text-align: right !important; }
 .col-exp { width: 9%; }
 .col-use { width: 9%; }
 .col-wish { width: 5%; }
 .col-purchase { width: 5%; }
 .col-action { width: 8%; }
+
+.col-check {
+    cursor: pointer;
+}
+
+.col-check input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #555;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+    pointer-events: none;
+}
+
+.col-check input[type="checkbox"]:checked {
+    background: #ffd700;
+    border-color: #ffd700;
+}
+
+.col-check input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 900;
+    color: #1a1c1c;
+    line-height: 1;
+}
+
+.col-check input[type="checkbox"]:hover {
+    border-color: #ffd700;
+}
+
+/* 일괄 액션 바 */
+.batch-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.batch-count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffd700;
+    white-space: nowrap;
+}
+
+.batch-actions select {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--color-outline-variant, #444);
+    background: var(--color-surface-container-lowest, #1a1c1c);
+    color: var(--color-on-surface, #e6e1e5);
+    outline: none;
+}
+
+.batch-actions select:focus {
+    border-color: #ffd700;
+}
+
+.btn-batch-category {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: #ffd700;
+    color: #1a1c1c;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-batch-category:hover {
+    background: #e6c200;
+}
 
 /* 썸네일 */
 .stock-thumb {

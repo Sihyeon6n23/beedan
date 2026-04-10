@@ -41,6 +41,11 @@
                    th:classappend="${activeSub == 'brand-list'} ? ' sidebar-menu__child-link--current' : ''">
                     브랜드 목록
                 </a>
+                <a th:href="@{/admin/category/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'category-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    카테고리 목록
+                </a>
             </div>
         </div>
 
