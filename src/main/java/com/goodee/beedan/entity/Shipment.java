@@ -43,9 +43,7 @@ public class Shipment {
     private String shMsg;
 
     private String shCusStt;
-    private String shMblNo;
     private String shHblNo;
-    private String shCusNo;
 
     @Builder.Default
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)

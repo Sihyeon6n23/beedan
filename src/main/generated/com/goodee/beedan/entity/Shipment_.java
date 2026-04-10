@@ -15,9 +15,7 @@ public abstract class Shipment_ {
 	public static final String SH_CAR_CD = "shCarCd";
 	public static final String SH_UPD_DT = "shUpdDt";
 	public static final String SH_ID = "shId";
-	public static final String SH_CUS_NO = "shCusNo";
 	public static final String SH_MSG = "shMsg";
-	public static final String SH_MBL_NO = "shMblNo";
 	public static final String SHIPMENT_ITEMS = "shipmentItems";
 	public static final String SH_ADR_DT = "shAdrDt";
 	public static final String SH_CUS_STT = "shCusStt";
@@ -47,19 +45,9 @@ public abstract class Shipment_ {
 	public static volatile SingularAttribute<Shipment, Long> shId;
 	
 	/**
-	 * @see com.goodee.beedan.entity.Shipment#shCusNo
-	 **/
-	public static volatile SingularAttribute<Shipment, String> shCusNo;
-	
-	/**
 	 * @see com.goodee.beedan.entity.Shipment#shMsg
 	 **/
 	public static volatile SingularAttribute<Shipment, String> shMsg;
-	
-	/**
-	 * @see com.goodee.beedan.entity.Shipment#shMblNo
-	 **/
-	public static volatile SingularAttribute<Shipment, String> shMblNo;
 	
 	/**
 	 * @see com.goodee.beedan.entity.Shipment#shipmentItems

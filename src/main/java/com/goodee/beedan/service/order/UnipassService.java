@@ -2,6 +2,7 @@ package com.goodee.beedan.service.order;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ public class UnipassService {
     @Value("${unipass.api.url:}")
     private String apiUrl;
 
+    @Cacheable(value = "shipment:customs", key = "#hblNo + '_' + #blYear", unless = "#result == null")
     public String getCargoStatus(String hblNo, String blYear) {
         RestTemplate restTemplate = new RestTemplate();
 

@@ -31,7 +31,7 @@ public class UnipassScheduler {
     private final UnipassService unipassService;
     private final ObjectMapper objectMapper;
 
-    @Scheduled(fixedDelay = 60000000)
+    @Scheduled(fixedDelay = 60000)
     public void trackCustoms() {
         LocalDateTime now = LocalDateTime.now();
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
@@ -56,23 +56,16 @@ public class UnipassScheduler {
         List<Shipment> activeShipments = shipmentRepository.findByShStt(ShipmentStatus.SHIPPING);  // 통관 상태 물품들 확인
 
         for (Shipment shipment : activeShipments) {
-            String hblNo = shipment.getShHblNo();
-            if (hblNo == null || hblNo.isBlank()) continue;
+            String currentStatus = unipassService.getCargoStatus(shipment.getShHblNo(), String.valueOf(shipment.getShCreDt().getYear()));
 
-            String blYear = String.valueOf(shipment.getShCreDt().getYear());
+            if (currentStatus != null) {
+                shipment.setShCusStt(currentStatus);
 
-            String currentCustomsStatus = unipassService.getCargoStatus(hblNo, blYear); // 상태값을 문자열로 받음
-
-            if (currentCustomsStatus != null && !currentCustomsStatus.isEmpty()) {
-                shipment.setShCusStt(currentCustomsStatus);
-
-                if (currentCustomsStatus.contains("물품반출") || currentCustomsStatus.contains("반출확인")) {
+                if (currentStatus.contains("물품반출") || currentStatus.contains("반출확인")) {
                     shipment.setShStt(ShipmentStatus.DELIVERING);
-                    log.info("Shipment ID {} : 통관 완료 -> 국내 배송 시작", shipment.getShId());
                 }
             }
         }
-        
         shipmentRepository.saveAll(activeShipments);
         setting.setLastUnipassRunTime(now.toString());
 

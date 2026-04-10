@@ -41,7 +41,6 @@ public class OrderService {
     private final ShipmentRepository shipmentRepository;
     private final ShipmentItemRepository shipmentItemRepository;
     private final OrderItemRepository orderItemRepository;
-    private final QuoteInfoRepository  quoteInfoRepository;
     private final PaymentRepository paymentRepository;
     private final QuoteBaseRepository quoteBaseRepository;
     private final StockRepository stockRepository;
@@ -156,6 +155,7 @@ public class OrderService {
                     .shStt(ShipmentStatus.PREPARING)
                     .shCarCd(webhookRequest.getShCarNo())
                     .shTraNo(webhookRequest.getShTraNo())
+                    .shHblNo(webhookRequest.getShHblNo())
                     .shCanYn(false)
                     .build();
             shipmentRepository.save(shipment);
@@ -187,88 +187,6 @@ public class OrderService {
             }
         }
 
-    }
-
-    @Transactional
-    public Long createOrder(Long memId, OrderDto dto) {
-        Member member = memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("User not found"));
-
-        Negotiation negotiation = negotiationRepository.findFirstByMemIdOrderByNgCreDtDesc(memId);
-        if (negotiation == null) {
-            throw new IllegalStateException("해당 회원의 협상 정보가 없습니다."); // 협상 이름은 주문번호로 사용
-        }
-
-        List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByNgId(negotiation.getNgId());
-        if (quoteDetails.isEmpty()) {
-            throw new IllegalStateException("견적 상세 상품이 존재하지 않습니다.");
-        }
-
-        Integer totalQuantity = quoteDetails.stream()
-                .mapToInt(QuoteDetail::getQuDtQn)
-                .sum();
-
-        BigDecimal bigDecimal = quoteInfoRepository.findFirstByNgIdOrderByQuInfoIdDesc(negotiation.getNgId())
-                .map(QuoteInfo::getQuInfoTp)
-                .orElse(BigDecimal.ZERO);
-
-        Order order = Order.builder()
-                .member(member)
-                .ordBaseStt(OrderStatus.PREPARING)
-                .ordBaseRcvNm(dto.getOrdBaseRcvNm())
-                .ordBaseAdr(dto.getOrdBaseAdr())
-                .ordBaseAdrDt(dto.getOrdBaseAdrDt())
-                .ordBaseMsg(dto.getOrdBaseMsg())
-                .ordBaseTtAm(bigDecimal.multiply(BigDecimal.valueOf(totalQuantity)))
-                .ordBaseNo(negotiation.getNgNm())
-                .build();
-        orderRepository.save(order);
-
-        Map<Long, OrderItem> orderItemMap = new HashMap<>(); // 전체 수량을 QuoteDetail별로 저장(상품 수량, 이름)
-        for (QuoteDetail quoteDetail : quoteDetails) {
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .ordItmQn(quoteDetail.getQuDtQn())
-                    .ordItmNm(quoteDetail.getStNm())
-                    .build();
-            orderItemRepository.save(orderItem);
-
-            orderItemMap.put(quoteDetail.getQuDtId(), orderItem); // ShipmentItem과 연결하기 위해 견적상세ID를 Key로 담아둠
-        }
-
-        if (dto.getShipmentRequests() != null && !dto.getShipmentRequests().isEmpty()) {
-            for (OrderDto.ShipmentRequestDto shipmentDto : dto.getShipmentRequests()) {
-
-                Shipment shipment = Shipment.builder()
-                        .order(order)
-                        .shRcvNm(shipmentDto.getShRcvNm())
-                        .shAdr(shipmentDto.getShAdr())
-                        .shAdrDt(shipmentDto.getShAdrDt())
-                        .shStt(ShipmentStatus.PREPARING)
-                        .shCarCd(createRandNum(2))
-                        .shTraNo(createRandNum(1))
-                        .build();
-                shipmentRepository.save(shipment);
-
-                List<ShipmentItem> shipmentItems = new ArrayList<>();
-                for (OrderDto.ShipmentItemRequestDto itemDto : shipmentDto.getItems()) {
-                    OrderItem targetOrderItem = orderItemMap.get(itemDto.getQuDtId());
-
-                    if (targetOrderItem == null) {
-                        throw new IllegalStateException("유효하지 않은 견적 상품 ID입니다.");
-                    }
-
-                    ShipmentItem shipmentItem = ShipmentItem.builder()
-                            .shipment(shipment)
-                            .orderItem(targetOrderItem)
-                            .shQn(itemDto.getShQn())
-                            .build();
-                    shipmentItems.add(shipmentItem);
-                }
-                shipmentItemRepository.saveAll(shipmentItems);
-            }
-        }
-
-        return order.getOrdBaseId();
     }
 
     public OrderDto mapToOrderDto(Order order) {
@@ -343,6 +261,7 @@ public class OrderService {
                 .shAdrDt(shipment.getShAdrDt())
                 .shMsg(shipment.getShMsg())
                 .shCanYn(shipment.getShCanYn())
+                .shCusStt(shipment.getShCusStt())
                 .shipmentItems(shipmentItemDtos)
                 .build();
     }
@@ -357,18 +276,5 @@ public class OrderService {
         return orderPage.map(this::mapToOrderDto);
     }
 
-    public String createRandNum(int caseCd){
-        Random random = new Random();
-
-        if(caseCd == 1){
-        return IntStream.range(0, 12)
-                    .mapToObj(i -> String.valueOf(ThreadLocalRandom.current().nextInt(10)))
-                    .collect(Collectors.joining());
-        } else {
-            return IntStream.range(0, 3)
-                    .mapToObj(i -> String.valueOf(random.nextInt(10)))
-                    .collect(Collectors.joining());
-        }
-    }
 
 }
