@@ -497,7 +497,7 @@ main > div {
 .aqd-btn--approve {
     background: var(--aqd-gold);
     color: var(--aqd-gold-dark);
-    flex: 4;
+    flex: 1;
     text-align: center;
     justify-content: center;
 }
@@ -509,7 +509,7 @@ main > div {
 .aqd-btn--reject {
     background: #fde8e8;
     color: #c53030;
-    flex: 2;
+    flex: 1;
 }
 
 .aqd-btn--reject:hover {
@@ -622,7 +622,7 @@ main > div {
 .aqd-btn--rewrite {
     background: #fef3c7;
     color: #92400e;
-    flex: 4;
+    flex: 1;
     text-align: center;
     text-decoration: none;
     display: flex;

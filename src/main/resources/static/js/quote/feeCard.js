@@ -68,7 +68,26 @@ document.addEventListener('DOMContentLoaded', function () {
         return from + ' ~ ' + (to || '무기한');
     }
 
-    var countryNames = { JP: '일본(JP)', CN: '중국(CN)', VN: '베트남(VN)', TW: '대만(TW)', TH: '태국(TH)', ID: '인도네시아(ID)', US: '미국(US)' };
+    var countryNames = { JP: '일본(JP)', CN: '중국(CN)', VN: '베트남(VN)', TW: '대만(TW)', TH: '태국(TH)', ID: '인도네시아(ID)', US: '미국(US)', KR: '한국(KR)' };
+
+    // DB에서 로드된 국가 코드 목록으로 옵션 빌드
+    function buildCountryOptions() {
+        var source = document.getElementById('js-country-codes');
+        var html = '<option value="">선택</option>';
+        if (source) {
+            Array.prototype.forEach.call(source.options, function (opt) {
+                var code = opt.value;
+                var name = countryNames[code] || code;
+                html += '<option value="' + code + '">' + name + '</option>';
+            });
+        } else {
+            // fallback: countryNames 전체
+            Object.keys(countryNames).forEach(function (code) {
+                html += '<option value="' + code + '">' + countryNames[code] + '</option>';
+            });
+        }
+        return html;
+    }
     var transportNames = { SEA: '해상 운송 (FCL)', AIR: '항공 운송', EXPRESS: '특급 배송' };
     var sizeNames = { SMALL: '소형', MEDIUM: '중형', LARGE: '대형' };
 
@@ -534,11 +553,18 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // 테이블 행에서 브랜드 정보 추출 (stId → 브랜드명)
+        // 미등록 공장에 속한 stId 수집
+        var unknownStIds = {};
+        unknowns.forEach(function (f) {
+            if (f.stIds) f.stIds.forEach(function (id) { unknownStIds[String(id)] = true; });
+        });
+
+        // 테이블 행에서 미등록 공장 상품만 브랜드별 그룹핑
         var rows = document.querySelectorAll('.quote-row');
         var brandMap = {};
         rows.forEach(function (row) {
             var stId = row.dataset.stId;
+            if (!unknownStIds[stId]) return; // 미등록 공장 상품만
             var brandEl = row.querySelector('.product-material');
             var nameEl = row.querySelector('.product-name');
             var brand = brandEl ? brandEl.textContent.trim() : '알 수 없음';
@@ -549,7 +575,6 @@ document.addEventListener('DOMContentLoaded', function () {
             brandMap[brand].products.push({ stId: stId, name: name });
         });
 
-        // 미등록 공장에 연결된 브랜드 목록 (countryCode === null)
         Object.keys(brandMap).forEach(function (brandKey) {
             var info = brandMap[brandKey];
             var card = document.createElement('div');
@@ -573,14 +598,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<div class="factory-input-row">' +
                         '<label class="factory-input-label">국가 코드</label>' +
                         '<select class="factory-input-select" data-field="country">' +
-                            '<option value="">선택</option>' +
-                            '<option value="JP">일본 (JP)</option>' +
-                            '<option value="CN">중국 (CN)</option>' +
-                            '<option value="VN">베트남 (VN)</option>' +
-                            '<option value="TW">대만 (TW)</option>' +
-                            '<option value="TH">태국 (TH)</option>' +
-                            '<option value="ID">인도네시아 (ID)</option>' +
-                            '<option value="US">미국 (US)</option>' +
+                            buildCountryOptions() +
                         '</select>' +
                     '</div>' +
                     '<div class="factory-input-row">' +

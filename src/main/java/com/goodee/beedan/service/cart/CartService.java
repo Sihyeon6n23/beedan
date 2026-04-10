@@ -69,7 +69,8 @@ public class CartService {
         cartRepository.deleteAllByMemId(memId);
     }
 
-    // 회원의 장바구니에서 특정 상품만 삭제
+    // 회원의 장바구니에서 특정 상품만 삭제 (별도 트랜잭션)
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void clearCartItems(Long memId, java.util.List<Long> stIds) {
         if (stIds != null && !stIds.isEmpty()) {
             cartRepository.deleteAllByMemIdAndStock_StIdIn(memId, stIds);

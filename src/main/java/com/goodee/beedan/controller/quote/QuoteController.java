@@ -9,6 +9,7 @@ import com.goodee.beedan.dto.quote.QuoteRequestDto;
 import com.goodee.beedan.entity.*;
 
 import com.goodee.beedan.repository.member.MemberRepository;
+import com.goodee.beedan.repository.quote.FactoryRepository;
 import com.goodee.beedan.repository.quote.HsCodeRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
 import com.goodee.beedan.repository.quote.ShippingInsuranceRepository;
@@ -59,6 +60,8 @@ public class    QuoteController {
     private final MemberRepository memberRepository;
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final QuoteNameService quoteNameService;
+    private final FactoryRepository factoryRepository;
+    private final com.goodee.beedan.repository.quote.ShippingRateRepository shippingRateRepository;
 
     @PostMapping("/request")
     @ResponseBody
@@ -309,6 +312,8 @@ public class    QuoteController {
             } catch (Exception ignored) {}
         }
 
+        model.addAttribute("countryCodes", shippingRateRepository.findDistinctCountryCodes());
+
         return "/quote/quote-write";
     }
 
@@ -357,6 +362,18 @@ public class    QuoteController {
             } else {
                 extra.put("spec", null);
             }
+            // Factory name lookup
+            String faNm = null;
+            if (d.getFaId() != null) {
+                try { faNm = factoryRepository.findById(d.getFaId()).map(Factory::getFaNm).orElse(null); } catch (Exception ignored) {}
+            }
+            extra.put("faNm", faNm);
+            // UnitGroup name lookup
+            String unGNm = null;
+            if (d.getUnGId() != null) {
+                try { unGNm = unitGroupService.findById(d.getUnGId()).getUnGNm(); } catch (Exception ignored) {}
+            }
+            extra.put("unGNm", unGNm);
             detailExtras.add(extra);
         }
 
