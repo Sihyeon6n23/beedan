@@ -2,6 +2,7 @@ package com.goodee.beedan.controller.board;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.board.inquiry.*;
+import com.goodee.beedan.dto.board.notice.BoardResultResponseDto;
 import com.goodee.beedan.service.board.InquiryBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 
@@ -69,9 +71,14 @@ public class InquiryBoardController {
     // 사용자 문의 작성 처리
     @PostMapping("/write")
     public String writeInquiry(@ModelAttribute InquiryBoardCreateDto inquiryBoardCreateDto,
-                               @AuthenticationPrincipal MemberUserDetails userDetails) throws IOException{
-        Long brdId = inquiryBoardService
+                               @AuthenticationPrincipal MemberUserDetails userDetails,
+                               RedirectAttributes reAttr) throws IOException{
+
+        BoardResultResponseDto boardResultResponseDto = inquiryBoardService
                 .createInquiryBoard(userDetails.getMemberId(), inquiryBoardCreateDto);
+        Long brdId = boardResultResponseDto.getTargetId();
+        String boardResultMessage = boardResultResponseDto.getMessage();
+        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
 
         return "redirect:/inquiry/detail?id=" + brdId;
     }
@@ -100,8 +107,14 @@ public class InquiryBoardController {
     @PostMapping("/edit")
     public String editInquiry(@RequestParam("id") Long brdId,
                               @ModelAttribute InquiryBoardEditDto inquiryBoardEditDto,
-                              @AuthenticationPrincipal MemberUserDetails userDetails) throws IOException {
-        inquiryBoardService.updateInquiryBoard(brdId, userDetails.getMemberId(), inquiryBoardEditDto);
+                              @AuthenticationPrincipal MemberUserDetails userDetails,
+                              RedirectAttributes reAttr) throws IOException {
+
+
+        BoardResultResponseDto boardResultResponseDto =
+                inquiryBoardService.updateInquiryBoard(brdId, userDetails.getMemberId(), inquiryBoardEditDto);
+        String boardResultMessage = boardResultResponseDto.getMessage();
+        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
 
         return "redirect:/inquiry/detail?id=" + brdId;
     }

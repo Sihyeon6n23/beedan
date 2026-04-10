@@ -12,6 +12,7 @@ import com.goodee.beedan.mapper.board.BoardMapper;
 import com.goodee.beedan.repository.board.BoardRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.service.file.FileService;
+import com.goodee.beedan.service.file.FileUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class NoticeBoardService {
     private final FileService fileService;
     private final BoardCoreService boardCoreService;
     private final BoardMapper boardMapper; // 통합 매퍼 사용
+    private final FileUtils fileUtils;
 
     @Value("${board.notice.fixed-size}")
     private int fixedNoticeSize;
@@ -65,7 +67,7 @@ public class NoticeBoardService {
         List<FileDto> fileResults = handleFiles(dto, board.getBrdId());
 
         // 메시지 반환
-        return generateBoardResultMessage(buildBoardResultMessage(fileResults), false);
+        return fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false);
     }
 
     /** 2. 게시글 수정 (공통) */
@@ -89,7 +91,7 @@ public class NoticeBoardService {
         fileResults.addAll(fileDeleteResult);
 
         // 메시지 반환
-        return generateBoardResultMessage(buildBoardResultMessage(fileResults), true);
+        return fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), true);
     }
 
     /** 3. 상세 조회 (이전/다음글 포함 통합 버전) */
@@ -142,7 +144,7 @@ public class NoticeBoardService {
     public BoardListResponse getBoardList(BoardType boardType, SearchDto searchDto) {
         // 1. 고정글 조회
         List<Board> fixedEntities = boardType.isUseFixed() ?
-                boardRepository.findTopFixedNotices(boardType, PageRequest.of(0, 5, Sort.by("brdCreDt").descending()))
+                boardRepository.findTopFixedNotices(boardType, PageRequest.of(0, fixedNoticeSize, Sort.by("brdCreDt").descending()))
                 : Collections.emptyList();
 
         // 2. 이미 가져온 리스트에서 ID만 추출 (CPU 연산만 발생, DB 비용 0)
@@ -220,83 +222,5 @@ public class NoticeBoardService {
                     .refNo(brdId).build());
         }
         return new ArrayList<>();
-    }
-    private BoardResultMessage buildBoardResultMessage(List<FileDto> fileResults) {
-        BoardResultMessage resultMessage = new BoardResultMessage();
-        List<String> failReasons = new ArrayList<>();
-
-        long successCount = 0;
-        long failCount = 0;
-        long deleteCount = 0;
-
-        for (FileDto fileDto : fileResults) {
-            if (fileDto.isDeleted()) { // 삭제 성공
-                deleteCount++;
-            } else if (fileDto.getErrorMessage() != null && fileDto.getErrorMessage().contains("삭제")) { // 삭제 실패
-                failCount++;
-                failReasons.add(fileDto.getFileNm() + " : " + fileDto.getErrorMessage());
-            } else if (fileDto.isUploaded()) { // 업로드 성공
-                successCount++;
-            } else { // 업로드 실패
-                failCount++;
-                failReasons.add(fileDto.getFileNm() + " : " + fileDto.getErrorMessage());
-            }
-        }
-
-        resultMessage.setDeleteSuccess(deleteCount);
-        resultMessage.setUploadSuccess(successCount);
-        resultMessage.setFail(failCount);
-        resultMessage.setFailReason(failReasons);
-
-        return resultMessage;
-    }
-
-    public String generateBoardResultMessage(BoardResultMessage result, Boolean isEdit) {
-        if (result == null) return "처리 결과 데이터가 없습니다.";
-
-        StringBuilder sb = new StringBuilder();
-
-        // 모든 작업 카운트 합산
-        long totalActionCount = result.getDeleteSuccess() +
-                result.getUploadSuccess() + result.getFail();
-
-        // 파일 변경 사항이 전혀 없다면 null 반환
-        if (totalActionCount == 0) {
-            return null;
-        }
-
-        // 1. 제목 결정 (삭제 건수가 있으면 '수정', 없으면 '작성')
-        String title = (isEdit == true)
-                ? "🔄 게시글 수정 결과"
-                : "📝 게시글 작성 결과";
-        sb.append(title).append("\n");
-        sb.append("----------------------------\n");
-
-        // 2. 항목별 출력 (0건이 아닌 경우에만 출력)
-
-        // 삭제 결과 (0보다 클 때만)
-        if (result.getDeleteSuccess() != null && result.getDeleteSuccess() > 0) {
-            sb.append(String.format("🗑️ 기존 파일 삭제: %d건\n", result.getDeleteSuccess()));
-        }
-
-        // 업로드 성공 결과 (0보다 클 때만)
-        if (result.getUploadSuccess() != null && result.getUploadSuccess() > 0) {
-            sb.append(String.format("✅ 파일 업로드 성공: %d건\n", result.getUploadSuccess()));
-        }
-
-        // 업로드 실패 결과 (0보다 클 때만)
-        if (result.getFail() != null && result.getFail() > 0) {
-            sb.append(String.format("❌ 파일 처리 실패: %d건\n", result.getFail()));
-
-            // 상세 사유 출력
-            if (result.getFailReason() != null && !result.getFailReason().isEmpty()) {
-                sb.append("\n⚠️ 실패 상세 내역:\n");
-                for (String reason : result.getFailReason()) {
-                    sb.append(String.format("• %s\n", reason));
-                }
-            }
-        }
-
-        return sb.toString();
     }
 }
