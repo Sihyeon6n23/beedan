@@ -27,6 +27,7 @@ import org.apache.tika.mime.MimeTypes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -154,8 +155,8 @@ public class FileService {
             uploadToDisk(file, uuid, ext);
 
             fileListDtoList.add(FileDto.builder()
-                    .fileUuid(uuid)
-                    .fileNm(sanitizeFileName(originalName)) // 아까 만든 마침표 정화 로직 적용 추천
+                    .fileUuid(uuid + "." + ext)
+                    .fileNm(sanitizeFileName(originalName))
                     .fileExt(ext)
                     .fileSz(fileSize)
                     .filePat(datePath)
@@ -165,7 +166,7 @@ public class FileService {
 
             FileUpload fileUpload = FileUpload.builder()
                     .fileNm(sanitizeFileName(originalName))
-                    .fileUuid(uuid)
+                    .fileUuid(uuid + "." + ext)
                     .brdRefTy(refDto.getRefTy())
                     .brdRefNo(refDto.getRefNo())
                     .fileSz(file.getSize())
@@ -338,8 +339,8 @@ public class FileService {
 
     // MIME 타입 조회 메소드
     public String getMimeType(MultipartFile file) {
-        try {
-            return tika.detect(file.getInputStream());
+        try (InputStream is = file.getInputStream()) {
+            return tika.detect(is);
         } catch (IOException e) {
             log.warn("MIME 타입 추출 실패, 파일명 기반 추측 시도: {}", e.getMessage());
             // 스트림 읽기 실패 시 확장자로라도 추측

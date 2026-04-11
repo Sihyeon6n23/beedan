@@ -11,6 +11,7 @@
 
   <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" th:href="@{/css/file/upload.css}">
 
 
   <header class="mb-12">
@@ -19,7 +20,7 @@
       Registration</h1>
   </header>
 
-  <form th:action="@{/auth/signup}" th:object="${memberForm}" method="POST"
+  <form th:action="@{/auth/signup}" th:object="${memberForm}" method="POST" enctype="multipart/form-data"
         class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
 
     <input type="hidden" th:field="*{impUid}" id="imp_uid" required>
@@ -140,6 +141,27 @@
         </div>
 
         <div class="space-y-2">
+          <div class="flex justify-between items-end">
+            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">
+              사업자등록증 첨부 <span class="text-error">*</span>
+            </label>
+            <span class="text-[9px] text-slate-400 font-medium">
+            <span class="material-symbols-outlined !text-[10px] align-middle">info</span>
+            허용 확장자: JPG, PNG, PDF (최대 5MB)
+        </span>
+          </div>
+
+          <div class="mt-1">
+            <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=1, existingFiles=null, isMultiple=false)}"></div>
+          </div>
+
+          <p class="text-[10px] text-slate-500 leading-relaxed mt-1">
+            * 글자가 명확하게 보이도록 스캔하거나 촬영하여 업로드해 주세요.
+          </p>
+          <p th:if="${#fields.hasErrors('newFiles')}" th:errors="*{newFiles}" class="text-error text-[11px] font-bold mt-1"></p>
+        </div>
+
+        <div class="space-y-2">
           <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">대표자 전화번호 <span class="text-error">*</span></label>
           <input type="tel" th:field="*{ceoPhone}" class="bd-input" placeholder="000-0000-0000">
           <p th:if="${#fields.hasErrors('ceoPhone')}" th:errors="*{ceoPhone}" class="text-error text-[11px] font-bold mt-1"></p>
@@ -219,7 +241,7 @@
       }
 
       document.getElementById("imp_uid").value = response.identityVerificationId;
-      phoneAvailable.classList.remove("hidden");
+      phoneAvailable.removeAttribute("hidden");
       certify_phone.disabled = true;
       phoneCheckedInput.value = true;
 
@@ -297,9 +319,12 @@
             const elements = [userLoginId];
             lockInputFields(elements);
             const available = document.getElementById("available");
-            available.classList.remove("hidden");
+            available.removeAttribute("hidden");
             idCheckedBtn.disabled = true;
             idCheckedInput.value = true;
+          } else {
+            alert("이미 사용 중인 아이디입니다. 다른 아이디를 입력해주세요.");
+            userLoginId.focus();
           }
         }
       })
