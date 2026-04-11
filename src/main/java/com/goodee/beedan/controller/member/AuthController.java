@@ -9,6 +9,7 @@ import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.auth.TokenService;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
+import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
 import jakarta.servlet.http.HttpSession;
@@ -21,12 +22,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +44,7 @@ public class AuthController {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final SnsIntegrateService snsIntegrateService;
+    private final FileService fileService;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
@@ -74,6 +79,31 @@ public class AuthController {
             bindingResult.rejectValue("duplicateCheckLoginId", "idDuplicateCheck", "아이디 중복확인 버튼을 눌러주세요.");
             return "/member/auth/signup";
         }
+
+        MultipartFile file = memberForm.getNewFiles();
+        if (file != null && !file.isEmpty()) {
+
+            String originalFileName = file.getOriginalFilename();
+            String contentType = file.getContentType();
+
+            String ext = "";
+            if (originalFileName != null && originalFileName.contains(".")) {
+                ext = originalFileName.substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
+            }
+
+            List<String> allowedImages = Arrays.asList("jpg", "jpeg", "png", "pdf");
+
+            if (ext.isEmpty() || !allowedImages.contains(ext) || contentType == null) {
+                bindingResult.rejectValue("newFiles", "fileInvalid", "파일 확장자를 확인해주세요.");
+                return "/member/auth/signup";
+            }
+
+            String mimeType = fileService.getMimeType(file);
+            if (!fileService.isMimeExtensionMatched(mimeType, ext)) {
+                bindingResult.rejectValue("newFiles", "fileInvalid", "파일의 데이터 규격이 확장자 정보와 다릅니다. 원본 파일을 확인해 주세요.");
+                return "/member/auth/signup";
+            }
+        }
         // 휴대폰 번호 API 검증(백엔드검증)
         Mono<Map<String, Object>> verifyMono = portOneService.verify(memberForm.getImpUid());
         PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
@@ -83,7 +113,7 @@ public class AuthController {
                 .bNo(memberForm.getBusinessRegNum())
                 .bNm(memberForm.getCompanyName())
                 .pNm(memberForm.getCeoName())
-                .startDt(memberForm.getEstablishmentDate())
+                .startDt(memberForm.getEstablishmentDate().replace("-", ""))
                 .build();
 
         Mono<Map<String, Object>> bizValidateMono = bizValidateService.validate(bizDto);
@@ -94,34 +124,10 @@ public class AuthController {
             // 예외처리
         }
 
-        // 아이디, 비밀번호, 이메일, 우편번호, 주소, 상세주소 입력 - 완료
-        // 이름, 휴대폰번호, CI값 입력
-        // 재인증 후 사업자등록번호, 상호명, 대표자명, 설립연월일 입력
-        Member member = Member.builder()
-                .memLgnId(memberForm.getUserLoginId())
-                .memLgnPw(passwordEncoder.encode(memberForm.getPassword()))
-                .memEml(memberForm.getEmail())
-                .memPosCd(memberForm.getPostCode())
-                .memBizAdr(memberForm.getCompanyAddress())
-                .memBizDtAdr(memberForm.getCompanyAddressDetail())
-                .memStt(MemberStatus.PENDING.toString()) // 가입요청상태로 회원가입 요청
-                .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
-                .memLgnTr(0L)
-                .memMbPhn(phoneVerificationDto.getPhoneNumber())
-                .memCi(phoneVerificationDto.getCi())
-                .memNm(phoneVerificationDto.getName())
-                .memBizNo(validateBizDto.getBNo())
-                .memBizTtl(validateBizDto.getBNm())
-                .memCeoNm(validateBizDto.getPNm())
-                .memBizCreDt(LocalDate.parse(
-                        validateBizDto.getStartDt(),
-                        DateTimeFormatter.ofPattern("yyyyMMdd")
-                ).atStartOfDay())
-                .build();
-
         try {
-            memberService.insertMember(member);
+            memberService.insertMember(memberForm, phoneVerificationDto, bizDto);
         } catch (Exception e) {
+            bindingResult.reject("signup.fail", e.getMessage());
             return "/member/auth/signup";
         }
 

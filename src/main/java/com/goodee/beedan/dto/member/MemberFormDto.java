@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
@@ -56,6 +57,9 @@ public class MemberFormDto {
     private Boolean bizCheckedInput;
     // 본인인증 체크 여부
     private Boolean phoneCheckedInput;
+
+    // 사업자등록증 파일
+    private MultipartFile newFiles;
 
     public boolean isPasswordMatching() {
         if (this.password == null || this.confirmPassword == null) {
