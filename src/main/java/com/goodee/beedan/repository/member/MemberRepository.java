@@ -24,5 +24,16 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status")
     Page<Member> findUsersByStatus(String status, Pageable pageable);
 
+    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND " +
+           "(LOWER(m.memNm) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(m.memBizTtl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Member> findUsersByKeyword(String keyword, Pageable pageable);
+
+    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status AND " +
+           "(LOWER(m.memNm) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(m.memBizTtl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")    Page<Member> findUsersByStatusAndKeyword(String status, String keyword, Pageable pageable);
+
     List<Member> findByMemIdIn(Collection<Long> memIds);
 }
