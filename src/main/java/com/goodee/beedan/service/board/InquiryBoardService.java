@@ -5,7 +5,6 @@ import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.dto.board.inquiry.*;
-import com.goodee.beedan.dto.board.notice.BoardResultMessage;
 import com.goodee.beedan.dto.board.notice.BoardResultResponseDto;
 import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
@@ -15,7 +14,6 @@ import com.goodee.beedan.repository.board.BoardRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.file.FileUtils;
-import com.goodee.beedan.service.mail.MailService;
 import com.goodee.beedan.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,7 +32,6 @@ public class InquiryBoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
-    private final MailService mailService;
     private final FileService fileService;
     private final FileUtils fileUtils;
 
@@ -385,17 +382,6 @@ public class InquiryBoardService {
                 inquiryBoard.getBrdId()
         );
 
-        // 답글을 단 문의의 회원 정보 조회
-        Member inquiryMember = memberRepository.findById(inquiryBoard.getMember().getMemId())
-                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
-        // 메일 알림 (인자값 때문에 일단 비활성화)
-//        mailService.sendMail(
-//                inquiryMember.getMemEml(),
-//                NotificationType.INQUIRY_ANSWER_CREATE,
-//                inquiryBoard.getBrdTtl(), // detail은 보류(임시로 제목 넣어놨음)
-//                inquiryBoard.getBrdId()
-//        );
-
         return BoardResultResponseDto.builder()
                 .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
                 .targetId(savedReplyBoard.getBrdId())
@@ -458,17 +444,6 @@ public class InquiryBoardService {
                 NotificationType.INQUIRY_ANSWER_UPDATE,
                 inquiryBoard.getBrdId()
         );
-
-        // 답글을 단 문의의 회원 정보 조회
-        Member inquiryMember = memberRepository.findById(inquiryBoard.getMember().getMemId())
-                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
-        // 메일 알림 (인자값 때문에 일단 비활성화)
-//        mailService.sendMail(
-//                inquiryMember.getMemEml(),
-//                NotificationType.INQUIRY_ANSWER_UPDATE,
-//                inquiryBoard.getBrdTtl(), // detail은 보류(임시로 제목 넣어놨음)
-//                inquiryBoard.getBrdId()
-//        );
 
         return BoardResultResponseDto.builder()
                 .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))

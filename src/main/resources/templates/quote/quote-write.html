@@ -46,6 +46,11 @@
                 </h1>
             </section>
 
+            <div class="quote-chat-draft-guide"
+                 th:if="${chatRoomId != null and (isAdmin == null or !isAdmin)}">
+                이 초안은 임시저장 또는 제출 완료 후 본인의 견적 목록에 저장됩니다.
+            </div>
+
             <!-- Status Timeline -->
             <div th:replace="~{fragments/quoteAndPayment/roadToPayment :: timeline(${activeStep})}"></div>
 
@@ -76,8 +81,25 @@
             <!-- Quote Manifest Section -->
             <section class="quote-manifest">
                 <div class="manifest-header">
-                    <h2 class="manifest-id" th:text="${(ngNm != null ? ngNm : 'N/A') + (quCd != null ? quCd : '')}">협상명-QU0000</h2>
-                    <span class="manifest-count" th:text="${cartToQuote != null ? cartToQuote.items.size() + '개의 아이템' : '0개의 아이템'}">4개의 아이템</span>
+                    <h2 class="manifest-id"
+                        th:text="${(ngNm != null ? ngNm : 'N/A') + (quCd != null ? quCd : '')}">협상명QU0000</h2>
+
+                    <div class="manifest-header-actions">
+                        <!-- 관리자 채팅 유입일 때만 초안 전송 버튼 노출 -->
+                        <button type="button"
+                                class="btn-send-draft-chat"
+                                id="btnSendDraftToChat"
+                                title="견적 초안 채팅으로 보내기"
+                                aria-label="견적 초안 채팅으로 보내기"
+                                th:if="${chatRoomId != null and isAdmin != null and isAdmin}"
+                                th:data-qu-id="${quId}"
+                                th:data-chat-room-id="${chatRoomId}">
+                            견적 초안 채팅으로 보내기
+                        </button>
+
+                        <span class="manifest-count"
+                              th:text="${cartToQuote != null ? cartToQuote.items.size() + '개의 아이템' : '0개의 아이템'}">4개의 아이템</span>
+                    </div>
                 </div>
 
                 <!-- Table -->
@@ -343,14 +365,6 @@
                         PDF 다운로드
                     </a>
 
-                    <button type="button"
-                            class="btn-send-chat"
-                            th:if="${chatRoomId != null}"
-                            th:data-chat-room-id="${chatRoomId}"
-                            th:data-qu-id="${quId}"
-                            id="btnSendQuoteToChat">
-                        채팅으로 보내기
-                    </button>
                 </div>
             </div>
 
