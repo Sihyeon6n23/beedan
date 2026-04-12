@@ -61,12 +61,11 @@ public class AuthController {
     public String postSignUp(
             @Valid @ModelAttribute("memberForm") MemberFormDto memberForm,
             BindingResult bindingResult,
-            RedirectAttributes redirectAttributes) {
-        // 검증 필요
+            Model model) {
         if (bindingResult.hasErrors()) {
-            // 에러 메시지 중 첫 번째를 가져와서 전달 (예시)
-            String defaultMessage = bindingResult.getFieldError().getDefaultMessage();
-            redirectAttributes.addFlashAttribute("errorMessage", defaultMessage);
+            if (bindingResult.getFieldError() != null) {
+                model.addAttribute("errorMessage", bindingResult.getFieldError().getDefaultMessage());
+            }
             return "/member/auth/signup";
         }
 
@@ -75,8 +74,24 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        if (!memberForm.getIdCheckedInput()) {
-            bindingResult.rejectValue("duplicateCheckLoginId", "idDuplicateCheck", "아이디 중복확인 버튼을 눌러주세요.");
+        if (!Boolean.TRUE.equals(memberForm.getIdCheckedInput())) {
+            bindingResult.rejectValue("userLoginId", "idDuplicateCheck", "아이디 중복확인 버튼을 눌러주세요.");
+            return "/member/auth/signup";
+        }
+
+        if (memberService.isDuplicatedLoginId(memberForm.getUserLoginId())) {
+            bindingResult.rejectValue("userLoginId", "idAlreadyTaken", "해당 아이디로 먼저 가입한 사용자가 있습니다. 다시 시도해주세요.");
+            return "/member/auth/signup";
+        }
+
+        // 1. 프론트엔드에서 '이메일 중복확인' 버튼을 눌렀는지 체크
+        if (!Boolean.TRUE.equals(memberForm.getEmailCheckedInput())) {
+            bindingResult.rejectValue("email", "emailCheckRequired", "이메일 중복확인 버튼을 눌러주세요.");
+            return "/member/auth/signup";
+        }
+
+        if (memberService.checkEmailDuplicate(memberForm.getEmail())) {
+            bindingResult.rejectValue("email", "emailAlreadyTaken", "해당 이메일로 먼저 가입한 사용자가 있습니다. 다시 시도해주세요.");
             return "/member/auth/signup";
         }
 
@@ -104,24 +119,31 @@ public class AuthController {
                 return "/member/auth/signup";
             }
         }
+
         // 휴대폰 번호 API 검증(백엔드검증)
         Mono<Map<String, Object>> verifyMono = portOneService.verify(memberForm.getImpUid());
         PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
+
+        // [수정 1]: String 조작 전 null 참조 예외(NPE) 완벽 방어
+        String estDate = memberForm.getEstablishmentDate();
+        String formattedStartDt = (estDate != null) ? estDate.replace("-", "") : "";
 
         // 사업자등록번호 재인증(백엔드검증)
         BizDto bizDto = BizDto.builder()
                 .bNo(memberForm.getBusinessRegNum())
                 .bNm(memberForm.getCompanyName())
                 .pNm(memberForm.getCeoName())
-                .startDt(memberForm.getEstablishmentDate().replace("-", ""))
+                .startDt(formattedStartDt) // null-safe 처리된 변수 주입
                 .build();
 
         Mono<Map<String, Object>> bizValidateMono = bizValidateService.validate(bizDto);
         BizDto validateBizDto = bizValidateService.monoToBizDto(bizValidateMono);
 
-        if (validateBizDto.getValid().equals("02")) {
+        // [수정 5]: 검증 실패 시 상수를 기준으로 비교하고, return 문을 추가하여 흐름 차단
+        if ("02".equals(validateBizDto.getValid())) {
             log.info("사업자 정보 입력값이 올바르지 않습니다. Valid: {}", validateBizDto.getValid());
-            // 예외처리
+            bindingResult.rejectValue("businessRegNum", "invalidBiz", "사업자 정보가 올바르지 않습니다. 다시 확인해주세요.");
+            return "/member/auth/signup"; // 예외 발생 후 원래 폼으로 튕겨냄
         }
 
         try {
@@ -218,6 +240,13 @@ public class AuthController {
                                           HttpSession session,
                                           Principal principal,
                                           RedirectAttributes redirectAttributes) {
+
+        // [수정 4]: Principal null 체크를 추가하여 비로그인 사용자의 접근 원천 차단
+        if (principal == null) {
+            log.warn("비로그인 사용자가 SNS 연동 콜백에 접근했습니다.");
+            return "redirect:/auth/signin";
+        }
+
         // 1. sns 서비스 호출 -> id값으로 member 조회 후 인증정보 조회(방어) -> 있으면 return
         Member member = memberService.getMemberByUsername(principal.getName());
         if (snsIntegrateService.isSnsIntegrate(member)) {

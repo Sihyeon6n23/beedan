@@ -34,4 +34,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "WHERE m.memStt = 'PENDING' " +
             "ORDER BY m.memCreDt DESC")
     List<MemberApproveDto> findPendingMembersWithFiles();
+
+    boolean existsByMemEml(String memEml);
 }

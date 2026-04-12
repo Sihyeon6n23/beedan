@@ -156,6 +156,11 @@ public class MemberService {
         member.approve();
     }
 
+
+    public boolean checkEmailDuplicate(String email) {
+        return memberRepository.existsByMemEml(email);
+    }
+
     public void inactiveAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
         member.inactive();
