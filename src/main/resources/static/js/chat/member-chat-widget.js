@@ -3,7 +3,7 @@
   if (!widget) {
     return;
   }
-
+  var notificationSubscription = null; // 임욱 추가. 알림 구독을 위한 변수
   var panel = widget.querySelector(".member-chat-panel");
   var launcher = widget.querySelector("[data-widget-toggle]");
   var launcherBadge = widget.querySelector(".member-chat-launcher__badge");
@@ -82,6 +82,7 @@
           wsConnected = true;
           subscribeMemberSummary();
           subscribeCurrentChatRoom();
+          subscribeNotificationCount(); // 임욱 추가.
         };
 
         stompClient.onWebSocketClose = function () {
@@ -100,6 +101,7 @@
       if (wsConnected) {
         subscribeMemberSummary();
         subscribeCurrentChatRoom();
+        subscribeNotificationCount(); // 임욱 추가.
       }
   }
 
@@ -1899,6 +1901,20 @@
     connectMemberChatSocket();
     loadMemberChatRooms({ animateList: false });
   }
+
+  function subscribeNotificationCount() {
+        if (!stompClient || !wsConnected) { return; }
+        if (notificationSubscription) {notificationSubscription.unsubscribe();} // 기존 구독이 있다면 해제
+
+        notificationSubscription = stompClient.subscribe('/user/sub/unread-count', function (message) {
+                var count = parseInt(message.body, 10);
+
+                // [핵심] UI 수정 코드는 모두 지우고, 이벤트만 발생시킵니다.
+                // 이를 통해 notification.js가 동작하게 합니다.
+                var event = new CustomEvent('newNotification', { detail: { count: count } });
+                window.dispatchEvent(event);
+        });
+    }
 
 });
 

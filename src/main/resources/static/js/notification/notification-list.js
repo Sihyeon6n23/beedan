@@ -35,21 +35,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 필터 UI 업데이트
     function updateFilterUI(activeFilter) {
-        // 모든 필터 버튼에서 is-active 클래스 제거
         document.querySelectorAll('.admin-chat-filter').forEach(btn => {
             btn.classList.remove('is-active');
         });
 
-        // 선택된 필터 버튼에 is-active 클래스 추가
         const activeBtn = document.querySelector(`.admin-chat-filter[data-status="${activeFilter}"]`);
         if (activeBtn) {
             activeBtn.classList.add('is-active');
         }
     }
 
-    // 알림 목록 로드
     function loadNotificationList() {
         const url = `/api/notification?filter=${currentFilter}`;
 
@@ -101,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
-                            <strong class="noti-title text-base text-[var(--pub-text-main)] truncate" style="${titleStyle}">[[${noti.notiTtl}]]</strong>
+                            <strong class="noti-title text-base text-[var(--pub-text-main)] truncate" style="${titleStyle}">${noti.notiTtl}</strong>
                             ${isUnread ? '<span id="noti-badge-' + noti.notiId + '" class="noti-badge status-badge !m-0" style="background:var(--pub-primary); color:var(--pub-text-main);">NEW</span>' : ''}
                         </div>
 
@@ -182,9 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // 토스트 메시지 표시 함수
     function showToast(message) {
-        // 간단한 토스트 구현 (필요시 개선)
         const toast = document.createElement('div');
         toast.textContent = message;
         toast.style.cssText = `
