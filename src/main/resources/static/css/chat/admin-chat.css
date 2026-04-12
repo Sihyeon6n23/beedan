@@ -640,15 +640,14 @@
 }
 
 .admin-chat-detail-message {
-  display: flex;
-  gap: 0.85rem;
-  align-items: flex-start;
-  margin-bottom: 0;
-  opacity: 0;
-  transform: translateY(10px);
-  animation: admin-chat-message-enter 0.28s ease forwards;
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    margin-bottom: 0;
 }
-
+.admin-chat-detail-message.admin-chat-animate-in {
+      animation: admin-chat-message-enter 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 
 .admin-chat-detail-message--admin {
   justify-content: flex-end;
@@ -667,19 +666,34 @@
 }
 
 .admin-chat-detail-message__content {
-  max-width: min(100%, 35rem);
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    max-width: min(100%, 35rem);
+}
+
+.admin-chat-detail-message--admin .admin-chat-detail-message__content {
+    margin-left: auto;
+    align-items: flex-end;
 }
 
 .admin-chat-detail-message__meta {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 0.4rem;
-  color: var(--color-secondary);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.4rem;
+    color: var(--color-secondary);
+    font-size: 10px;
+    width: fit-content;
+    max-width: 16rem;
+}
+
+.admin-chat-detail-message__meta strong {
+    display: inline-block;
+    max-width: 16rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .admin-chat-detail-message__meta--admin {
@@ -687,12 +701,15 @@
 }
 
 .admin-chat-detail-message__bubble {
-  padding: 1rem 1.1rem;
-  background: #fffdf8;
-  border: 1px solid rgba(123, 108, 62, 0.16);
-  box-shadow: 0 10px 22px rgba(53, 41, 10, 0.06);
-  font-size: 0.88rem;
-  line-height: 1.65;
+    display: inline-block;
+    width: fit-content;
+    max-width: min(100%, 35rem);
+    padding: 1rem 1.1rem;
+    background: #fffdf8;
+    border: 1px solid rgba(123, 108, 62, 0.16);
+    box-shadow: 0 10px 22px rgba(53, 41, 10, 0.06);
+    font-size: 0.88rem;
+    line-height: 1.65;
 }
 
 .admin-chat-detail-message__bubble--admin {
@@ -786,23 +803,34 @@
     background: #ffe98a;
 }
 
-/* QR 이미지: 카드 안에서 정사각형으로 정리 */
-.admin-chat-quote-card__qr {
+/* 관리자 채팅 견적 카드의 QR 슬롯: 로딩 전 placeholder 배경과 아이콘을 먼저 보여줌 */
+  .admin-chat-quote-card__qr {
+    display: block;
     width: 160px;
     height: 160px;
     align-self: center;
     border: 1px solid rgba(112, 93, 0, 0.12);
-    background: #ffffff;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c1b37a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='3.5' width='7' height='7' rx='1.2'/%3E%3Crect x='13.5' y='3.5' width='7' height='7' rx='1.2'/%3E%3Crect x='3.5' y='13.5' width='7' height='7' rx='1.2'/%3E%3Cpath d='M15 15h1.5M18.5 15H20M15 18.5H17M18.5 18.5V20M20 17v1.5'/%3E%3C/svg%3E") center / 44px 44px no-repeat,
+        linear-gradient(180deg, #fffdf6 0%, #fff7db 100%);
     object-fit: contain;
-}
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  /* QR 이미지가 실제로 로드되면 fade-in */
+  .admin-chat-quote-card__qr[src] {
+    opacity: 1;
+  }
 
 .admin-chat-detail-message__time {
-  display: block;
-  margin-top: 0.42rem;
-  color: var(--color-secondary);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 0.42rem;
+    color: var(--color-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
 }
 
 .admin-chat-detail-message__time--admin {
@@ -810,16 +838,16 @@
 }
 
 @keyframes admin-chat-message-enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+    from {
+      opacity: 0;
+      transform: translateY(0.45rem);
+    }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-}
 
 .admin-chat-detail-message__reply-button {
   display: inline-flex;
@@ -1475,10 +1503,6 @@
   .admin-chat-detail-message,
   .admin-chat-detail-message--admin {
     flex-direction: row;
-  }
-
-  .admin-chat-detail-message__content {
-    max-width: 100%;
   }
 
   .admin-chat-detail-footer__closed {
