@@ -23,28 +23,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    window.updateBadgeUI = function(count) { // 미확인 알림 개수 표시
+    window.updateBadgeUI = function(count) {
+        const badge = document.getElementById('unreadBadge');
+        if (!badge) return;
+
         const numCount = parseInt(count, 10);
         if (numCount > 0) {
-            badge.innerText = numCount > 6 ? '6+' : numCount;
-            badge.classList.remove('hidden');
+           badge.innerText = numCount > 6 ? '6+' : numCount;
+           badge.classList.remove('hidden');
+           badge.style.setProperty('display', 'flex', 'important');
         } else {
-            badge.innerText = '';
-            badge.classList.add('hidden');
+           badge.innerText = '';
+           badge.classList.add('hidden');
+           badge.style.setProperty('display', 'none', 'important');
         }
     };
 
-    function updateUnreadCount() { // 알림 JS 초기화 시점과 실시간 이벤트 수신 시점에 호출하여 배지 업데이트
+    window.updateUnreadCount = function() {
         apiRequest('/api/notification/unread-count')
             .then(count => {
                 updateBadgeUI(count);
             })
             .catch(err => console.error("배지 업데이트 실패:", err));
-    }
+    };
 
     window.addEventListener('newNotification', function(e) { // 웹소켓 연결시 이벤트 실행 (알림 수신 시 서버에서 클라이언트로 count를 보내줄 예정)
         const newCount = e.detail.count;
-        console.log("실시간 알림 수신됨 (Event):", newCount);
         updateBadgeUI(newCount);
     });
 
@@ -96,11 +100,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (url) {
+            if (typeof window.handlePageAction === 'function') {
+            }
+
             apiRequest(url, method)
                 .then(updatedList => {
-                    renderNotifications(updatedList);
+                    if (typeof renderNotifications === 'function') { renderNotifications(updatedList); }
 
-                    if (type === 'read' && refUrl && refUrl !== 'null' && refUrl !== '') { location.href = refUrl; } // url 있을면 해당 페이지로 이동
+                    window.dispatchEvent(new CustomEvent('notificationUpdated', { detail: updatedList }));
+
+                    if (window.updateUnreadCount) window.updateUnreadCount();
+
+                    if (type === 'read' && refUrl && refUrl !== 'null' && refUrl !== '') { location.href = refUrl;}
                 })
                 .catch(err => alert("요청 처리에 실패했습니다."));
         }

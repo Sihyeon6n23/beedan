@@ -267,7 +267,7 @@
                     <!-- ON/OFF 라디오 -->
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isUnipassEnabled" value="true" th:checked="${setting.isUnipassEnabled}">
+                            <input type="radio" name="unipassEnabled" value="true" th:checked="${setting.unipassEnabled}">
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
@@ -308,12 +308,12 @@
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>
 
-                    <div class="flex gap-2">
-                        <button type="button" onclick="triggerSync()"
-                                class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-all">
-                            지금 즉시 동기화
-                        </button>
-                    </div>
+                    <button type="button" id="refreshNewBtn"
+                            onclick="refreshDisplay('new')"
+                            class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 text-sm font-bold uppercase tracking-wide hover:brightness-95 transition-all">
+                        <span class="material-symbols-outlined text-base">refresh</span>
+                        즉시 갱신
+                    </button>
                 </section>
 
             </form>
