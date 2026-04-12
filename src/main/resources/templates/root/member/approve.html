@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN', 'MEMBER MANAGEMENT', ~{::sidebar})},
+          ~{::content}
+      )}">
+<head>
+  <title>BEEDAN | Member Approval</title>
+</head>
+<body>
+
+<th:block th:fragment="sidebar">
+  <div th:replace="~{root/root-sidebar :: sidebar('memberCreate', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+  <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+  <link rel="stylesheet" th:href="@{/css/admin/admin-member-list.css}">
+  <style>
+    /* 승인 페이지 전용 그리드 비율 설정 */
+    .admin-chat-list-head,
+    .admin-chat-row {
+      display: grid !important;
+      grid-template-columns: 1fr 1.5fr 1fr 1.5fr 1.5fr !important;
+      gap: 1rem;
+      align-items: center;
+    }
+    .file-icon { cursor: pointer; color: #555; font-size: 1.2rem; }
+    .btn-approve { background-color: #28a745; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; border-radius: 2px; }
+    .btn-deny { background-color: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; border-radius: 2px; }
+    .action-btns { display: flex; gap: 5px; justify-content: center; }
+  </style>
+
+  <section class="admin-chat-page admin-chat-list-page member-management-list">
+    <header class="admin-chat-shell admin-chat-shell--header">
+      <div class="admin-chat-shell__heading">
+        <span class="admin-chat-kicker">MEMBER APPROVAL</span>
+        <h2 class="admin-chat-title">가입 승인 대기 목록</h2>
+        <div class="admin-chat-shell__rule"><span></span></div>
+      </div>
+    </header>
+
+    <section class="admin-chat-shell admin-chat-shell--list">
+      <div class="admin-chat-list-head" aria-hidden="true">
+        <div style="text-align: center;">사용자 이름</div>
+        <div style="text-align: center;">사업자 번호</div>
+        <div style="text-align: center;">등록증</div>
+        <div style="text-align: center;">가입요청일</div>
+        <div style="text-align: center;">관리</div>
+      </div>
+
+      <div class="admin-chat-list-body" id="memberListBody">
+        <div th:each="m : ${members}" class="admin-chat-row" th:id="'row-' + ${m.memId}">
+          <div style="text-align: center;" th:text="${m.memNm}">홍길동</div>
+          <div style="text-align: center;" th:text="${m.getFormattedBizNo()}">123-45-67890</div>
+          <div style="text-align: center;">
+            <span class="material-symbols-outlined file-icon"
+                  th:data-pull-path="${m.filePath}+'/'+${m.fileUuid}"
+                  onclick="openBizFile(this.getAttribute('data-pull-path'))">
+                description
+            </span>
+          </div>
+          <div style="text-align: center;" th:text="${m.getFormattedDate()}">2024-05-20</div>
+          <div class="action-btns">
+            <button class="btn-approve" th:onclick="|processMember(${m.memId}, 'approve')|">승인</button>
+            <button class="btn-deny" th:onclick="|processMember(${m.memId}, 'deny')|">거절</button>
+          </div>
+        </div>
+        <div th:if="${#lists.isEmpty(members)}" style="padding: 50px; text-align: center; color: #999;">
+          승인 대기 중인 회원이 없습니다.
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script th:src="@{/js/root/approve.js}"></script>
+</th:block>
+</body>
+</html>
