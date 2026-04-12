@@ -271,8 +271,8 @@
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isUnipassEnabled" value="false"
-                                   th:checked="${!setting.isUnipassEnabled}">
+                            <input type="radio" name="unipassEnabled" value="false"
+                                   th:checked="${!setting.unipassEnabled}">
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>
@@ -308,11 +308,8 @@
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
                     </div>
 
-                    <button type="button" id="refreshNewBtn"
-                            onclick="refreshDisplay('new')"
-                            class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 text-sm font-bold uppercase tracking-wide hover:brightness-95 transition-all">
-                        <span class="material-symbols-outlined text-base">refresh</span>
-                        즉시 갱신
+                    <button type="button" id="refreshShipmentBtn" onclick="triggerSync()" class="w-full flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 text-sm font-bold uppercase tracking-wide hover:brightness-95 transition-all">
+                        <span class="material-symbols-outlined text-base">refresh</span>즉시 갱신
                     </button>
                 </section>
 
