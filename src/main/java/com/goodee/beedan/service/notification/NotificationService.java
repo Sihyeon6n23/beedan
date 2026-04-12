@@ -141,7 +141,6 @@ public class NotificationService {
         return notificationRepository.countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(memId);
     }
 
-
     private void sendRealTimeUnreadCount(Long memId) {
         Member member = memberRepository.findById(memId).orElse(null);
         if (member == null) return;
@@ -160,6 +159,7 @@ public class NotificationService {
                 .notiReaYn(notification.getNotiReaYn())
                 .notiCreDt(notification.getNotiCreDt())
                 .notiUptDt(notification.getNotiUpdDt())
+                .notiRef(notification.getNotiRef())
                 .build();
     }
 }

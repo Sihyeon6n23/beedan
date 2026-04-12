@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let html = '<ul class="data-list-container">';
         html += data.map(noti => `
-            <li class="data-list-item ${noti.notiReaYn === false ? 'unread' : ''}" onclick="handleAction('read', ${noti.notiId}, this)">
+            <li class="data-list-item ${noti.notiReaYn === false ? 'unread' : ''}" onclick="handleAction('read', ${noti.notiId}, this, '${noti.notiRef}')">
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <strong class="text-sm text-[var(--pub-text-main)]">${noti.notiTtl}</strong>
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notiContent.innerHTML = html;
     }
 
-    window.handleAction = function(type, id = null, clickedElement = null) {
+    window.handleAction = function(type, id = null, clickedElement = null, refUrl = null) {
         let url = '';
         let method = 'PATCH';
 
@@ -99,6 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
             apiRequest(url, method)
                 .then(updatedList => {
                     renderNotifications(updatedList);
+
+                    if (type === 'read' && refUrl && refUrl !== 'null' && refUrl !== '') { location.href = refUrl; } // url 있을면 해당 페이지로 이동
                 })
                 .catch(err => alert("요청 처리에 실패했습니다."));
         }

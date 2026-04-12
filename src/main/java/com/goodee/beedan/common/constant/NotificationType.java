@@ -16,11 +16,9 @@ public enum NotificationType {
     INQUIRY_ANSWER_CREATE("문의 답변 등록", "문의에 대한 답변이 등록되었습니다.", "/inquiry/detail?id=%s"),
     INQUIRY_ANSWER_UPDATE("문의 답변 수정", "문의 답변 내용이 수정되었습니다.", "/inquiry/detail?id=%s"),
 
-    ORDER_APPROVE("주문 승인", "요청하신 주문이 승인 처리되었습니다.", "/order/detail?id=%s"),
-    ORDER_CHANGE("주문 변경", "요청하신 주문의 상태가 변경 되었습니다.", "/order/detail?id=%s"),
     ORDER_CANCEL("주문 취소", "요청하신 주문이 취소 처리되었습니다.", "/order/detail?id=%s"),
 
-    DELIVERING_START("국내 배송 시작", "국내 배송이 시작되었습니다.", "/order/list"),
+    DELIVERING_START("배송 시작", "상품 배송이 시작되었습니다.", "/order/list"),
     DELIVERING_END("배송 완료", "상품 배송이 완료되었습니다.", "/order/list"),
 
     REQUIREMENT_APPROVE("상품 요청 승인", "상품 요청이 승인 처리되었습니다.", "/require/detail?id=%s"),
