@@ -198,8 +198,8 @@
         resize: false,
         plugins: 'lists link table wordcount preview',
         toolbar:
-          'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
-          'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+            'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+            'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
         block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
         font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
         placeholder: '문의 내용을 자세히 입력해 주세요.',
@@ -284,9 +284,9 @@
     const addFiles = (files) => {
       Array.from(files).forEach((file) => {
         const duplicated = selectedFiles.some((selected) =>
-          selected.name === file.name &&
-          selected.size === file.size &&
-          selected.lastModified === file.lastModified
+            selected.name === file.name &&
+            selected.size === file.size &&
+            selected.lastModified === file.lastModified
         );
         if (!duplicated) {
           selectedFiles.push(file);
@@ -328,7 +328,7 @@
     });
   }
 
-  function initInquiryDetailActions(useCustomUpload = true) {
+  function initInquiryDetailActions() {
     const detailPage = document.querySelector('.inquiry-detail-page');
     if (!detailPage) {
       return;
@@ -390,7 +390,7 @@
       if (nextDocument.title) {
         document.title = nextDocument.title;
       }
-      initInquiryDetailActions(true);
+      initInquiryDetailActions();
     };
 
     const confirmModal = detailPage.querySelector('[data-inquiry-modal="confirm"]');
@@ -407,162 +407,6 @@
     const formError = detailPage.querySelector('[data-inquiry-form-error]');
     const formSubmitButton = detailPage.querySelector('[data-inquiry-form-submit]');
     const modalClosers = detailPage.querySelectorAll('[data-inquiry-modal-close]');
-
-    const initReplyUploadRoot = (uploadRoot) => {
-      if (!uploadRoot || uploadRoot.dataset.bound === 'true') {
-        return;
-      }
-
-      const uploadZone = uploadRoot.querySelector('.inquiry-upload__zone');
-      const fileInput = uploadRoot.querySelector('input[name="newFiles"]');
-      const fileListContainer = uploadRoot.querySelector('.inquiry-upload__list');
-      const countInfo = uploadRoot.querySelector('#fileCountInfo');
-
-      if (!uploadZone || !fileInput || !fileListContainer || !countInfo) {
-        return;
-      }
-
-      uploadRoot.dataset.bound = 'true';
-
-      const maxMatch = String(countInfo.textContent || '').match(/\/\s*(\d+)\)/);
-      const maxCount = maxMatch ? Number(maxMatch[1]) : (fileInput.multiple ? 5 : 1);
-      let selectedFiles = [];
-      uploadRoot._getSelectedFiles = () => selectedFiles.slice();
-
-      const formatFileSize = (size) => {
-        if (!Number.isFinite(size) || size <= 0) {
-          return '0 B';
-        }
-        if (size < 1024) {
-          return `${size} B`;
-        }
-        if (size < 1024 * 1024) {
-          return `${(size / 1024).toFixed(1)} KB`;
-        }
-        return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-      };
-
-      const syncFileInput = () => {
-        const dataTransfer = new DataTransfer();
-        selectedFiles.forEach((file) => dataTransfer.items.add(file));
-        fileInput.files = dataTransfer.files;
-      };
-
-      const getExistingCount = () => fileListContainer.querySelectorAll('.inquiry-upload__item.existing:not(.to-delete)').length;
-
-      const updateCount = () => {
-        countInfo.textContent = `(${selectedFiles.length + getExistingCount()} / ${maxCount})`;
-      };
-
-      const removeNewFile = (targetName, targetSize, targetLastModified, element) => {
-        selectedFiles = selectedFiles.filter((file) => !(
-          file.name === targetName
-          && file.size === targetSize
-          && file.lastModified === targetLastModified
-        ));
-        syncFileInput();
-        element?.remove();
-        updateCount();
-      };
-
-      const renderNewFile = (file) => {
-        const item = document.createElement('div');
-        item.className = 'inquiry-upload__item new flex items-center justify-between gap-3 p-3 mb-2 border-l-4 border-primary bg-white shadow-sm';
-
-        const fileName = file.name;
-        const fileSize = file.size;
-        const lastModified = file.lastModified;
-
-        item.innerHTML = `
-          <div class="flex items-center gap-2 overflow-hidden flex-1">
-            <span class="material-symbols-outlined text-secondary !text-lg flex-shrink-0">description</span>
-            <span class="text-sm font-medium text-on-background truncate">
-              ${fileName}
-              <small class="text-zinc-400 ml-1">(${formatFileSize(fileSize)})</small>
-            </span>
-            <mark class="badge-new bg-primary-container text-on-primary-container text-[10px] font-black px-1.5 py-0.5 uppercase tracking-wider flex-shrink-0">New</mark>
-          </div>
-          <button type="button" class="inquiry-upload__remove text-secondary hover:text-error transition-colors flex-shrink-0 ml-3" aria-label="첨부 파일 삭제">
-            <span class="material-symbols-outlined !text-lg">close</span>
-          </button>
-        `;
-
-        item.querySelector('button')?.addEventListener('click', () => {
-          removeNewFile(fileName, fileSize, lastModified, item);
-        });
-
-        fileListContainer.appendChild(item);
-      };
-
-      const processFiles = (files) => {
-        if (!files?.length) {
-          return;
-        }
-
-        const remaining = maxCount - (selectedFiles.length + getExistingCount());
-        if (remaining <= 0) {
-          window.alert(`최대 ${maxCount}개까지 첨부할 수 있습니다.`);
-          return;
-        }
-
-        Array.from(files).slice(0, remaining).forEach((file) => {
-          const duplicated = selectedFiles.some((selected) =>
-            selected.name === file.name
-            && selected.size === file.size
-            && selected.lastModified === file.lastModified
-          );
-
-          if (!duplicated) {
-            selectedFiles.push(file);
-            renderNewFile(file);
-          }
-        });
-
-        syncFileInput();
-        updateCount();
-        fileInput.value = '';
-      };
-
-      uploadZone.addEventListener('click', () => fileInput.click());
-      fileInput.addEventListener('click', (event) => event.stopPropagation());
-      uploadZone.addEventListener('dragover', (event) => {
-        event.preventDefault();
-        uploadZone.classList.add('is-dragover');
-      });
-      uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('is-dragover'));
-      uploadZone.addEventListener('drop', (event) => {
-        event.preventDefault();
-        uploadZone.classList.remove('is-dragover');
-        processFiles(event.dataTransfer.files);
-      });
-      fileInput.addEventListener('change', (event) => processFiles(event.target.files));
-
-      fileListContainer.querySelectorAll('.inquiry-upload__item.existing').forEach((item) => {
-        const deleteInput = item.querySelector('.delete-input');
-        const removeButton = item.querySelector('.inquiry-upload__remove');
-        if (!deleteInput || !removeButton) {
-          return;
-        }
-
-        removeButton.onclick = null;
-        removeButton.addEventListener('click', () => {
-          const isDeleting = !item.classList.contains('to-delete');
-          item.classList.toggle('to-delete', isDeleting);
-          item.style.opacity = isDeleting ? '0.5' : '1';
-          deleteInput.name = isDeleting ? 'deleteUuids' : '';
-          deleteInput.value = isDeleting ? (deleteInput.dataset.uuid || '') : '';
-          updateCount();
-        });
-      });
-
-      updateCount();
-    };
-
-    const initReplyUploadRoots = () => {
-      detailPage.querySelectorAll('[data-inquiry-upload]').forEach((uploadRoot) => {
-        initReplyUploadRoot(uploadRoot);
-      });
-    };
 
     let pendingConfirmAction = null;
     let pendingFormAction = null;
@@ -601,17 +445,6 @@
       confirmModal.setAttribute('aria-hidden', 'false');
     };
 
-    const openGuideModal = (message, onConfirm = null) => {
-      openConfirmModal({
-        title: '안내',
-        lead: message,
-        description: '',
-        confirmText: '확인',
-        hideCancel: true,
-        onConfirm
-      });
-    };
-
     const openFormModal = (options) => {
       if (!formModal) {
         return;
@@ -637,7 +470,6 @@
     if (confirmButton) {
       confirmButton.addEventListener('click', async () => {
         if (!pendingConfirmAction) {
-          closeModals();
           return;
         }
         const action = pendingConfirmAction;
@@ -669,54 +501,6 @@
           handleError();
         }
       });
-    }
-
-    const deleteSuccess = Number(detailPage.dataset.resultDeleteSuccess || 0);
-    const uploadSuccess = Number(detailPage.dataset.resultUploadSuccess || 0);
-    const failCount = Number(detailPage.dataset.resultFail || 0);
-    const failReasons = (detailPage.dataset.resultFailReasons || '')
-      .split('||')
-      .map((value) => value.trim())
-      .filter(Boolean);
-
-    const openBoardResultModal = (result, onConfirm = null) => {
-        if (!result) {
-          return;
-        }
-
-        const lines = [];
-
-        if (result.deleteSuccess > 0) {
-            lines.push(`기존 파일 삭제: ${result.deleteSuccess}건`);
-        }
-        if (result.uploadSuccess > 0) {
-            lines.push(`파일 업로드 성공: ${result.uploadSuccess}건`);
-        }
-        if (result.fail > 0) {
-            lines.push(`파일 처리 실패: ${result.fail}건`);
-        }
-
-        const description = result.failReason.length
-          ? result.failReason.join('\n')
-          : '';
-
-        openConfirmModal({
-            title: '처리 결과',
-            lead: lines.join('\n'),
-            description,
-            confirmText: '확인',
-            hideCancel: true,
-            onConfirm
-        });
-    };
-
-    if (deleteSuccess > 0 || uploadSuccess > 0 || failCount > 0) {
-        openBoardResultModal({
-          deleteSuccess,
-          uploadSuccess,
-          fail: failCount,
-          failReason: failReasons
-        });
     }
 
     // 사용자 문의 취소 비동기 처리
@@ -836,8 +620,8 @@
         resize: false,
         plugins: 'lists link table wordcount preview',
         toolbar:
-          'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
-          'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+            'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+            'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
         block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
         font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
         placeholder: '답변 내용을 입력해 주세요.',
@@ -883,15 +667,8 @@
         return formData;
       }
 
-      const uploadRoot = formRoot.querySelector('[data-inquiry-upload]');
-      const selectedFiles = typeof uploadRoot?._getSelectedFiles === 'function'
-        ? uploadRoot._getSelectedFiles()
-        : [];
       const fileInput = formRoot.querySelector('input[name="newFiles"]');
-
-      if (selectedFiles.length) {
-        selectedFiles.forEach((file) => formData.append('newFiles', file));
-      } else if (fileInput?.files?.length) {
+      if (fileInput?.files?.length) {
         Array.from(fileInput.files).forEach((file) => formData.append('newFiles', file));
       }
 
@@ -935,14 +712,13 @@
 
       return editButton;
     };
-
     const bindReplyEditFormHandlers = () => {
-    const currentReplyDisplay = detailPage.querySelector('[data-reply-display]');
-    const currentReplyEditForm = detailPage.querySelector('[data-reply-edit-form]');
-    const currentReplyEditTextarea = detailPage.querySelector('[data-reply-edit-textarea]');
-    const currentReplyEditError = detailPage.querySelector('[data-reply-edit-error]');
-    const currentReplyEditSubmit = detailPage.querySelector('[data-reply-edit-submit]');
-    const currentReplyEditCancel = detailPage.querySelector('[data-reply-edit-cancel]');
+      const currentReplyDisplay = detailPage.querySelector('[data-reply-display]');
+      const currentReplyEditForm = detailPage.querySelector('[data-reply-edit-form]');
+      const currentReplyEditTextarea = detailPage.querySelector('[data-reply-edit-textarea]');
+      const currentReplyEditError = detailPage.querySelector('[data-reply-edit-error]');
+      const currentReplyEditSubmit = detailPage.querySelector('[data-reply-edit-submit]');
+      const currentReplyEditCancel = detailPage.querySelector('[data-reply-edit-cancel]');
 
       if (currentReplyEditCancel && currentReplyEditCancel.dataset.bound !== 'true') {
         currentReplyEditCancel.dataset.bound = 'true';
@@ -974,19 +750,11 @@
 
           try {
             // 답글 수정은 첨부 삭제/추가를 같이 보내기 위해 multipart/form-data로 전송
-            const response = await request(`/api/admin/inquiries/${replyId}/reply/edit`, {
-                method: 'POST',
-                body: buildReplyFormData(currentReplyEditForm, content)
+            await request(`/api/admin/inquiries/${replyId}/reply`, {
+              method: 'PATCH',
+              body: buildReplyFormData(currentReplyEditForm, content)
             });
-            const result = await response.json();
-
-            if (result.boardResultMessage) {
-                openBoardResultModal(result.boardResultMessage, async () => {
-                  await refreshDetailPage();
-                });
-            } else {
-                await refreshDetailPage();
-            }
+            await refreshDetailPage();
           } catch (error) {
             handleError();
           }
@@ -1065,28 +833,74 @@
         }
 
         try {
-            // 답글 작성도 첨부를 같이 받기 위해 multipart/form-data로 전송
-            const response = await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
-              method: 'POST',
-              body: buildReplyFormData(replyCreateForm, content)
-            });
-            const result = await response.json();
+          // 답글 작성도 첨부를 같이 받기 위해 multipart/form-data로 전송
+          await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
+            method: 'POST',
+            body: buildReplyFormData(replyCreateForm, content)
+          });
+          await refreshDetailPage();
+          return;
 
-            if (result.boardResultMessage) {
-                openBoardResultModal(result.boardResultMessage, async () => {
-                  await refreshDetailPage();
-                });
-            } else {
-                await refreshDetailPage();
-            }
+          const response = await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ brdCon: content })
+          });
+          const createdReplyId = Number(await response.text());
+          const reply = await fetchReplyDto();
+          let existingBody = detailPage.querySelector('[data-reply-existing-body]');
+          let display = detailPage.querySelector('[data-reply-display]');
+
+          if (!existingBody && replyCreateBody && reply) {
+            replyCreateBody.insertAdjacentHTML('beforebegin', `
+              <div class="inquiry-detail-reply__body" data-reply-existing-body>
+                <div class="inquiry-detail-reply__display" data-reply-display>
+                  ${renderReplyContent(reply)}
+                </div>
+                <div class="inquiry-detail-inline-form is-hidden" data-reply-edit-form>
+                  <div class="inquiry-detail-inline-form__editor">
+                    <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-edit-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
+                    <p class="inquiry-detail-inline-form__error is-hidden" data-reply-edit-error>답변 내용을 입력해 주세요.</p>
+                  </div>
+                  <div class="inquiry-detail-inline-form__actions-wrap">
+                    <div class="inquiry-detail-inline-form__actions">
+                      <button type="button" class="inquiry-detail-action" data-reply-edit-cancel>취소</button>
+                      <button type="button" class="inquiry-detail-action inquiry-detail-action--primary" data-reply-edit-submit data-inquiry-reply-edit-id="${createdReplyId || reply.brdId}">적용</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `);
+            existingBody = detailPage.querySelector('[data-reply-existing-body]');
+            display = detailPage.querySelector('[data-reply-display]');
+          }
+
+          if (display && reply) {
+            display.innerHTML = renderReplyContent(reply);
+          }
+          if (replyCreateBody) {
+            replyCreateBody.classList.add('is-hidden');
+          }
+          if (replyCreateForm) {
+            replyCreateForm.classList.add('is-hidden');
+          }
+          removeInlineEditor(replyCreateTextarea);
+          const editButton = ensureEditButton(createdReplyId || reply?.brdId);
+          bindReplyEditButton(editButton);
+          if (existingBody) {
+            existingBody.classList.remove('is-hidden');
+          }
+          const newReplyEditSubmit = detailPage.querySelector('[data-reply-edit-submit]');
+          if (newReplyEditSubmit) {
+            newReplyEditSubmit.setAttribute('data-inquiry-reply-edit-id', createdReplyId || reply?.brdId);
+          }
+          bindReplyEditFormHandlers();
         } catch (error) {
-            handleError();
+          handleError();
         }
       });
-    }
-
-    if (useCustomUpload) {
-      initReplyUploadRoots();
     }
 
     const initialEditButton = detailPage.querySelector('[data-inquiry-reply-edit-id]');
