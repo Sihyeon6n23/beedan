@@ -4,10 +4,8 @@ import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
-import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.order.OrderService;
-import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,13 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderApiController {
     private final OrderService orderService;
+    private final NotificationService notificationService;
 
     @GetMapping("/list")
     public ResponseEntity<Page<OrderDto>> getOrders(
@@ -66,6 +64,8 @@ public class OrderApiController {
         Long memId = userDetails.getMemberId();
 
         orderService.cancelOrder(ordId, memId);
+
+        notificationService.createNotification(memId, NotificationType.ORDER_CANCEL,ordId);
 
         return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
     }

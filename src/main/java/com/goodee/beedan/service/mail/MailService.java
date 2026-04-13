@@ -45,13 +45,13 @@ public class MailService {
                     fullUrl
             );
 
-            helper.setFrom("Beedan 서비스 <cotowook@naver.com>");
+            helper.setFrom("Beedan 서비스 <" + mailUsername + ">");
             helper.setTo(emailAddress);
             helper.setSubject(title);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (MessagingException | MailException e) {
             e.printStackTrace();
         }
     }
@@ -63,7 +63,7 @@ public class MailService {
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("Beedan 서비스 < "+ mailUsername +">");
+            helper.setFrom("Beedan 서비스 <"+ mailUsername +">");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(content, true);

@@ -9,6 +9,7 @@ import com.goodee.beedan.entity.ChatbotTopic;
 import com.goodee.beedan.repository.chatbot.ChatbotResponseRepository;
 import com.goodee.beedan.repository.chatbot.ChatbotTopicRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,8 +24,10 @@ public class ChatbotService {
     private final ChatbotTopicRepository chatbotTopicRepository;
     private final ChatbotResponseRepository chatbotResponseRepository;
 
-    // 챗봇 1차 질의 목록을 조회
-    public List<ChatbotTopicDto> getFirstLevelTopics() {
+    // 챗봇 1차 질의 목록 조회
+    // 챗봇 1차 버튼 목록은 변경이 거의 없으므로 Redis 캐시에 저장
+    @Cacheable(value = "chatbot:flow", key = "'firstLevelTopics'", unless = "#result == null || #result.isEmpty()")
+    public List<ChatbotTopicDto> getFirstLevelTopics() {            // unless: 빈 결과는 캐시하지 않도록
         List<ChatbotTopic> firstLevelTopics = chatbotTopicRepository
                 .findByCbTpLvlAndCbTpUseYnOrderByCbTpOrdAsc(FIRST_LEVEL, ACTIVE);
 
@@ -35,6 +38,8 @@ public class ChatbotService {
 
     // 다음 화면이 하위(2차) 질의 목록인지 최종 응답인지 판단 후 조회
     // (반환값이 항상 같은 타입이 아니기 때문에 wrapperDto 인 ChatbotNextStepDto 사용)
+    // 챗봇 다음 단계 응답은 topicId 기준으로 결과가 고정되므로 Redis 캐시에 저장
+    @Cacheable(value = "chatbot:flow", key = "'nextStep:' + #topicId", unless = "#result == null")
     public ChatbotNextStepDto getNextStep(Long topicId) {
         ChatbotTopic topic = chatbotTopicRepository
                 .findByCbTpIdAndCbTpUseYn(topicId, ACTIVE)
@@ -67,6 +72,8 @@ public class ChatbotService {
     }
 
     // 채팅방 제목에 사용할 최상위 1차 질의 조회
+    // 채팅방 제목용 상위 1차 질문은 topicId 기준으로 결과가 고정되므로 Redis 캐시에 저장
+    @Cacheable(value = "chatbot:flow", key = "'topLevelTopic:' + #topicId", unless = "#result == null")
     public ChatbotTopLevelTopicDto getTopLevelTopic(Long topicId) {
         ChatbotTopic topic = chatbotTopicRepository
                 .findByCbTpIdAndCbTpUseYn(topicId, ACTIVE)

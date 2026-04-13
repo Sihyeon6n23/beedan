@@ -4,6 +4,8 @@
     return;
   }
 
+  var qrApiBaseUrl = widget ? (widget.dataset.qrApiBaseUrl || "") : "";
+  var notificationSubscription = null; // 임욱 추가. 알림 구독을 위한 변수
   var panel = widget.querySelector(".member-chat-panel");
   var launcher = widget.querySelector("[data-widget-toggle]");
   var launcherBadge = widget.querySelector(".member-chat-launcher__badge");
@@ -62,6 +64,7 @@
   var loginUrl = widget.dataset.loginUrl || "/auth/signin";
   var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
   var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
+  var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
   function connectMemberChatSocket() {
       // 사용자 위젯에서 현재 채팅방을 WebSocket으로 수신할 수 있게 연결을 만듦
@@ -72,7 +75,7 @@
       // 소켓이 없으면 새로 연결
       if (!stompClient) {
         stompClient = new StompJs.Client({
-          brokerURL: "ws://" + window.location.host + "/ws",
+          brokerURL: wsProtocol + window.location.host + "/ws",
           reconnectDelay: 5000,
           debug: function () {}
         });
@@ -82,6 +85,7 @@
           wsConnected = true;
           subscribeMemberSummary();
           subscribeCurrentChatRoom();
+          subscribeNotificationCount(); // 임욱 추가.
         };
 
         stompClient.onWebSocketClose = function () {
@@ -100,6 +104,7 @@
       if (wsConnected) {
         subscribeMemberSummary();
         subscribeCurrentChatRoom();
+        subscribeNotificationCount(); // 임욱 추가.
       }
   }
 
@@ -166,8 +171,14 @@
         appendMemberChatMessage(message);
 
           if (message.chMsSenTy !== "USER") {
-            markCurrentChatRoomAsRead();
-            return;
+              // 실제로 위젯이 열려 있고 현재 채팅 상세를 보고 있을 때만 읽음 처리
+              if (isCurrentChatRoom(message.chRoId)) {
+                markCurrentChatRoomAsRead();
+                return;
+              }
+
+              loadMemberChatRooms({ animateList: false });
+              return;
           }
 
           loadMemberChatRooms({ animateList: false });
@@ -231,10 +242,15 @@
     chatListNavButton.setAttribute("data-unread", isVisible ? "true" : "false");
   }
 
+  function isChatRoomPanelOpen() {
+      return !!panel && !panel.classList.contains("is-hidden");
+    }
+
   function isCurrentChatRoom(chatRoomId) {
-    return currentViewName === "chat-room"
-      && currentChatRoomId !== null
-      && String(currentChatRoomId) === String(chatRoomId);
+      return isChatRoomPanelOpen()
+        && currentViewName === "chat-room"
+        && currentChatRoomId !== null
+        && String(currentChatRoomId) === String(chatRoomId);
   }
 
   // 챗봇 영역 하단 자동 스크롤
@@ -928,16 +944,28 @@
     link.href = message.chMsLnkUrl || "#";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = "견적 보기";
+    link.textContent = "견적 초안 열기";
     card.appendChild(link);
 
     if (message.chMsLnkUrl) {
-      var qr = document.createElement("img");
-      qr.className = "member-chat-quote-card__qr";
-      qr.alt = "견적 QR 코드";
-      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
-      card.appendChild(qr);
-    }
+        var qr = document.createElement("img");
+        qr.className = "member-chat-quote-card__qr";
+        qr.alt = "견적 QR 코드";
+
+        // QR이 늦게 로드되면 카드 높이가 뒤늦게 커지므로, 로드 후 다시 하단 스크롤 맞춤
+        qr.addEventListener("load", function () {
+          scrollChatRoomToBottom(false);
+        });
+
+        qr.addEventListener("error", function () {
+          scrollChatRoomToBottom(false);
+        });
+
+        if (qrApiBaseUrl) {
+          qr.src = qrApiBaseUrl + encodeURIComponent(message.chMsLnkUrl);
+        }
+        card.appendChild(qr);
+      }
 
     return card;
   }
@@ -1197,14 +1225,14 @@
     if (emptyState) {
       emptyState.remove();
     }
+    // 실시간 수신 메시지 날짜가 바뀌었으면 먼저 날짜 divider 추가
+    appendMemberDateDividerIfNeeded(message.chMsCreDt);
 
     var article = document.createElement("article");
     var body = document.createElement("div");
     var bubble = document.createElement("div");
     var time = document.createElement("span");
     var isUserMessage = message.chMsSenTy === "USER";
-
-    appendMemberDateDividerIfNeeded(message.chMsCreDt);
 
     article.className = "member-chat-message " + (isUserMessage ? "member-chat-message--right" : "member-chat-message--left");
     article.classList.add("member-chat-animate-in");
@@ -1899,6 +1927,20 @@
     connectMemberChatSocket();
     loadMemberChatRooms({ animateList: false });
   }
+
+  function subscribeNotificationCount() {
+        if (!stompClient || !wsConnected) { return; }
+        if (notificationSubscription) {notificationSubscription.unsubscribe();} // 기존 구독이 있다면 해제
+
+        notificationSubscription = stompClient.subscribe('/user/sub/unread-count', function (message) {
+                var count = parseInt(message.body, 10);
+
+                // [핵심] UI 수정 코드는 모두 지우고, 이벤트만 발생시킵니다.
+                // 이를 통해 notification.js가 동작하게 합니다.
+                var event = new CustomEvent('newNotification', { detail: { count: count } });
+                window.dispatchEvent(event);
+        });
+    }
 
 });
 

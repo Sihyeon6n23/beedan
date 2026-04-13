@@ -2251,4 +2251,459 @@
     top: 6rem;
     width: 100%;
   }
+  @layer components {
+    /* =========================================
+       [1] 마이페이지 - 프로필 전용 컴포넌트
+       (기존 changepw와 동일한 규격 적용)
+    ========================================= */
+    .mypage-profile-page {
+      padding: 2rem clamp(1rem, 2vw, 2rem) 4rem;
+    }
+
+    .mypage-profile-page__intro {
+      padding: 1.5rem 0;
+    }
+
+    .mypage-profile-page__sidebar-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      height: 100%;
+    }
+
+    .mypage-profile-page__kicker {
+      color: var(--color-primary);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .mypage-profile-page__title {
+      margin-top: 0.5rem;
+      font-family: var(--font-headline);
+      font-size: clamp(2.3rem, 5vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: var(--tracking-tighter);
+      line-height: 0.95;
+    }
+
+    .mypage-profile-page__rule {
+      margin-top: 1.25rem;
+      width: 100%;
+      height: 2px;
+      background: var(--color-surface-container-highest);
+    }
+
+    .mypage-profile-page__rule span {
+      display: block;
+      width: 11rem;
+      height: 100%;
+      background: var(--color-primary-container);
+    }
+
+    .mypage-profile-page__side-card--fill {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+    }
+
+    @media (min-width: 1024px) {
+      .mypage-profile-page__layout {
+        align-items: stretch;
+      }
+
+      .mypage-profile-page__layout > .lg\:col-span-4 {
+        display: flex;
+      }
+
+      .mypage-profile-page__sidebar-stack {
+        position: sticky;
+        top: 6rem;
+        width: 100%;
+      }
+    }
+  }
+
+  @layer utilities {
+    /* =========================================
+       [2] 누락된 사이즈 및 간격 (Width, Height, Max-width)
+    ========================================= */
+    .w-32 { width: 8rem; }
+    .h-32 { height: 8rem; }
+    .w-40 { width: 10rem; }
+    .h-40 { height: 10rem; }
+    .max-w-md { max-width: 28rem; }
+
+    /* =========================================
+       [3] 누락된 음수 마진 및 위치 조정 (장식용)
+    ========================================= */
+    .-mb-8 { margin-bottom: -2rem; }
+    .-mr-8 { margin-right: -2rem; }
+    .-mb-10 { margin-bottom: -2.5rem; }
+    .-mr-10 { margin-right: -2.5rem; }
+
+    .-top-1 { top: -0.25rem; }
+    .-right-1 { right: -0.25rem; }
+    .-bottom-4 { bottom: -1rem; }
+    .-right-4 { right: -1rem; }
+
+    /* =========================================
+       [4] 투명도 조합 컬러 (배경, 보더)
+    ========================================= */
+    .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05); }
+    .bg-white\/10 { background-color: rgba(255, 255, 255, 0.1); }
+
+    .border-error\/50 { border-color: color-mix(in srgb, var(--color-error) 50%, transparent); }
+    .border-stone-200 { border-color: #e7e5e4; }
+    .border-zinc-300 { border-color: #d4d4d8; }
+
+    /* =========================================
+       [5] 불투명도 제어 (Opacity)
+    ========================================= */
+    .opacity-60 { opacity: 0.6; }
+    .opacity-90 { opacity: 0.9; }
+
+    /* =========================================
+       [6] 그래픽 및 변형 효과 (Transform, Filter, Radius)
+    ========================================= */
+    .-skew-x-12 { transform: skewX(-12deg); }
+    .translate-x-12 { transform: translateX(3rem); }
+    .blur-2xl { filter: blur(40px); }
+
+    .rounded-sm { border-radius: 0.125rem !important; }
+    .rounded-full { border-radius: 9999px !important; }
+
+    /* =========================================
+       [7] Z-Index 및 그림자 (모달 관련)
+    ========================================= */
+    .z-10 { z-index: 10; }
+
+    .shadow-\[0_20px_40px_rgba\(0\,0\,0\,0\.1\)\] {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    /* =========================================
+       [8] 호버 상태 (Hover States)
+    ========================================= */
+    .hover\:bg-error:hover {
+      background-color: var(--color-error);
+    }
+    .hover\:text-white:hover {
+      color: #ffffff;
+    }
+    .hover\:border-error:hover {
+      border-color: var(--color-error);
+    }
+    .hover\:opacity-90:hover {
+      opacity: 0.9;
+    }
+
+    /* =========================================
+       [9] 트랜지션 (Transitions)
+    ========================================= */
+    .transition-opacity {
+      transition-property: opacity;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 300ms;
+    }
+
+    /* =========================================
+       [10] 반응형 그리드 제어 (sm, md)
+    ========================================= */
+    @media (min-width: 640px) {
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sm\:col-span-2 { grid-column: span 2 / span 2; }
+    }
+
+    @media (min-width: 768px) {
+      .md\:col-span-2 { grid-column: span 2 / span 2; }
+    }
+  }
+  /* =========================================
+     마이페이지 - 정보 수정 (Edit Profile) 전용 컴포넌트
+  ========================================= */
+  .mypage-edit-profile-page {
+    padding: 2rem clamp(1rem, 2vw, 2rem) 4rem;
+  }
+
+  .mypage-edit-profile-page__intro {
+    padding: 1.5rem 0;
+  }
+
+  .mypage-edit-profile-page__sidebar-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    height: 100%;
+  }
+
+  .mypage-edit-profile-page__kicker {
+    color: var(--color-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .mypage-edit-profile-page__title {
+    margin-top: 0.5rem;
+    font-family: var(--font-headline);
+    font-size: clamp(2.3rem, 5vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.95;
+  }
+
+  .mypage-edit-profile-page__rule {
+    margin-top: 1.25rem;
+    width: 100%;
+    height: 2px;
+    background: var(--color-surface-container-highest);
+  }
+
+  .mypage-edit-profile-page__rule span {
+    display: block;
+    width: 11rem;
+    height: 100%;
+    background: var(--color-primary-container);
+  }
+
+  /* 공지사항(Notice) 알림 박스 스타일 (비밀번호 페이지와 동일) */
+  .mypage-edit-profile-page__notice {
+    padding: 1rem 1.1rem;
+    border-left: 4px solid var(--color-primary-container);
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 255, 255, 0.96) 100%);
+  }
+
+  .mypage-edit-profile-page__notice p {
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 1024px) {
+    .mypage-edit-profile-page__layout {
+      align-items: stretch;
+    }
+
+    .mypage-edit-profile-page__layout > .lg\:col-span-4 {
+      display: flex;
+    }
+
+    /* 우측 패널 고정 (Sticky) */
+    .mypage-edit-profile-page__sidebar-stack {
+      position: sticky;
+      top: 6rem;
+      width: 100%;
+    }
+  }
+}
+@layer components {
+  /* =========================================
+     마이페이지 - SNS 연동 (SNS Integration) 전용
+  ========================================= */
+  .mypage-sns-page {
+    padding: 2rem clamp(1rem, 2vw, 2rem) 4rem;
+  }
+
+  .mypage-sns-page__intro {
+    padding: 1.5rem 0;
+  }
+
+  .mypage-sns-page__sidebar-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    height: 100%;
+  }
+
+  .mypage-sns-page__kicker {
+    color: var(--color-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .mypage-sns-page__title {
+    margin-top: 0.5rem;
+    font-family: var(--font-headline);
+    font-size: clamp(2.3rem, 5vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.95;
+  }
+
+  .mypage-sns-page__rule {
+    margin-top: 1.25rem;
+    width: 100%;
+    height: 2px;
+    background: var(--color-surface-container-highest);
+  }
+
+  .mypage-sns-page__rule span {
+    display: block;
+    width: 11rem;
+    height: 100%;
+    background: var(--color-primary-container);
+  }
+
+  @media (min-width: 1024px) {
+    .mypage-sns-page__layout {
+      align-items: stretch;
+    }
+
+    .mypage-sns-page__layout > .lg\:col-span-4 {
+      display: flex;
+    }
+
+    /* 우측 패널 고정 (Sticky) */
+    .mypage-sns-page__sidebar-stack {
+      position: sticky;
+      top: 6rem;
+      width: 100%;
+    }
+  }
+}
+
+@layer utilities {
+  /* =========================================
+     SNS 페이지 전용 컬러 & 유틸리티
+  ========================================= */
+  /* 상태 표시등 컬러 */
+  .bg-green-500 { background-color: #22c55e; }
+  .text-green-700 { color: #15803d; }
+
+  .bg-neutral-300 { background-color: #d4d4d4; }
+  .text-neutral-500 { color: #737373; }
+  .text-neutral-400 { color: #a3a3a3; }
+
+  /* 버튼 호버 시 밝기 조절용 */
+  .hover\:bg-primary-container\/80:hover {
+    background-color: color-mix(in srgb, var(--color-primary-container) 80%, transparent);
+  }
+
+  /* 연결됨 상태 애니메이션 (기존 설정 확인용) */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+@layer components {
+  .text-stone-900 {
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 700; /* font-bold */
+    text-decoration: none; /* no-underline */
+    color: #1c1917; /* text-stone-900 */
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 전환 효과 */
+  }
+
+  .text-stone-900:hover {
+    opacity: 0.7; /* hover:opacity-70 */
+  }
+
+  .min-h-\[20px\] { min-height: 20px; }
+  .min-h-\[24px\] { min-height: 24px; }
+  .min-h-\[40px\] { min-height: 40px; } /* 비밀번호 등 2줄짜리 에러 대비 */
+
+  .error-text-wrap {
+    width: 100%;
+    white-space: normal !important;     /* 상속된 nowrap 무시 */
+    word-break: break-all !important;   /* 알파벳/숫자 포함 무조건 강제 줄바꿈 */
+    overflow-wrap: break-word !important;
+  }
+  .break-words { overflow-wrap: break-word; } /* 너무 긴 단어는 줄바꿈 허용 */
+
+  .mt-1 { margin-top: 0.25rem; }
+  .min-w-0 { min-width: 0; }
+}
+@layer utilities {
+  /* [1] 모달 상단 포인트 테두리 (노란색 4px 두께) */
+  .border-t-4 {
+    border-top-width: 4px;
+  }
+  .border-t-primary {
+    border-top-color: var(--color-primary);
+  }
+
+  /* [2] 인풋창 테두리 (outline-variant 투명도 50%) */
+  .border-outline-variant\/50 {
+    border-color: color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
+  }
+
+  /* [3] 인풋창 포커스 시 노란색 테두리 변경 */
+  .focus\:border-primary:focus {
+    border-color: var(--color-primary);
+  }
+
+  /* [4] 버튼 눌림(클릭) 애니메이션 효과 */
+  .active\:translate-y-\[1px\]:active {
+    transform: translateY(1px);
+  }
+
+  /* [5] 모달 버튼용 적당한 깊이감의 그림자 */
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* [6] 포커스 시 링커서 제거 및 아웃라인 설정 방어 */
+  .outline-none {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+}
+@layer utilities {
+  /* [1] 모달 상단 포인트 테두리 (노란색 4px 두께) */
+  .border-t-4 {
+    border-top-width: 4px;
+  }
+  .border-t-primary {
+    border-top-color: var(--color-primary);
+  }
+
+  /* [2] 인풋창 테두리 (outline-variant 투명도 50%) */
+  .border-outline-variant\/50 {
+    border-color: color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
+  }
+
+  /* [3] 인풋창 포커스 시 노란색 테두리 변경 */
+  .focus\:border-primary:focus {
+    border-color: var(--color-primary);
+  }
+
+  /* [4] 버튼 눌림(클릭) 애니메이션 효과 */
+  .active\:translate-y-\[1px\]:active {
+    transform: translateY(1px);
+  }
+
+  /* [5] 모달 버튼용 적당한 깊이감의 그림자 */
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* [6] 포커스 시 링커서 제거 및 아웃라인 설정 방어 */
+  .outline-none {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+}
+@layer components {
+  /* [핵심 1] 입력창(input) 자체가 Flex/Grid를 뚫고 팽창하는 현상 방지 */
+  .bd-input {
+    min-width: 0 !important;
+  }
+
+  /* [핵심 2] 에러 텍스트 가로 늘어남 완벽 차단 (띄어쓰기 없어도 강제 줄바꿈) */
+  .error-text-wrap {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-break: break-all !important; /* 단어가 길어도 무조건 줄바꿈 */
+    overflow-wrap: break-word !important;
+  }
 }

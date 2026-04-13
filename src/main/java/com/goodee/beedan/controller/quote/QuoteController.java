@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.quote;
 
+import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.quote.CartToQuoteDto;
@@ -7,13 +8,10 @@ import com.goodee.beedan.dto.quote.NegotiationRequest;
 import com.goodee.beedan.dto.quote.QuoteBaseRequest;
 import com.goodee.beedan.dto.quote.QuoteRequestDto;
 import com.goodee.beedan.entity.*;
-
+import com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository;
+import com.goodee.beedan.repository.chat.ChatRoomRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
-import com.goodee.beedan.repository.quote.FactoryRepository;
-import com.goodee.beedan.repository.quote.HsCodeRepository;
-import com.goodee.beedan.repository.quote.QuoteInfoRepository;
-import com.goodee.beedan.repository.quote.ShippingInsuranceRepository;
-import com.goodee.beedan.repository.quote.StockInspectionRepository;
+import com.goodee.beedan.repository.quote.*;
 import com.goodee.beedan.repository.receiver.ReceiverRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.service.exchangeRate.ExchangeRateService;
@@ -21,6 +19,7 @@ import com.goodee.beedan.service.quote.*;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,11 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository;
-import org.springframework.data.domain.Page;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,7 +40,7 @@ public class    QuoteController {
 
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
-    private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
+    private final QuoteBaseRepository quoteBaseRepository;
     private final StockRepository stockRepository;
     private final HsCodeRepository hsCodeRepository;
     private final UnitGroupService unitGroupService;
@@ -61,8 +56,9 @@ public class    QuoteController {
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final QuoteNameService quoteNameService;
     private final FactoryRepository factoryRepository;
-    private final com.goodee.beedan.repository.quote.ShippingRateRepository shippingRateRepository;
     private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
+    private final ShippingRateRepository shippingRateRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     @PostMapping("/request")
     @ResponseBody
@@ -73,11 +69,15 @@ public class    QuoteController {
 
         Long memId = userDetails.getMemberId();
 
+        if (dto.getChatRoomId() != null && isAdminUser(memId)) {
+            return ResponseEntity.ok(createAdminChatQuoteRedirect(dto, memId, session));
+        }
+
         // AI로 협상 이름 생성
         Member member = memberRepository.findById(memId).orElse(null);
         String companyName = (member != null && member.getMemBizTtl() != null)
                 ? member.getMemBizTtl() : "고객";
-        List<String> productNames = new java.util.ArrayList<>();
+        List<String> productNames = new ArrayList<>();
         for (var item : dto.getItems()) {
             Stock stock = stockRepository.findById(item.getStId()).orElse(null);
             if (stock != null) productNames.add(stock.getStNm());
@@ -101,6 +101,7 @@ public class    QuoteController {
         QuoteBase quoteBase = quoteBaseService.create(
                 QuoteBaseRequest.builder()
                         .ngId(negotiation.getNgId())
+                        .quSid(memId)
                         .quRid(memId)
                         .build()
         );
@@ -109,15 +110,76 @@ public class    QuoteController {
         session.setAttribute("quoteItems_" + quoteBase.getQuId(), dto.getItems());
 
         String redirectUrl = "/quote/write?quId=" + quoteBase.getQuId();
-
-        if (dto.getChatRoomId() != null) {
-            redirectUrl += "&chatRoomId=" + dto.getChatRoomId();
-        }
-
         return ResponseEntity.ok(Map.of("redirectUrl", redirectUrl));
     }
 
-    @GetMapping("/list")
+    private boolean isAdminUser(Long memId) {
+        return memberRepository.findById(memId)
+                .map(member -> MemberAuthority.ADMIN.equals(member.getMemAut()))
+                .orElse(false);
+    }
+
+    private Map<String, String> createAdminChatQuoteRedirect(QuoteRequestDto dto, Long memAdId, HttpSession session) {
+        // 채팅방 확인
+        ChatRoom chatRoom = chatRoomRepository.findById(dto.getChatRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+        // 현재 로그인한 관리자가 이 채팅방 담당자인지 확인
+        if (chatRoom.getMemAdId() == null || !chatRoom.getMemAdId().equals(memAdId)) {
+            throw new IllegalStateException("담당 관리자만 채팅 견적 초안을 작성할 수 있습니다.");
+        }
+
+        Long memberId = chatRoom.getMemId();
+
+        Member member = memberRepository.findById(memberId).orElse(null);
+
+        // 협상명 생성용 회사명
+        String companyName = (member != null && member.getMemBizTtl() != null && !member.getMemBizTtl().isBlank())
+                ? member.getMemBizTtl()
+                : "고객";
+
+        List<String> productNames = new ArrayList<>();
+        for (QuoteRequestDto.QuoteRequestItemDto item : dto.getItems()) {
+            Stock stock = stockRepository.findById(item.getStId()).orElse(null);
+            if (stock != null && stock.getStNm() != null) {
+                productNames.add(stock.getStNm());
+            }
+        }
+
+        String ngNm;
+        try {
+            ngNm = quoteNameService.generateName(companyName, productNames);
+        } catch (Exception e) {
+            ngNm = companyName + "_견적";
+        }
+
+        // 협상은 사용자 소유
+        Negotiation negotiation = negotiationService.create(
+                NegotiationRequest.builder()
+                        .ngNm(ngNm)
+                        .memId(memberId)
+                        .build()
+        );
+
+        // 초안은 관리자 -> 사용자 방향의 견적
+        QuoteBase quoteBase = quoteBaseService.create(
+                QuoteBaseRequest.builder()
+                        .ngId(negotiation.getNgId())
+                        .quSid(memberId)
+                        .quRid(memAdId)
+                        .build()
+        );
+
+        // 장바구니 선택 상품은 세션으로 write 페이지에 전달
+        session.setAttribute("quoteItems_" + quoteBase.getQuId(), dto.getItems());
+
+        return Map.of(
+                "redirectUrl",
+                "/admin/quote/write?quId=" + quoteBase.getQuId() + "&chatRoomId=" + dto.getChatRoomId()
+        );
+    }
+
+@GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails,
                           @RequestParam(defaultValue = "1") int page,
                           @RequestParam(defaultValue = "desc") String sort,
@@ -220,8 +282,20 @@ public class    QuoteController {
         if (quoteBase == null) {
             return "redirect:/mainPage";
         }
+
+        Long myId = userDetails != null ? userDetails.getMemberId() : null;
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+
+        // 사용자 소유 협상의 TEMP_SAVE 초안은, 사용자가 송신자인 경우 이어서 작성 가능
+        boolean isUserOwnedTempDraft = quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE
+                && negotiation != null
+                && myId != null
+                && myId.equals(negotiation.getMemId())
+                && myId.equals(quoteBase.getQuSid());
+
         // 재작성이 아닌 일반 진입일 때만 editable 체크
-        if (fromQuId == null && !quoteBase.isEditable()) {
+        // 일반 수정 가능 여부 + 사용자 수신 TEMP_SAVE 초안 허용
+        if (fromQuId == null && !quoteBase.isEditable() && !isUserOwnedTempDraft) {
             return "redirect:/quote/detail?quId=" + quId;
         }
 
@@ -240,7 +314,6 @@ public class    QuoteController {
 
         // 견적 코드 + 협상명
         model.addAttribute("quCd", quoteBase.getQuCd());
-        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         model.addAttribute("ngNm", negotiation.getNgNm());
 
         // 1) 세션에서 신규 견적 데이터 확인

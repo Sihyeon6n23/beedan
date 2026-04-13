@@ -15,25 +15,6 @@ import java.util.NoSuchElementException;
 @ControllerAdvice
 public class GlobalControllerAdvice {
 
-    private final NotificationService notificationService;
-    public GlobalControllerAdvice(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    @ModelAttribute("unreadCount")
-    public int addUnreadCountToModel(@AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return 0;
-
-        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
-                || userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ROOT"));
-
-        if (isAdmin) return 0;
-
-        return notificationService.getUnreadCount(userDetails.getMemberId());
-    }
-
-
-
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgument(IllegalArgumentException e, Model model) {
         model.addAttribute("message", e.getMessage());

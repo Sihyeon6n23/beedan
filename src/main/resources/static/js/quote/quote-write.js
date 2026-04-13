@@ -794,50 +794,62 @@ document.addEventListener('DOMContentLoaded', function () {
             btnConfirm.disabled = !finalChk.checked;
         });
 
-        // 공통 제출 실행 함수
+        // 공식 제출 실행: 채팅 전송 없이 제출만 처리
         function executeSubmit(checks, onError) {
-            var draftData = collectDraftData();
-            if (!draftData.quId) { alert('견적 ID가 없습니다.'); return; }
+           var draftData = collectDraftData();
+           if (!draftData.quId) {
+               alert('견적 ID가 없습니다.');
+               return;
+           }
 
-            saveDraft()
-            .then(function (draftRes) {
-                if (draftRes.status !== 'ok') {
-                    throw new Error(draftRes.message || '데이터 저장 실패');
-                }
-                var headers = { 'Content-Type': 'application/json' };
-                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
-                return fetch('/api/quote/submit', {
-                    method: 'POST', headers: headers,
-                    body: JSON.stringify({
-                        quId: draftData.quId,
-                        fromQuId: (function() {
-                            var el = document.getElementById('js-rewrite-from');
-                            return el ? parseInt(el.dataset.fromQuId) || null : null;
-                        })(),
-                        rejectReason: (function() {
-                            var el = document.getElementById('rejectReasonMemo');
-                            return el ? el.value.trim() || null : null;
-                        })(),
-                        checks: checks
-                    })
-                }).then(function (res) { return res.json(); });
-            })
-            .then(function (data) {
-                if (data.status === 'ok' && data.redirectUrl) {
-                    var url = data.redirectUrl;
-                    if (isAdmin && url.startsWith('/quote/')) {
-                        url = '/admin' + url;
-                    }
-                    window.location.href = url;
-                } else {
-                    alert('제출 실패: ' + (data.message || ''));
-                    if (onError) onError();
-                }
-            })
-            .catch(function (e) {
-                alert('제출 실패: ' + e.message);
-                if (onError) onError();
-            });
+           saveDraft()
+               .then(function (draftRes) {
+                   if (draftRes.status !== 'ok') {
+                       throw new Error(draftRes.message || '데이터 저장 실패');
+                   }
+
+                   var headers = { 'Content-Type': 'application/json' };
+                   if (csrfHeader && csrfToken) {
+                       headers[csrfHeader] = csrfToken;
+                   }
+
+                   return fetch('/api/quote/submit', {
+                       method: 'POST',
+                       headers: headers,
+                       body: JSON.stringify({
+                           quId: draftData.quId,
+                           fromQuId: (function () {
+                               var el = document.getElementById('js-rewrite-from');
+                               return el ? parseInt(el.dataset.fromQuId, 10) || null : null;
+                           })(),
+                           rejectReason: (function () {
+                               var el = document.getElementById('rejectReasonMemo');
+                               return el ? el.value.trim() || null : null;
+                           })(),
+                           checks: checks
+                       })
+                   }).then(function (res) {
+                       return res.json();
+                   });
+               })
+               .then(function (data) {
+                   if (data.status !== 'ok' || !data.redirectUrl) {
+                       throw new Error(data.message || '제출에 실패했습니다.');
+                   }
+
+                   var url = data.redirectUrl;
+                   if (isAdmin && url.startsWith('/quote/')) {
+                       url = '/admin' + url;
+                   }
+
+                   window.location.href = url;
+               })
+               .catch(function (e) {
+                   alert('제출 실패: ' + e.message);
+                   if (onError) {
+                       onError();
+                   }
+               });
         }
 
         // 사용자: 모달 체크 후 제출
@@ -1294,65 +1306,69 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 관리자 채팅 유입 시: 임시저장 후 사용자용 견적 초안 링크를 채팅으로 전송
+    var sendDraftToChatBtn = document.getElementById('btnSendDraftToChat');
 
-    // 채팅으로 보내기 클릭 시 chatRoomId를 제외한 Url 링크 전송
-    var sendQuoteToChatBtn = document.getElementById('btnSendQuoteToChat');
+    if (sendDraftToChatBtn) {
+        sendDraftToChatBtn.addEventListener('click', function () {
+            var quId = parseInt(sendDraftToChatBtn.dataset.quId, 10);
+            var chatRoomId = parseInt(sendDraftToChatBtn.dataset.chatRoomId, 10);
 
-          if (sendQuoteToChatBtn) {
-              sendQuoteToChatBtn.addEventListener('click', function () {
-                  var chatRoomId = parseInt(sendQuoteToChatBtn.dataset.chatRoomId, 10);
-                  var quId = parseInt(sendQuoteToChatBtn.dataset.quId, 10);
+            if (!quId || !chatRoomId) {
+                alert('채팅 전송에 필요한 정보가 없습니다.');
+                return;
+            }
 
-                  if (!chatRoomId || !quId) {
-                      alert('채팅 전송에 필요한 정보가 없습니다.');
-                      return;
-                  }
+            // 초안에 상품이 하나도 없으면 채팅으로 보낼 수 없음
+            var draftData = collectDraftData();
+            if (!draftData.items || draftData.items.length === 0) {
+                alert('견적 초안에 상품이 없습니다.');
+                return;
+            }
 
-                  var requestUrl = new URL(window.location.href);
-                  requestUrl.searchParams.delete('chatRoomId');
-                  requestUrl.searchParams.set('quId', String(quId));
+            sendDraftToChatBtn.disabled = true;
+            var originalText = sendDraftToChatBtn.textContent;
+            sendDraftToChatBtn.textContent = '전송 중...';
 
-                  var quoteLinkUrl = requestUrl.toString();
-                  var quoteLinkTitle = '견적 초안';
+            saveDraft()
+                .then(function (draftRes) {
+                    if (!draftRes || draftRes.status !== 'ok') {
+                        throw new Error(draftRes && draftRes.message ? draftRes.message : '임시저장에 실패했습니다.');
+                    }
 
-                  var headers = {
-                      'Content-Type': 'application/json'
-                  };
+                    var headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    if (csrfHeader && csrfToken) {
+                        headers[csrfHeader] = csrfToken;
+                    }
 
-                  if (csrfHeader && csrfToken) {
-                      headers[csrfHeader] = csrfToken;
-                  }
-
-                  sendQuoteToChatBtn.disabled = true;
-                  sendQuoteToChatBtn.style.pointerEvents = 'none';
-                  sendQuoteToChatBtn.style.opacity = '0.6';
-
-                  fetch('/api/admin/chat/rooms/' + chatRoomId + '/quote-card', {
-                      method: 'POST',
-                      headers: headers,
-                      body: JSON.stringify({
-                          chMsCon: null,
-                          chMsLnkTtl: quoteLinkTitle,
-                          chMsLnkUrl: quoteLinkUrl
-                      })
-                  })
-                      .then(function (response) {
-                          if (!response.ok) {
-                              throw new Error('견적 링크를 채팅으로 보내지 못했습니다.');
-                          }
-                          return response.json();
-                      })
-                      .then(function () {
-                          window.location.href = '/admin/chat/detail?id=' + chatRoomId;
-                      })
-                      .catch(function (error) {
-                          console.error(error);
-                          alert('채팅 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-                          sendQuoteToChatBtn.disabled = false;
-                          sendQuoteToChatBtn.style.pointerEvents = '';
-                          sendQuoteToChatBtn.style.opacity = '';
-                      });
-              });
-          }
+                    return fetch('/api/admin/chat/rooms/' + chatRoomId + '/quote-card', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify({
+                            chMsCon: null,
+                            chMsLnkTtl: '견적 초안',
+                            // 사용자가 자기 TEMP_SAVE 초안을 이어서 작성하는 링크
+                            chMsLnkUrl: window.location.origin + '/quote/write?quId=' + quId + '&chatRoomId=' + chatRoomId
+                        })
+                    });
+                })
+                .then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('견적 초안 카드 전송에 실패했습니다.');
+                    }
+                    return res.json();
+                })
+                .then(function () {
+                    window.location.href = '/admin/chat/detail?id=' + chatRoomId;
+                })
+                .catch(function (e) {
+                    alert('견적 초안 전송 실패: ' + e.message);
+                    sendDraftToChatBtn.disabled = false;
+                    sendDraftToChatBtn.textContent = originalText;
+                });
+        });
+    }
 
 });

@@ -93,8 +93,48 @@
 
 .manifest-header {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
+}
+
+/* 제목 줄 오른쪽 액션 영역: 초안 전송 버튼과 아이템 수를 한 줄로 정렬 */
+.manifest-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* 관리자 채팅 유입 시 노출되는 견적 초안 전송 버튼 */
+.btn-send-draft-chat {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid #d9c96c;
+    background: #fff7cc;
+    color: #705d00;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* hover 상태에서 살짝 더 또렷하게 */
+.btn-send-draft-chat:hover {
+    background: #ffef9c;
+    border-color: #cbb44a;
+}
+
+/* 비활성화 시 내부 저장/전송 중임을 명확히 표현 */
+.btn-send-draft-chat:disabled {
+    background: #ece9df;
+    color: #9d9889;
+    border-color: #ddd7c8;
+    cursor: not-allowed;
 }
 
 .manifest-id {

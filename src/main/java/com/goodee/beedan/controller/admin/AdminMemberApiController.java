@@ -48,9 +48,10 @@ public class AdminMemberApiController {
     @GetMapping("/list")
     public ResponseEntity<MemberListResponse> getMemberList(
             @RequestParam(required = false, defaultValue = "ALL") String status,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal MemberUserDetails userDetails) {
-        Page<MemberListDto> memberListDtos = adminMemberService.getMembersByStatus(status, pageable);
+        Page<MemberListDto> memberListDtos = adminMemberService.getMembersByStatusAndKeyword(status, keyword, pageable);
 
         boolean isRoot = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ROOT"));
 

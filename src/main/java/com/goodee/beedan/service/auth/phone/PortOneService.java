@@ -34,7 +34,9 @@ public class PortOneService {
                 .header("Authorization", "PortOne " + apiKey)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>(){})
-                .doOnNext(response -> log.info("====> [PortOne API 응답 수신 완료]"));
+                .doOnNext(response -> {
+                    log.info("====> [PortOne API 응답 수신 완료]");
+                });
     }
 
     public PhoneVerificationDto MonoToPhoneVerificationDto(Mono<Map<String, Object>> verifyMono) {

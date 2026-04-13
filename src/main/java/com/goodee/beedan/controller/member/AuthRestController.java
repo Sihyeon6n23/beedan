@@ -54,13 +54,31 @@ public class AuthRestController {
     @PostMapping("/idChecked")
     public Boolean postIdDuplicateChecked(@RequestBody Map<String, String> body) {
         String username = body.get("username");
-        try {
-            memberService.getMemberByUsername(username);
+
+        if (username == null || username.trim().isEmpty()) {
             return false;
-        } catch (UsernameNotFoundException e) {
-            System.out.println("사용가능항아이디");
-            return true;
         }
+
+        boolean isDuplicated = memberService.isDuplicatedLoginId(username);
+
+        return !isDuplicated;
+    }
+
+    @PostMapping("/emailChecked")
+    public Boolean postEmailDuplicateChecked(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+
+        // 1. 빈 값 검증 (보안 및 오류 방지)
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+
+        // 2. 서비스 레이어를 통해 이메일 존재 여부 확인
+        // 중복된 이메일이 존재하면 true, 없으면 false를 반환한다고 가정
+        boolean isDuplicated = memberService.checkEmailDuplicate(email);
+
+        // 3. 프론트엔드 로직에 맞춰 "사용 가능할 때(중복이 아닐 때)" true 반환
+        return !isDuplicated;
     }
 
     @PostMapping("/disconnectSns")

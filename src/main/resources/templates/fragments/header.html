@@ -34,12 +34,15 @@
             </div>
             <div class="button">
                 <th:block sec:authorize="isAnonymous()">
-                    <a th:href="@{/auth/signin}" class="text-xs font-bold no-underline text-stone-900 hover:opacity-70">LOGIN</a>
+                    <div class="flex items-center gap-4">
+                        <a th:href="@{/auth/signup}" class="text-xs font-bold no-underline text-stone-900">SIGNUP</a>
+                        <a th:href="@{/auth/signin}" class="text-xs font-bold no-underline text-stone-900">LOGIN</a>
+                    </div>
                 </th:block>
                 <th:block>
                     <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="text-xs font-bold no-underline text-stone-900 hover:opacity-70">LOGOUT</button>
+                        <button type="submit" class="text-xs font-bold no-underline text-stone-900">LOGOUT</button>
                     </form>
                 </th:block>
             </div>
@@ -47,8 +50,7 @@
             <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center ...">
                 <span class="material-symbols-outlined">notifications</span>
 
-                <span id="unreadBadge" th:if="${unreadCount > 0}" th:text="${unreadCount > 5 ? '5+' : unreadCount}"
-                      class="absolute -top-2 -right-2 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
+                <span id="unreadBadge" class="absolute -top-2 -right-2 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold rounded-full border border-white hidden">
                 </span>
 
                 <div th:replace="~{notification/notification :: notificationDropdown}"></div>

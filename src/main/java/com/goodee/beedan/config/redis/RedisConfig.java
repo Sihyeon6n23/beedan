@@ -59,6 +59,7 @@ public class RedisConfig {
         return template;
     }
 
+    // @Cacheable이 실제로 어떤 규칙으로 Redis에 저장될지 정하는 설정
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -71,19 +72,24 @@ public class RedisConfig {
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
-                .entryTtl(Duration.ofHours(1));
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())) // key는 문자열로 저장
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer)) // value는 JSON 직렬화해서 저장
+                .entryTtl(Duration.ofHours(1)); // 기본 캐시 만료 시간
 
         //  캐시 이름별로 만료 시간(TTL)을 다르게 설정하고 싶을 때 사용가능
         Map<String, RedisCacheConfiguration> customConfigs = new HashMap<>();
+
         customConfigs.put("shipment:customs", defaultConfig.entryTtl(Duration.ofHours(3)));
+
+        // 챗봇 조회 데이터는 변경이 거의 없어서 30분 캐시로 운영
+        customConfigs.put("chatbot:flow", defaultConfig.entryTtl(Duration.ofMinutes(30)));
 
         /* 이런식으로 적용 가능
          customConfigs.put("display:exchangeRate", defaultConfig.entryTtl(Duration.ofDays(1)));
          customConfigs.put("display:newStocks", defaultConfig.entryTtl(Duration.ofMinutes(10)));
          */
 
+        // 최종적으로 Spring Cache가 쓰는 매니저(RedisCacheManager) 생성
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(customConfigs)
