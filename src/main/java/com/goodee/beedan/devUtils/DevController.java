@@ -3,7 +3,6 @@ package com.goodee.beedan.devUtils;
 import com.goodee.beedan.service.chat.ChatSchedulerService;
 import com.goodee.beedan.service.root.SchedulerService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,8 +37,6 @@ public class DevController {
         this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
         this.schedulerService = schedulerService;
         this.schedulerMap = new LinkedHashMap<>();
-
-//        schedulerMap.put("schedulerA", schedluerA::run);
 
         // 채팅방 자동 종료 스케줄러
         schedulerMap.put("chatAutoClose", () -> {

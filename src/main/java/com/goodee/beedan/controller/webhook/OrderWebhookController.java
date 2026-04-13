@@ -47,7 +47,9 @@ public class OrderWebhookController {
             if (parsed.containsKey("quoteId")) {
                 quId = Long.valueOf(parsed.get("quoteId").toString());
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            log.error("quId 추출 중 예외 발생: ", e);
+        }
 
         // 로그 저장
         orderWebhookService.logReceive(rawBody, quId);

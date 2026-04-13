@@ -35,7 +35,7 @@ public class OrderApiController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderDto> getOrderDetail(@PathVariable("id") Long ordId,
                                                    @AuthenticationPrincipal MemberUserDetails userDetails) {
-        OrderDto orderDetail = orderService.getOrderDetail(ordId, userDetails);
+        OrderDto orderDetail = orderService.getOrderDetail(ordId, userDetails.getMemberId());
 
         return ResponseEntity.ok(orderDetail);
     }
@@ -47,7 +47,7 @@ public class OrderApiController {
         Long memId = userDetails.getMemberId();
         orderService.updateOrder(ordId, memId, orderDto);
 
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
     }
 
     @PatchMapping("/{id}/admin") // 배송 상태 변경
@@ -55,7 +55,7 @@ public class OrderApiController {
                                                       @RequestParam("newStatus") OrderStatus newStatus,
                                                       @AuthenticationPrincipal MemberUserDetails userDetails) {
         orderService.updateOrderStatus(ordId, newStatus);
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
     }
 
     @DeleteMapping("/{id}")
@@ -67,7 +67,7 @@ public class OrderApiController {
 
         notificationService.createNotification(memId, NotificationType.ORDER_CANCEL,ordId);
 
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails));
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
     }
 
 }
