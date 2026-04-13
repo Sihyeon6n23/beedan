@@ -17,4 +17,11 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     void deleteAllByMemId(Long memId);
 
     void deleteAllByMemIdAndStock_StIdIn(Long memId, List<Long> stIds);
+
+    // 현재 장바구니에 담긴 총 건수
+    long count();
+
+    // 상품별 장바구니 담긴 수
+    @org.springframework.data.jpa.repository.Query("SELECT c.stock.stId, COUNT(c) FROM Cart c GROUP BY c.stock.stId")
+    List<Object[]> countByStockGrouped();
 }

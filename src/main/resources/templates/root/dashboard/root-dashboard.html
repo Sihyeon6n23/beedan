@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ROOT', 'Dashboard', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 통계 대시보드</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('dashboard', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+    .dash { max-width:1280px; margin:0 auto; padding:40px 20px; font-family:'Inter','Noto Sans KR',sans-serif; }
+    .dash-header { margin-bottom:36px; }
+    .dash-header h1 { font-family:'Manrope',sans-serif; font-size:32px; font-weight:900; color:#1a1c1c; letter-spacing:-0.04em; margin:0 0 4px; }
+    .dash-header p { font-size:13px; color:#a8a29e; margin:0; }
+
+    /* KPI */
+    .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+    .kpi-card { background:#fff; border-radius:10px; padding:20px 22px; border:1px solid #f0ece3; position:relative; overflow:hidden; }
+    .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:#ffd700; }
+    .kpi-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .kpi-icon { width:36px; height:36px; border-radius:8px; background:#fdf6e3; color:#b8960c; display:flex; align-items:center; justify-content:center; }
+    .kpi-icon .material-symbols-outlined { font-size:20px; }
+    .kpi-label { font-size:12px; font-weight:600; color:#78716c; }
+    .kpi-value { font-size:26px; font-weight:900; color:#1a1c1c; margin:0; line-height:1.1; }
+    .kpi-unit { font-size:13px; font-weight:600; color:#a8a29e; }
+    .kpi-change { font-size:11px; font-weight:700; margin-top:6px; }
+    .kpi-up { color:#059669; }
+    .kpi-down { color:#dc2626; }
+
+    /* Funnel */
+    .funnel-card { background:#fff; border-radius:10px; padding:28px; border:1px solid #f0ece3; margin-bottom:24px; }
+    .card-title { font-size:15px; font-weight:800; color:#1a1c1c; margin:0 0 4px; }
+    .card-sub { font-size:11px; color:#a8a29e; margin:0 0 24px; }
+    .funnel-row { display:flex; align-items:stretch; }
+    .funnel-step { flex:1; text-align:center; }
+    .funnel-num { font-size:30px; font-weight:900; color:#1a1c1c; line-height:1; }
+    .funnel-name { font-size:11px; font-weight:700; color:#78716c; margin:6px 0 14px; text-transform:uppercase; letter-spacing:0.06em; }
+    .funnel-bar { margin:0 auto; border-radius:6px; display:flex; align-items:flex-end; justify-content:center; }
+    .funnel-pct { font-size:10px; font-weight:800; color:#705d00; padding-bottom:6px; }
+    .funnel-arrow { flex:0 0 36px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+    .funnel-arrow .material-symbols-outlined { font-size:18px; color:#d6d3d1; }
+    .funnel-arrow-rate { font-size:10px; font-weight:800; color:#b8960c; }
+
+    /* Grid */
+    .dash-grid { display:grid; gap:20px; margin-bottom:20px; }
+    .dash-grid-2 { grid-template-columns:1fr 1fr; }
+
+    /* Card */
+    .dash-card { background:#fff; border-radius:10px; padding:24px; border:1px solid #f0ece3; }
+
+    /* Table */
+    .rank-table { width:100%; border-collapse:separate; border-spacing:0; }
+    .rank-table th { padding:9px 10px; font-size:10px; font-weight:700; color:#a8a29e; text-transform:uppercase; letter-spacing:0.06em; text-align:left; border-bottom:2px solid #f5f0e8; }
+    .rank-table td { padding:9px 10px; font-size:12px; color:#44403c; border-bottom:1px solid #faf8f5; }
+    .rank-table tr:hover td { background:#faf8f5; }
+    .rank-num { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; font-size:10px; font-weight:800; }
+    .rank-1 { background:#fef3c7; color:#b8960c; }
+    .rank-2 { background:#f5f0e8; color:#78716c; }
+    .rank-3 { background:#fdf6e3; color:#b8960c; }
+    .rank-n { background:#faf8f5; color:#a8a29e; }
+    .text-right { text-align:right; }
+    .text-bold { font-weight:700; }
+
+    /* Drop-off */
+    .drop-item { margin-bottom:16px; }
+    .drop-header { display:flex; justify-content:space-between; margin-bottom:5px; }
+    .drop-label { font-size:12px; font-weight:600; color:#44403c; }
+    .drop-pct { font-size:12px; font-weight:800; color:#dc2626; }
+    .drop-bar { height:8px; background:#f5f0e8; border-radius:4px; overflow:hidden; }
+    .drop-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#fde68a,#fbbf24,#f59e0b); }
+
+    /* Session bars */
+    .session-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .session-label { width:80px; font-size:11px; font-weight:600; color:#78716c; text-align:right; flex-shrink:0; }
+    .session-bar-bg { flex:1; height:24px; background:#faf8f5; border-radius:4px; overflow:hidden; position:relative; }
+    .session-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#ffd700,#f59e0b); display:flex; align-items:center; justify-content:flex-end; padding-right:8px; }
+    .session-bar-val { font-size:10px; font-weight:800; color:#705d00; }
+    .session-bar-pct { width:40px; font-size:11px; font-weight:800; color:#1a1c1c; text-align:right; flex-shrink:0; }
+</style>
+
+<div class="dash">
+
+    <div class="dash-header">
+        <h1>Analytics Dashboard</h1>
+        <p>사용자 행동 분석 · 집계 기준 데이터</p>
+    </div>
+
+    <!-- 기간 선택 -->
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:28px; flex-wrap:wrap;">
+        <a th:href="@{/root/dashboard(year=${month - 1 > 0 ? year : year - 1}, month=${month - 1 > 0 ? month - 1 : 12})}"
+           style="padding:6px 14px; font-size:12px; font-weight:700; background:#f5f0e8; color:#78716c; border:none; text-decoration:none; border-radius:6px;">&lt; 이전</a>
+        <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #f0ece3; padding:8px 16px; border-radius:8px;">
+            <span class="material-symbols-outlined" style="font-size:18px; color:#c4b799;">calendar_today</span>
+            <span style="font-size:14px; font-weight:700; color:#1a1c1c;" th:text="${periodLabel}"></span>
+        </div>
+        <a th:href="@{/root/dashboard(year=${month + 1 <= 12 ? year : year + 1}, month=${month + 1 <= 12 ? month + 1 : 1})}"
+           style="padding:6px 14px; font-size:12px; font-weight:700; background:#f5f0e8; color:#78716c; border:none; text-decoration:none; border-radius:6px;">다음 &gt;</a>
+        <div style="display:flex; align-items:center; gap:4px; margin-left:12px;">
+            <select id="dashYear" style="padding:6px 8px; font-size:12px; font-weight:700; border:1px solid #f0ece3; border-radius:6px;">
+                <option th:each="yi : ${#numbers.sequence(2024, 2030)}" th:value="${yi}" th:text="${yi + '년'}" th:selected="${yi == year}"></option>
+            </select>
+            <select id="dashMonth" style="padding:6px 8px; font-size:12px; font-weight:700; border:1px solid #f0ece3; border-radius:6px;">
+                <option th:each="mi : ${#numbers.sequence(1, 12)}" th:value="${mi}" th:text="${mi + '월'}" th:selected="${mi == month}"></option>
+            </select>
+            <button onclick="location.href='/root/dashboard?year='+document.getElementById('dashYear').value+'&amp;month='+document.getElementById('dashMonth').value;"
+                    style="padding:6px 14px; font-size:12px; font-weight:800; background:#ffd700; color:#705d00; border:none; cursor:pointer; border-radius:6px;">이동</button>
+        </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-strip">
+        <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon"><span class="material-symbols-outlined">schedule</span></div><span class="kpi-label">평균 세션 시간</span></div>
+            <p class="kpi-value"><span th:text="${sessionStats['avgMinutes']}">0</span><span class="kpi-unit">분</span> <span th:text="${sessionStats['avgRemainSeconds']}">0</span><span class="kpi-unit">초</span></p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon"><span class="material-symbols-outlined">visibility</span></div><span class="kpi-label">이번 달 상품 조회</span></div>
+            <p class="kpi-value" th:text="${funnel['views']}">0</p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon"><span class="material-symbols-outlined">trending_up</span></div><span class="kpi-label">전체 전환율</span></div>
+            <p class="kpi-value"><span th:text="${funnel['totalConversion']}">0</span><span class="kpi-unit">%</span></p>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-top"><div class="kpi-icon"><span class="material-symbols-outlined">person_add</span></div><span class="kpi-label">이번 달 신규 가입</span></div>
+            <p class="kpi-value"><span th:text="${newSignups}">0</span><span class="kpi-unit">명</span></p>
+        </div>
+    </div>
+
+    <!-- Funnel -->
+    <div class="funnel-card">
+        <h2 class="card-title">Conversion Funnel</h2>
+        <p class="card-sub">상품 조회부터 결제 완료까지 단계별 전환 현황</p>
+        <div class="funnel-row"
+             th:with="v=${funnel['views']}, c=${funnel['carts']}, q=${funnel['quotes']}, p=${funnel['paid']},
+                      mx=${v > c ? (v > q ? (v > p ? v : p) : (q > p ? q : p)) : (c > q ? (c > p ? c : p) : (q > p ? q : p))},
+                      mx2=${mx > 0 ? mx : 1},
+                      rawView=${v > 0 ? v * 130 / mx2 : 0}, hView=${rawView > 30 ? rawView : 30},
+                      rawCart=${c > 0 ? c * 130 / mx2 : 0}, hCart=${rawCart > 30 ? rawCart : 30},
+                      rawQuote=${q > 0 ? q * 130 / mx2 : 0}, hQuote=${rawQuote > 30 ? rawQuote : 30},
+                      rawPaid=${p > 0 ? p * 130 / mx2 : 0}, hPaid=${rawPaid > 30 ? rawPaid : 30}">
+            <div class="funnel-step">
+                <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['views'], 1, 'COMMA')}">0</div>
+                <div class="funnel-name">상품 조회</div>
+                <div class="funnel-bar" th:style="'height:' + ${hView} + 'px; width:75%; background:linear-gradient(180deg,#ffd700,#f5c518);'"><span class="funnel-pct" th:text="${funnel['views'] > 0 ? '100%' : '0%'}">0%</span></div>
+            </div>
+            <div class="funnel-arrow"><span class="material-symbols-outlined">chevron_right</span><span class="funnel-arrow-rate" th:text="${funnel['viewToCart']} + '%'">0%</span></div>
+            <div class="funnel-step">
+                <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['carts'], 1, 'COMMA')}">0</div>
+                <div class="funnel-name">장바구니</div>
+                <div class="funnel-bar" th:style="'height:' + ${hCart} + 'px; width:65%; background:linear-gradient(180deg,#f5c518,#e5b200);'"><span class="funnel-pct" th:text="${funnel['viewToCart']} + '%'">0%</span></div>
+            </div>
+            <div class="funnel-arrow"><span class="material-symbols-outlined">chevron_right</span><span class="funnel-arrow-rate" th:text="${funnel['cartToQuote']} + '%'">0%</span></div>
+            <div class="funnel-step">
+                <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['quotes'], 1, 'COMMA')}">0</div>
+                <div class="funnel-name">견적 요청</div>
+                <div class="funnel-bar" th:style="'height:' + ${hQuote} + 'px; width:55%; background:linear-gradient(180deg,#e5b200,#c4960a);'"><span class="funnel-pct" th:text="${funnel['quotes'] > 0 and mv > 0 ? (funnel['quotes'] * 100 / mv) + '%' : '0%'}">0%</span></div>
+            </div>
+            <div class="funnel-arrow"><span class="material-symbols-outlined">chevron_right</span><span class="funnel-arrow-rate" th:text="${funnel['quoteToPaid']} + '%'">0%</span></div>
+            <div class="funnel-step">
+                <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['paid'], 1, 'COMMA')}">0</div>
+                <div class="funnel-name">결제 완료</div>
+                <div class="funnel-bar" th:style="'height:' + ${hPaid} + 'px; width:45%; background:linear-gradient(180deg,#c4960a,#705d00);'"><span class="funnel-pct" th:text="${funnel['totalConversion']} + '%'">0%</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 시간대 + 세션 -->
+    <div class="dash-grid dash-grid-2">
+        <div class="dash-card">
+            <h3 class="card-title">시간대별 접속 분포</h3>
+            <p class="card-sub">Hourly Traffic · 24시간</p>
+            <canvas id="chartHourly" height="180"></canvas>
+        </div>
+        <div class="dash-card">
+            <h3 class="card-title">세션 유지 시간 분포</h3>
+            <p class="card-sub">Session Duration · 전체 세션 기준</p>
+            <div style="margin-top:16px;">
+                <th:block th:each="d : ${sessionStats['distribution']}">
+                    <div class="session-row">
+                        <span class="session-label" th:text="${d['label']}"></span>
+                        <div class="session-bar-bg"><div class="session-bar-fill" th:style="'width:' + ${d['pct']} + '%;'"></div></div>
+                        <span class="session-bar-pct" th:text="${d['pct']} + '%'"></span>
+                    </div>
+                </th:block>
+            </div>
+            <div style="margin-top:16px; padding:14px; background:#fdf6e3; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; font-weight:600; color:#78716c;">평균 세션</span>
+                    <span style="font-size:16px; font-weight:900; color:#1a1c1c;" th:text="${sessionStats['avgMinutes'] + '분 ' + sessionStats['avgRemainSeconds'] + '초'}">0분 0초</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전환 우수(좌) + 이탈(우) -->
+    <div class="dash-grid dash-grid-2">
+        <!-- 좌: 전환 우수 TOP 3 -->
+        <div class="dash-card">
+            <h3 class="card-title">상품별 전환 우수 TOP 3</h3>
+            <p class="card-sub">Best Converters · 조회 대비 구매 전환이 가장 높은 상품</p>
+
+            <div th:if="${#lists.isEmpty(conversionRanking['best'])}" style="padding:20px; text-align:center; color:#a8a29e; font-size:12px;">데이터 부족 (조회 10건 이상 상품 필요)</div>
+            <th:block th:each="p, stat : ${conversionRanking['best']}">
+                <div style="border-radius:10px; padding:18px 20px; margin-bottom:14px; background:#f0fdf4;"
+                     th:style="'border-left:4px solid ' + ${stat.index == 0 ? '#22c55e' : (stat.index == 1 ? '#86efac' : '#bbf7d0')} + '; border-radius:10px; padding:18px 20px; margin-bottom:14px; background:#f0fdf4;'">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div><span style="display:inline-block; background:#dcfce7; color:#16a34a; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; margin-bottom:4px;" th:text="'전환 ' + ${stat.index + 1} + '위'"></span><div style="font-size:14px; font-weight:800; color:#1a1c1c; margin-top:2px;" th:text="${p['stNm']}"></div></div>
+                        <div style="text-align:right;"><div style="font-size:22px; font-weight:900; color:#16a34a;" th:text="${p['totalConversion'] + '%'}"></div><div style="font-size:10px; color:#a8a29e;">전체 전환율</div></div>
+                    </div>
+                    <div style="display:flex; gap:12px; font-size:11px; color:#78716c;"><span>조회 <b style="color:#1a1c1c;" th:text="${p['views']}"></b></span><span style="color:#d6d3d1;">→</span><span>카트 <b style="color:#1a1c1c;" th:text="${p['carts']}"></b> <span style="color:#16a34a; font-weight:700;" th:text="'(' + ${p['viewToCart']} + '% 전환)'"></span></span><span style="color:#d6d3d1;">→</span><span>구매 <b style="color:#1a1c1c;" th:text="${p['purchases']}"></b> <span style="color:#16a34a; font-weight:700;" th:text="'(' + ${p['cartToPurchase']} + '% 전환)'"></span></span></div>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- 우: 이탈 TOP 3 -->
+        <div class="dash-card">
+            <h3 class="card-title">상품별 이탈 TOP 3</h3>
+            <p class="card-sub">Product Drop-off · 조회 대비 구매 전환이 가장 낮은 상품</p>
+
+            <div th:if="${#lists.isEmpty(conversionRanking['worst'])}" style="padding:20px; text-align:center; color:#a8a29e; font-size:12px;">데이터 부족 (조회 10건 이상 상품 필요)</div>
+            <th:block th:each="p, stat : ${conversionRanking['worst']}">
+                <div style="border-radius:10px; padding:18px 20px; margin-bottom:14px;"
+                     th:style="'border-left:4px solid ' + ${stat.index == 0 ? '#ef4444' : (stat.index == 1 ? '#f59e0b' : '#d6d3d1')} + '; background:' + ${stat.index == 0 ? '#fef2f2' : (stat.index == 1 ? '#fff7ed' : '#faf8f5')} + '; border-radius:10px; padding:18px 20px; margin-bottom:14px;'">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div><span th:style="'display:inline-block; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; margin-bottom:4px; background:' + ${stat.index == 0 ? '#fecaca' : (stat.index == 1 ? '#fef3c7' : '#f5f0e8')} + '; color:' + ${stat.index == 0 ? '#dc2626' : (stat.index == 1 ? '#b8960c' : '#78716c')}" th:text="'이탈 ' + ${stat.index + 1} + '위'"></span><div style="font-size:14px; font-weight:800; color:#1a1c1c; margin-top:2px;" th:text="${p['stNm']}"></div></div>
+                        <div style="text-align:right;"><div th:style="'font-size:22px; font-weight:900; color:' + ${stat.index == 0 ? '#dc2626' : (stat.index == 1 ? '#f59e0b' : '#78716c')}" th:text="${p['totalConversion'] + '%'}"></div><div style="font-size:10px; color:#a8a29e;">전체 전환율</div></div>
+                    </div>
+                    <div style="display:flex; gap:12px; font-size:11px; color:#78716c;">
+                        <span>조회 <b style="color:#1a1c1c;" th:text="${p['views']}"></b></span><span style="color:#d6d3d1;">→</span>
+                        <span>카트 <b style="color:#1a1c1c;" th:text="${p['carts']}"></b> <span style="color:#dc2626; font-weight:700;" th:text="'(' + ${100 - p['viewToCart']} + '% 이탈)'"></span></span><span style="color:#d6d3d1;">→</span>
+                        <span>구매 <b style="color:#1a1c1c;" th:text="${p['purchases']}"></b> <span style="color:#dc2626; font-weight:700;" th:text="'(' + ${100 - p['cartToPurchase']} + '% 이탈)'"></span></span>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- 인기 상품 (전체 너비) -->
+    <div class="dash-card" style="margin-bottom:20px;">
+        <h3 class="card-title">인기 상품 TOP 10</h3>
+        <p class="card-sub">Popular Products · 조회수 기준</p>
+        <table class="rank-table">
+            <thead><tr><th>#</th><th>상품명</th><th class="text-right">조회</th><th class="text-right">카트</th><th class="text-right">구매</th><th class="text-right">조회→카트</th><th class="text-right">카트→구매</th><th class="text-right">전체 전환</th></tr></thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(popularProducts)}"><td colspan="8" style="text-align:center; padding:20px; color:#a8a29e;">데이터가 없습니다. 상품 상세 페이지 조회 시 데이터가 쌓입니다.</td></tr>
+            <tr th:each="p : ${popularProducts}">
+                <td><span class="rank-num" th:classappend="${p['rank'] == 1 ? 'rank-1' : (p['rank'] == 2 ? 'rank-2' : (p['rank'] == 3 ? 'rank-3' : 'rank-n'))}" th:text="${p['rank']}">1</span></td>
+                <td th:classappend="${p['rank'] <= 3 ? 'text-bold' : ''}" th:text="${p['stNm']}">상품명</td>
+                <td class="text-right" th:text="${p['views']}">0</td>
+                <td class="text-right" th:text="${p['carts']}">0</td>
+                <td class="text-right" th:text="${p['purchases']}">0</td>
+                <td class="text-right" th:text="${p['viewToCart'] + '%'}">0%</td>
+                <td class="text-right" th:text="${p['cartToPurchase'] + '%'}">0%</td>
+                <td class="text-right" th:style="${p['totalConversion'] >= 9 ? 'color:#16a34a; font-weight:700;' : (p['totalConversion'] < 7.5 ? 'color:#dc2626; font-weight:700;' : '')}" th:text="${p['totalConversion'] + '%'}">0%</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 견적 현황 + 가입 추이 + 요일별 -->
+    <div class="dash-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="dash-card">
+            <h3 class="card-title">견적 처리 현황</h3>
+            <p class="card-sub">Quote Status · 이번 달</p>
+            <canvas id="chartQuoteStatus" height="180"></canvas>
+        </div>
+        <div class="dash-card">
+            <h3 class="card-title">월별 가입자 추이</h3>
+            <p class="card-sub">Monthly Signups · 최근 6개월</p>
+            <canvas id="chartSignup" height="180"></canvas>
+        </div>
+        <div class="dash-card">
+            <h3 class="card-title">요일별 견적 요청</h3>
+            <p class="card-sub">Quotes by Day · 이번 달</p>
+            <canvas id="chartWeekday" height="180"></canvas>
+        </div>
+    </div>
+
+    <!-- 페이지별 체류 시간 -->
+    <div class="dash-card" style="margin-bottom:24px;">
+        <h3 class="card-title">페이지별 평균 체류 시간</h3>
+        <p class="card-sub">Page Dwell Time · 사용자가 각 페이지에서 보내는 평균 시간</p>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+            <!-- 왼쪽: 차트 -->
+            <div>
+                <canvas id="chartDwell" height="240"></canvas>
+            </div>
+            <!-- 오른쪽: 상세 테이블 -->
+            <div>
+                <table class="rank-table">
+                    <thead><tr>
+                        <th>페이지</th>
+                        <th class="text-right">평균 체류</th>
+                        <th class="text-right">조회 수</th>
+                    </tr></thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(pageDwell)}"><td colspan="3" style="text-align:center; padding:20px; color:#a8a29e;">데이터가 쌓이면 표시됩니다</td></tr>
+                    <tr th:each="d : ${pageDwell}">
+                        <td class="text-bold" th:text="${d['pageName']}"></td>
+                        <td class="text-right" th:text="${d['avgMinutes'] + '분 ' + d['avgRemainSec'] + '초'}"></td>
+                        <td class="text-right" th:text="${#numbers.formatInteger(d['views'], 1, 'COMMA')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 문의 유형별 통계 -->
+    <div class="dash-card" style="margin-bottom:24px;">
+        <h3 class="card-title">문의 유형별 통계</h3>
+        <p class="card-sub">Inquiry by Topic · 이번 달 채팅 문의 유형 분포</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+            <div>
+                <canvas id="chartInquiry" height="200"></canvas>
+            </div>
+            <div>
+                <th:block th:each="iq, stat : ${inquiryStats}">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                        <span style="font-size:13px; font-weight:700; color:#1a1c1c; flex:1;" th:text="${iq['category']}"></span>
+                        <span style="font-size:20px; font-weight:900; color:#1a1c1c;" th:text="${iq['count']}"></span>
+                        <span style="font-size:12px; font-weight:700; color:#b8960c; width:40px; text-align:right;" th:text="${iq['pct'] + '%'}"></span>
+                    </div>
+                    <div style="height:6px; background:#f5f0e8; border-radius:3px; margin-bottom:16px;">
+                        <div style="height:100%; background:linear-gradient(90deg,#ffd700,#f5c518); border-radius:3px;" th:style="'width:' + ${iq['pct']} + '%'"></div>
+                    </div>
+                </th:block>
+                <div th:if="${#lists.isEmpty(inquiryStats)}" style="padding:20px; text-align:center; color:#a8a29e; font-size:12px;">이번 달 문의 데이터가 없습니다</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+document.addEventListener('DOMContentLoaded', function () {
+    var quoteStatus = /*[[${quoteStatus}]]*/ {};
+    var monthlySignups = /*[[${monthlySignups}]]*/ [];
+    var weekdayQuotes = /*[[${weekdayQuotes}]]*/ [];
+    var hourlyTraffic = /*[[${hourlyTraffic}]]*/ [];
+    var pageDwell = /*[[${pageDwell}]]*/ [];
+    var inquiryStats = /*[[${inquiryStats}]]*/ [];
+    Chart.defaults.font.family = "'Inter','Noto Sans KR',sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#a8a29e';
+    var gold = '#ffd700', darkGold = '#b8960c', light = '#f5f0e8';
+
+    // 시간대별 (실데이터)
+    new Chart(document.getElementById('chartHourly'), {
+        type: 'bar',
+        data: {
+            labels: hourlyTraffic.map(function(h){return h.hour+'시';}),
+            datasets: [{ data: hourlyTraffic.map(function(h){return h.count;}),
+                backgroundColor: function(ctx) { var v=ctx.raw; var mx=Math.max.apply(null,hourlyTraffic.map(function(h){return h.count;})); if(mx===0) return '#fdf6e3'; return v>=mx*0.7?gold:v>=mx*0.4?'#f5c518':v>=mx*0.15?'#fde68a':'#fdf6e3'; },
+                borderRadius: 3 }]
+        },
+        options: { responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#faf8f5'}}} }
+    });
+
+    // 견적 현황 (실데이터)
+    new Chart(document.getElementById('chartQuoteStatus'), {
+        type: 'bar',
+        data: {
+            labels: ['승인','대기중','반려','만료'],
+            datasets: [{ data: [quoteStatus.approved||0, quoteStatus.submitted||0, quoteStatus.rejected||0, quoteStatus.expired||0],
+                backgroundColor: [gold,'#fde68a','#fecaca',light],
+                borderRadius: 4 }]
+        },
+        options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}},
+            scales:{ x:{grid:{color:'#faf8f5'}}, y:{grid:{display:false}} } }
+    });
+
+    // 가입자 추이 (실데이터)
+    new Chart(document.getElementById('chartSignup'), {
+        type: 'line',
+        data: {
+            labels: monthlySignups.map(function(m){return m.label;}),
+            datasets: [{ data: monthlySignups.map(function(m){return m.count;}), borderColor:gold, backgroundColor:'rgba(255,215,0,0.08)',
+                fill:true, tension:0.4, pointRadius:5, pointBackgroundColor:'#fff', pointBorderColor:gold, pointBorderWidth:2 }]
+        },
+        options: { responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#faf8f5'}}} }
+    });
+
+    // 페이지별 체류 시간 (실데이터)
+    new Chart(document.getElementById('chartDwell'), {
+        type: 'bar',
+        data: {
+            labels: pageDwell.map(function(d){return d.pageName;}),
+            datasets: [{
+                label: '평균 체류 (초)',
+                data: pageDwell.map(function(d){return d.avgSeconds;}),
+                backgroundColor: function(ctx) {
+                    var v = ctx.raw;
+                    if (v >= 300) return gold;
+                    if (v >= 150) return '#fbbf24';
+                    if (v >= 60) return '#fde68a';
+                    return '#fdf6e3';
+                },
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: function(c) { var m=Math.floor(c.raw/60); var s=c.raw%60; return m+'분 '+s+'초'; } } }
+            },
+            scales: {
+                x: { grid: { color:'#faf8f5' }, ticks: { callback: function(v) { return Math.floor(v/60)+'분'; } } },
+                y: { grid: { display:false } }
+            }
+        }
+    });
+
+    // 요일별 (실데이터)
+    new Chart(document.getElementById('chartWeekday'), {
+        type: 'bar',
+        data: {
+            labels: weekdayQuotes.map(function(d){return d.label;}),
+            datasets: [{ data: weekdayQuotes.map(function(d){return d.count;}),
+                backgroundColor: weekdayQuotes.map(function(d){return d.isWeekend?'#f5f0e8':gold;}),
+                borderRadius: 4 }]
+        },
+        options: { responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'#faf8f5'}}} }
+    });
+
+    // 문의 유형별 (실데이터)
+    if (inquiryStats.length > 0) {
+        var colors = [gold, '#f5c518', '#fde68a', '#fdf6e3', '#e5e5e5'];
+        new Chart(document.getElementById('chartInquiry'), {
+            type: 'doughnut',
+            data: {
+                labels: inquiryStats.map(function(i){return i.category + ' (' + i.count + '건)';}),
+                datasets: [{
+                    data: inquiryStats.map(function(i){return i.count;}),
+                    backgroundColor: inquiryStats.map(function(_,idx){return colors[idx % colors.length];}),
+                    borderWidth: 2, borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true, cutout: '55%',
+                plugins: { legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11, weight: '600' } } } }
+            }
+        });
+    }
+});
+</script>
+</th:block>
+</html>

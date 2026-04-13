@@ -1,5 +1,8 @@
 package com.goodee.beedan.repository.member;
 
+import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.config.exception.EntityNotFoundException;
+import com.goodee.beedan.config.exception.MemberNotFoundException;
 import com.goodee.beedan.dto.member.MemberApproveDto;
 import com.goodee.beedan.entity.Member;
 import org.springframework.data.domain.Page;
@@ -45,6 +48,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "WHERE m.memStt = 'PENDING' " +
             "ORDER BY m.memCreDt DESC")
     List<MemberApproveDto> findPendingMembersWithFiles();
+  
+    long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 
     boolean existsByMemEml(String memEml);
+
+    default Member getByIdOrThrow(Long memId) {
+        return findById(memId).orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. ID: " + memId));
+    }
 }

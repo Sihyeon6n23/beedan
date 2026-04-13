@@ -40,31 +40,7 @@ public class AdminMemberService {
     @Transactional
     public void updateMember(MemberEditRequest request) {
         Member member = memberRepository.findById(request.getId()).orElseThrow(() -> new EntityNotFoundException("회원 없음"));
-
         memberMapper.updateMemberFromDto(request, member);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<MemberListDto> getAllMembers(Pageable pageable) {
-        return memberRepository.findAllUsers(pageable)
-                .map(member -> MemberListDto.builder()
-                        .memId(member.getMemId())
-                        .memLgnId(member.getMemLgnId())
-                        .memNm(member.getMemNm())
-                        .memBizNo(member.getMemBizNo())
-                        .memBizTtl(member.getMemBizTtl())
-                        .memCeoNm(member.getMemCeoNm())
-                        .memCreDt(member.getMemCreDt())
-                        .memBizAdr(member.getMemBizAdr())
-                        .memStt(member.getMemStt())
-                        .memAut(member.getMemAut())
-                        .build()
-                );
-    }
-
-    @Transactional(readOnly = true)
-    public Page<MemberListDto> getMembersByStatus(String status, Pageable pageable) {
-        return getMembersByStatusAndKeyword(status, null, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -100,18 +76,18 @@ public class AdminMemberService {
     }
 
     @Transactional(readOnly = true)
-    public MemberSummaryDto getMemberSummary(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+    public MemberSummaryDto getMemberSummary(Long memId) {
+        Member member = memberRepository.getByIdOrThrow(memId);
 
-        List<Order> recentOrders = orderRepository.findTop3ByMember_MemIdOrderByOrdBaseCreDtDesc(memberId);
-        List<Shipment> recentShipments = shipmentRepository.findTop3ByOrder_Member_MemIdOrderByShCreDtDesc(memberId);
+        List<Order> recentOrders = orderRepository.findTop3ByMember_MemIdOrderByOrdBaseCreDtDesc(memId);
+        List<Shipment> recentShipments = shipmentRepository.findTop3ByOrder_Member_MemIdOrderByShCreDtDesc(memId);
         PageRequest pageRequest = PageRequest.of(0, 3); // 첫 페이지의 5건
 
         Page<Board> recentInquiries = boardRepository.findUserInquiryBoards(
                 BoardType.INQUIRY,
-                memberId,
-                null,              // 문의 상태 (전체 조회 시 null)
-                null,              // 키워드 (검색어 없을 시 null)
+                memId,
+                null,
+                null,
                 pageRequest
         );
 
@@ -163,7 +139,7 @@ public class AdminMemberService {
         return  shipments.map(this::mapToShipmentDto);
     }
 
-    private ShipmentDto mapToShipmentDto(Shipment shipment){
+    private ShipmentDto mapToShipmentDto(Shipment shipment) {
         return ShipmentDto.builder()
                 .shId(shipment.getShId())
                 .shCarCd(shipment.getShCarCd())
@@ -178,7 +154,7 @@ public class AdminMemberService {
                                 .ordItmNm(item.getOrdItmNm())
                                 .shQn(item.getShQn())
                                 .build())
-                        .collect(Collectors.toList()))
+                        .toList())
                 .build();
     }
 
