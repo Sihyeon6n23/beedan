@@ -1,22 +1,26 @@
 <div th:fragment="upload(maxCount, existingFiles, isMultiple)">
-  <div class="inquiry-upload" data-inquiry-upload>
-    <div id="uploadZone" class="inquiry-upload__zone cursor-pointer">
+  <div class="inquiry-upload"
+       data-inquiry-upload
+       th:data-max-count="${isMultiple ? maxCount : 1}"
+       th:data-is-multiple="${isMultiple}">
+
+    <div class="inquiry-upload__zone cursor-pointer" data-upload-zone>
       <span class="material-symbols-outlined inquiry-upload__icon">cloud_upload</span>
       <p class="inquiry-upload__text">
         파일을 여기에 끌어다 놓거나 <strong>클릭해서 업로드</strong>
         <br>
-        <small id="fileCountInfo" class="text-zinc-500">
+        <small class="text-zinc-500" data-upload-count>
           [[${isMultiple ? '(0 / ' + maxCount + ')' : '(0 / 1)'}]]
         </small>
       </p>
-      <input type="file" id="fileInput" name="newFiles"
+      <input type="file" name="newFiles"
              th:multiple="${isMultiple}" style="display: none;"
+             data-upload-input
              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
     </div>
 
-    <div class="inquiry-upload__list mt-4" id="fileListContainer">
+    <div class="inquiry-upload__list mt-4" data-upload-list>
       <div th:each="file : ${existingFiles}"
-           th:id="'ex-' + ${file.fileUuid}"
            class="inquiry-upload__item existing flex items-center justify-between gap-3 p-3 mb-2 border-l-4 border-zinc-200 bg-white shadow-sm transition-all">
         <div class="flex items-center gap-2 overflow-hidden flex-1">
           <span class="material-symbols-outlined text-secondary !text-lg flex-shrink-0">description</span>
@@ -25,134 +29,12 @@
             <small class="text-zinc-400 ml-1" th:text="'(' + ${file.fileSz != null ? (file.fileSz < 1024 ? file.fileSz + ' B' : (file.fileSz < 1048576 ? #numbers.formatDecimal(file.fileSz/1024.0, 1, 1) + ' KB' : #numbers.formatDecimal(file.fileSz/1048576.0, 1, 1) + ' MB')) : '0 B'} + ')'"></small>
           </span>
         </div>
-        <button type="button" class="inquiry-upload__remove text-secondary hover:text-error transition-colors flex-shrink-0"
-                th:onclick="fileManager.toggleDelete([[${file.fileUuid}]])">
+
+        <button type="button" class="inquiry-upload__remove text-secondary hover:text-error transition-colors flex-shrink-0">
           <span class="material-symbols-outlined !text-lg">close</span>
         </button>
         <input type="hidden" class="delete-input" th:data-uuid="${file.fileUuid}">
       </div>
     </div>
   </div>
-
-  <script th:inline="javascript">
-    const CONFIG = {
-      IS_MULTIPLE: [[${isMultiple}]],
-      MAX: [[${isMultiple}]] ? ([[${maxCount != null ? maxCount : 1}]]) : 1,
-            INIT_COUNT: [[${existingFiles != null ? existingFiles.size() : 0}]]
-    };
-
-    const fileManager = {
-      dt: new DataTransfer(),
-      deletedCount: 0,
-
-      init() {
-        const zone = document.getElementById('uploadZone');
-        const input = document.getElementById('fileInput');
-
-        zone.addEventListener('click', () => input.click());
-        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('bg-zinc-100'); });
-        zone.addEventListener('dragleave', () => zone.classList.remove('bg-zinc-100'));
-        zone.addEventListener('drop', e => this.handleDrop(e));
-        input.addEventListener('change', e => this.handleSelect(e));
-
-        this.updateUI();
-      },
-
-      formatSize(bytes) {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-      },
-
-      handleDrop(e) {
-        e.preventDefault();
-        document.getElementById('uploadZone').classList.remove('bg-zinc-100');
-        let files = e.dataTransfer.files;
-        if (!CONFIG.IS_MULTIPLE && files.length > 1) {
-          const singleFileDT = new DataTransfer();
-          singleFileDT.items.add(files[0]);
-          files = singleFileDT.files;
-        }
-        this.processFiles(files);
-      },
-
-      handleSelect(e) { this.processFiles(e.target.files); },
-
-      processFiles(files) {
-        const currentTotal = this.dt.files.length + (CONFIG.INIT_COUNT - this.deletedCount);
-        const remaining = CONFIG.MAX - currentTotal;
-
-        if (remaining <= 0) {
-          alert(CONFIG.IS_MULTIPLE ? `최대 ${CONFIG.MAX}개까지만 업로드 가능합니다.` : "이미 파일이 존재합니다. 기존 파일을 제거 후 다시 시도해주세요.");
-          return;
-        }
-
-        Array.from(files).slice(0, remaining).forEach(file => {
-          this.dt.items.add(file);
-          this.renderNewUI(file);
-        });
-
-        document.getElementById('fileInput').files = this.dt.files;
-        this.updateUI();
-      },
-
-      /* [수정 완료] 신규 파일 UI 렌더링 시 브라우저 네이티브 속성(file.name) 사용 */
-      renderNewUI(file) {
-        const container = document.getElementById('fileListContainer');
-        const div = document.createElement('div');
-        div.className = 'inquiry-upload__item new flex items-center justify-between gap-3 p-3 mb-2 border-l-4 border-primary bg-white shadow-sm';
-
-        const sizeStr = this.formatSize(file.size);
-
-        div.innerHTML = `
-            <div class="flex items-center gap-2 overflow-hidden flex-1">
-                <span class="material-symbols-outlined text-secondary !text-lg flex-shrink-0">description</span>
-                <span class="text-sm font-medium text-on-background truncate">
-                    ${file.name}
-                    <small class="text-zinc-400 ml-1">(${sizeStr})</small>
-                </span>
-                <mark class="badge-new bg-primary-container text-on-primary-container text-[10px] font-black px-1.5 py-0.5 uppercase tracking-wider flex-shrink-0">New</mark>
-            </div>
-            <button type="button" class="inquiry-upload__remove text-secondary hover:text-error transition-colors flex-shrink-0 ml-3">
-                <span class="material-symbols-outlined !text-lg">close</span>
-            </button>
-        `;
-
-        // 삭제 시에도 file.name을 기준으로 비교하도록 수정
-        div.querySelector('button').onclick = () => this.removeNew(div, file.name);
-        container.appendChild(div);
-      },
-
-      removeNew(element, fileName) {
-        const newDT = new DataTransfer();
-        // 브라우저의 File 객체는 'name' 속성을 가집니다.
-        Array.from(this.dt.files).filter(f => f.name !== fileName).forEach(f => newDT.items.add(f));
-        this.dt = newDT;
-        document.getElementById('fileInput').files = this.dt.files;
-        element.remove();
-        this.updateUI();
-      },
-
-      toggleDelete(uuid) {
-        const item = document.getElementById(`ex-${uuid}`);
-        const input = item.querySelector('.delete-input');
-        const isDeleting = !item.classList.contains('to-delete');
-        item.classList.toggle('to-delete', isDeleting);
-        item.style.opacity = isDeleting ? "0.5" : "1";
-        input.name = isDeleting ? 'deleteUuids' : '';
-        input.value = isDeleting ? uuid : '';
-        this.deletedCount += isDeleting ? 1 : -1;
-        this.updateUI();
-      },
-
-      updateUI() {
-        const total = this.dt.files.length + (CONFIG.INIT_COUNT - this.deletedCount);
-        document.getElementById('fileCountInfo').textContent = `(${total} / ${CONFIG.MAX})`;
-      }
-    };
-
-    document.addEventListener('DOMContentLoaded', () => fileManager.init());
-  </script>
 </div>
