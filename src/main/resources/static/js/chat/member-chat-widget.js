@@ -4,6 +4,8 @@
     return;
   }
 
+  var qrApiBaseUrl = widget ? (widget.dataset.qrApiBaseUrl || "") : "";
+
   var panel = widget.querySelector(".member-chat-panel");
   var launcher = widget.querySelector("[data-widget-toggle]");
   var launcherBadge = widget.querySelector(".member-chat-launcher__badge");
@@ -62,6 +64,7 @@
   var loginUrl = widget.dataset.loginUrl || "/auth/signin";
   var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
   var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
+  var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
   function connectMemberChatSocket() {
       // 사용자 위젯에서 현재 채팅방을 WebSocket으로 수신할 수 있게 연결을 만듦
@@ -72,7 +75,7 @@
       // 소켓이 없으면 새로 연결
       if (!stompClient) {
         stompClient = new StompJs.Client({
-          brokerURL: "ws://" + window.location.host + "/ws",
+          brokerURL: wsProtocol + window.location.host + "/ws",
           reconnectDelay: 5000,
           debug: function () {}
         });
@@ -956,7 +959,9 @@
           scrollChatRoomToBottom(false);
         });
 
-        qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
+        if (qrApiBaseUrl) {
+          qr.src = qrApiBaseUrl + encodeURIComponent(message.chMsLnkUrl);
+        }
         card.appendChild(qr);
       }
 
