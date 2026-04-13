@@ -3,6 +3,7 @@ package com.goodee.beedan.service.member;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.dto.admin.MemberListDto;
+import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.mail.PasswordResetMailRequest;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
@@ -11,6 +12,7 @@ import com.goodee.beedan.entity.Token;
 import com.goodee.beedan.mapper.member.MemberMapper;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.token.TokenRepository;
+import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.mail.MailNotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.management.relation.Role;
 import javax.swing.text.html.Option;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +48,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
     private final MailNotificationService mailNotificationService;
+    private final FileService fileService;
 
     @Value("${site.url}")
     private String siteUrl;
@@ -92,9 +99,43 @@ public class MemberService {
         member.setMemStt(MemberStatus.ACTIVE.toString());
     }
 
-    public void insertMember(Member member) {
+    public void insertMember(MemberFormDto memberForm,
+                             PhoneVerificationDto phoneVerificationDto,
+                             BizDto validateBizDto) {
+
+        Member member = Member.builder()
+                .memLgnId(memberForm.getUserLoginId())
+                .memLgnPw(passwordEncoder.encode(memberForm.getPassword()))
+                .memEml(memberForm.getEmail())
+                .memPosCd(memberForm.getPostCode())
+                .memBizAdr(memberForm.getCompanyAddress())
+                .memBizDtAdr(memberForm.getCompanyAddressDetail())
+                .memCeoPhn(memberForm.getCeoPhone())
+                .memCmpTel(memberForm.getCmpPhone())
+                .memStt(MemberStatus.PENDING.toString()) // 가입요청상태로 회원가입 요청
+                .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
+                .memLgnTr(0L)
+                .memMbPhn(phoneVerificationDto.getPhoneNumber())
+                .memCi(phoneVerificationDto.getCi())
+                .memNm(phoneVerificationDto.getName())
+                .memBizNo(validateBizDto.getBNo())
+                .memBizTtl(validateBizDto.getBNm())
+                .memCeoNm(validateBizDto.getPNm())
+                .memBizCreDt(LocalDate.parse(
+                        validateBizDto.getStartDt(),
+                        DateTimeFormatter.ofPattern("yyyyMMdd")
+                ).atStartOfDay())
+                .build();
+
         try {
-            memberRepository.save(member);
+            Member saveMember = memberRepository.save(member);
+            List<MultipartFile> fileList = new ArrayList<>();
+            fileList.add(memberForm.getNewFiles());
+            fileService.saveFile(fileList, RefDto.builder()
+                    .refTy("SIGNUP")
+                    .refNo(saveMember.getMemId())
+                    .build()
+            );
         } catch (DataIntegrityViolationException e) {
             // DB 제약 조건 위반 (중복 아이디, 중복 사업자번호 등)
             log.error("회원 저장 중 데이터 무결성 오류 발생: {}", e.getMessage());
@@ -113,6 +154,11 @@ public class MemberService {
     public void allowAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
         member.approve();
+    }
+
+
+    public boolean checkEmailDuplicate(String email) {
+        return memberRepository.existsByMemEml(email);
     }
 
     public void inactiveAccount(Long memberId) {
@@ -223,6 +269,10 @@ public class MemberService {
 
         // 3. DB 저장
         memberRepository.save(member);
+    }
+
+    public List<MemberApproveDto> findPendingMembersWithFiles() {
+        return memberRepository.findPendingMembersWithFiles();
     }
 
     private Boolean checkMemberAuthority(Long memId){

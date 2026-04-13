@@ -976,6 +976,7 @@
     justify-content: center;
     min-height: 2.2rem;
     padding: 0 0.75rem;
+    border: 1px solid rgba(112, 93, 0, 0.18);
     background: #fff1a8;
     color: #705d00;
     font-size: 0.72rem;
@@ -985,12 +986,23 @@
 
 /* 카드 안 QR 이미지 */
 .member-chat-quote-card__qr {
+    display: block;
     width: 140px;
     height: 140px;
     align-self: center;
-    background: #ffffff;
+    border: 1px solid rgba(112, 93, 0, 0.12);
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c1b37a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='3.5' width='7' height='7' rx='1.2'/%3E%3Crect x='13.5' y='3.5' width='7' height='7' rx='1.2'/%3E%3Crect x='3.5' y='13.5' width='7' height='7' rx='1.2'/%3E%3Cpath d='M15 15h1.5M18.5 15H20M15 18.5H17M18.5 18.5V20M20 17v1.5'/%3E%3C/svg%3E") center / 40px 40px no-repeat,
+        linear-gradient(180deg, #fffdf6 0%, #fff7db 100%);
     object-fit: contain;
-}
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  /* QR 이미지가 실제로 로드되면 fade-in */
+  .member-chat-quote-card__qr[src] {
+    opacity: 1;
+  }
 
 .member-chat-room-close-button:disabled {
   background: #ece9df;

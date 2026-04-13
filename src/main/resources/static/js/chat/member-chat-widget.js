@@ -168,8 +168,14 @@
         appendMemberChatMessage(message);
 
           if (message.chMsSenTy !== "USER") {
-            markCurrentChatRoomAsRead();
-            return;
+              // 실제로 위젯이 열려 있고 현재 채팅 상세를 보고 있을 때만 읽음 처리
+              if (isCurrentChatRoom(message.chRoId)) {
+                markCurrentChatRoomAsRead();
+                return;
+              }
+
+              loadMemberChatRooms({ animateList: false });
+              return;
           }
 
           loadMemberChatRooms({ animateList: false });
@@ -233,10 +239,15 @@
     chatListNavButton.setAttribute("data-unread", isVisible ? "true" : "false");
   }
 
+  function isChatRoomPanelOpen() {
+      return !!panel && !panel.classList.contains("is-hidden");
+    }
+
   function isCurrentChatRoom(chatRoomId) {
-    return currentViewName === "chat-room"
-      && currentChatRoomId !== null
-      && String(currentChatRoomId) === String(chatRoomId);
+      return isChatRoomPanelOpen()
+        && currentViewName === "chat-room"
+        && currentChatRoomId !== null
+        && String(currentChatRoomId) === String(chatRoomId);
   }
 
   // 챗봇 영역 하단 자동 스크롤
@@ -930,16 +941,26 @@
     link.href = message.chMsLnkUrl || "#";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = "견적 보기";
+    link.textContent = "견적 초안 열기";
     card.appendChild(link);
 
     if (message.chMsLnkUrl) {
-      var qr = document.createElement("img");
-      qr.className = "member-chat-quote-card__qr";
-      qr.alt = "견적 QR 코드";
-      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
-      card.appendChild(qr);
-    }
+        var qr = document.createElement("img");
+        qr.className = "member-chat-quote-card__qr";
+        qr.alt = "견적 QR 코드";
+
+        // QR이 늦게 로드되면 카드 높이가 뒤늦게 커지므로, 로드 후 다시 하단 스크롤 맞춤
+        qr.addEventListener("load", function () {
+          scrollChatRoomToBottom(false);
+        });
+
+        qr.addEventListener("error", function () {
+          scrollChatRoomToBottom(false);
+        });
+
+        qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
+        card.appendChild(qr);
+      }
 
     return card;
   }
@@ -1199,14 +1220,14 @@
     if (emptyState) {
       emptyState.remove();
     }
+    // 실시간 수신 메시지 날짜가 바뀌었으면 먼저 날짜 divider 추가
+    appendMemberDateDividerIfNeeded(message.chMsCreDt);
 
     var article = document.createElement("article");
     var body = document.createElement("div");
     var bubble = document.createElement("div");
     var time = document.createElement("span");
     var isUserMessage = message.chMsSenTy === "USER";
-
-    appendMemberDateDividerIfNeeded(message.chMsCreDt);
 
     article.className = "member-chat-message " + (isUserMessage ? "member-chat-message--right" : "member-chat-message--left");
     article.classList.add("member-chat-animate-in");

@@ -339,17 +339,18 @@
     });
   }
 
-  function scrollAdminChatToBottom() {
-    if (!adminMessageScrollBody) {
-      return;
-    }
+  function scrollAdminChatToBottom(useSmooth) {
+        if (!adminMessageScrollBody) {
+            return;
+        }
 
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
-      });
-    });
-  }
+        window.setTimeout(function () {
+            adminMessageScrollBody.scrollTo({
+                top: adminMessageScrollBody.scrollHeight,
+                behavior: useSmooth ? "smooth" : "auto"
+            });
+        }, 90);
+    }
 
   // 견적 카드(제목 + 링크 + QR Code) 만들기
   function buildAdminChatQuoteCard(message) {
@@ -373,18 +374,38 @@
     link.href = message.chMsLnkUrl || "#";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = "견적 보기";
+    link.textContent = "견적 초안 열기";
     card.appendChild(link);
 
     if (message.chMsLnkUrl) {
-      var qr = document.createElement("img");
-      qr.className = "admin-chat-quote-card__qr";
-      qr.alt = "견적 QR 코드";
-      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
-      card.appendChild(qr);
+        var qr = document.createElement("img");
+        qr.className = "admin-chat-quote-card__qr";
+        qr.alt = "견적 QR 코드";
+        qr.dataset.qrUrl = message.chMsLnkUrl;
+        applyQuoteQrImage(qr);
+        card.appendChild(qr);
     }
 
     return card;
+  }
+
+  function applyQuoteQrImage(img) {
+    if (!img) {
+      return;
+    }
+
+    var qrUrl = img.dataset.qrUrl;
+    if (!qrUrl) {
+      return;
+    }
+
+    img.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(qrUrl);
+  }
+
+  function hydrateExistingAdminQuoteCards() {
+    document.querySelectorAll(".admin-chat-quote-card__qr[data-qr-url]").forEach(function (img) {
+      applyQuoteQrImage(img);
+    });
   }
 
   // 이미지 메시지 버블 만들기
@@ -474,9 +495,12 @@
 
     removeEmptyDetailPlaceholder();
 
+    // 실시간 수신 메시지 날짜가 바뀌었으면 먼저 날짜 divider 추가
+    appendAdminDateDividerIfNeeded(message.chMsCreDt);
+
     var article = document.createElement("article");
     article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
-    article.style.animationDelay = "0ms";
+    article.classList.add("admin-chat-animate-in");
 
     var content = document.createElement("div");
     content.className = "admin-chat-detail-message__content";
@@ -486,8 +510,6 @@
 
     var time = document.createElement("span");
     time.textContent = formatAdminChatMessageTime(message.chMsCreDt);
-
-    appendAdminDateDividerIfNeeded(message.chMsCreDt);
 
     var bubble = buildAdminChatMessageBubble(message, true);
 
@@ -502,8 +524,8 @@
     content.appendChild(messageTime);
     article.appendChild(content);
     adminMessageList.appendChild(article);
-    scrollAdminChatToBottom();
-    moveClosedPanelToBottom();
+      scrollAdminChatToBottom(true);
+      moveClosedPanelToBottom();
   }
 
   function appendPendingAdminMessage(messageText) {
@@ -516,7 +538,7 @@
 
     var article = document.createElement("article");
     article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
-    article.style.animationDelay = "0ms";
+    article.classList.add("admin-chat-animate-in");
     article.dataset.pending = "true";
 
     var content = document.createElement("div");
@@ -539,9 +561,9 @@
     article.appendChild(content);
     adminMessageList.appendChild(article);
 
-    scrollAdminChatToBottom();
+      scrollAdminChatToBottom(true);
 
-    return article;
+      return article;
   }
 
   // 메시지를 받았을 때 메시지 append
@@ -551,8 +573,12 @@
 
       removeEmptyDetailPlaceholder();
 
+      // 실시간 수신 메시지 날짜가 바뀌었으면 먼저 날짜 divider 추가
+      appendAdminDateDividerIfNeeded(message.chMsCreDt);
+
       var article = document.createElement("article");
       article.className = "admin-chat-detail-message admin-chat-detail-message--client";
+      article.classList.add("admin-chat-animate-in");
 
       var avatar = document.createElement("div");
       avatar.className = "admin-chat-detail-message__avatar";
@@ -577,8 +603,6 @@
 
       meta.appendChild(sender);
 
-      appendAdminDateDividerIfNeeded(message.chMsCreDt);
-
       var bubble = buildAdminChatMessageBubble(message, false);
 
       var messageTime = document.createElement("span");
@@ -593,9 +617,8 @@
       article.appendChild(avatar);
       article.appendChild(content);
       adminMessageList.appendChild(article);
-
-      scrollAdminChatToBottom();
-      moveClosedPanelToBottom();
+        scrollAdminChatToBottom(true);
+        moveClosedPanelToBottom();
     }
 
   document.addEventListener("click", function (event) {
@@ -800,6 +823,7 @@
 
               if (pendingMessage) {
                 pendingMessage.removeAttribute("data-pending");
+                pendingMessage.classList.remove("admin-chat-animate-in");
 
                 var pendingTime = pendingMessage.querySelector(".admin-chat-detail-message__time");
                 if (pendingTime) {
@@ -883,8 +907,9 @@
   // 상세 진입 시
   if (detailPage) {
     renderExistingAdminDateDividers();
+    hydrateExistingAdminQuoteCards();
     setChatState(detailPage.dataset.chatStatus || "ONGOING");
-    scrollAdminChatToBottom();
+    scrollAdminChatToBottom(false);
     if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING" && detailCanWrite) {
       adminMessageInput.focus();
     }

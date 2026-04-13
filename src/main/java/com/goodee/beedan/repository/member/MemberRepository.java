@@ -1,5 +1,6 @@
 package com.goodee.beedan.repository.member;
 
+import com.goodee.beedan.dto.member.MemberApproveDto;
 import com.goodee.beedan.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,4 +37,14 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
            "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")    Page<Member> findUsersByStatusAndKeyword(String status, String keyword, Pageable pageable);
 
     List<Member> findByMemIdIn(Collection<Long> memIds);
+
+    @Query("SELECT new com.goodee.beedan.dto.member.MemberApproveDto(" +
+            "m.memId, m.memNm, m.memBizNo, m.memCreDt, f.filePat, f.fileUuid) " +
+            "FROM Member m " +
+            "LEFT JOIN FileUpload f ON m.memId = f.brdRefNo AND f.brdRefTy = 'SIGNUP' AND f.fileDelYn = false " +
+            "WHERE m.memStt = 'PENDING' " +
+            "ORDER BY m.memCreDt DESC")
+    List<MemberApproveDto> findPendingMembersWithFiles();
+
+    boolean existsByMemEml(String memEml);
 }

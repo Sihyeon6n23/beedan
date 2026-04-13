@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @Component
@@ -53,27 +52,10 @@ public class ChatRoomCloseScheduler {
             return;
         }
 
-        // 마지막 실행 시각
-        String lastRunText = schedulerSetting.getLastChatAutoCloseRunTime();
-        // 실행 주기(시간 단위)
-        long intervalHours = Long.parseLong(schedulerSetting.getChatAutoCloseInterval());
-
-        // 마지막 실행 기록이 있으면 주기만큼 시간이 지났는지 확인
-        if (lastRunText != null) {
-            LocalDateTime lastRun = LocalDateTime.parse(lastRunText);
-            long hoursSinceLastRun = ChronoUnit.HOURS.between(lastRun, now);
-//            log.info("chatAutoClose lastRun={}, hoursSinceLastRun={}, intervalHours={}",
-//                    lastRun, hoursSinceLastRun, intervalHours);
-
-            // 아직 실행 주기보다 덜 지났으면 종료
-            if (hoursSinceLastRun < intervalHours) {
-//                log.info("chatAutoClose skip: interval not reached");
-                return;
-            }
-        }
 
         // 마지막 메시지 이후 3일 지난 OPEN/ONGOING 채팅방을 실제로 자동 종료
-        int closedCount = chatSchedulerService.closeInactiveChatRooms();
+        long inactiveHours = Long.parseLong(schedulerSetting.getChatAutoCloseInterval());
+        int closedCount = chatSchedulerService.closeInactiveChatRooms(inactiveHours);
         log.info("채팅방 자동 종료 스케줄러 실행 완료 - 종료된 채팅방 수: {}", closedCount);
 
         // 이번 실행 시각을 저장해 다음 실행 주기 계산 기준으로 사용

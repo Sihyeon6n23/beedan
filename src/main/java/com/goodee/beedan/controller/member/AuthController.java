@@ -9,6 +9,7 @@ import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.auth.TokenService;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
+import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
 import jakarta.servlet.http.HttpSession;
@@ -21,12 +22,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +44,7 @@ public class AuthController {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final SnsIntegrateService snsIntegrateService;
+    private final FileService fileService;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
@@ -56,12 +61,11 @@ public class AuthController {
     public String postSignUp(
             @Valid @ModelAttribute("memberForm") MemberFormDto memberForm,
             BindingResult bindingResult,
-            RedirectAttributes redirectAttributes) {
-        // 검증 필요
+            Model model) {
         if (bindingResult.hasErrors()) {
-            // 에러 메시지 중 첫 번째를 가져와서 전달 (예시)
-            String defaultMessage = bindingResult.getFieldError().getDefaultMessage();
-            redirectAttributes.addFlashAttribute("errorMessage", defaultMessage);
+            if (bindingResult.getFieldError() != null) {
+                model.addAttribute("errorMessage", bindingResult.getFieldError().getDefaultMessage());
+            }
             return "/member/auth/signup";
         }
 
@@ -70,58 +74,82 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        if (!memberForm.getIdCheckedInput()) {
-            bindingResult.rejectValue("duplicateCheckLoginId", "idDuplicateCheck", "아이디 중복확인 버튼을 눌러주세요.");
+        if (!Boolean.TRUE.equals(memberForm.getIdCheckedInput())) {
+            bindingResult.rejectValue("userLoginId", "idDuplicateCheck", "아이디 중복확인 버튼을 눌러주세요.");
             return "/member/auth/signup";
         }
+
+        if (memberService.isDuplicatedLoginId(memberForm.getUserLoginId())) {
+            bindingResult.rejectValue("userLoginId", "idAlreadyTaken", "해당 아이디로 먼저 가입한 사용자가 있습니다. 다시 시도해주세요.");
+            return "/member/auth/signup";
+        }
+
+        // 1. 프론트엔드에서 '이메일 중복확인' 버튼을 눌렀는지 체크
+        if (!Boolean.TRUE.equals(memberForm.getEmailCheckedInput())) {
+            bindingResult.rejectValue("email", "emailCheckRequired", "이메일 중복확인 버튼을 눌러주세요.");
+            return "/member/auth/signup";
+        }
+
+        if (memberService.checkEmailDuplicate(memberForm.getEmail())) {
+            bindingResult.rejectValue("email", "emailAlreadyTaken", "해당 이메일로 먼저 가입한 사용자가 있습니다. 다시 시도해주세요.");
+            return "/member/auth/signup";
+        }
+
+        MultipartFile file = memberForm.getNewFiles();
+        if (file != null && !file.isEmpty()) {
+
+            String originalFileName = file.getOriginalFilename();
+            String contentType = file.getContentType();
+
+            String ext = "";
+            if (originalFileName != null && originalFileName.contains(".")) {
+                ext = originalFileName.substring(originalFileName.lastIndexOf(".") + 1).toLowerCase();
+            }
+
+            List<String> allowedImages = Arrays.asList("jpg", "jpeg", "png", "pdf");
+
+            if (ext.isEmpty() || !allowedImages.contains(ext) || contentType == null) {
+                bindingResult.rejectValue("newFiles", "fileInvalid", "파일 확장자를 확인해주세요.");
+                return "/member/auth/signup";
+            }
+
+            String mimeType = fileService.getMimeType(file);
+            if (!fileService.isMimeExtensionMatched(mimeType, ext)) {
+                bindingResult.rejectValue("newFiles", "fileInvalid", "파일의 데이터 규격이 확장자 정보와 다릅니다. 원본 파일을 확인해 주세요.");
+                return "/member/auth/signup";
+            }
+        }
+
         // 휴대폰 번호 API 검증(백엔드검증)
         Mono<Map<String, Object>> verifyMono = portOneService.verify(memberForm.getImpUid());
         PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
+
+        // [수정 1]: String 조작 전 null 참조 예외(NPE) 완벽 방어
+        String estDate = memberForm.getEstablishmentDate();
+        String formattedStartDt = (estDate != null) ? estDate.replace("-", "") : "";
 
         // 사업자등록번호 재인증(백엔드검증)
         BizDto bizDto = BizDto.builder()
                 .bNo(memberForm.getBusinessRegNum())
                 .bNm(memberForm.getCompanyName())
                 .pNm(memberForm.getCeoName())
-                .startDt(memberForm.getEstablishmentDate())
+                .startDt(formattedStartDt) // null-safe 처리된 변수 주입
                 .build();
 
         Mono<Map<String, Object>> bizValidateMono = bizValidateService.validate(bizDto);
         BizDto validateBizDto = bizValidateService.monoToBizDto(bizValidateMono);
 
-        if (validateBizDto.getValid().equals("02")) {
+        // [수정 5]: 검증 실패 시 상수를 기준으로 비교하고, return 문을 추가하여 흐름 차단
+        if ("02".equals(validateBizDto.getValid())) {
             log.info("사업자 정보 입력값이 올바르지 않습니다. Valid: {}", validateBizDto.getValid());
-            // 예외처리
+            bindingResult.rejectValue("businessRegNum", "invalidBiz", "사업자 정보가 올바르지 않습니다. 다시 확인해주세요.");
+            return "/member/auth/signup"; // 예외 발생 후 원래 폼으로 튕겨냄
         }
 
-        // 아이디, 비밀번호, 이메일, 우편번호, 주소, 상세주소 입력 - 완료
-        // 이름, 휴대폰번호, CI값 입력
-        // 재인증 후 사업자등록번호, 상호명, 대표자명, 설립연월일 입력
-        Member member = Member.builder()
-                .memLgnId(memberForm.getUserLoginId())
-                .memLgnPw(passwordEncoder.encode(memberForm.getPassword()))
-                .memEml(memberForm.getEmail())
-                .memPosCd(memberForm.getPostCode())
-                .memBizAdr(memberForm.getCompanyAddress())
-                .memBizDtAdr(memberForm.getCompanyAddressDetail())
-                .memStt(MemberStatus.PENDING.toString()) // 가입요청상태로 회원가입 요청
-                .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
-                .memLgnTr(0L)
-                .memMbPhn(phoneVerificationDto.getPhoneNumber())
-                .memCi(phoneVerificationDto.getCi())
-                .memNm(phoneVerificationDto.getName())
-                .memBizNo(validateBizDto.getBNo())
-                .memBizTtl(validateBizDto.getBNm())
-                .memCeoNm(validateBizDto.getPNm())
-                .memBizCreDt(LocalDate.parse(
-                        validateBizDto.getStartDt(),
-                        DateTimeFormatter.ofPattern("yyyyMMdd")
-                ).atStartOfDay())
-                .build();
-
         try {
-            memberService.insertMember(member);
+            memberService.insertMember(memberForm, phoneVerificationDto, bizDto);
         } catch (Exception e) {
+            bindingResult.reject("signup.fail", e.getMessage());
             return "/member/auth/signup";
         }
 
@@ -212,6 +240,13 @@ public class AuthController {
                                           HttpSession session,
                                           Principal principal,
                                           RedirectAttributes redirectAttributes) {
+
+        // [수정 4]: Principal null 체크를 추가하여 비로그인 사용자의 접근 원천 차단
+        if (principal == null) {
+            log.warn("비로그인 사용자가 SNS 연동 콜백에 접근했습니다.");
+            return "redirect:/auth/signin";
+        }
+
         // 1. sns 서비스 호출 -> id값으로 member 조회 후 인증정보 조회(방어) -> 있으면 return
         Member member = memberService.getMemberByUsername(principal.getName());
         if (snsIntegrateService.isSnsIntegrate(member)) {
