@@ -3,9 +3,9 @@ package com.goodee.beedan.service.mail;
 import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.dto.mail.MailRequest;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
@@ -14,14 +14,12 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
-
-@Service
+@Service @Slf4j
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender mailSender;
     @Value("${site.url}")
-    String SITE_URL;
+    String siteUrl;
     @Value("${spring.mail.username}")
     String mailUsername;
 
@@ -33,7 +31,7 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             String title = "[Beedan 서비스 안내] " + notificationType.getDefaultTitle();
-            String fullUrl = SITE_URL + notificationType.generateUrl(targetId);
+            String fullUrl = siteUrl + notificationType.generateUrl(targetId);
 
             String htmlContent = String.format(
                     "<h3>%s 안내</h3>" +
@@ -52,7 +50,7 @@ public class MailService {
 
             mailSender.send(message);
         } catch (MessagingException | MailException e) {
-            e.printStackTrace();
+            log.error("메일 발송 중 오류 발생: 대상={}, 사유={}", emailAddress, e.getMessage(), e);
         }
     }
 

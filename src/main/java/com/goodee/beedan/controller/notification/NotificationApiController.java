@@ -6,8 +6,6 @@ import com.goodee.beedan.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -68,8 +66,6 @@ public class NotificationApiController {
 
     @GetMapping("/unread-count")
     public ResponseEntity<Integer> getUnreadCount(@AuthenticationPrincipal MemberUserDetails userDetails) {
-        int count = notificationService.getUnreadCount(userDetails.getMemberId());
-
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(notificationService.sendRealTimeUnreadCount(userDetails.getMemberId()));
     }
 }

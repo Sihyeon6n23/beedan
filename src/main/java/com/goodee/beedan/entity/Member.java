@@ -103,4 +103,16 @@ public class Member {
         this.memCmpTel = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
         this.memStt = MemberStatus.WITHDRAWN.toString();
     }
+
+
+    public boolean isAdmin() {
+        return this.memAut == MemberAuthority.ADMIN || this.memAut == MemberAuthority.ROOT;
+    }
+
+    public void validateAdmin() {
+        if (!isAdmin()) {
+            throw new IllegalArgumentException("관리자 권한이 없습니다.");
+        }
+    }
+
 }

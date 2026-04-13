@@ -23,11 +23,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    window.updateBadgeUI = function(count) {
+    globalThis.updateBadgeUI = function(count) {
         const badge = document.getElementById('unreadBadge');
         if (!badge) return;
 
-        const numCount = parseInt(count, 10);
+        const numCount = Number.parseInt(count, 10);
         if (numCount > 0) {
            badge.innerText = numCount > 6 ? '6+' : numCount;
            badge.classList.remove('hidden');
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    window.updateUnreadCount = function() {
+    globalThis.updateUnreadCount = function() {
         apiRequest('/api/notification/unread-count')
             .then(count => {
                 updateBadgeUI(count);
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error("배지 업데이트 실패:", err));
     };
 
-    window.addEventListener('newNotification', function(e) { // 웹소켓 연결시 이벤트 실행 (알림 수신 시 서버에서 클라이언트로 count를 보내줄 예정)
+    globalThis.addEventListener('newNotification', function(e) { // 웹소켓 연결시 이벤트 실행 (알림 수신 시 서버에서 클라이언트로 count를 보내줄 예정)
         const newCount = e.detail.count;
         updateBadgeUI(newCount);
     });
@@ -88,45 +88,33 @@ document.addEventListener('DOMContentLoaded', function() {
         notiContent.innerHTML = html;
     }
 
-    window.handleAction = function(type, id = null, clickedElement = null, refUrl = null) {
+    globalThis.handleAction = function(type, id = null, clickedElement = null, refUrl = null) {
         let url = '';
         let method = 'PATCH';
 
         switch(type) {
             case 'read': url = `/api/notification/${id}`; break;
-            case 'readAll': url = `/api/notification`; method = 'PATCH'; break;
+            case 'readAll': url = `/api/notification`; break;
             case 'delete': url = `/api/notification/${id}`; method = 'DELETE'; break;
             case 'deleteAll': url = `/api/notification`; method = 'DELETE'; break;
         }
 
         if (url) {
-            if (typeof window.handlePageAction === 'function') {
-            }
+            if (typeof globalThis.handlePageAction === 'function') ;
 
             apiRequest(url, method)
                 .then(updatedList => {
                     if (typeof renderNotifications === 'function') { renderNotifications(updatedList); }
 
-                    window.dispatchEvent(new CustomEvent('notificationUpdated', { detail: updatedList }));
+                    globalThis.dispatchEvent(new CustomEvent('notificationUpdated', { detail: updatedList }));
 
-                    if (window.updateUnreadCount) window.updateUnreadCount();
+                    if (globalThis.updateUnreadCount) globalThis.updateUnreadCount();
 
                     if (type === 'read' && refUrl && refUrl !== 'null' && refUrl !== '') { location.href = refUrl;}
                 })
                 .catch(err => alert("요청 처리에 실패했습니다."));
         }
     };
-
-    function checkEmptyState() {
-        const container = document.querySelector('.data-list-container');
-        if (container && container.children.length === 0) {
-            notiContent.innerHTML = `
-                <div class="py-40 text-center">
-                    <span class="material-symbols-outlined text-3xl text-[var(--pub-text-muted)]">notifications_none</span>
-                    <p class="text-[var(--pub-text-muted)] font-medium">수신된 알림이 없습니다.</p>
-                </div>`;
-        }
-    }
 
     // --- 이벤트 리스너 등록 ---
     notiIcon.addEventListener('click', function(e) {

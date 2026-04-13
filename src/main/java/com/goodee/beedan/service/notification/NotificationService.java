@@ -29,31 +29,18 @@ public class NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
 
     public List<NotificationDto> getUnReadNotificationList(Long memId){
-        memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
-        List<NotificationDto> notificationDtoList = notificationRepository
-                .findAllNotDeletedByMemId(memId)
-                .stream()
-                .map(notification -> mapToNotificationDto(notification))
-                .toList();
-
-        return notificationDtoList;
+        memberRepository.getByIdOrThrow(memId);
+        return notificationRepository.findAllNotDeletedByMemId(memId).stream().map(this::mapToNotificationDto).toList();
     }
 
     public List<NotificationDto> getNotificationList(Long memId, String filter){
-        memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+        memberRepository.getByIdOrThrow(memId);
 
         List<Notification> notifications;
         switch (filter) {
-            case "UNREAD":
-                notifications = notificationRepository.findUnreadByMemId(memId);
-                break;
-            case "READ":
-                notifications = notificationRepository.findReadByMemId(memId);
-                break;
-            case "ALL":
-            default:
-                notifications = notificationRepository.findAllNotDeletedByMemId(memId);
-                break;
+            case "UNREAD"-> notifications = notificationRepository.findUnreadByMemId(memId);
+            case "READ"-> notifications = notificationRepository.findReadByMemId(memId);
+            default -> notifications = notificationRepository.findAllNotDeletedByMemId(memId);
         }
 
         return notifications.stream()
@@ -87,7 +74,7 @@ public class NotificationService {
     }
 
     public void createNotification(Long memId, NotificationType notiTp, Long targetId){
-        Member member = memberRepository.findById(memId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+        Member member = memberRepository.getByIdOrThrow(memId);
 
         String refUrl = notiTp.generateUrl(targetId);
 
@@ -109,9 +96,9 @@ public class NotificationService {
     }
 
     public void deleteNotification(Long notiId, Long memId) {
-        memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+        memberRepository.getByIdOrThrow(memId);
 
-        Notification notification = notificationRepository.findById(notiId).orElseThrow(() -> new IllegalArgumentException("Can't find notice"));
+        Notification notification = notificationRepository.getByIdOrThrow(notiId);
         notification.setNotiDelYn(true);
 
         sendRealTimeUnreadCount(memId);
@@ -124,9 +111,10 @@ public class NotificationService {
     }
 
     public void readNotification(Long notiId, Long memId){
-        memberRepository.findById(memId).orElseThrow(()->new UsernameNotFoundException("Not user found"));
+        memberRepository.getByIdOrThrow(memId);
 
-        Notification notification = notificationRepository.findById(notiId).orElseThrow(()->new IllegalArgumentException("Can't find notice"));
+        Notification notification = notificationRepository.getByIdOrThrow(notiId);
+
         notification.setNotiReaYn(true);
     }
 
@@ -136,19 +124,16 @@ public class NotificationService {
         sendRealTimeUnreadCount(memId);
     }
 
-    @Transactional(readOnly = true)
-    public int getUnreadCount(Long memId) {
-        return notificationRepository.countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(memId);
-    }
 
-    private void sendRealTimeUnreadCount(Long memId) {
-        Member member = memberRepository.findById(memId).orElse(null);
-        if (member == null) return;
+    public Integer sendRealTimeUnreadCount(Long memId) {
+        Member member = memberRepository.getByIdOrThrow(memId);
 
-        int currentUnreadCount = getUnreadCount(memId);
+        Integer currentUnreadCount = notificationRepository.countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(memId);
         String destinationUser = String.valueOf(member.getMemLgnId()); // MemberUserDetails의 getUsername()이 memLgnId이기 때문에.
 
         messagingTemplate.convertAndSendToUser(destinationUser, "/sub/unread-count", currentUnreadCount);
+
+        return currentUnreadCount;
     }
 
     public NotificationDto mapToNotificationDto(Notification notification){

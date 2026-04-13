@@ -1,3 +1,22 @@
+function applyReadDesign(element) {
+        if (!element) return;
+        element.style.cssText += "border-left-color: transparent !important;";
+        const title = element.querySelector('.noti-title');
+        if (title) title.style.cssText = "font-weight: 500 !important; opacity: 0.6 !important;";
+        const badge = element.querySelector('.noti-badge');
+        if (badge) badge.remove();
+        element.classList.remove('unread');
+}
+
+function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
@@ -16,17 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return options;
     };
 
-    // 공통 유틸 함수들
-    function applyReadDesign(element) {
-        if (!element) return;
-        element.style.cssText += "border-left-color: transparent !important;";
-        const title = element.querySelector('.noti-title');
-        if (title) title.style.cssText = "font-weight: 500 !important; opacity: 0.6 !important;";
-        const badge = element.querySelector('.noti-badge');
-        if (badge) badge.remove();
-        element.classList.remove('unread');
-    }
-
     function showToast(message) {
         const toast = document.createElement('div');
         toast.textContent = message;
@@ -35,23 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => toast.remove(), 3000);
     }
 
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleString('ko-KR', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
-        });
-    }
-
     // 전역 노출 함수
-    window.handlePageAction = function(type, id = null, clickedElement = null) {
+    globalThis.handlePageAction = function(type, id = null, clickedElement = null) {
         let url = '';
         let method = 'PATCH';
 
         switch(type) {
             case 'read': url = `/api/notification/${id}`; break;
-            case 'readAll': url = `/api/notification`; method = 'PATCH'; break;
+            case 'readAll': url = `/api/notification`; break;
             case 'delete': url = `/api/notification/${id}`; method = 'DELETE'; break;
             case 'deleteAll': url = `/api/notification`; method = 'DELETE'; break;
         }
@@ -72,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(url, getFetchOptions(method))
               .then(res => res.json())
               .then(updatedList => {
-                  if (window.updateUnreadCount) window.updateUnreadCount();
+                  if (globalThis.updateUnreadCount) globalThis.updateUnreadCount();
 
                   if (type === 'delete' || type === 'deleteAll' || type === 'readAll') {
                       loadNotificationList();
@@ -87,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    window.handleMove = function(refUrl, notiId, element) {
+    globalThis.handleMove = function(refUrl, notiId, element) {
         if (!refUrl || refUrl === 'null') return;
 
         const row = document.getElementById(`noti-item-${notiId}`);
@@ -190,13 +189,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const filterBtn = e.target.closest('.admin-chat-filter');
         if (filterBtn) {
             e.preventDefault();
-            currentFilter = filterBtn.getAttribute('data-status');
+            currentFilter = filterBtn.dataset('data-status');
             updateFilterUI(currentFilter);
             loadNotificationList();
         }
     });
 
-    window.addEventListener('notificationUpdated', function(e) {
+    globalThis.addEventListener('notificationUpdated', function(e) {
         loadNotificationList();
     });
 

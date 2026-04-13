@@ -58,4 +58,10 @@ public class Order {
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    public void validateOwner(Long requesterId) {
+        if (!this.member.getMemId().equals(requesterId)) {
+            throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
+        }
+    }
 }
