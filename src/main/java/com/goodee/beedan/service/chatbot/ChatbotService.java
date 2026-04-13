@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class ChatbotService {
 
         return firstLevelTopics.stream()
                 .map(this::mapToChatbotTopicDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     // 다음 화면이 하위(2차) 질의 목록인지 최종 응답인지 판단 후 조회
@@ -56,7 +57,7 @@ public class ChatbotService {
 
             List<ChatbotTopicDto> childTopicDtoList = childTopics.stream()
                     .map(this::mapToChatbotTopicDto)
-                    .toList();
+                    .collect(Collectors.toList());
 
             return createTopicStepDto(childTopicDtoList);
         }
