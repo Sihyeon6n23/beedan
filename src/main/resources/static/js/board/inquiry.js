@@ -601,6 +601,17 @@
       confirmModal.setAttribute('aria-hidden', 'false');
     };
 
+    const openGuideModal = (message, onConfirm = null) => {
+      openConfirmModal({
+        title: '안내',
+        lead: message,
+        description: '',
+        confirmText: '확인',
+        hideCancel: true,
+        onConfirm
+      });
+    };
+
     const openFormModal = (options) => {
       if (!formModal) {
         return;
@@ -658,6 +669,54 @@
           handleError();
         }
       });
+    }
+
+    const deleteSuccess = Number(detailPage.dataset.resultDeleteSuccess || 0);
+    const uploadSuccess = Number(detailPage.dataset.resultUploadSuccess || 0);
+    const failCount = Number(detailPage.dataset.resultFail || 0);
+    const failReasons = (detailPage.dataset.resultFailReasons || '')
+      .split('||')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const openBoardResultModal = (result, onConfirm = null) => {
+        if (!result) {
+          return;
+        }
+
+        const lines = [];
+
+        if (result.deleteSuccess > 0) {
+            lines.push(`기존 파일 삭제: ${result.deleteSuccess}건`);
+        }
+        if (result.uploadSuccess > 0) {
+            lines.push(`파일 업로드 성공: ${result.uploadSuccess}건`);
+        }
+        if (result.fail > 0) {
+            lines.push(`파일 처리 실패: ${result.fail}건`);
+        }
+
+        const description = result.failReason.length
+          ? result.failReason.join('\n')
+          : '';
+
+        openConfirmModal({
+            title: '처리 결과',
+            lead: lines.join('\n'),
+            description,
+            confirmText: '확인',
+            hideCancel: true,
+            onConfirm
+        });
+    };
+
+    if (deleteSuccess > 0 || uploadSuccess > 0 || failCount > 0) {
+        openBoardResultModal({
+          deleteSuccess,
+          uploadSuccess,
+          fail: failCount,
+          failReason: failReasons
+        });
     }
 
     // 사용자 문의 취소 비동기 처리
@@ -876,13 +935,14 @@
 
       return editButton;
     };
+
     const bindReplyEditFormHandlers = () => {
-      const currentReplyDisplay = detailPage.querySelector('[data-reply-display]');
-      const currentReplyEditForm = detailPage.querySelector('[data-reply-edit-form]');
-      const currentReplyEditTextarea = detailPage.querySelector('[data-reply-edit-textarea]');
-      const currentReplyEditError = detailPage.querySelector('[data-reply-edit-error]');
-      const currentReplyEditSubmit = detailPage.querySelector('[data-reply-edit-submit]');
-      const currentReplyEditCancel = detailPage.querySelector('[data-reply-edit-cancel]');
+    const currentReplyDisplay = detailPage.querySelector('[data-reply-display]');
+    const currentReplyEditForm = detailPage.querySelector('[data-reply-edit-form]');
+    const currentReplyEditTextarea = detailPage.querySelector('[data-reply-edit-textarea]');
+    const currentReplyEditError = detailPage.querySelector('[data-reply-edit-error]');
+    const currentReplyEditSubmit = detailPage.querySelector('[data-reply-edit-submit]');
+    const currentReplyEditCancel = detailPage.querySelector('[data-reply-edit-cancel]');
 
       if (currentReplyEditCancel && currentReplyEditCancel.dataset.bound !== 'true') {
         currentReplyEditCancel.dataset.bound = 'true';
@@ -914,11 +974,19 @@
 
           try {
             // 답글 수정은 첨부 삭제/추가를 같이 보내기 위해 multipart/form-data로 전송
-            await request(`/api/admin/inquiries/${replyId}/reply/edit`, {
-              method: 'POST',
-              body: buildReplyFormData(currentReplyEditForm, content)
+            const response = await request(`/api/admin/inquiries/${replyId}/reply/edit`, {
+                method: 'POST',
+                body: buildReplyFormData(currentReplyEditForm, content)
             });
-            await refreshDetailPage();
+            const result = await response.json();
+
+            if (result.boardResultMessage) {
+                openBoardResultModal(result.boardResultMessage, async () => {
+                  await refreshDetailPage();
+                });
+            } else {
+                await refreshDetailPage();
+            }
           } catch (error) {
             handleError();
           }
@@ -997,72 +1065,22 @@
         }
 
         try {
-          // 답글 작성도 첨부를 같이 받기 위해 multipart/form-data로 전송
-          await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
-            method: 'POST',
-            body: buildReplyFormData(replyCreateForm, content)
-          });
-          await refreshDetailPage();
-          return;
+            // 답글 작성도 첨부를 같이 받기 위해 multipart/form-data로 전송
+            const response = await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
+              method: 'POST',
+              body: buildReplyFormData(replyCreateForm, content)
+            });
+            const result = await response.json();
 
-          const response = await request(`/api/admin/inquiries/${createInquiryId}/reply`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ brdCon: content })
-          });
-          const createdReplyId = Number(await response.text());
-          const reply = await fetchReplyDto();
-          let existingBody = detailPage.querySelector('[data-reply-existing-body]');
-          let display = detailPage.querySelector('[data-reply-display]');
-
-          if (!existingBody && replyCreateBody && reply) {
-            replyCreateBody.insertAdjacentHTML('beforebegin', `
-              <div class="inquiry-detail-reply__body" data-reply-existing-body>
-                <div class="inquiry-detail-reply__display" data-reply-display>
-                  ${renderReplyContent(reply)}
-                </div>
-                <div class="inquiry-detail-inline-form is-hidden" data-reply-edit-form>
-                  <div class="inquiry-detail-inline-form__editor">
-                    <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-edit-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
-                    <p class="inquiry-detail-inline-form__error is-hidden" data-reply-edit-error>답변 내용을 입력해 주세요.</p>
-                  </div>
-                  <div class="inquiry-detail-inline-form__actions-wrap">
-                    <div class="inquiry-detail-inline-form__actions">
-                      <button type="button" class="inquiry-detail-action" data-reply-edit-cancel>취소</button>
-                      <button type="button" class="inquiry-detail-action inquiry-detail-action--primary" data-reply-edit-submit data-inquiry-reply-edit-id="${createdReplyId || reply.brdId}">적용</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `);
-            existingBody = detailPage.querySelector('[data-reply-existing-body]');
-            display = detailPage.querySelector('[data-reply-display]');
-          }
-
-          if (display && reply) {
-            display.innerHTML = renderReplyContent(reply);
-          }
-          if (replyCreateBody) {
-            replyCreateBody.classList.add('is-hidden');
-          }
-          if (replyCreateForm) {
-            replyCreateForm.classList.add('is-hidden');
-          }
-          removeInlineEditor(replyCreateTextarea);
-          const editButton = ensureEditButton(createdReplyId || reply?.brdId);
-          bindReplyEditButton(editButton);
-          if (existingBody) {
-            existingBody.classList.remove('is-hidden');
-          }
-          const newReplyEditSubmit = detailPage.querySelector('[data-reply-edit-submit]');
-          if (newReplyEditSubmit) {
-            newReplyEditSubmit.setAttribute('data-inquiry-reply-edit-id', createdReplyId || reply?.brdId);
-          }
-          bindReplyEditFormHandlers();
+            if (result.boardResultMessage) {
+                openBoardResultModal(result.boardResultMessage, async () => {
+                  await refreshDetailPage();
+                });
+            } else {
+                await refreshDetailPage();
+            }
         } catch (error) {
-          handleError();
+            handleError();
         }
       });
     }

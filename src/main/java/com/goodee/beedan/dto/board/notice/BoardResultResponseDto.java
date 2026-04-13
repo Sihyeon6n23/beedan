@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoardResultResponseDto {
-    private String message;
+    private BoardResultMessage boardResultMessage;
     private Long targetId;
 }
