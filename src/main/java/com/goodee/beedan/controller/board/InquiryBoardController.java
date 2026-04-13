@@ -43,7 +43,7 @@ public class InquiryBoardController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
-        return "/board/inquiry/inquiry-list";
+        return "board/inquiry/inquiry-list";
     }
 
     // 사용자 상세
@@ -57,7 +57,7 @@ public class InquiryBoardController {
         model.addAttribute("inquiryBoardDetail", inquiryBoardDetail);
         model.addAttribute("isAdmin", false);
 
-        return "/board/inquiry/inquiry-detail";
+        return "board/inquiry/inquiry-detail";
     }
 
     // 사용자 문의 작성 화면
@@ -65,7 +65,7 @@ public class InquiryBoardController {
     public String writeInquiry(Model model) {
         model.addAttribute("inquiryBoardCreateDto", new InquiryBoardCreateDto());
 
-        return "/board/inquiry/inquiry-write";
+        return "board/inquiry/inquiry-write";
     }
 
     // 사용자 문의 작성 처리
@@ -101,7 +101,7 @@ public class InquiryBoardController {
         model.addAttribute("brdId", brdId);
         model.addAttribute("inquiryBoardEditDto", inquiryBoardEditDto);
 
-        return "/board/inquiry/inquiry-edit";
+        return "board/inquiry/inquiry-edit";
     }
 
     // 사용자 문의 수정 처리
