@@ -34,9 +34,16 @@ public class XmlToJsonService {
 
         try {
             JsonNode root = xmlMapper.readTree(xml.getBytes(StandardCharsets.UTF_8));
-            JsonNode summary = root.path("cargCsclPrgsInfoQryVo");
 
+            JsonNode tCntNode = root.path("tCnt");
+            if (!tCntNode.isMissingNode() && tCntNode.asInt() == 0) {
+                log.debug("조회된 통관 정보가 없습니다 (tCnt=0).");
+                return null;
+            }
+
+            JsonNode summary = root.path("cargCsclPrgsInfoQryVo");
             return summary.path("prgsStts").asText(null);
+
         } catch (Exception e) {
             log.error("XML에서 상태값 추출 중 오류 발생: {}", e.getMessage());
             return null;
@@ -49,19 +56,22 @@ public class XmlToJsonService {
 
         try {
             JsonNode root = xmlMapper.readTree(xml.getBytes(StandardCharsets.UTF_8));
+
+            JsonNode tCntNode = root.path("tCnt");  // tCnt가 0이면 불필요한 파싱 없이 빈 리스트 반환
+            if (!tCntNode.isMissingNode() && tCntNode.asInt() == 0) { return details;}
+
             // UNIPASS의 상세 진행 이력 노드
             JsonNode historyNodes = root.path("cargCsclPrgsInfoDtlQryVo");
 
             if (historyNodes.isArray()) {
                 for (JsonNode node : historyNodes) {
                     details.add(TrackingResponseDto.TrackingDetail.builder()
-                            .time(node.path("prcsDttm").asText()) // 처리일시
-                            .status(node.path("cargTrcnRelaBsopTpcd").asText()) // 처리단계
-                            .description(node.path("shedNm").asText()) // 장소 또는 설명
+                            .time(node.path("prcsDttm").asText())
+                            .status(node.path("cargTrcnRelaBsopTpcd").asText())
+                            .description(node.path("shedNm").asText())
                             .build());
                 }
-            } else if (!historyNodes.isMissingNode()) {
-                // 이력이 하나만 있을 경우 처리
+            } else if (!historyNodes.isMissingNode()) { // 이력이 하나만 있을 경우 배열이 아니라 객체로 올 수 있으므로 예외 처리
                 details.add(TrackingResponseDto.TrackingDetail.builder()
                         .time(historyNodes.path("prcsDttm").asText())
                         .status(historyNodes.path("cargTrcnRelaBsopTpcd").asText())

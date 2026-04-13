@@ -68,6 +68,65 @@
             transition: all 0.2s ease;
         }
         .btn-edit:hover { background-color: #333; }
+
+        .btn-search {
+            background-color: var(--accent-gold);
+            color: var(--primary-gold);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background-color: #facc15;
+        }
+
+        .date-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-input-wrapper input[type="date"] {
+            background-color: var(--bg-input);
+            border: none;
+            outline: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .date-input-wrapper span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .btn-reset {
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-reset:hover {
+            background-color: #d1d1d1;
+        }
     </style>
 
             <section class="admin-chat-page admin-chat-list-page member-management-list">
@@ -82,7 +141,8 @@
                 </header>
 
                 <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="요청 목록 필터">
-                    <div class="admin-chat-toolbar">
+                    <div class="admin-chat-toolbar flex justify-between items-center">
+                        <!-- 좌측: 상태 필터 -->
                         <div class="admin-chat-toolbar__filters">
                             <div class="admin-chat-filter-set" data-filter-group="status">
                                 <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
@@ -90,6 +150,17 @@
                                 <a class="admin-chat-filter" href="#" data-status="LOCK">잠금</a>
                                 <a class="admin-chat-filter" href="#" data-status="PENDING">대기</a>
                             </div>
+                        </div>
+
+                        <!-- 우측: 검색 영역 -->
+                        <div class="flex items-center gap-4">
+                            <div class="search-input-wrapper flex items-center gap-2 border-b border-outline-variant pb-2">
+                                <input id="search-input" type="text" placeholder="회원 이름, 상호명, 대표명 검색"
+                                       class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-64" />
+                                <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+                            </div>
+                            <button class="btn-search" onclick="searchMembers()">검색</button>
+                            <button class="btn-reset" onclick="resetSearch()">초기화</button>
                         </div>
                     </div>
                 </section>
