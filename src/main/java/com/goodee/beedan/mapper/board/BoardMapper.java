@@ -39,5 +39,7 @@ public interface BoardMapper {
     @Mapping(target = "canAnswer", ignore = true)
     @Mapping(target = "canUpdateStatus", ignore = true) // 지난 대화에서 추가하기로 한 필드
 
+    @Mapping(target = "replyEdited", ignore = true)
+    @Mapping(target = "commentCount", ignore = true)
     CommonBoardDetailDto toDetailDto(Board board);
 }
