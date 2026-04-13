@@ -256,7 +256,7 @@ public class InquiryBoardService {
         }
 
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .targetId(savedBoard.getBrdId())
                 .build();
     }
@@ -306,7 +306,7 @@ public class InquiryBoardService {
         fileResults.addAll(fileDeleteResults);
 
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .build();
     }
 
@@ -383,7 +383,7 @@ public class InquiryBoardService {
         );
 
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .targetId(savedReplyBoard.getBrdId())
                 .build();
     }
@@ -446,7 +446,7 @@ public class InquiryBoardService {
         );
 
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .build();
     }
 

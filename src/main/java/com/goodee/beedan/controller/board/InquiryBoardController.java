@@ -77,8 +77,9 @@ public class InquiryBoardController {
         BoardResultResponseDto boardResultResponseDto = inquiryBoardService
                 .createInquiryBoard(userDetails.getMemberId(), inquiryBoardCreateDto);
         Long brdId = boardResultResponseDto.getTargetId();
-        String boardResultMessage = boardResultResponseDto.getMessage();
-        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
+        if (boardResultResponseDto.getBoardResultMessage() != null) {
+            reAttr.addFlashAttribute("serverMessage", boardResultResponseDto.getBoardResultMessage());
+        }
 
         return "redirect:/inquiry/detail?id=" + brdId;
     }
@@ -113,8 +114,9 @@ public class InquiryBoardController {
 
         BoardResultResponseDto boardResultResponseDto =
                 inquiryBoardService.updateInquiryBoard(brdId, userDetails.getMemberId(), inquiryBoardEditDto);
-        String boardResultMessage = boardResultResponseDto.getMessage();
-        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
+        if (boardResultResponseDto.getBoardResultMessage() != null) {
+            reAttr.addFlashAttribute("serverMessage", boardResultResponseDto.getBoardResultMessage());
+        }
 
         return "redirect:/inquiry/detail?id=" + brdId;
     }

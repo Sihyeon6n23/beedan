@@ -10,6 +10,7 @@
   var adminMessageInput = document.querySelector("[data-admin-message-input]");
   var adminMessageSendButton = document.querySelector("[data-admin-message-send]");
   var adminMessageList = document.querySelector("[data-admin-message-list]");
+  var qrApiBaseUrl = detailPage ? (detailPage.dataset.qrApiBaseUrl || "") : "";
   var adminImageTrigger = document.querySelector("[data-admin-image-trigger]");
   var adminImageInput = document.querySelector("[data-admin-image-input]");
   var adminMessageScrollBody = document.querySelector(".admin-chat-detail-body");
@@ -28,6 +29,7 @@
   var feedbackBox = document.querySelector("[data-admin-chat-feedback]");
   var feedbackText = document.querySelector("[data-admin-chat-feedback-text]");
   var feedbackTimer = null;
+  var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -395,11 +397,11 @@
     }
 
     var qrUrl = img.dataset.qrUrl;
-    if (!qrUrl) {
-      return;
+    if (!qrUrl || !qrApiBaseUrl) {
+        return;
     }
 
-    img.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(qrUrl);
+    img.src = qrApiBaseUrl + encodeURIComponent(qrUrl);
   }
 
   function hydrateExistingAdminQuoteCards() {
@@ -788,7 +790,7 @@
 
       // WebSocket/STOMP 클라이언트 생성
       stompClient = new StompJs.Client({
-        brokerURL: "ws://" + window.location.host + "/ws",
+        brokerURL: wsProtocol + window.location.host + "/ws",
         reconnectDelay: 5000,
         debug: function () {},
 
