@@ -304,6 +304,10 @@
     .gap-12 {
       gap: 3rem;
     }
+
+    .gap-5 {
+      gap: 1.25rem;
+    }
   }
 
   /* [2] 모바일 대응 (768px 미만에서는 한 줄씩 쌓임) */
@@ -1253,6 +1257,10 @@
   /* [4] 보더 투명도 조합 (border-outline-variant/30) */
   .border-outline-variant\/30 {
     border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+  }
+
+  .border-outline-variant\/20 {
+    border-color: color-mix(in srgb, var(--color-outline-variant) 20%, transparent);
   }
 
   /* [5] 폼 필드 그룹 포커스 애니메이션 */
@@ -2566,6 +2574,79 @@
     }
   }
 }
+@layer components {
+  /* =========================================
+     마이페이지 - 보안 정책 관리 전용
+  ========================================= */
+  .mypage-security-page {
+    padding: 2rem clamp(1rem, 2vw, 2rem) 4rem;
+  }
+
+  .mypage-security-page__intro {
+    padding: 1.5rem 0;
+  }
+
+  .mypage-security-page__sidebar-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    height: 100%;
+  }
+
+  .mypage-security-page__kicker {
+    color: var(--color-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .mypage-security-page__title {
+    margin-top: 0.5rem;
+    font-family: var(--font-headline);
+    font-size: clamp(2.3rem, 5vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.95;
+  }
+
+  .mypage-security-page__rule {
+    margin-top: 1.25rem;
+    width: 100%;
+    height: 2px;
+    background: var(--color-surface-container-highest);
+  }
+
+  .mypage-security-page__rule span {
+    display: block;
+    width: 11rem;
+    height: 100%;
+    background: var(--color-primary-container);
+  }
+
+  .mypage-security-page__side-card--fill {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  @media (min-width: 1024px) {
+    .mypage-security-page__layout {
+      align-items: stretch;
+    }
+
+    .mypage-security-page__layout > .lg\:col-span-4 {
+      display: flex;
+    }
+
+    /* 우측 패널 스크롤 시 상단 고정 (Sticky) */
+    .mypage-security-page__sidebar-stack {
+      position: sticky;
+      top: 6rem;
+      width: 100%;
+    }
+  }
+}
 
 @layer utilities {
   /* =========================================
@@ -2705,5 +2786,168 @@
     white-space: normal !important;
     word-break: break-all !important; /* 단어가 길어도 무조건 줄바꿈 */
     overflow-wrap: break-word !important;
+  }
+}
+/* 1. 확장자 칩(Chip) 레이아웃 */
+.ext-chip {
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+  margin: 2px;
+}
+
+/* 2. 칩 내부 텍스트 기본 스타일 (비선택 상태) */
+.ext-chip-inner {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.025em;
+  background-color: var(--color-surface-container); /* 연한 회색 */
+  color: var(--color-secondary); /* 짙은 회색 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. 체크되었을 때 스타일 (BEEDAN Gold 반전) */
+.ext-chip input:checked + .ext-chip-inner {
+  background-color: var(--color-primary-container) !important; /* 골드 배경 */
+  color: var(--color-on-primary-container) !important; /* 흰색 글자 */
+  font-weight: 900;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 4. 호버(Hover) 효과 */
+.ext-chip:hover .ext-chip-inner {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* 5. 비활성화(OFF) 상태 스타일 */
+.ext-chip input:disabled + .ext-chip-inner {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background-color: var(--color-zinc-200);
+  color: var(--color-zinc-400);
+  box-shadow: none !important;
+}
+
+/* 6. 섹션 포커스 효과 (왼쪽 보더 강조) */
+section.group:focus-within {
+  border-left-color: var(--color-primary) !important;
+}
+
+/* 7. Radio ON/OFF 스위치 커스텀 (has 선택자 활용) */
+.has-\[\:checked\]\:bg-primary:has(:checked) {
+  background-color: var(--color-primary-container) !important;
+  color: var(--color-on-primary-container) !important;
+}
+
+.has-\[\:checked\]\:bg-zinc-800:has(:checked) {
+  background-color: var(--color-zinc-800) !important;
+  color: var(--color-white) !important;
+}
+section {
+  transition: all 0.3s ease;
+}
+
+/* 칩 스타일 보강 */
+.ext-chip-inner {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background-color: var(--color-surface-container);
+  color: var(--color-secondary);
+  transition: all 0.2s ease;
+  border-left: 0 solid var(--color-primary); /* 강조 애니메이션용 */
+}
+
+.ext-chip input:checked + .ext-chip-inner {
+  background-color: var(--color-primary-container) !important;
+  color: var(--color-on-primary-container) !important;
+  border-left-width: 4px; /* 선택 시 Sharp Edge 포인트 */
+}
+
+/* input focus 시 디자인 (통합) */
+.bd-input {
+  border: 1px solid var(--color-outline-variant) !important;
+  background: transparent;
+}
+
+.bd-input:focus {
+  border-color: var(--color-primary) !important;
+  background: var(--color-white) !important;
+  box-shadow: 4px 4px 0px var(--color-primary-container);
+}
+/* 섹션 공통: 비활성화 시 블러 효과가 아닌 투명도 조절로 '짜치지' 않게 처리 */
+section {
+  transition: all 0.3s ease;
+}
+.ext-chip {
+  width: 60px !important;
+  display: block;
+}
+/* 칩 스타일 보강 */
+.ext-chip-inner {
+  display: flex;             /* flexbox로 변경 */
+  align-items: center;       /* 수직 중앙 정렬 */
+  justify-content: center;   /* 수평 중앙 정렬 */
+
+  width: 60px !important;    /* 너비 고정 */
+  height: 36px;              /* 높이 고정 */
+
+  /* 글씨 설정 변경 */
+  font-size: 12px;           /* 10px에서 12px로 크기 증가 */
+  font-weight: 900;           /* 더 두껍게 강조 (Black) */
+  letter-spacing: -0.02em;   /* 자간을 살짝 좁혀 가독성 향상 */
+
+  text-align: center;
+  text-transform: uppercase;
+  background-color: var(--color-surface-container);
+  color: var(--color-secondary);
+  transition: all 0.2s ease;
+  border-left: 0px solid var(--color-primary);
+
+  box-sizing: border-box;    /* 테두리와 패딩을 너비에 포함 */
+}
+
+.ext-chip input:checked + .ext-chip-inner {
+  background-color: var(--color-primary-container) !important;
+  color: var(--color-on-primary-container) !important;
+  border-left-width: 4px; /* 선택 시 Sharp Edge 포인트 */
+}
+
+/* input focus 시 디자인 (통합) */
+.bd-input {
+  border: 1px solid var(--color-outline-variant) !important;
+  background: transparent;
+}
+
+.bd-input:focus {
+  border-color: var(--color-primary) !important;
+  background: var(--color-white) !important;
+  box-shadow: 4px 4px 0px var(--color-primary-container);
+}
+@layer utilities {
+  /* =========================================
+     확장자 리스트 전용 8열 반응형 그리드
+  ========================================= */
+  .grid-cols-4 {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 기본 모바일: 4개씩 */
+  }
+
+  @media (min-width: 640px) {
+    .grid-cols-4 {
+      grid-template-columns: repeat(6, minmax(0, 1fr)); /* 태블릿: 6개씩 */
+    }
+  }
+
+  @media (min-width: 768px) {
+    .grid-cols-4 {
+      grid-template-columns: repeat(8, minmax(0, 1fr)); /* PC: 8개씩 */
+    }
   }
 }

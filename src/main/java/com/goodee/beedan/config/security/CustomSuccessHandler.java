@@ -51,7 +51,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         String username = authentication.getName();
-        if (policy.getIsLoginFailureLimitEnabled()) {
+        if (policy.getIsLoginSecurityEnabled()) {
             memberService.resetLoginStatus(username);
         }
 
@@ -62,7 +62,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             // 비밀번호 변경유도 창 띄워주기.
             session.setAttribute("passwordExpiration", true);
         }
-
 
         setDefaultTargetUrl("/mypage");
 

@@ -9,266 +9,304 @@
 <title th:fragment="title">BEEDAN | Security Policy</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{root/root-sidebar :: sidebar('security', 'chat-list')}"></div>
+    <div th:replace="~{root/root-sidebar :: sidebar('security', 'policy')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
-    <div class="flex-grow mx-auto px-6 py-12 max-w-5xl">
-        <div class="mb-12 flex items-baseline gap-4">
-            <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase">보안 정책 설정</h1>
-            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Security Policy Settings)</span>
-        </div>
 
-        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
-            <form id="policyForm" th:action="@{/root/security/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
+    <style>
+        .grid-cols-ext {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+        @media (min-width: 640px) { .grid-cols-ext { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+        @media (min-width: 768px) { .grid-cols-ext { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+    </style>
 
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">login</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">1. 로그인 시도 제한</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isLoginFailureLimitEnabled" value="true"
-                                   th:checked="${policy.isLoginFailureLimitEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isLoginFailureLimitEnabled" value="false"
-                                   th:checked="${!policy.isLoginFailureLimitEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">최대 시도 횟수</label>
-                        <input type="number" name="maxLoginFailureCount" th:value="${policy.maxLoginFailureCount}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="5">
-                    </div>
-                </section>
+    <main class="mypage-security-page bg-background">
+        <div class="max-w-5xl mx-auto">
 
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">lock_person</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">2. 계정 잠금 설정</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isAccountLockEnabled" value="true"
-                                   th:checked="${policy.isAccountLockEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isAccountLockEnabled" value="false"
-                                   th:checked="${!policy.isAccountLockEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">잠금 시간 (분)</label>
-                        <input type="number" name="accountLockDurationMinutes" th:value="${policy.accountLockDurationMinutes}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="30">
-                    </div>
-                </section>
+            <section class="mypage-security-page__intro">
+                <span class="mypage-security-page__kicker">SYSTEM SECURITY</span>
+                <h1 class="mypage-security-page__title">보안 정책 설정</h1>
+                <div class="mypage-security-page__rule">
+                    <span></span>
+                </div>
+                <p class="font-body text-secondary max-w-lg text-sm mt-4 opacity-80">
+                    시스템의 접근 제어, 세션, 로그, 파일 업로드 등 전반적인 보안 정책을 관리합니다. 저장 시 Redis와 동기화되어 즉각 반영됩니다.
+                </p>
+            </section>
 
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">timer</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">3. 세션 타임아웃</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isSessionTimeoutEnabled" value="true"
-                                   th:checked="${policy.isSessionTimeoutEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isSessionTimeoutEnabled" value="false"
-                                   th:checked="${!policy.isSessionTimeoutEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">자동 로그아웃 시간 (분)</label>
-                        <input type="number" name="sessionTimeoutMinutes" th:value="${policy.sessionTimeoutMinutes}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="60">
-                    </div>
-                </section>
+            <div class="mypage-security-page__layout grid grid-cols-12 gap-12 pb-20">
 
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">upload_file</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">4. 파일 업로드 화이트리스트</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isFileUploadAllowListEnabled" value="true"
-                                   th:checked="${policy.isFileUploadAllowListEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isFileUploadAllowListEnabled" value="false"
-                                   th:checked="${!policy.isFileUploadAllowListEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">허용 확장자</label>
-                        <input type="text" name="fileUploadAllowList" th:value="${#strings.listJoin(policy.fileUploadAllowList, ', ')}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="pdf, jpg, png, xlsx">
-                    </div>
-                </section>
+                <div class="col-span-12 lg:col-span-8">
+                    <form id="policyForm" th:action="@{/root/security/save}" method="post">
 
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">database</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">5. 로그 보관 기간</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isAuditLogEnabled" value="true"
-                                   th:checked="${policy.isAuditLogEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isAuditLogEnabled" value="false"
-                                   th:checked="${!policy.isAuditLogEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">보관 기간 (일)</label>
-                        <input type="number" name="logRetentionDays" th:value="${policy.logRetentionDays}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="90">
-                    </div>
-                </section>
+                        <div class="bg-surface-container-lowest p-10 border-l-[6px] border-primary shadow-chat-shell space-y-10">
 
-                <section class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">group_off</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">6. 중복 로그인 방지</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isConcurrentLoginPrevented" value="true"
-                                   th:checked="${policy.isConcurrentLoginPrevented}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isConcurrentLoginPrevented" value="false"
-                                   th:checked="${!policy.isConcurrentLoginPrevented}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                </section>
+                            <section class="space-y-6">
+                                <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">security</span>
+                                        <h2 class="font-headline text-lg font-bold tracking-tight uppercase text-on-surface">1. 로그인 및 계정 잠금</h2>
+                                    </div>
+                                    <div class="flex bg-surface-container-high p-1 items-center">
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                                            <input type="radio" name="isLoginSecurityEnabled" value="true" th:checked="${policy.isLoginFailureLimitEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">On</span>
+                                        </label>
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
+                                            <input type="radio" name="isLoginSecurityEnabled" value="false" th:checked="${!policy.isLoginFailureLimitEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full">
+                                    <div class="space-y-3">
+                                        <label class="block text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">최대 시도 횟수</label>
+                                        <div class="flex items-center gap-3">
+                                            <input type="number" name="maxLoginFailureCount" th:value="${policy.maxLoginFailureCount}"
+                                                   class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all flex-grow">
+                                            <span class="text-xs font-bold text-zinc-400 flex-shrink-0">회</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <label class="block text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">계정 잠금 시간</label>
+                                        <div class="flex items-center gap-3">
+                                            <input type="number" name="accountLockDurationMinutes" th:value="${policy.accountLockDurationMinutes}"
+                                                   class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all flex-grow">
+                                            <span class="text-xs font-bold text-zinc-400 flex-shrink-0">분</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
 
-                <section class="space-y-4" style="grid-column: 1 / -1;">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">password</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">7. 비밀번호 변경 주기</h2>
-                    </div>
-                    <div class="flex items-center gap-8 py-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isPasswordExpiryEnabled" value="true"
-                                   th:checked="${policy.isPasswordExpiryEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">ON</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="isPasswordExpiryEnabled" value="false"
-                                   th:checked="${!policy.isPasswordExpiryEnabled}" class="w-5 h-5 text-primary border-outline-variant focus:ring-primary">
-                            <span class="text-sm font-bold">OFF</span>
-                        </label>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold text-zinc-500 uppercase">변경 주기 (일)</label>
-                        <input type="number" name="passwordExpiryDays" th:value="${policy.passwordExpiryDays}"
-                               class="w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all" placeholder="90">
-                    </div>
-                </section>
-            </form>
+                            <section class="space-y-6 pt-4 border-t border-outline-variant/30">
+                                <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">upload_file</span>
+                                        <h2 class="font-headline text-lg font-bold tracking-tight uppercase text-on-surface">2. 확장자 제한 필터</h2>
+                                    </div>
+                                    <div class="flex bg-surface-container-high p-1 items-center">
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                                            <input type="radio" name="isFileUploadAllowListEnabled" value="true" th:checked="${policy.isFileUploadAllowListEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">On</span>
+                                        </label>
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
+                                            <input type="radio" name="isFileUploadAllowListEnabled" value="false" th:checked="${!policy.isFileUploadAllowListEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <label class="block text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">허용 확장자 리스트</label>
+                                    <div id="extensionContainer" class="grid-cols-ext w-full">
+                                        <th:block th:each="ext : ${ {'jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'txt', 'hwp', 'csv', 'mp4', 'avi', 'mov', '7z', 'rar'} }">
+                                            <label class="ext-chip w-full cursor-pointer relative">
+                                                <input type="checkbox" name="fileUploadAllowList" th:value="${ext}" th:checked="${policy.fileUploadAllowList.contains(ext)}" class="peer hidden">
+                                                <span class="ext-chip-inner text-center py-2 text-[10px] font-black uppercase tracking-wider border border-outline-variant/50 bg-surface-container-lowest text-secondary peer-checked:bg-primary-container peer-checked:border-primary peer-checked:text-on-primary-container transition-all" th:text="${ext}">ext</span>
+                                            </label>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </section>
 
-            <div class="pt-8 border-t border-zinc-100 flex justify-end">
-                <button type="submit" form="policyForm" class="btn-primary px-8 py-4 text-sm gap-2 flex items-center">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
-                    설정 저장
-                </button>
+                            <section class="space-y-6 pt-4 border-t border-outline-variant/30">
+                                <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">timer</span>
+                                        <h2 class="font-headline text-lg font-bold tracking-tight uppercase text-on-surface">3. 세션 만료 시간</h2>
+                                    </div>
+                                    <div class="flex bg-surface-container-high p-1 items-center">
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                                            <input type="radio" name="isSessionTimeoutEnabled" value="true" th:checked="${policy.isSessionTimeoutEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">On</span>
+                                        </label>
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
+                                            <input type="radio" name="isSessionTimeoutEnabled" value="false" th:checked="${!policy.isSessionTimeoutEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 w-full md:w-1/2">
+                                    <label class="block text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">만료 시간</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="number" name="sessionTimeoutMinutes" th:value="${policy.sessionTimeoutMinutes}" class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all flex-grow" placeholder="60">
+                                        <span class="text-xs font-bold text-zinc-400 flex-shrink-0">분</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="space-y-6 pt-4 border-t border-outline-variant/30">
+                                <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">group_off</span>
+                                        <h2 class="font-headline text-lg font-bold tracking-tight uppercase text-on-surface">4. 중복 접속 차단</h2>
+                                    </div>
+                                    <div class="flex bg-surface-container-high p-1 items-center">
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                                            <input type="radio" name="isConcurrentLoginPrevented" value="true" th:checked="${policy.isConcurrentLoginPrevented}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">On</span>
+                                        </label>
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
+                                            <input type="radio" name="isConcurrentLoginPrevented" value="false" th:checked="${!policy.isConcurrentLoginPrevented}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="w-full">
+                                    <p class="text-sm text-secondary leading-relaxed font-medium">
+                                        <span class="text-primary font-black uppercase tracking-widest text-[10px] block mb-1">On 설정 시 동작</span>
+                                        기존 사용자의 세션을 강제로 만료시키고 신규 로그인을 허용합니다.
+                                    </p>
+                                </div>
+                            </section>
+
+                            <section class="space-y-6 pt-4 border-t border-outline-variant/30">
+                                <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">database</span>
+                                        <h2 class="font-headline text-lg font-bold tracking-tight uppercase text-on-surface">5. 로그 보관 기간</h2>
+                                    </div>
+                                    <div class="flex bg-surface-container-high p-1 items-center">
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                                            <input type="radio" name="isAuditLogEnabled" value="true" th:checked="${policy.isAuditLogEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">On</span>
+                                        </label>
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
+                                            <input type="radio" name="isAuditLogEnabled" value="false" th:checked="${!policy.isAuditLogEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 w-full md:w-1/2">
+                                    <label class="block text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">보관 기한</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="number" name="logRetentionDays" th:value="${policy.logRetentionDays}" class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all flex-grow" placeholder="90">
+                                        <span class="text-xs font-bold text-zinc-400 flex-shrink-0">일</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="space-y-6 pt-4 border-t border-outline-variant/30">
+                                <div class="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">password</span>
+                                        <h2 class="font-headline text-lg font-bold tracking-tight uppercase text-on-surface">6. 패스워드 기한</h2>
+                                    </div>
+                                    <div class="flex bg-surface-container-high p-1 items-center">
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
+                                            <input type="radio" name="isPasswordExpiryEnabled" value="true" th:checked="${policy.isPasswordExpiryEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">On</span>
+                                        </label>
+                                        <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
+                                            <input type="radio" name="isPasswordExpiryEnabled" value="false" th:checked="${!policy.isPasswordExpiryEnabled}" class="hidden">
+                                            <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 w-full md:w-1/2">
+                                    <label class="block text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">변경 주기</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="number" name="passwordExpiryDays" th:value="${policy.passwordExpiryDays}" class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all flex-grow" placeholder="90">
+                                        <span class="text-xs font-bold text-zinc-400 flex-shrink-0">일</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="pt-8 border-t border-outline-variant/30 flex flex-col sm:flex-row justify-end gap-4">
+                                <button type="button" onclick="location.reload()" class="btn-ghost px-8 py-4 text-xs border border-outline-variant w-full sm:w-auto text-center hover:bg-surface-container-high">
+                                    취소
+                                </button>
+                                <button type="submit" class="btn-primary px-12 py-4 text-xs flex justify-center items-center gap-2 w-full sm:w-auto hover:shadow-md transition-all">
+                                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">save</span>
+                                    보안 정책 저장 및 동기화
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-span-12 lg:col-span-4">
+                    <div class="mypage-security-page__sidebar-stack space-y-6">
+
+                        <div class="bg-primary-container p-8 shadow-sm">
+                            <h3 class="font-headline text-lg font-black uppercase tracking-tight text-on-primary-container mb-4">정책 적용 가이드</h3>
+                            <ul class="space-y-4 text-sm font-medium text-on-primary-container">
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">sync</span>
+                                    <span>저장 버튼 클릭 시 활성화된 모든 세션에 즉각적으로 반영됩니다.</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">warning</span>
+                                    <span>세션 만료 시간을 너무 짧게 설정하면 사용자 불편을 초래할 수 있습니다.</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">history</span>
+                                    <span>로그 보관 기간은 개인정보 처리 방침을 준수하여 설정하세요. (권장: 90일)</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mypage-security-page__side-card--fill bg-surface-container-low p-8 relative overflow-hidden border border-outline-variant/30">
+                            <div class="flex-grow">
+                                <h3 class="font-headline text-lg font-black uppercase tracking-tight text-on-surface mb-4">System Notice</h3>
+
+                                <div class="flex gap-3 items-start">
+                                    <span class="material-symbols-outlined text-sm mt-0.5" style="font-variation-settings: 'FILL' 1;">
+                                        admin_panel_settings
+                                    </span>
+                                    <p class="text-sm text-secondary leading-relaxed font-medium mt-1">
+                                        파일 업로드 허용 확장자 필터를 <strong>Off</strong> 상태로 변경하면 시스템의 기본 방화벽만 작동합니다. 보안 강화를 위해 항시 <strong>On</strong> 상태 유지를 권장합니다.
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', function() {
             const policyForm = document.getElementById('policyForm');
 
-            // 1. 숫자 전용 필드 검증
-            const numberInputs = policyForm.querySelectorAll('input[type="number"]');
-            numberInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                });
-            });
+            function setupToggle(radioName, targetElements) {
+                const update = () => {
+                    const checkedRadio = policyForm.querySelector(`input[name="${radioName}"]:checked`);
+                    const isEnabled = checkedRadio && checkedRadio.value === 'true';
 
-            // 2. 파일 확장자 필드 검증 (name 값 카멜케이스 수정)
-            const fileInput = policyForm.querySelector('input[name="fileUploadAllowList"]');
-            if (fileInput) {
-                fileInput.addEventListener('input', function() {
-                    const regex = /[^a-zA-Z0-9,\s]/g;
-                    if (regex.test(this.value)) {
-                        this.value = this.value.replace(regex, '');
-                    }
-                });
+                    targetElements.forEach(el => {
+                        // Input 필드 비활성화 처리
+                        if(el.tagName === 'INPUT') el.readOnly = !isEnabled;
 
-                fileInput.addEventListener('blur', function() {
-                    this.value = this.value.split(',')
-                        .map(ext => ext.trim())
-                        .filter(ext => ext !== '')
-                        .join(', ');
-                });
+                        // 부모 요소(칩/설명란 등) 투명도 및 클릭 이벤트 제어
+                        const wrapper = el.closest('label') || el;
+                        wrapper.style.opacity = isEnabled ? '1' : '0.4';
+                        wrapper.style.pointerEvents = isEnabled ? 'auto' : 'none';
+                    });
+                };
+
+                policyForm.querySelectorAll(`input[name="${radioName}"]`).forEach(r => r.addEventListener('change', update));
+                update(); // 초기 상태 셋팅
             }
 
-            // 3. 저장 전 최종 확인 (name 값 카멜케이스 수정)
-            policyForm.addEventListener('submit', function(e) {
-                if (fileInput && fileInput.value.trim() === '') {
-                    const isEnabledRadio = policyForm.querySelector('input[name="isFileUploadAllowListEnabled"]:checked');
-                    if (isEnabledRadio && isEnabledRadio.value === 'true') {
-                        alert('화이트리스트 기능을 사용하려면 최소 하나 이상의 확장자를 입력해야 합니다.');
-                        e.preventDefault();
-                    }
-                }
-            });
-
-            // 4. ON/OFF 상태에 따른 입력창 제어 함수
-            function updateInputStatus(section) {
-                const radioOn = section.querySelector('input[type="radio"][value="true"]');
-                const targetInput = section.querySelector('input[type="number"], input[type="text"]');
-
-                if (!targetInput) return;
-
-                const focusClasses = ['focus:border-l-4', 'focus:border-primary', 'focus:bg-surface-container-lowest', 'focus:outline-none'];
-
-                if (radioOn && radioOn.checked) {
-                    targetInput.readOnly = false;
-                    targetInput.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-zinc-100');
-                    targetInput.classList.add('bg-surface-container-high');
-                    focusClasses.forEach(cls => targetInput.classList.add(cls));
-                } else {
-                    targetInput.readOnly = true;
-                    targetInput.classList.add('opacity-50', 'cursor-not-allowed', 'bg-zinc-100');
-                    targetInput.classList.remove('bg-surface-container-high');
-                    focusClasses.forEach(cls => targetInput.classList.remove(cls));
-                    if (document.activeElement === targetInput) targetInput.blur();
-                }
-            }
-
-            // 이벤트 바인딩 및 초기화
-            const sections = policyForm.querySelectorAll('section');
-            sections.forEach(section => {
-                const radios = section.querySelectorAll('input[type="radio"]');
-                radios.forEach(radio => {
-                    radio.addEventListener('change', () => updateInputStatus(section));
-                });
-                updateInputStatus(section);
-            });
+            // 각 기능별 토글 연결
+            setupToggle('isLoginSecurityEnabled', [policyForm.querySelector('input[name="maxLoginFailureCount"]'), policyForm.querySelector('input[name="accountLockDurationMinutes"]')]);
+            setupToggle('isFileUploadAllowListEnabled', policyForm.querySelectorAll('input[name="fileUploadAllowList"]'));
+            setupToggle('isSessionTimeoutEnabled', [policyForm.querySelector('input[name="sessionTimeoutMinutes"]')]);
+            setupToggle('isAuditLogEnabled', [policyForm.querySelector('input[name="logRetentionDays"]')]);
+            setupToggle('isPasswordExpiryEnabled', [policyForm.querySelector('input[name="passwordExpiryDays"]')]);
+            setupToggle('isConcurrentLoginPrevented', [
+                policyForm.querySelector('section:has(input[name="isConcurrentLoginPrevented"]) p')
+            ]);
         });
     </script>
 </th:block>
+
 </html>
