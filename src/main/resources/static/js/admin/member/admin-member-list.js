@@ -15,6 +15,17 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+// 검색 버튼 클릭 시 실행
+function searchMembers() {
+    loadMemberList(0);
+}
+
+// 초기화 버튼 클릭 시 실행
+function resetSearch() {
+    document.getElementById('search-input').value = '';
+    loadMemberList(0);
+}
+
 // =============================== 기본 목록 템플릿 =================================
 
 const DASHBOARD_TEMPLATE = `
@@ -56,12 +67,17 @@ const DASHBOARD_TEMPLATE = `
 function loadMemberList(page) {
     const activeFilter = document.querySelector('.admin-chat-filter.is-active');
     const status = activeFilter ? activeFilter.getAttribute('data-status') : 'ALL';
+    const keyword = document.getElementById('search-input').value.trim();
 
     const params = new URLSearchParams({
         page: page,
         size: 10,
         status: status
     });
+
+    if (keyword) {
+        params.append('keyword', keyword);
+    }
 
     fetch(`/api/admin/member/list?${params.toString()}`)
         .then(response => {

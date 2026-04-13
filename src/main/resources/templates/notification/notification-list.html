@@ -69,8 +69,8 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="handleAction('readAll')" class="btn-noti-all">모두 읽음</button>
-                    <button type="button" onclick="handleAction('deleteAll')" class="btn-noti-delete">전체 삭제</button>
+                    <button type="button" onclick="handlePageAction('readAll')" class="btn-noti-all">모두 읽음</button>
+                    <button type="button" onclick="handlePageAction('deleteAll')" class="btn-noti-delete">전체 삭제</button>
                 </div>
 
             </div>
@@ -78,9 +78,9 @@
 
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-body" id="require-list-body">
-                <div id="notiPageContent">
-                    <!-- JavaScript로 동적 로딩 -->
-                </div>
+
+                <div id="notiPageContent"></div>
+
             </div>
         </section>
 

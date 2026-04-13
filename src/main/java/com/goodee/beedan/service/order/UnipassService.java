@@ -3,6 +3,7 @@ package com.goodee.beedan.service.order;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -26,21 +27,32 @@ public class UnipassService {
     private String apiUrl;
 
     @Cacheable(value = "shipment:customs", key = "#hblNo + '_' + #blYear", unless = "#result == null")
-    public String getCargoStatus(String hblNo, String blYear) { // 통관 조회시 동기화를 위해 사용
-        RestTemplate restTemplate = new RestTemplate();
+    public String getCargoStatus(String hblNo, String blYear) {  // 사용자용
+        return fetchUnipassRawData(hblNo, blYear);
+    }
 
+    public String getCargoStatusForScheduler(String hblNo, String blYear) {
+        return fetchUnipassRawData(hblNo, blYear); // 스케줄러에서는 캐시를 사용하지 않도록 직접 호출
+    }
+
+    private String fetchUnipassRawData(String hblNo, String blYear) {
+        RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 
-        String fullUrl = apiUrl + "?crkyCn=" + apiKey.trim()+ "&hblNo=" + hblNo.trim() + "&blYy=" + blYear.trim();
+        String fullUrl = apiUrl + "?crkyCn=" + apiKey.trim() + "&hblNo=" + hblNo.trim() + "&blYy=" + blYear.trim();
 
         try {
             String response = restTemplate.getForObject(fullUrl, String.class);
-
             return xmlToJsonService.extractProgressStatus(response);
         } catch (Exception e) {
-            log.error("UNIPASS API 호출 실패 (HBL: {}): {}", hblNo, e.getMessage());
+            log.error("UNIPASS API 호출 실패: {}", e.getMessage());
             return null;
         }
+    }
+
+    @CachePut(value = "shipment:customs", key = "#hblNo + '_' + #blYear", unless = "#result == null") // @CachePut이 걸려있어 최신 상태로 캐시가 갱신됨
+    public String updateCargoStatusForScheduler(String hblNo, String blYear) {
+        return fetchUnipassRawData(hblNo, blYear); // 실제 API 호출 및 캐시 강제 갱신
     }
 
     @Cacheable(value = "shipment:customs", key = "'timeline_' + #hblNo + '_' + #blYear", unless = "#result == null")
@@ -60,5 +72,4 @@ public class UnipassService {
             return new ArrayList<>();
         }
     }
-
 }

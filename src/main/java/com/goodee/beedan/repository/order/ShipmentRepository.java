@@ -24,5 +24,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     List<Shipment> findByShStt(ShipmentStatus status);
 
+    List<Shipment> findByShSttIn(List<ShipmentStatus> statuses);
+
     List<Shipment> findByOrder(Order order);
 }

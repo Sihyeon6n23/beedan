@@ -64,11 +64,25 @@ public class AdminMemberService {
 
     @Transactional(readOnly = true)
     public Page<MemberListDto> getMembersByStatus(String status, Pageable pageable) {
+        return getMembersByStatusAndKeyword(status, null, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberListDto> getMembersByStatusAndKeyword(String status, String keyword, Pageable pageable) {
         Page<Member> members;
-        if ("ALL".equals(status)) {
-            members = memberRepository.findAllUsers(pageable);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            if ("ALL".equals(status)) {
+                members = memberRepository.findUsersByKeyword(keyword.trim(), pageable);
+            } else {
+                members = memberRepository.findUsersByStatusAndKeyword(status, keyword.trim(), pageable);
+            }
         } else {
-            members = memberRepository.findUsersByStatus(status, pageable);
+            if ("ALL".equals(status)) {
+                members = memberRepository.findAllUsers(pageable);
+            } else {
+                members = memberRepository.findUsersByStatus(status, pageable);
+            }
         }
 
         return members.map(member -> MemberListDto.builder()

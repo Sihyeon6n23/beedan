@@ -19,5 +19,5 @@ public class NotificationDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime notiUptDt;
     private Boolean notiReaYn;
-    private Long memberId;
+    private String notiRef;
 }
