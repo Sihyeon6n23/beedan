@@ -116,8 +116,8 @@ public class MemberChatService {
                 .lastMessageContent(lastMessageSummary)
                 .lastMessageCreatedAt(row.getLastMessageCreatedAt())
                 .chRoCreDt(row.getChRoCreDt())
-                .unread(Boolean.TRUE.equals(row.getUnread()))
-                // 종료 사유는 null일 수 있으므로 null 체크 후 enum 변환
+                // native query에서 unread를 정수(1/0)로 받아서 Boolean으로 변환
+                .unread(row.getUnread() != null && row.getUnread() == 1)
                 .chRoClsRsn(row.getChRoClsRsn() != null
                                 ? ChatRoomCloseReason.valueOf(row.getChRoClsRsn())
                                 : null

@@ -28,6 +28,7 @@
     <section class="inquiry-page inquiry-detail-page"
              th:attr="
               data-inquiry-id=${inquiryBoardDetail.brdId},
+              data-action-message=${actionMessage != null ? actionMessage : ''},
               data-result-delete-success=${serverMessage != null ? serverMessage.deleteSuccess : ''},
               data-result-upload-success=${serverMessage != null ? serverMessage.uploadSuccess : ''},
               data-result-fail=${serverMessage != null ? serverMessage.fail : ''},

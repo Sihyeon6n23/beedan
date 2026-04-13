@@ -53,6 +53,7 @@
   var currentChatRoomCloseReason = null;
   var hasLoadedMemberChatRooms = false;
   var stompClient = null;
+  var isSendingMemberMessage = false;
   var roomSubscription = null;
   var summarySubscription = null;
   var wsConnected = false;
@@ -1451,8 +1452,8 @@
 
   // 회원 메시지 비동기 전송
   function sendMemberChatMessage() {
-    // 입력 메시지를 REST로 전송 요청하고, 성공 반영은 WebSocket 수신 결과로
-    if (!currentChatRoomId || !chatRoomMessageInput) {
+    // 입력 메시지를 REST로 전송 요청하고, 성공 반영은 WebSocket 수신 결과로 처리
+    if (!currentChatRoomId || !chatRoomMessageInput || isSendingMemberMessage) {
       return;
     }
 
@@ -1462,6 +1463,12 @@
     }
 
     var trimmedMessage = messageContent.trim();
+
+    // 서버 응답을 기다리지 않고 입력창을 먼저 비워 연속 입력 시 체감 지연을 줄임
+    chatRoomMessageInput.value = "";
+    chatRoomMessageInput.focus();
+    isSendingMemberMessage = true;
+
     var pendingMessageElement = appendPendingMemberChatMessage(trimmedMessage);
 
     var headers = {
@@ -1487,15 +1494,23 @@
         return response.json();
       })
       .then(function () {
-        chatRoomMessageInput.value = "";
-        chatRoomMessageInput.focus();
-        return loadMemberChatRooms();
+        return loadMemberChatRooms({ animateList: false });
       })
       .catch(function (error) {
         if (pendingMessageElement) {
           pendingMessageElement.remove();
         }
+
+        // 전송 실패 시 사용자가 다시 보낼 수 있게 입력값을 복구
+        if (chatRoomMessageInput && !chatRoomMessageInput.value.trim()) {
+          chatRoomMessageInput.value = trimmedMessage;
+          chatRoomMessageInput.focus();
+        }
+
         console.error(error);
+      })
+      .finally(function () {
+        isSendingMemberMessage = false;
       });
   }
 
@@ -1783,10 +1798,11 @@
 
   document.addEventListener("click", function (event) {
     if (!panel || panel.classList.contains("is-hidden")) {
-      return;
-    }
+          return;
+        }
 
-    if (widget.contains(event.target)) {
+    var eventPath = typeof event.composedPath === "function" ? event.composedPath() : [];
+    if (eventPath.includes(widget) || widget.contains(event.target)) {
       return;
     }
 

@@ -29,7 +29,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         String getLastMessageContent();
         String getLastMessageType();
         java.time.LocalDateTime getLastMessageCreatedAt();
-        Boolean getUnread();
+        // MySQL native query에서는 boolean/tinyint 매핑 이슈를 피하려고 정수로 받음
+        Integer getUnread();
     }
 
     // --- 사용자
@@ -63,7 +64,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
               lm.ch_ms_con AS lastMessageContent,
               lm.ch_ms_tp AS lastMessageType,
               lm.ch_ms_cre_dt AS lastMessageCreatedAt,
-              COALESCE(rs.ch_ro_re_st_unr_yn, false) AS unread
+                CASE 
+                    WHEN rs.ch_ro_re_st_unr_yn = 1 THEN 1
+                    ELSE 0
+                END AS unread
           FROM chat_room cr
           LEFT JOIN chat_room_read_status rs
               ON rs.ch_ro_id = cr.ch_ro_id
