@@ -25,4 +25,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findUsersByStatus(String status, Pageable pageable);
 
     List<Member> findByMemIdIn(Collection<Long> memIds);
+
+    long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 }

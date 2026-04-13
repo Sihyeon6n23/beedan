@@ -22,6 +22,7 @@ import java.util.List;
 public class StockController {
     private final StockService stockService;
     private final BuyerGradePolicyService buyerGradePolicyService;
+    private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
 
     // 상품 목록
     @GetMapping("/stock/list")
@@ -33,6 +34,7 @@ public class StockController {
         model.addAttribute("chatRoomId", chatRoomId);
         model.addAttribute("brands", stockService.findAllBrands());
         model.addAttribute("categories", stockService.findAllCategories());
+
         return "stock/stock-list";
     }
 
@@ -56,6 +58,8 @@ public class StockController {
         Long memId = userDetails != null ? userDetails.getMemberId() : null;
         Stock stock = stockService.findById(stId);
         boolean wished = stockService.isWished(stId, memId);
+
+
 
         List<BuyerGradePolicy> policies = buyerGradePolicyService.findAllActiveOrdered();
 
