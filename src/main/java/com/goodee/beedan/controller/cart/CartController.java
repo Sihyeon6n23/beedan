@@ -22,6 +22,7 @@ import java.util.List;
 @RequestMapping("/cart")
 public class CartController {
     private final CartService cartService;
+    private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
 
     // 장바구니 목록 (페이지 네이션 적용)
     @GetMapping
@@ -33,6 +34,7 @@ public class CartController {
         List<CartDto> list = cartService.findByMemId(memId);
         model.addAttribute("itemList", list);
         model.addAttribute("chatRoomId", chatRoomId);
+
         return "cart/cart";
     }
 }

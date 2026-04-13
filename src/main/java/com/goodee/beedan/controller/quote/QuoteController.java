@@ -56,6 +56,7 @@ public class    QuoteController {
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final QuoteNameService quoteNameService;
     private final FactoryRepository factoryRepository;
+    private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
     private final ShippingRateRepository shippingRateRepository;
     private final ChatRoomRepository chatRoomRepository;
 
@@ -396,6 +397,7 @@ public class    QuoteController {
 
         model.addAttribute("countryCodes", shippingRateRepository.findDistinctCountryCodes());
 
+
         return "/quote/quote-write";
     }
 
@@ -543,6 +545,7 @@ public class    QuoteController {
                 || (quoteBase.getQuSid() == null && myId.equals(quoteBase.getQuRid()));
         model.addAttribute("isSender", isSender);
         model.addAttribute("isAdmin", false);
+
 
         return "admin/quote/admin-quote-detail";
     }

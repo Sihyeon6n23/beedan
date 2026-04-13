@@ -57,6 +57,7 @@ public class PaymentController {
     private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
     private final com.goodee.beedan.service.quote.QuoteNotificationService quoteNotificationService;
     private final OrderService orderService;
+    private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
 
     @Value("${toss.payments.secret-key}")
     private String tossSecretKey;
@@ -143,6 +144,7 @@ public class PaymentController {
         model.addAttribute("totalDutyVat", totalDutyVat);
         model.addAttribute("calculatedTotal", calculatedTotal);
         model.addAttribute("quId", quId);
+
 
         return "/payment/payment-check";
     }
