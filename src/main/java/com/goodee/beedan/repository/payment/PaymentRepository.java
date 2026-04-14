@@ -13,4 +13,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByPyPgNm(String pyPgNm);
 
     List<Payment> findAllByMemIdOrderByPyPdAtDesc(Long memId);
+
+    // 결제 + 견적코드 + 협상명 조인 조회 (N+1 제거)
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT p, q.quCd, n.ngNm FROM Payment p " +
+            "JOIN QuoteBase q ON p.quId = q.quId " +
+            "JOIN Negotiation n ON q.ngId = n.ngId " +
+            "WHERE p.memId = :memId ORDER BY p.pyPdAt DESC")
+    java.util.List<Object[]> findAllWithQuoteInfoByMemId(@org.springframework.data.repository.query.Param("memId") Long memId);
 }

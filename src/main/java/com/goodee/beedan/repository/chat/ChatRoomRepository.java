@@ -29,7 +29,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         String getLastMessageContent();
         String getLastMessageType();
         java.time.LocalDateTime getLastMessageCreatedAt();
-        Boolean getUnread();
+        // MySQL native query에서는 boolean/tinyint 매핑 이슈를 피하려고 정수로 받음
+        Integer getUnread();
     }
 
     // --- 사용자
@@ -63,7 +64,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
               lm.ch_ms_con AS lastMessageContent,
               lm.ch_ms_tp AS lastMessageType,
               lm.ch_ms_cre_dt AS lastMessageCreatedAt,
-              COALESCE(rs.ch_ro_re_st_unr_yn, false) AS unread
+                CASE 
+                    WHEN rs.ch_ro_re_st_unr_yn = 1 THEN 1
+                    ELSE 0
+                END AS unread
           FROM chat_room cr
           LEFT JOIN chat_room_read_status rs
               ON rs.ch_ro_id = cr.ch_ro_id
@@ -172,4 +176,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     );
     // 채팅방 자동 종료 대상 조회
     List<ChatRoom> findByChRoSttInAndChRoLastMsDtBefore(Collection<ChatRoomStatus> chRoStts, LocalDateTime cutoff);
+
+    // 기간 내 토픽별 문의 건수
+    @Query("SELECT cr.chRoTtl, COUNT(cr) FROM ChatRoom cr WHERE cr.chRoCreDt BETWEEN :from AND :to GROUP BY cr.chRoTtl ORDER BY COUNT(cr) DESC")
+    List<Object[]> countGroupByTopic(@org.springframework.data.repository.query.Param("from") LocalDateTime from,
+                                     @org.springframework.data.repository.query.Param("to") LocalDateTime to);
 }

@@ -43,7 +43,7 @@ public class OrderController {
     public String orderDetail(@RequestParam("id") Long ordId,
                               @AuthenticationPrincipal MemberUserDetails userDetails,
                               Model model) {
-        OrderDto order = orderService.getOrderDetail(ordId, userDetails);
+        OrderDto order = orderService.getOrderDetail(ordId, userDetails.getMemberId());
         model.addAttribute("order", order);
 
         return "order/order-detail";

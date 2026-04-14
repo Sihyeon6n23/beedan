@@ -9,6 +9,8 @@
     justify-content: space-between;
     padding: 40px;
     position: relative;
+    overflow: hidden;
+    max-width: 100%;
 }
 
 /* ---- 슬라이드 (한 번에 하나만 표시) ---- */

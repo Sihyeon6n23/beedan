@@ -2,6 +2,7 @@ package com.goodee.beedan.config.security;
 
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.Member;
+import com.goodee.beedan.repository.sessionlog.SessionLogRepository;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.root.SecurityService;
 import jakarta.servlet.ServletException;
@@ -16,6 +17,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,6 +29,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final SecurityService securityService;
     private final SessionRegistry sessionRegistry;
     private final MemberService memberService;
+    private final SessionLogRepository sessionLogRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -64,6 +67,22 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             // 비밀번호 변경유도 창 띄워주기.
             session.setAttribute("passwordExpiration", true);
         }
+
+
+        // 세션 로그에 회원 ID 기록
+        try {
+             // 고희권
+            Object principal = authentication.getPrincipal();
+            String sessionId = request.getSession().getId();
+            if (principal instanceof MemberUserDetails) {
+                Long memId = ((MemberUserDetails) principal).getMemberId();
+                sessionLogRepository.findBySlSsId(sessionId).ifPresent(sl -> {
+                    sl.setMemId(memId);
+                    sessionLogRepository.save(sl);
+                });
+            }
+        } catch (Exception ignored) {}
+
         setDefaultTargetUrl("/mypage");
 
         super.onAuthenticationSuccess(request, response, authentication);

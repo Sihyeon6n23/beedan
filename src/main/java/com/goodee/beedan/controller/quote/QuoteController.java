@@ -56,7 +56,9 @@ public class    QuoteController {
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final QuoteNameService quoteNameService;
     private final FactoryRepository factoryRepository;
+    private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
     private final ShippingRateRepository shippingRateRepository;
+    private final NegotiationRepository negotiationRepository;
     private final ChatRoomRepository chatRoomRepository;
 
     @PostMapping("/request")
@@ -190,38 +192,42 @@ public class    QuoteController {
         org.springframework.data.domain.Sort sortOrder = "asc".equals(sort)
                 ? org.springframework.data.domain.Sort.by("quCreDt").ascending()
                 : org.springframework.data.domain.Sort.by("quCreDt").descending();
-        Page<QuoteBase> quPage = quoteBaseService.findAllByMember(
-                memId, PageRequest.of(page - 1, pageSize, sortOrder));
         model.addAttribute("sort", sort);
 
-        // 각 견적에 대한 협상명, 품목 수, 첫 품목명, 총 금액을 조합
-        List<Map<String, Object>> quotes = new ArrayList<>();
-        for (QuoteBase qb : quPage.getContent()) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("quId", qb.getQuId());
-            item.put("quStt", qb.getQuStt().name());
-            item.put("quOpYn", qb.getQuUsOpYn() != null && qb.getQuUsOpYn());
-            item.put("quAdOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
-            item.put("quCd", qb.getQuCd());
-            try {
-                Negotiation ng = negotiationService.findById(qb.getNgId());
-                item.put("ngNm", ng.getNgNm());
-            } catch (Exception e) {
-                item.put("ngNm", "");
-            }
-            item.put("quCreDt", qb.getQuCreDt());
-            item.put("quUpdDt", qb.getQuUpdDt());
+        // 견적 + 협상명 조인 조회 (1 쿼리)
+        Page<Object[]> quPage = quoteBaseRepository.findAllByMemberWithNgNm(memId, PageRequest.of(page - 1, pageSize, sortOrder));
 
-            // 표시용 상태
-            String displayStt = qb.getQuStt().name();
-            if (qb.getQuStt() == com.goodee.beedan.common.constant.QuoteStatus.SUBMITTED) {
-                boolean sender = memId.equals(qb.getQuSid()) || (qb.getQuSid() == null && memId.equals(qb.getQuRid()));
+        List<Map<String, Object>> quotes = new ArrayList<>();
+        for (Object[] row : quPage.getContent()) {
+            Long quId = (Long) row[0];
+            QuoteStatus quStt = (QuoteStatus) row[1];
+            Boolean quUsOpYn = (Boolean) row[2];
+            Boolean quAdOpYn = (Boolean) row[3];
+            String quCd = (String) row[4];
+            java.time.LocalDateTime quCreDt = (java.time.LocalDateTime) row[5];
+            java.time.LocalDateTime quUpdDt = (java.time.LocalDateTime) row[6];
+            Long quSid = (Long) row[7];
+            Long quRid = (Long) row[8];
+            String ngNm = (String) row[9];
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("quId", quId);
+            item.put("quStt", quStt.name());
+            item.put("quOpYn", quUsOpYn != null && quUsOpYn);
+            item.put("quAdOpYn", quAdOpYn != null && quAdOpYn);
+            item.put("quCd", quCd);
+            item.put("ngNm", ngNm != null ? ngNm : "");
+            item.put("quCreDt", quCreDt);
+            item.put("quUpdDt", quUpdDt);
+
+            String displayStt = quStt.name();
+            if (quStt == QuoteStatus.SUBMITTED) {
+                boolean sender = memId.equals(quSid) || (quSid == null && memId.equals(quRid));
                 if (!sender) {
-                    displayStt = (qb.getQuUsOpYn() != null && qb.getQuUsOpYn()) ? "CONFIRMED" : "UNREAD";
+                    displayStt = (quUsOpYn != null && quUsOpYn) ? "CONFIRMED" : "UNREAD";
                 }
             }
             item.put("displayStt", displayStt);
-
             quotes.add(item);
         }
 
@@ -396,6 +402,7 @@ public class    QuoteController {
 
         model.addAttribute("countryCodes", shippingRateRepository.findDistinctCountryCodes());
 
+
         return "/quote/quote-write";
     }
 
@@ -544,6 +551,7 @@ public class    QuoteController {
         model.addAttribute("isSender", isSender);
         model.addAttribute("isAdmin", false);
 
+
         return "admin/quote/admin-quote-detail";
     }
     @GetMapping("/negotiation/list")
@@ -553,25 +561,17 @@ public class    QuoteController {
         if (userDetails == null) return "redirect:/auth/signin";
         Long memId = userDetails.getMemberId();
 
-        // 전체 협상 조회 후 유효 견적 있는 것만 필터링
-        List<Negotiation> allNegos = negotiationService.findAllByMember(memId);
-
+        // 유효 견적이 있는 협상 + 견적 수 + 미열람 수 (1 쿼리)
         List<Map<String, Object>> allFiltered = new ArrayList<>();
-        for (Negotiation ng : allNegos) {
-            List<QuoteBase> quotes = quoteBaseRepository.findAllActiveByNgId(ng.getNgId(), memId);
-            if (quotes.isEmpty()) continue;
-
-            Map<String, Object> item = new java.util.LinkedHashMap<>();
-            item.put("ngId", ng.getNgId());
-            item.put("ngNm", ng.getNgNm());
-            item.put("ongoing", ng.isOngoing());
-            item.put("ngCreDt", ng.getNgCreDt());
-            item.put("ngEndDt", ng.getNgEndDt());
-            item.put("quoteCount", quotes.size());
-
-            boolean hasUnread = quotes.stream().anyMatch(q -> q.getQuUsOpYn() == null || !q.getQuUsOpYn());
-            item.put("hasUnread", hasUnread);
-
+        for (Object[] row : negotiationRepository.findNegotiationsWithQuoteSummary(memId)) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("ngId", (Long) row[0]);
+            item.put("ngNm", (String) row[1]);
+            item.put("ngCreDt", row[2]);
+            item.put("ngEndDt", row[3]);
+            item.put("ongoing", row[3] == null);
+            item.put("quoteCount", ((Number) row[4]).intValue());
+            item.put("hasUnread", ((Number) row[5]).longValue() > 0);
             allFiltered.add(item);
         }
 

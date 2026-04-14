@@ -42,7 +42,7 @@ public class AdminOrderController {
     @GetMapping("/detail")
     public String getOrderDetail(@AuthenticationPrincipal MemberUserDetails userDetails,
                                  @RequestParam Long ordId, Model model){
-        OrderDto order = orderService.getOrderDetail(ordId, userDetails);
+        OrderDto order = orderService.getOrderDetail(ordId, userDetails.getMemberId());
 
         model.addAttribute("order", order);
 
