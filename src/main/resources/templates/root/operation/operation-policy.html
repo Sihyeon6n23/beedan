@@ -14,7 +14,7 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/root/operation-policy.css}">
-    <div class="flex-grow mx-auto px-6 py-12 max-w-6xl">
+    <div class="flex-grow mx-auto px-6 max-w-6xl" style="padding-top:1.5rem;">
 
         <!-- Page Header -->
         <div class="mb-12 flex items-baseline gap-4">
@@ -354,56 +354,49 @@
                 </div>
             </div>
 
-            <!-- ========== 7. 국내 지역별 배송비 ========== -->
+            <!-- ========== 7. 국내 배송비 설정 ========== -->
             <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined text-primary">local_shipping</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">7. 국내 지역별 배송비</h2>
-                        <span class="text-xs text-outline ml-2">(Domestic Delivery)</span>
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">7. 국내 배송비 설정</h2>
+                    <span class="text-xs text-outline ml-2">(Domestic Delivery)</span>
+                </div>
+                <div th:if="${!#lists.isEmpty(deliveryRates)}" th:with="ddr=${deliveryRates[0]}">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-surface-container-low p-5">
+                            <p class="text-xs font-bold text-outline uppercase mb-2">기본 배송비</p>
+                            <p class="text-2xl font-black text-on-surface" th:text="'₩' + ${#numbers.formatDecimal(ddr.ddrAm, 0, 'COMMA', 0, 'POINT')}">₩0</p>
+                            <p class="text-xs text-outline mt-1">일반 지역 기준</p>
+                        </div>
+                        <div class="bg-surface-container-low p-5">
+                            <p class="text-xs font-bold text-outline uppercase mb-2">산간지역 추가금</p>
+                            <p class="text-2xl font-black text-on-surface" th:text="'₩' + ${ddr.ddrEAm != null ? #numbers.formatDecimal(ddr.ddrEAm, 0, 'COMMA', 0, 'POINT') : '0'}">₩0</p>
+                            <p class="text-xs text-outline mt-1">도서산간 지역 추가 요금</p>
+                        </div>
+                        <div class="bg-surface-container-low p-5">
+                            <p class="text-xs font-bold text-outline uppercase mb-2">산간지역 합계</p>
+                            <p class="text-2xl font-black text-primary" th:text="'₩' + ${#numbers.formatDecimal(ddr.totalAmount(), 0, 'COMMA', 0, 'POINT')}">₩0</p>
+                            <p class="text-xs text-outline mt-1">기본 + 추가금</p>
+                        </div>
                     </div>
+                    <div class="flex items-center gap-2" th:if="${ddr.ddrDes != null and !ddr.ddrDes.isEmpty()}">
+                        <span class="text-xs text-outline">설명:</span>
+                        <span class="text-sm text-on-surface" th:text="${ddr.ddrDes}"></span>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button type="button" class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all btn-edit"
+                                th:data-id="${ddr.ddrId}" data-type="delivery">
+                            <span class="material-symbols-outlined text-base">edit</span> 금액 수정
+                        </button>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(deliveryRates)}" class="text-center py-8">
+                    <p class="text-outline mb-4">등록된 배송비가 없습니다.</p>
                     <button type="button" onclick="openModal('deliveryModal')"
-                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
-                        <span class="material-symbols-outlined text-base">add</span> 지역 추가
+                            class="text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base align-middle">add</span> 배송비 등록
                     </button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm" id="deliveryTable">
-                        <thead>
-                            <tr class="bg-surface-container-high text-left">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">지역 구분</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">기본 배송비</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">추가 배송비</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">합계</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center w-24">관리</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-surface-container">
-                            <tr th:each="ddr : ${deliveryRates}" class="hover:bg-surface-container-low transition-colors">
-                                <td class="px-4 py-3 font-bold" th:text="${ddr.ddrRgn}"></td>
-                                <td class="px-4 py-3" th:text="${#numbers.formatDecimal(ddr.ddrAm, 0, 'COMMA', 0, 'POINT')}"></td>
-                                <td class="px-4 py-3" th:text="${ddr.ddrEAm != null} ? ${#numbers.formatDecimal(ddr.ddrEAm, 0, 'COMMA', 0, 'POINT')} : '0'"></td>
-                                <td class="px-4 py-3 font-bold text-primary" th:text="${#numbers.formatDecimal(ddr.totalAmount(), 0, 'COMMA', 0, 'POINT')}"></td>
-                                <td class="px-4 py-3 text-outline" th:text="${ddr.ddrDes} ?: '—'"></td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
-                                                th:data-id="${ddr.ddrId}" data-type="delivery" title="수정">
-                                            <span class="material-symbols-outlined text-base">edit</span>
-                                        </button>
-                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
-                                                th:data-id="${ddr.ddrId}" data-type="delivery" title="삭제">
-                                            <span class="material-symbols-outlined text-base">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(deliveryRates)}">
-                                <td colspan="6" class="px-4 py-8 text-center text-outline">등록된 국내 배송비가 없습니다.</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
@@ -565,14 +558,13 @@
                 ]
             },
             deliveryModal: {
-                title: '국내 배송비',
+                title: '국내 배송비 설정',
                 api: '/api/root/operation/delivery-rate',
                 dataType: 'delivery',
                 fields: [
-                    { name: 'ddrRgn',  label: '지역 구분',    type: 'select', options: ['SEOUL', 'GYEONGGI', 'METRO', 'PROVINCE', 'JEJU', 'ISLAND'] },
-                    { name: 'ddrAm',   label: '기본 배송비',   type: 'number', placeholder: '80000' },
-                    { name: 'ddrEAm',  label: '추가 배송비',   type: 'number', placeholder: '0' },
-                    { name: 'ddrDes',  label: '설명',          type: 'text',   placeholder: '배송비 설명' }
+                    { name: 'ddrAm',   label: '기본 배송비',       type: 'number', placeholder: '80000' },
+                    { name: 'ddrEAm',  label: '산간지역 추가금',   type: 'number', placeholder: '30000' },
+                    { name: 'ddrDes',  label: '설명',              type: 'text',   placeholder: '배송비 설명', required: false }
                 ]
             },
             submitCheckModal: {
