@@ -63,8 +63,8 @@ public class QuoteRestController {
 
     // 금액 계산 상수
     private static final BigDecimal DEFAULT_INSURANCE_RATE = new BigDecimal("0.005");
-    private static final BigDecimal DEFAULT_DUTY_RATE = new BigDecimal(1);
-    private static final BigDecimal VAT_RATE = new BigDecimal(1);
+    private static final BigDecimal DEFAULT_DUTY_RATE = new BigDecimal("0.13");
+    private static final BigDecimal VAT_RATE = new BigDecimal("0.10");
 
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
