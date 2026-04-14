@@ -397,7 +397,7 @@ public class    QuoteController {
                     if (defaultReceiver == null && !receivers.isEmpty()) defaultReceiver = receivers.get(0);
                     model.addAttribute("defaultReceiver", defaultReceiver);
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) { /* non-critical */ }
         }
 
         model.addAttribute("countryCodes", shippingRateRepository.findDistinctCountryCodes());
@@ -454,13 +454,13 @@ public class    QuoteController {
             // Factory name lookup
             String faNm = null;
             if (d.getFaId() != null) {
-                try { faNm = factoryRepository.findById(d.getFaId()).map(Factory::getFaNm).orElse(null); } catch (Exception ignored) {}
+                try { faNm = factoryRepository.findById(d.getFaId()).map(Factory::getFaNm).orElse(null); } catch (Exception e) { /* non-critical */ }
             }
             extra.put("faNm", faNm);
             // UnitGroup name lookup
             String unGNm = null;
             if (d.getUnGId() != null) {
-                try { unGNm = unitGroupService.findById(d.getUnGId()).getUnGNm(); } catch (Exception ignored) {}
+                try { unGNm = unitGroupService.findById(d.getUnGId()).getUnGNm(); } catch (Exception e) { /* non-critical */ }
             }
             extra.put("unGNm", unGNm);
             detailExtras.add(extra);

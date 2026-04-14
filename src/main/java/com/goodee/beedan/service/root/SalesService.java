@@ -11,6 +11,7 @@ import com.goodee.beedan.repository.quote.QuoteDetailRepository;
 import com.goodee.beedan.repository.quote.QuoteInfoRepository;
 import com.goodee.beedan.service.quote.NegotiationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -88,7 +90,7 @@ public class SalesService {
             try {
                 Negotiation ng = negotiationService.findById(qb.getNgId());
                 customerId = ng.getMemId();
-            } catch (Exception ignored) {}
+            } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             String buyerName = resolveBuyerName(customerId);
             String grade = resolveGradeByNego(qb.getNgId());
 
@@ -185,7 +187,7 @@ public class SalesService {
             revenueByGrade.merge(grade, nullToZero(payment.getPyTtAm()), BigDecimal::add);
             ordersByGrade.merge(grade, 1L, Long::sum);
             Long custId = null;
-            try { custId = negotiationService.findById(qb.getNgId()).getMemId(); } catch (Exception ignored) {}
+            try { custId = negotiationService.findById(qb.getNgId()).getMemId(); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             buyersByGrade.computeIfAbsent(grade, k -> new HashSet<>()).add(custId);
         }
 
@@ -227,7 +229,7 @@ public class SalesService {
                     BigDecimal amount = (payment != null) ? nullToZero(payment.getPyTtAm()) : BigDecimal.ZERO;
 
                     Long customerId = null;
-                    try { customerId = negotiationService.findById(qb.getNgId()).getMemId(); } catch (Exception ignored) {}
+                    try { customerId = negotiationService.findById(qb.getNgId()).getMemId(); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
 
                     return RecentQuoteRow.builder()
                             .quoteCd(qb.getQuCd())

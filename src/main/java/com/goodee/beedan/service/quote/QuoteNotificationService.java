@@ -19,6 +19,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuoteNotificationService {
 
+    // 알림 키 상수
+    private static final String KEY_EMAIL_ON_REVIEW = "emailOnReview";
+    private static final String KEY_EMAIL_ON_QUOTE_REPLY = "emailOnQuoteReply";
+    private static final String KEY_EMAIL_ON_APPROVE = "emailOnApprove";
+    private static final String KEY_EMAIL_ON_PAID = "emailOnPaid";
+    private static final String KEY_EMAIL_ON_SHIPMENT = "emailOnShipment";
+
     private final QuoteSubmitCheckLogRepository checkLogRepository;
     private final QuoteSubmitCheckRepository checkRepository;
     private final MemberRepository memberRepository;
@@ -48,6 +55,7 @@ public class QuoteNotificationService {
         try {
             return negotiationService.getMemId(ngId);
         } catch (Exception e) {
+            log.debug("고객 memId 조회 실패 (ngId={}): {}", ngId, e.getMessage());
             return null;
         }
     }
@@ -61,6 +69,7 @@ public class QuoteNotificationService {
             Member member = memId != null ? memberRepository.findById(memId).orElse(null) : null;
             return member != null ? member.getMemEml() : null;
         } catch (Exception e) {
+            log.debug("고객 이메일 조회 실패 (ngId={}): {}", ngId, e.getMessage());
             return null;
         }
     }
@@ -76,7 +85,7 @@ public class QuoteNotificationService {
                 notificationService.createInAppNotification(memId, NotificationType.QUOTATION_REVIEW, quoteBase.getQuId());
             }
             // 이메일 (옵트인 시)
-            if (isChecked(quoteBase.getQuId(), "emailOnReview")) {
+            if (isChecked(quoteBase.getQuId(), KEY_EMAIL_ON_REVIEW)) {
                 String email = getCustomerEmail(quoteBase.getNgId());
                 if (email != null) mailService.sendMail(email, NotificationType.QUOTATION_REVIEW, quoteBase.getQuId());
             }
@@ -94,7 +103,7 @@ public class QuoteNotificationService {
             if (memId != null) {
                 notificationService.createInAppNotification(memId, NotificationType.QUOTATION_REPLY, originalQuId);
             }
-            if (isChecked(originalQuId, "emailOnQuoteReply")) {
+            if (isChecked(originalQuId, KEY_EMAIL_ON_QUOTE_REPLY)) {
                 String email = getCustomerEmail(ngId);
                 if (email != null) mailService.sendMail(email, NotificationType.QUOTATION_REPLY, originalQuId);
             }
@@ -112,7 +121,7 @@ public class QuoteNotificationService {
             if (memId != null) {
                 notificationService.createInAppNotification(memId, NotificationType.QUOTATION_APPROVE, quoteBase.getQuId());
             }
-            if (isChecked(quoteBase.getQuId(), "emailOnApprove")) {
+            if (isChecked(quoteBase.getQuId(), KEY_EMAIL_ON_APPROVE)) {
                 String email = getCustomerEmail(quoteBase.getNgId());
                 if (email != null) mailService.sendMail(email, NotificationType.QUOTATION_APPROVE, quoteBase.getQuId());
             }
@@ -130,7 +139,7 @@ public class QuoteNotificationService {
             if (memId != null) {
                 notificationService.createInAppNotification(memId, NotificationType.PAYMENT_COMPLETE, quoteBase.getQuId());
             }
-            if (isChecked(quoteBase.getQuId(), "emailOnPaid")) {
+            if (isChecked(quoteBase.getQuId(), KEY_EMAIL_ON_PAID)) {
                 String email = getCustomerEmail(quoteBase.getNgId());
                 if (email != null) mailService.sendMail(email, NotificationType.PAYMENT_COMPLETE, quoteBase.getQuId());
             }
@@ -148,7 +157,7 @@ public class QuoteNotificationService {
             if (memId != null) {
                 notificationService.createInAppNotification(memId, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
             }
-            if (isChecked(quoteBase.getQuId(), "emailOnShipment")) {
+            if (isChecked(quoteBase.getQuId(), KEY_EMAIL_ON_SHIPMENT)) {
                 String email = getCustomerEmail(quoteBase.getNgId());
                 if (email != null) mailService.sendMail(email, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
             }

@@ -24,6 +24,11 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class DashboardService {
 
+    private static final double PERCENTAGE_MULTIPLIER = 1000.0;
+    private static final double PERCENTAGE_DIVISOR = 10.0;
+    private static final int POPULAR_PRODUCT_MIN_VIEWS = 10;
+    private static final String PAGE_STOCK_DETAIL = "STOCK_DETAIL";
+
     private final PageViewRepository pageViewRepository;
     private final CartRepository cartRepository;
     private final SessionLogRepository sessionLogRepository;
@@ -38,7 +43,7 @@ public class DashboardService {
      * 전환 퍼널 데이터
      */
     public Map<String, Object> getFunnel(LocalDateTime from, LocalDateTime to) {
-        long views = pageViewRepository.countByPvPageAndPvCreDtBetween("STOCK_DETAIL", from, to);
+        long views = pageViewRepository.countByPvPageAndPvCreDtBetween(PAGE_STOCK_DETAIL, from, to);
         long carts = cartRepository.count();
 
         // 상태별 건수 1쿼리로 (퍼널 + 견적현황 공용)
@@ -64,7 +69,7 @@ public class DashboardService {
         funnel.put("cartToQuote", carts > 0 ? Math.round((double) quotes / carts * 100) : 0);
         funnel.put("quoteToPaid", quotes > 0 ? Math.round((double) paid / quotes * 100) : 0);
         funnel.put("negotiations", negotiations);
-        funnel.put("totalConversion", negotiations > 0 ? Math.round((double) paid / negotiations * 1000) / 10.0 : 0);
+        funnel.put("totalConversion", negotiations > 0 ? Math.round((double) paid / negotiations * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
         funnel.put("_statusMap", statusMap); // 견적현황에서 재사용
         return funnel;
     }
@@ -96,9 +101,9 @@ public class DashboardService {
             item.put("views", viewCount);
             item.put("carts", cartCount);
             item.put("purchases", purchaseCount);
-            item.put("viewToCart", viewCount > 0 ? Math.round((double) cartCount / viewCount * 1000) / 10.0 : 0);
-            item.put("cartToPurchase", cartCount > 0 ? Math.round((double) purchaseCount / cartCount * 1000) / 10.0 : 0);
-            item.put("totalConversion", viewCount > 0 ? Math.round((double) purchaseCount / viewCount * 1000) / 10.0 : 0);
+            item.put("viewToCart", viewCount > 0 ? Math.round((double) cartCount / viewCount * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
+            item.put("cartToPurchase", cartCount > 0 ? Math.round((double) purchaseCount / cartCount * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
+            item.put("totalConversion", viewCount > 0 ? Math.round((double) purchaseCount / viewCount * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
             result.add(item);
         }
         return result;
@@ -112,7 +117,7 @@ public class DashboardService {
 
         // 전환율 기준 정렬 (조회 10건 이상만)
         List<Map<String, Object>> filtered = all.stream()
-                .filter(m -> ((Number) m.get("views")).longValue() >= 10)
+                .filter(m -> ((Number) m.get("views")).longValue() >= POPULAR_PRODUCT_MIN_VIEWS)
                 .toList();
 
         List<Map<String, Object>> best = filtered.stream()
@@ -132,9 +137,11 @@ public class DashboardService {
     /**
      * 견적 처리 현황
      */
-    @SuppressWarnings("unchecked")
     public Map<String, Long> getQuoteStatusCounts(Map<String, Object> funnel) {
-        Map<QuoteStatus, Long> statusMap = (Map<QuoteStatus, Long>) funnel.get("_statusMap");
+        Object raw = funnel.get("_statusMap");
+        if (!(raw instanceof Map)) return Map.of("approved", 0L, "submitted", 0L, "rejected", 0L, "expired", 0L);
+        @SuppressWarnings("unchecked")
+        Map<QuoteStatus, Long> statusMap = (Map<QuoteStatus, Long>) raw;
         Map<String, Long> counts = new LinkedHashMap<>();
         counts.put("approved", statusMap.getOrDefault(QuoteStatus.APPROVED, 0L) + statusMap.getOrDefault(QuoteStatus.PAID, 0L));
         counts.put("submitted", statusMap.getOrDefault(QuoteStatus.SUBMITTED, 0L));
