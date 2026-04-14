@@ -54,10 +54,16 @@ public class AuthController {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
+    @Value("${portone.store-id}")
+    private String storeId;
+    @Value("${portone.channel-key}")
+    private String channelKey;
 
     @GetMapping("/signup")
     public String getSignUp(Model model) {
         model.addAttribute("memberForm", new MemberFormDto());
+        model.addAttribute("portoneStoreId", storeId);
+        model.addAttribute("portoneChannelKey", channelKey);
         return "/member/auth/signup";
     }
 
@@ -126,7 +132,7 @@ public class AuthController {
 
         // 휴대폰 번호 API 검증(백엔드검증)
         Mono<Map<String, Object>> verifyMono = portOneService.verify(memberForm.getImpUid());
-        PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
+        PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono).block();
 
         // [수정 1]: String 조작 전 null 참조 예외(NPE) 완벽 방어
         String estDate = memberForm.getEstablishmentDate();

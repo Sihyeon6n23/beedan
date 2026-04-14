@@ -45,9 +45,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m.memId, m.memNm, m.memBizNo, m.memCreDt, f.filePat, f.fileUuid) " +
             "FROM Member m " +
             "LEFT JOIN FileUpload f ON m.memId = f.brdRefNo AND f.brdRefTy = 'SIGNUP' AND f.fileDelYn = false " +
-            "WHERE m.memStt = 'PENDING' " +
+            "WHERE m.memBizYn = false " +
             "ORDER BY m.memCreDt DESC")
-    List<MemberApproveDto> findPendingMembersWithFiles();
+    List<MemberApproveDto> findBizPendingMembersWithFiles();
   
     long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 
@@ -61,4 +61,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     default Member getByIdOrThrow(Long memId) {
         return findById(memId).orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. ID: " + memId));
     }
+    boolean existsByMemMbPhn(String phoneNumber);
 }

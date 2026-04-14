@@ -20,8 +20,7 @@ public class MemberApproveController {
 
     @GetMapping("/approve")
     public String approvePage(Model model) {
-        // 서비스에서 MemberStatus.PENDING 인 회원과 SIGNUP 타입의 파일을 조인해서 가져옴
-        List<MemberApproveDto> pendingMembers = memberService.findPendingMembersWithFiles();
+        List<MemberApproveDto> pendingMembers = memberService.findBizPendingMembersWithFiles();
         model.addAttribute("members", pendingMembers);
         return "root/member/approve";
     }

@@ -19,7 +19,6 @@ import java.util.Map;
 public class PortOneService {
     @Qualifier("portOneWebClient")
     private final WebClient portOneWebClient;
-    private final ObjectMapper objectMapper;
     @Value("${portone.phone.certification.api.key}")
     private String apiKey;
 
@@ -39,7 +38,7 @@ public class PortOneService {
                 });
     }
 
-    public PhoneVerificationDto MonoToPhoneVerificationDto(Mono<Map<String, Object>> verifyMono) {
+    public Mono<PhoneVerificationDto> MonoToPhoneVerificationDto(Mono<Map<String, Object>> verifyMono) {
         return verifyMono.map(map -> {
             // 1. 'verifiedCustomer'라는 내부 Map(상자)을 먼저 꺼냅니다.
             @SuppressWarnings("unchecked")
@@ -68,6 +67,6 @@ public class PortOneService {
                     .phoneNumber(phoneNumber)
                     .ci(ci)
                     .build();
-        }).block();
+        });
     }
 }
