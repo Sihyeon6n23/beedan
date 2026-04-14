@@ -43,6 +43,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
+    private static final String REDIRECT_SIGNIN = "redirect:/auth/signin";
+
     private final QuoteBaseService quoteBaseService;
     private final QuoteDetailService quoteDetailService;
     private final QuoteInfoRepository quoteInfoRepository;
@@ -64,7 +66,7 @@ public class PaymentController {
 
     @GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails, Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         // 결제 + 견적코드 + 협상명 조인 조회 (1 쿼리)
         List<Map<String, Object>> paymentList = new java.util.ArrayList<>();
@@ -83,7 +85,7 @@ public class PaymentController {
     @GetMapping("/check")
     public String getCheck(@RequestParam Long quId, Model model,
                            @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
@@ -148,7 +150,7 @@ public class PaymentController {
                                  @RequestParam Long amount,
                                  @RequestParam(required = false) String method,
                                  @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         // 1. 토스페이먼츠 결제 승인 API 호출
         RestTemplate restTemplate = new RestTemplate();
@@ -251,7 +253,7 @@ public class PaymentController {
                                  @RequestParam(required = false) String orderId,
                                  @AuthenticationPrincipal MemberUserDetails userDetails,
                                  Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);

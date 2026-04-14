@@ -28,7 +28,7 @@ public class OrderWebhookController {
      * 외부팀에서 송장 정보를 보내올 때 수신
      */
     @PostMapping("/shipment")
-    public ResponseEntity<?> receiveShipment(
+    public ResponseEntity<Map<String, Object>> receiveShipment(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestBody String rawBody) {
 
