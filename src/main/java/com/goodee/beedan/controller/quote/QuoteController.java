@@ -38,6 +38,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class    QuoteController {
 
+    private static final String REDIRECT_SIGNIN = "redirect:/auth/signin";
+
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
     private final QuoteBaseRepository quoteBaseRepository;
@@ -185,7 +187,7 @@ public class    QuoteController {
                           @RequestParam(defaultValue = "1") int page,
                           @RequestParam(defaultValue = "desc") String sort,
                           Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
         Long memId = userDetails.getMemberId();
 
         int pageSize = 10;
@@ -410,7 +412,7 @@ public class    QuoteController {
     public String getDetail(@RequestParam Long quId,
                             @AuthenticationPrincipal MemberUserDetails userDetails,
                             Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
 
@@ -558,7 +560,7 @@ public class    QuoteController {
     public String getNegotiationList(@AuthenticationPrincipal MemberUserDetails userDetails,
                                      @RequestParam(defaultValue = "1") int page,
                                      Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
         Long memId = userDetails.getMemberId();
 
         // 유효 견적이 있는 협상 + 견적 수 + 미열람 수 (1 쿼리)
@@ -599,7 +601,7 @@ public class    QuoteController {
     public String getNegotiationDetail(@AuthenticationPrincipal MemberUserDetails userDetails,
                                        @RequestParam Long ngId,
                                        Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         Negotiation negotiation = negotiationService.findById(ngId);
         if (negotiation == null) return "redirect:/quote/negotiation/list";

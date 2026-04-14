@@ -35,6 +35,8 @@ import java.util.Map;
 @RequestMapping("/admin")
 public class AdminQuoteController {
 
+    private static final String REDIRECT_QUOTE_LIST = "redirect:/admin/quote/list";
+
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
     private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
@@ -163,16 +165,7 @@ public class AdminQuoteController {
             item.put("quCreDt", row[4]);
             item.put("quUpdDt", row[5]);
 
-            String displayStt = quStt.name();
-            if (quStt == QuoteStatus.SUBMITTED && myId != null) {
-                Long quSid = (Long) row[6];
-                Long quRid = (Long) row[7];
-                boolean sender = myId.equals(quSid) || (quSid == null && myId.equals(quRid));
-                if (!sender) {
-                    displayStt = (quAdOpYn != null && quAdOpYn) ? "CONFIRMED" : "UNREAD";
-                }
-            }
-            item.put("displayStt", displayStt);
+            item.put("displayStt", resolveDisplayStt(quStt, quAdOpYn, myId, (Long) row[6], (Long) row[7]));
 
             quotes.add(item);
         }
@@ -182,11 +175,21 @@ public class AdminQuoteController {
         return "admin/quote/admin-quote-list";
     }
 
+    private String resolveDisplayStt(QuoteStatus quStt, Boolean opYn, Long myId, Long quSid, Long quRid) {
+        if (quStt == QuoteStatus.SUBMITTED && myId != null) {
+            boolean sender = myId.equals(quSid) || (quSid == null && myId.equals(quRid));
+            if (!sender) {
+                return (opYn != null && opYn) ? "CONFIRMED" : "UNREAD";
+            }
+        }
+        return quStt.name();
+    }
+
     @GetMapping("/quote/detail")
     public String quoteDetail(@RequestParam Long quId, Model model,
                               @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         QuoteBase quoteBase = quoteBaseService.findById(quId);
-        if (quoteBase == null) return "redirect:/admin/quote/list";
+        if (quoteBase == null) return REDIRECT_QUOTE_LIST;
 
         // TEMP_SAVE 상태면 write 페이지로 이동 (이어서 작성)
         if (quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE) {
@@ -329,7 +332,7 @@ public class AdminQuoteController {
         Long sourceQuId = quId; // 데이터를 로드할 원본 quId
         if (fromQuId != null) {
             QuoteBase oldQuote = quoteBaseService.findById(fromQuId);
-            if (oldQuote == null) return "redirect:/admin/quote/list";
+            if (oldQuote == null) return REDIRECT_QUOTE_LIST;
 
             // 송신자 = admin (나), 수신자 = 상대방
             Long myId = writerDetails != null ? writerDetails.getMemberId() : null;
@@ -351,10 +354,10 @@ public class AdminQuoteController {
 
         }
 
-        if (quId == null) return "redirect:/admin/quote/list";
+        if (quId == null) return REDIRECT_QUOTE_LIST;
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
-        if (quoteBase == null) return "redirect:/admin/quote/list";
+        if (quoteBase == null) return REDIRECT_QUOTE_LIST;
 
         model.addAttribute("activeStep", 1);
         model.addAttribute("quId", quId);
