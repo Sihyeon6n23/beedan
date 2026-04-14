@@ -66,6 +66,8 @@ public class Member {
 
     private LocalDateTime memUpdPwDt;
 
+    private Boolean memBizYn;
+
 
     public void approve() {
         if (this.memStt.equals(MemberStatus.ACTIVE.toString())) {

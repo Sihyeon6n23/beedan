@@ -1,7 +1,5 @@
 package com.goodee.beedan.repository.member;
 
-import com.goodee.beedan.common.constant.MemberAuthority;
-import com.goodee.beedan.config.exception.EntityNotFoundException;
 import com.goodee.beedan.config.exception.MemberNotFoundException;
 import com.goodee.beedan.dto.member.MemberApproveDto;
 import com.goodee.beedan.entity.Member;
@@ -22,7 +20,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByMemNmAndMemEml(String MemNm, String MemEml);
     Optional<Member> findByMemLgnIdAndMemEml(String MemLgnId, String MemEml);
 
-    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER'")
+    @Query("SELECT m FROM Member m " +
+            "WHERE m.memAut = 'USER' " +
+            "AND m.memStt NOT IN ('WITHDRAWN', 'PENDING')")
     Page<Member> findAllUsers(Pageable pageable);
 
     @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status")
@@ -45,15 +45,21 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m.memId, m.memNm, m.memBizNo, m.memCreDt, f.filePat, f.fileUuid) " +
             "FROM Member m " +
             "LEFT JOIN FileUpload f ON m.memId = f.brdRefNo AND f.brdRefTy = 'SIGNUP' AND f.fileDelYn = false " +
-            "WHERE m.memStt = 'PENDING' " +
+            "WHERE m.memBizYn = false " +
             "ORDER BY m.memCreDt DESC")
-    List<MemberApproveDto> findPendingMembersWithFiles();
+    List<MemberApproveDto> findBizPendingMembersWithFiles();
   
     long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    // 월별 가입자 수 (GROUP BY)
+    @Query("SELECT MONTH(m.memCreDt), COUNT(m) FROM Member m WHERE m.memCreDt BETWEEN :from AND :to GROUP BY MONTH(m.memCreDt)")
+    List<Object[]> countGroupByMonth(@org.springframework.data.repository.query.Param("from") java.time.LocalDateTime from,
+                                     @org.springframework.data.repository.query.Param("to") java.time.LocalDateTime to);
 
     boolean existsByMemEml(String memEml);
 
     default Member getByIdOrThrow(Long memId) {
         return findById(memId).orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. ID: " + memId));
     }
+    boolean existsByMemMbPhn(String phoneNumber);
 }

@@ -12,11 +12,14 @@ import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
+import java.net.http.HttpRequest;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -50,10 +54,16 @@ public class AuthController {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
+    @Value("${portone.store-id}")
+    private String storeId;
+    @Value("${portone.channel-key}")
+    private String channelKey;
 
     @GetMapping("/signup")
     public String getSignUp(Model model) {
         model.addAttribute("memberForm", new MemberFormDto());
+        model.addAttribute("portoneStoreId", storeId);
+        model.addAttribute("portoneChannelKey", channelKey);
         return "/member/auth/signup";
     }
 
@@ -122,7 +132,7 @@ public class AuthController {
 
         // 휴대폰 번호 API 검증(백엔드검증)
         Mono<Map<String, Object>> verifyMono = portOneService.verify(memberForm.getImpUid());
-        PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
+        PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono).block();
 
         // [수정 1]: String 조작 전 null 참조 예외(NPE) 완벽 방어
         String estDate = memberForm.getEstablishmentDate();
@@ -157,7 +167,14 @@ public class AuthController {
     }
 
     @GetMapping("/signin")
-    public String getSignIn() {
+    public String getSignIn(HttpServletRequest request,
+                            Model model) {
+        HttpSession session = request.getSession();
+
+        if (session != null && session.getAttribute("errorMessage") != null) {
+            model.addAttribute("errorMessage", session.getAttribute("errorMessage"));
+            session.removeAttribute("errorMessage");
+        }
         return "/member/auth/signin";
     }
 

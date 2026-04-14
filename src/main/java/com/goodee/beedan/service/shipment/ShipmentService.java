@@ -3,14 +3,17 @@ package com.goodee.beedan.service.shipment;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.dto.order.ShipmentDto;
+import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final OrderRepository orderRepository;
@@ -68,7 +72,8 @@ public class ShipmentService {
         return mapToShipmentDto(shipment);
     }
 
-    private void syncOrderStatus(Order order) {
+
+    public void syncOrderStatus(Order order) {
         if (order.getOrdBaseStt() == OrderStatus.CANCELED) return;
 
         List<Shipment> activeShipments = order.getShipments().stream()
@@ -108,7 +113,6 @@ public class ShipmentService {
                 .build();
     }
 
-
     private void validateShipmentAccess(Shipment shipment, Long ordId, Long memId) {
         if (!shipment.getOrder().getOrdBaseId().equals(ordId)) {
             throw new IllegalArgumentException("해당 주문의 배송 내역이 아닙니다.");
@@ -117,4 +121,24 @@ public class ShipmentService {
             throw new IllegalArgumentException("본인의 주문 배송 내역만 제어할 수 있습니다.");
         }
     }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processSingleShipment(Long shId, TrackingResponseDto response) {
+        try {
+            Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
+
+            if (response.getStatusText() != null && (
+                    response.getStatusText().contains("배송완료") || response.getStatusText().contains("배달완료"))
+            ){
+
+                shipment.setShStt(ShipmentStatus.DELIVERED);
+                syncOrderStatus(shipment.getOrder());
+
+                log.info("배송 완료 처리 성공 - 송장번호: {}", shipment.getShTraNo());
+            }
+        } catch (Exception e) {
+            log.error("배송건 ID {} 업데이트 중 오류 발생: {}", shId, e.getMessage());
+        }
+    }
+
 }

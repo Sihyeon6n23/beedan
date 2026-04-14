@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,10 +34,11 @@ public class DashboardController {
         model.addAttribute("month", m);
         model.addAttribute("periodLabel", y + "년 " + m + "월");
 
-        model.addAttribute("funnel", dashboardService.getFunnel(from, to));
+        Map<String, Object> funnel = dashboardService.getFunnel(from, to);
+        model.addAttribute("funnel", funnel);
         model.addAttribute("popularProducts", dashboardService.getPopularProducts(from, to, 10));
         model.addAttribute("conversionRanking", dashboardService.getConversionRanking(from, to));
-        model.addAttribute("quoteStatus", dashboardService.getQuoteStatusCounts(from, to));
+        model.addAttribute("quoteStatus", dashboardService.getQuoteStatusCounts(funnel));
         model.addAttribute("monthlySignups", dashboardService.getMonthlySignups(y, m));
         model.addAttribute("weekdayQuotes", dashboardService.getQuotesByDayOfWeek(from, to));
         model.addAttribute("newSignups", dashboardService.getNewSignups(from, to));

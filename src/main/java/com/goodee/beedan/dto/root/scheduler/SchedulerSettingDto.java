@@ -106,5 +106,18 @@ public class SchedulerSettingDto {
     private String lastUnipassRunTime;
 
 
+    // 8. 배송 상태 동기화
+    @JsonProperty("is_shipment_sync_enabled")
+    private boolean isShipmentSyncEnabled = false;
+
+    @JsonProperty("shipment_sync_start_dt")
+    private String shipmentSyncStartDt;
+
+    @JsonProperty("shipment_sync_interval")
+    private String shipmentSyncInterval;
+
+    @JsonProperty("last_shipment_sync_run_time")
+    private String lastShipmentSyncRunTime;
+
 
 }

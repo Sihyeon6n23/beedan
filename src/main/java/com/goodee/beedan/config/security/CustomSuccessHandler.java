@@ -39,26 +39,28 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     ) throws IOException, ServletException {
         SecurityPolicyDto policy = securityService.getSecPolDto();
 
-        // 중복로그인 정책
-        Object principal = authentication.getPrincipal();
+        // 2. 세션 타임아웃 동적 설정
+        if (policy.getIsSessionTimeoutEnabled()) {
+            request.getSession().setMaxInactiveInterval(policy.getSessionTimeoutMinutes().intValue() * 60);
+        }
+
+        // 3. 중복 로그인 동적 제어
+        String currentSessionId = request.getSession().getId();
         if (policy.getIsConcurrentLoginPrevented()) {
-
-            List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
-
-            if (!sessions.isEmpty()) {
-                for (SessionInformation session : sessions) {
-                    session.expireNow();
+            List<SessionInformation> sessions = sessionRegistry.getAllSessions(authentication.getPrincipal(), false);
+            for (SessionInformation session : sessions) {
+                if (!session.getSessionId().equals(currentSessionId)) {
+                    session.expireNow(); // 세션 만료처리
                 }
-                System.out.println("[보안정책적용] 기존 세션을 만료처리하였습니다.");
             }
         }
 
         String username = authentication.getName();
-        if (policy.getIsLoginFailureLimitEnabled()) {
+        if (policy.getIsLoginSecurityEnabled()) {
             memberService.resetLoginStatus(username);
         }
 
-        // 비밀번호 변경 정책 ON -> 비밀번호 변경시기 확인.?.....수정일 사용 불가.. 추가컬럼필요
+        // 비밀번호 변경 정책 ON -> 비밀번호 변경시기 확인.?.....변경날짜 컬럼 DB에 추가완료
         if (policy.getIsPasswordExpiryEnabled()) {
             HttpSession session = request.getSession();
             // session에 올리고 메인화면 갔을때 해당 세션객체가 있으면
@@ -69,6 +71,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 세션 로그에 회원 ID 기록
         try {
+            Object principal = authentication.getPrincipal();
             String sessionId = request.getSession().getId();
             if (principal instanceof MemberUserDetails) {
                 Long memId = ((MemberUserDetails) principal).getMemberId();
@@ -77,10 +80,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     sessionLogRepository.save(sl);
                 });
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) { /* non-critical: session log */ }
 
         setDefaultTargetUrl("/mypage");
+        request.getSession().removeAttribute("loginTempStatus");
 
         super.onAuthenticationSuccess(request, response, authentication);
     }
+
+
 }
