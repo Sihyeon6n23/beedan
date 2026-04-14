@@ -81,7 +81,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     sessionLogRepository.save(sl);
                 });
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) { /* non-critical: session log */ }
 
         setDefaultTargetUrl("/mypage");
 
