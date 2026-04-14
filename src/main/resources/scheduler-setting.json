@@ -1,8 +1,8 @@
 {
-  "gradeResolveEnabled" : false,
   "chatAutoCloseEnabled" : true,
   "autoCrawlingEnabled" : true,
   "exchangeRateEnabled" : true,
+  "gradeResolveEnabled" : false,
   "unipassEnabled" : false,
   "is_auto_crawling_enabled" : true,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
@@ -24,7 +24,7 @@
   "is_chat_auto_close_enabled" : true,
   "chat_auto_close_start_dt" : "2026-04-01T00:00",
   "chat_auto_close_interval" : "1",
-  "last_chat_auto_close_run_time" : "2026-04-14T15:05:32.806914400",
+  "last_chat_auto_close_run_time" : "2026-04-14T15:52:57.722959700",
   "is_unipass_enabled" : false,
   "unipass_start_dt" : null,
   "unipass_interval" : null,
