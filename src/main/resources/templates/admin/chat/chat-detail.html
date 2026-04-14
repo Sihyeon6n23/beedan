@@ -20,7 +20,15 @@
         <section class="admin-chat-shell admin-chat-shell--detail-board">
             <header class="admin-chat-detail-topbar">
                 <div class="admin-chat-detail-topbar__side">
-                    <a th:href="@{/admin/chat/list}" class="admin-chat-icon-link">
+                    <a th:if="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="@{/admin/chat/list}"
+                       class="admin-chat-icon-link">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </a>
+
+                    <a th:unless="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="${returnUrl}"
+                       class="admin-chat-icon-link">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </a>
                 </div>
@@ -194,6 +202,19 @@
                         견적 보내기
                     </a>
                 </div>
+
+                <!-- 관리자 채팅 상세 비동기 오류를 짧게 안내하는 토스트 -->
+                <div class="admin-chat-toast is-hidden"
+                     data-admin-chat-toast
+                     role="status"
+                     aria-live="polite"
+                     aria-atomic="true"
+                     aria-hidden="true">
+                    <span class="material-symbols-outlined admin-chat-toast__icon">error</span>
+                    <p class="admin-chat-toast__text" data-admin-chat-toast-text>
+                        요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.
+                    </p>
+                </div>
             </footer>
 
             <!-- 종료 상태 안내 영역 -->
@@ -211,6 +232,7 @@
         </section>
 
         <div th:replace="~{fragments/chat/admin-close-modal :: closeConfirmModal}"></div>
+        <div th:replace="~{fragments/chat/admin-error-modal :: actionErrorModal}"></div>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs/bundles/stomp.umd.min.js"></script>

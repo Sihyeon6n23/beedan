@@ -61,12 +61,15 @@ public class AdminChatController {
     @GetMapping("/detail")
     public String getAdminChatDetail(Model model,
                                      @RequestParam("id") Long chRoId,
+                                     @RequestParam(value = "returnUrl", required = false) String returnUrl,
                                      @AuthenticationPrincipal MemberUserDetails userDetails) {
         AdminChatRoomDetailDto chatRoomDetail = adminChatService
                 .getAdminChatRoomDetail(chRoId, userDetails.getMemberId());
 
         model.addAttribute("chatRoomDetail", chatRoomDetail);
         model.addAttribute("qrApiBaseUrl", qrApiBaseUrl);
+        // 목록에서 넘어온 필터/검색/페이지 상태 복귀용 URL
+        model.addAttribute("returnUrl", returnUrl);
 
         return "/admin/chat/chat-detail";
     }
