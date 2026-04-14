@@ -15,7 +15,13 @@
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
-    <section class="admin-chat-page admin-chat-list-page">
+    <section class="admin-chat-page admin-chat-list-page"
+             th:with="currentListUrl=@{/admin/chat/list(
+              status=${searchDto.status},
+              keyword=${searchDto.keyword},
+              myAssignedOnly=${searchDto.myAssignedOnly},
+              page=${chatRoomPage.number}
+           )}">
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
                 <span class="admin-chat-kicker">Chat List</span>
@@ -25,13 +31,6 @@
                 <span></span>
             </div>
         </header>
-
-        <div class="admin-chat-feedback is-hidden"
-             data-admin-chat-feedback
-             aria-live="polite" aria-hidden="true">
-            <span class="material-symbols-outlined">error</span>
-            <p data-admin-chat-feedback-text>목록을 불러오는 중 문제가 발생했습니다.</p>
-        </div>
 
         <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="채팅 목록 필터">
             <div class="admin-chat-toolbar">
@@ -77,6 +76,15 @@
             </div>
         </section>
 
+        <!-- 관리자 목록 비동기 갱신 실패 상태 -->
+        <div class="admin-chat-feedback is-hidden"
+             data-admin-chat-feedback
+             aria-live="polite"
+             aria-hidden="true">
+            <span class="material-symbols-outlined">error</span>
+            <p data-admin-chat-feedback-text>목록을 불러오는 중 문제가 발생했습니다.</p>
+        </div>
+
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-head" aria-hidden="true">
                 <div>상담방 정보 및 최근 메시지</div>
@@ -93,7 +101,7 @@
                             class="admin-chat-row admin-chat-row--button"
                             th:classappend="${chatRoom.unread} ? ' admin-chat-row--featured' : ''"
                             data-modal-open="assign"
-                            th:attr="data-detail-url=@{/admin/chat/detail(id=${chatRoom.chRoId})}, data-room-id=${chatRoom.chRoId}">
+                            th:attr="data-detail-url=@{/admin/chat/detail(id=${chatRoom.chRoId}, returnUrl=${currentListUrl})}, data-room-id=${chatRoom.chRoId}">
                         <div class="admin-chat-row__primary">
                             <span th:if="${chatRoom.unread}" class="admin-chat-row__unread"></span>
                             <span th:unless="${chatRoom.unread}" class="admin-chat-row__unread admin-chat-row__unread--empty"></span>
@@ -119,7 +127,7 @@
 
                     <!-- ONGOING, CLOSED 채팅방 -->
                     <a th:unless="${chatRoom.chRoStt.name() == 'OPEN'}"
-                       th:href="@{/admin/chat/detail(id=${chatRoom.chRoId})}"
+                       th:href="@{/admin/chat/detail(id=${chatRoom.chRoId}, returnUrl=${currentListUrl})}"
                        class="admin-chat-row"
                        th:classappend="${chatRoom.unread} ? ' admin-chat-row--featured' : ''">
                         <div class="admin-chat-row__primary">
@@ -189,6 +197,7 @@
         </footer>
 
         <div th:replace="~{fragments/chat/admin-assign-modal :: assignConfirmModal}"></div>
+        <div th:replace="~{fragments/chat/admin-error-modal :: actionErrorModal}"></div>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>

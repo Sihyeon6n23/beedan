@@ -10,7 +10,6 @@ import com.goodee.beedan.service.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -124,7 +123,6 @@ public class NotificationService {
         sendRealTimeUnreadCount(memId);
     }
 
-
     public Integer sendRealTimeUnreadCount(Long memId) {
         Member member = memberRepository.getByIdOrThrow(memId);
 
@@ -134,6 +132,10 @@ public class NotificationService {
         messagingTemplate.convertAndSendToUser(destinationUser, "/sub/unread-count", currentUnreadCount);
 
         return currentUnreadCount;
+    }
+
+    public Integer getUnreadCount(Long memId) {
+        return notificationRepository.countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(memId);
     }
 
     public NotificationDto mapToNotificationDto(Notification notification){

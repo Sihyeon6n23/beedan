@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
       th:replace="~{layout/layout :: layout(
           ~{::title},
           ~{fragments/sidebar :: frame('ADMIN', 'MEMBER MANAGEMENT', ~{::sidebar})},
@@ -148,7 +148,6 @@
                                 <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
                                 <a class="admin-chat-filter" href="#" data-status="ACTIVE">활성</a>
                                 <a class="admin-chat-filter" href="#" data-status="LOCK">잠금</a>
-                                <a class="admin-chat-filter" href="#" data-status="PENDING">대기</a>
                             </div>
                         </div>
 
@@ -192,7 +191,7 @@
                                 <span class="dot-divider"></span>
                                 <span class="join-date"></span>
                             </div>
-                            <h2 class="member-name"></h2>
+                            <h2 class="member-nm">name</h2>
                         </div>
                         <button class="btn-close-modal" onclick="closeMemberModal()">
                             <span class="material-symbols-outlined">close</span>

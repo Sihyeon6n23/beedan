@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <header th:fragment="headerFragment"
         class="header_final-1 fixed top-0 left-0 w-full z-50 h-16 bg-white border-b border-stone-100">
@@ -47,15 +47,19 @@
                 </th:block>
             </div>
 
-            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center ...">
+            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer">
                 <span class="material-symbols-outlined">notifications</span>
 
-                <span id="unreadBadge" class="absolute -top-2 -right-2 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold rounded-full border border-white hidden">
+                <span id="unreadBadge"
+                      th:with="count=${session.unreadCount}"
+                      th:classappend="${count != null and count > 0} ? 'flex' : 'hidden'"
+                      th:style="${count != null and count > 0} ? 'display: flex !important;' : 'display: none !important;'"
+                      class="absolute -top-2 -right-2 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold items-center justify-center rounded-full border border-white">
+                        [[${count > 6 ? '6+' : (count > 0 ? count : '')}]]
                 </span>
 
                 <div th:replace="~{notification/notification :: notificationDropdown}"></div>
             </div>
-
 
             <div id="wishlistIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
                 <a th:href="@{/wishlist}" class="flex items-center">
