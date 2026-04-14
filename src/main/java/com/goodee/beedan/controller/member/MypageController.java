@@ -187,7 +187,7 @@ public class MypageController {
 
                 // 휴대폰 번호 API 검증 (백엔드 검증)
                 Mono<Map<String, Object>> verifyMono = portOneService.verify(request.getImpUid());
-                PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono);
+                PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono).block();
 
 
                 // [수정된 부분] 1. 뷰로 돌아갈 때마다 쓸 수 있게 member 객체를 미리 조회해 둡니다.
