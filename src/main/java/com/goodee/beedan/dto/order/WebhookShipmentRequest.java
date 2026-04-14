@@ -2,8 +2,9 @@ package com.goodee.beedan.dto.order;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 public class WebhookShipmentRequest {  // shTraNo, shCarNo, quId, shHblNo 필요
     private Long quId;

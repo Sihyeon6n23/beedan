@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class SchedulerSettingDto {
-    
+
     // 1. 크롤링
     // 1.1 자동 크롤링 ON/OFF
     @JsonProperty("is_auto_crawling_enabled")

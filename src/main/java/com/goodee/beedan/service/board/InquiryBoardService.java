@@ -279,6 +279,7 @@ public class InquiryBoardService {
         }
 
         return BoardResultResponseDto.builder()
+                .actionMessage("문의가 등록되었습니다.")
                 .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .targetId(savedBoard.getBrdId())
                 .build();
@@ -329,6 +330,7 @@ public class InquiryBoardService {
         fileResults.addAll(fileDeleteResults);
 
         return BoardResultResponseDto.builder()
+                .actionMessage("문의가 수정되었습니다.")
                 .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .build();
     }
@@ -406,6 +408,7 @@ public class InquiryBoardService {
         );
 
         return BoardResultResponseDto.builder()
+                .actionMessage("답변이 등록되었습니다.")
                 .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .targetId(savedReplyBoard.getBrdId())
                 .build();
@@ -469,6 +472,7 @@ public class InquiryBoardService {
         );
 
         return BoardResultResponseDto.builder()
+                .actionMessage("답변이 수정되었습니다.")
                 .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .build();
     }

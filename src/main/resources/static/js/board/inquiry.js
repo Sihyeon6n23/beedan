@@ -322,27 +322,61 @@
     const uploadSuccess = Number(detailPage.dataset.resultUploadSuccess || 0);
     const failCount = Number(detailPage.dataset.resultFail || 0);
     const failReasons = (detailPage.dataset.resultFailReasons || '').split('||').map(v => v.trim()).filter(Boolean);
+    const actionMessage = (detailPage.dataset.actionMessage || '').trim();
 
-    const openBoardResultModal = (result, onConfirm = null) => {
-      if (!result) return;
-      const lines = [];
-      if (result.deleteSuccess > 0) lines.push(`기존 파일 삭제: ${result.deleteSuccess}건`);
-      if (result.uploadSuccess > 0) lines.push(`파일 업로드 성공: ${result.uploadSuccess}건`);
-      if (result.fail > 0) lines.push(`파일 처리 실패: ${result.fail}건`);
+    const openBoardResultModal = (actionMessage, result, onConfirm = null) => {
+        const lines = [];
 
-      openConfirmModal({
-        title: '처리 결과',
-        lead: lines.join('\n'),
-        description: result.failReason?.length ? result.failReason.join('\n') : '',
-        confirmText: '확인',
-        hideCancel: true,
-        onConfirm
-      });
-    };
+        // 파일 처리 요약은 부드러운 문구로 정리
+          if (result?.deleteSuccess > 0) {
+            lines.push(`첨부파일 삭제 ${result.deleteSuccess}건`);
+          }
+          if (result?.uploadSuccess > 0) {
+            lines.push(`첨부파일 업로드 ${result.uploadSuccess}건`);
+          }
+          if (result?.fail > 0) {
+            lines.push(`첨부파일 처리 실패 ${result.fail}건`);
+          }
 
-    if (deleteSuccess > 0 || uploadSuccess > 0 || failCount > 0) {
-      openBoardResultModal({ deleteSuccess, uploadSuccess, fail: failCount, failReason: failReasons });
-    }
+        // 실패 사유는 "파일명: 이유" 형태를 파일명 / 이유 두 줄로 나눠서 읽기 쉽게 정리
+        const formattedFailReasons = (result?.failReason || [])
+          .map((reason) => {
+            const text = String(reason || '').trim();
+            const separatorIndex = text.indexOf(':');
+
+            if (separatorIndex === -1) {
+              return `- ${text}`;
+            }
+
+            const fileName = text.slice(0, separatorIndex).trim();
+            const failReason = text.slice(separatorIndex + 1).trim();
+
+            return `- ${fileName}\n${failReason}`;
+          })
+          .join('\n\n');
+
+        openConfirmModal({
+          // 제목은 비워서 메인 메시지(actionMessage)가 바로 보이게
+          title: '',
+          // 문의/답변 등록·수정 결과를 메인 메시지로 보여줌
+          lead: actionMessage || '처리가 완료되었습니다.',
+          // 파일 처리 결과는 보조 정보로 내려서 본행위와 구분
+          description: [
+            lines.join(', '),
+            formattedFailReasons
+          ].filter(Boolean).join('\n\n'),
+          confirmText: '확인',
+          hideCancel: true,
+          onConfirm
+        });
+      };
+
+    if (actionMessage || deleteSuccess > 0 || uploadSuccess > 0 || failCount > 0) {
+        openBoardResultModal(
+          actionMessage,
+          { deleteSuccess, uploadSuccess, fail: failCount, failReason: failReasons }
+        );
+      }
 
     // 상태 변경 액션들
     const userCancelBtn = detailPage.querySelector('[data-inquiry-cancel-id]');
@@ -479,7 +513,7 @@
           });
           const result = await response.json();
           if (result.boardResultMessage) {
-            openBoardResultModal(result.boardResultMessage, refreshDetailPage);
+            openBoardResultModal(result.actionMessage, result.boardResultMessage, refreshDetailPage);
           } else {
             await refreshDetailPage();
           }
@@ -523,7 +557,7 @@
             });
             const result = await response.json();
             if (result.boardResultMessage) {
-              openBoardResultModal(result.boardResultMessage, refreshDetailPage);
+              openBoardResultModal(result.actionMessage, result.boardResultMessage, refreshDetailPage);
             } else {
               await refreshDetailPage();
             }

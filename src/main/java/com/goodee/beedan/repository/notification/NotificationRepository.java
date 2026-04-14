@@ -1,5 +1,6 @@
 package com.goodee.beedan.repository.notification;
 
+import com.goodee.beedan.config.exception.EntityNotFoundException;
 import com.goodee.beedan.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -43,4 +44,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void updateAllDelYnByMemId(@Param("memId") Long memId);
 
     int countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(Long memId);
+
+    default Notification getByIdOrThrow(Long notiId){
+        return findById(notiId).orElseThrow(()->new EntityNotFoundException("해당 알림을 찾을 수 없습니다. ID: " + notiId));
+    }
 }

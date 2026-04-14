@@ -80,6 +80,9 @@ public class InquiryBoardController {
         if (boardResultResponseDto.getBoardResultMessage() != null) {
             reAttr.addFlashAttribute("serverMessage", boardResultResponseDto.getBoardResultMessage());
         }
+        if (boardResultResponseDto.getActionMessage() != null) {
+            reAttr.addFlashAttribute("actionMessage", boardResultResponseDto.getActionMessage());
+        }
 
         return "redirect:/inquiry/detail?id=" + brdId;
     }
@@ -116,6 +119,9 @@ public class InquiryBoardController {
                 inquiryBoardService.updateInquiryBoard(brdId, userDetails.getMemberId(), inquiryBoardEditDto);
         if (boardResultResponseDto.getBoardResultMessage() != null) {
             reAttr.addFlashAttribute("serverMessage", boardResultResponseDto.getBoardResultMessage());
+        }
+        if (boardResultResponseDto.getActionMessage() != null) {
+            reAttr.addFlashAttribute("actionMessage", boardResultResponseDto.getActionMessage());
         }
 
         return "redirect:/inquiry/detail?id=" + brdId;
