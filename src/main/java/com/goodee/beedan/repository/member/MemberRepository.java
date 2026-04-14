@@ -1,6 +1,8 @@
 package com.goodee.beedan.repository.member;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.MemberBizStatus;
+import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.config.exception.EntityNotFoundException;
 import com.goodee.beedan.config.exception.MemberNotFoundException;
 import com.goodee.beedan.dto.member.MemberApproveDto;
@@ -9,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -45,9 +48,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m.memId, m.memNm, m.memBizNo, m.memCreDt, f.filePat, f.fileUuid) " +
             "FROM Member m " +
             "LEFT JOIN FileUpload f ON m.memId = f.brdRefNo AND f.brdRefTy = 'SIGNUP' AND f.fileDelYn = false " +
-            "WHERE m.memBizYn = false " +
+            "WHERE m.memBizStt = :bizStt " +
+            "AND m.memStt != :memStt " +
             "ORDER BY m.memCreDt DESC")
-    List<MemberApproveDto> findBizPendingMembersWithFiles();
+    List<MemberApproveDto> findBizPendingMembersWithFiles(
+            @Param("bizStt") String bizStt,
+            @Param("memStt") String memStt
+    );
   
     long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 

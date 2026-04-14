@@ -1,6 +1,7 @@
 package com.goodee.beedan.service.member;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.file.RefDto;
@@ -114,7 +115,7 @@ public class MemberService {
                 .memCeoPhn(memberForm.getCeoPhone())
                 .memCmpTel(memberForm.getCmpPhone())
                 .memStt(MemberStatus.ACTIVE.toString())
-                .memBizYn(false) // 사업자인증상태 미인증으로 가입
+                .memBizStt(MemberBizStatus.REQUEST.toString()) // 사업자인증상태 미인증으로 가입
                 .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
                 .memLgnTr(0L)
                 .memMbPhn(phoneVerificationDto.getPhoneNumber())
@@ -153,9 +154,9 @@ public class MemberService {
         return memberRepository.existsByMemLgnId(username);
     }
 
-    public void allowAccount(Long memberId) {
+    public void approveAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
-        member.approve();
+        member.bizApprove();
     }
 
 
@@ -163,9 +164,9 @@ public class MemberService {
         return memberRepository.existsByMemEml(email);
     }
 
-    public void inactiveAccount(Long memberId) {
+    public void rejectAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
-        member.inactive();
+        member.bizReject();
     }
 
     public void resetPassword(String token, PasswordResetDto resetDto) {
@@ -274,7 +275,16 @@ public class MemberService {
     }
 
     public List<MemberApproveDto> findBizPendingMembersWithFiles() {
-        return memberRepository.findBizPendingMembersWithFiles();
+        try {
+            List<MemberApproveDto> result = memberRepository.findBizPendingMembersWithFiles(
+                    MemberBizStatus.REQUEST.toString(),
+                    MemberStatus.WITHDRAWN.toString()
+            );
+            return result;
+        } catch (Exception e) {
+            log.error("여기서 터졌네요! 에러 원인: ", e); // 에러의 정체를 밝혀줍니다.
+            throw e;
+        }
     }
 
     private Boolean checkMemberAuthority(Long memId){

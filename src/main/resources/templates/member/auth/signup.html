@@ -242,7 +242,7 @@
   <script th:src="@{/js/auth/phone-certification.js}"></script>
   <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
   <script th:src="@{/js/file/fileUpload.js}"></script>
-  <script>
+  <script th:inline="javascript">
     const csrfToken = document.querySelector('meta[name="_csrf"]').content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
@@ -279,6 +279,9 @@
     let emailInput = document.getElementById("email");
     let emailCheckedInput = document.getElementById("emailCheckedInput");
     let emailAvailableDiv = document.getElementById("emailAvailable");
+
+    const PORTONE_STORE_ID = [[${portoneStoreId}]];
+    const PORTONE_CHANNEL_KEY = [[${portoneChannelKey}]];
 
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById('inquiry-write-form');
@@ -319,8 +322,6 @@
         lockInputFields([emailInput]);
       }
     });
-    const PORTONE_STORE_ID = [[${portoneStoreId}]];
-    const PORTONE_CHANNEL_KEY = [[${portoneChannelKey}]];
     certifyPhoneBtn.addEventListener('click', async () => {
       try {
         // 1. PortOne 본인인증 팝업 호출

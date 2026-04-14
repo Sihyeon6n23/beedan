@@ -1,6 +1,7 @@
 package com.goodee.beedan.entity;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.MemberStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -66,21 +67,20 @@ public class Member {
 
     private LocalDateTime memUpdPwDt;
 
-    private Boolean memBizYn;
+    private String memBizStt;
 
-
-    public void approve() {
-        if (this.memStt.equals(MemberStatus.ACTIVE.toString())) {
+    public void bizApprove() {
+        if (this.memStt.equals(MemberBizStatus.APPROVAL.toString())) {
             throw new IllegalArgumentException("이미 승인이 완료된 계정입니다.");
         }
-        this.memStt = MemberStatus.ACTIVE.toString();
+        this.memBizStt = MemberBizStatus.APPROVAL.toString();
     }
 
-    public void inactive() {
-        if (this.memStt.equals(MemberStatus.INACTIVE.toString())) {
-            throw new IllegalArgumentException("이미 비활성화가 완료된 계정입니다.");
+    public void bizReject() {
+        if (this.memStt.equals(MemberBizStatus.REJECT.toString())) {
+            throw new IllegalArgumentException("이미 반려된 계정입니다.");
         }
-        this.memStt = MemberStatus.INACTIVE.toString();
+        this.memBizStt = MemberBizStatus.REJECT.toString();
     }
 
     public void withdraw() {
