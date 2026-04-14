@@ -12,11 +12,14 @@ import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
+import java.net.http.HttpRequest;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -157,7 +161,14 @@ public class AuthController {
     }
 
     @GetMapping("/signin")
-    public String getSignIn() {
+    public String getSignIn(HttpServletRequest request,
+                            Model model) {
+        HttpSession session = request.getSession();
+
+        if (session != null && session.getAttribute("errorMessage") != null) {
+            model.addAttribute("errorMessage", session.getAttribute("errorMessage"));
+            session.removeAttribute("errorMessage");
+        }
         return "/member/auth/signin";
     }
 

@@ -392,7 +392,7 @@ public class FileService {
         if (Boolean.TRUE.equals(policy.getIsFileUploadAllowListEnabled())) {
             String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase().trim();
 
-            Set<String> allowSet = policy.getFileUploadAllowSet();
+            Set<String> allowSet = policy.getFileUploadAllowList();
 
             if (allowSet != null && !allowSet.isEmpty()) {
                 return allowSet.contains(ext);

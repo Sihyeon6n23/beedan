@@ -71,6 +71,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 세션 로그에 회원 ID 기록
         try {
+             // 고희권
             Object principal = authentication.getPrincipal();
             String sessionId = request.getSession().getId();
             if (principal instanceof MemberUserDetails) {
@@ -86,4 +87,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         super.onAuthenticationSuccess(request, response, authentication);
     }
+
+
 }
