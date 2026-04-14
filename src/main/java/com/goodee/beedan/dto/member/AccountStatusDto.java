@@ -32,14 +32,6 @@ public class AccountStatusDto {
         this.accountStatus = member.getMemStt();
     }
 
-    public boolean isLocked() {
-        return MemberStatus.LOCK.name().equals(this.accountStatus);
-    }
-
-    public long getRemainingCount(SecurityPolicyDto policy) {
-        return Math.max(0, policy.getMaxLoginFailureCount() - this.loginTryCount);
-    }
-
     public long getMinutesUntilUnlock() {
         if (this.accountLockDateTime == null) return 0;
         return Duration.between(LocalDateTime.now(), this.accountLockDateTime).toMinutes() + 1;

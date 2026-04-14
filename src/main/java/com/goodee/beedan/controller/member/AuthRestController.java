@@ -65,7 +65,7 @@ public class AuthRestController {
                         return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
                                 .body(Map.<String, Object>of(
                                         "success", false,
-                                        "message", "이미 가입된 전화번호입니다. 다른 번호를 사용하거나 아이디 찾기를 이용해주세요."
+                                        "message", "이미 가입된 전화번호입니다. 아이디 찾기를 이용해주세요."
                                 ));
                     }
 
