@@ -49,11 +49,11 @@
                      placeholder="••••••" required />
             </div>
           </div>
-          <div th:if="${param.error}" class="mb-6 p-4 bg-error-container/10 border border-error/20 rounded-lg">
-            <p class="text-[10px] font-bold tracking-widest text-error uppercase text-center">
+          <div th:if="${errorMessage != null}" class="mb-6 p-4 border bg-error-container/10 border-error/20">
+            <p class="text-[10px] font-bold tracking-widest text-error uppercase text-center" th:text="${errorMessage.errorType}">
               인증 실패
             </p>
-            <p class="text-[10px] text-error/80 text-center mt-1" th:text="${param.message}">
+            <p class="text-[10px] text-error/80 text-center mt-1" th:text="${errorMessage.message}">
               아이디 또는 비밀번호가 일치하지 않습니다.
             </p>
           </div>
