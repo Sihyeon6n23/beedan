@@ -1,5 +1,9 @@
 function openShipmentModal(shId) {
-    const modalBody = document.querySelector('#orderTrackingModal');
+    const modalOverlay = document.querySelector('#orderTrackingModal');
+    const modalBody = modalOverlay.querySelector('.modal-body');
+
+    modalOverlay.style.display = 'flex';
+
     modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
 
     fetch(`/api/shipments/${shId}/track`)
@@ -17,12 +21,11 @@ function openShipmentModal(shId) {
         });
 }
 
-
 function loadShipmentDetail(data) {
     if (!data) return '<div style="padding:20px; text-align:center;">데이터를 불러올 수 없습니다.</div>';
 
     const hasDomesticDetails = data.details && data.details.length > 0;    // 국내 배송 데이터 존재 여부 확인
-    const customsAccordionOpen = !hasDomesticDetails ? 'open' : '';  // 국내 배송이 없으면 통관 내역을 열어둠(open), 있으면 닫아둠
+    const customsAccordionOpen = hasDomesticDetails ? '' : 'open';  // 국내 배송이 없으면 통관 내역을 열어둠(open), 있으면 닫아둠
 
     let html = `
         <div class="tracking-info-summary">
@@ -79,15 +82,7 @@ function loadShipmentDetail(data) {
     }
 
     // 2. 국내 배송 내역
-    if (!hasDomesticDetails) {
-        if (!data.customsDetails || data.customsDetails.length === 0) {  // 국내 배송도 없고 통관 내역도 없는 경우
-            html += `
-                <div style="text-align: center; padding: 40px; color: #888; background: #fafafa; border-radius: 8px;">
-                    <p style="margin: 0;">아직 배송 정보가 등록되지 않았습니다.</p>
-                </div>
-            `;
-        }
-    } else {
+    if (hasDomesticDetails) {
         html += '<h4 style="font-size: 15px; margin-bottom: 15px; color: #333; padding-left: 5px;">국내 배송 현황</h4>';
         html += '<ul class="tracking-timeline-list" style="padding-left: 20px; list-style: none; margin: 0;">';
 
@@ -107,33 +102,16 @@ function loadShipmentDetail(data) {
                 </li>`;
         });
         html += '</ul>';
+    } else {
+         html += `
+            <div style="text-align: center; padding: 40px; color: #888; background: #fafafa; border-radius: 8px;">
+                <p style="margin: 0;">아직 배송 정보가 등록되지 않았습니다.</p>
+            </div>
+         `;
     }
 
     html += '</div>';
     return html;
-}
-
-function openShipmentModal(shId) {
-    const modal = document.querySelector('#orderTrackingModal');
-    const modalBody = modal.querySelector('.modal-body');
-
-    modal.style.display = 'flex';
-    modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
-
-    fetch(`/api/shipments/${shId}/track`)
-        .then(response => {
-            if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
-            return response.json();
-        })
-        .then(data => {
-
-            const html = loadShipmentDetail(data);
-            modalBody.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            modalBody.innerHTML = '<div style="text-align:center; padding:30px; color:red;">배송 정보를 가져오는데 실패했습니다.</div>';
-        });
 }
 
 function cancelOrder(ordId) {
@@ -160,5 +138,31 @@ function cancelOrder(ordId) {
 }
 
 function closeModal() {
-    document.querySelector('#orderTrackingModal').style.display = 'none';
+    const modalOverlay = document.querySelector('#orderTrackingModal');
+    if(modalOverlay) {
+        modalOverlay.style.display = 'none';
+    }
 }
+
+// Swiper 초기화 함수
+function initSwipers() {
+    const swipers = document.querySelectorAll('.mySwiper');
+    swipers.forEach((swiperElement, index) => {
+        new Swiper(swiperElement, {
+            loop: true,
+            navigation: {
+                nextEl: swiperElement.querySelector('.swiper-button-next'),
+                prevEl: swiperElement.querySelector('.swiper-button-prev'),
+            },
+            pagination: {
+                el: swiperElement.querySelector('.swiper-pagination'),
+                clickable: true,
+            },
+        });
+    });
+}
+
+// 페이지 로드 시 Swiper 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    initSwipers();
+});

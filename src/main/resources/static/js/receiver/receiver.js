@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // --- 1. 보안 및 UI 요소 설정 ---
     const csrfToken = document.querySelector('meta[name="_csrf"]').content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
@@ -7,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const formTitle = document.getElementById('formTitle');
     const btnOpenAddForm = document.getElementById('btnOpenAddForm');
 
-    // --- 2. 유틸리티 함수 (공통 로직) ---
     const getFetchOptions = (method, body = null) => {
         const options = {
             method: method,
@@ -35,9 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (btnOpenAddForm) btnOpenAddForm.style.display = 'block';
     }
 
-    // --- 3. 이벤트 리스너 등록 ---
-
-    // [추가] 버튼 클릭 시 폼 열기
     if (btnOpenAddForm) {
         btnOpenAddForm.addEventListener('click', function() {
             resetForm();
@@ -47,7 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // [취소] 버튼 클릭 시 폼 닫기
     const cancelBtns = ['btnCancel', 'btnReset'];
     cancelBtns.forEach(id => {
         const btn = document.getElementById(id);
@@ -60,34 +54,55 @@ document.addEventListener('DOMContentLoaded', function() {
         searchPostBtn.addEventListener('click', execDaumPostcode);
     }
 
-    // [저장하기] 버튼
+    // [전화번호 포매팅]
+    const phonInput = document.getElementById('rcPhn');
+    if (phonInput) {
+        phonInput.addEventListener('input', function() {
+            // 숫자만 입력 가능하도록 필터링
+            let value = this.value.replace(/[^0-9]/g, '');
+
+            // 최대 12자리까지만 허용 (4-4-4 형식)
+            if (value.length > 12) {
+                value = value.slice(0, 12);
+            }
+
+            // 포매팅: 4-4-4 형식
+            let formatted = '';
+            if (value.length <= 4) {
+                formatted = value;
+            } else if (value.length <= 8) {
+                formatted = value.slice(0, 4) + '-' + value.slice(4);
+            } else {
+                formatted = value.slice(0, 4) + '-' + value.slice(4, 8) + '-' + value.slice(8, 12);
+            }
+
+            this.value = formatted;
+        });
+    }
+
     const saveBtn = document.getElementById('btnSaveReceiver');
     if (saveBtn) {
         saveBtn.addEventListener('click', saveReceiver);
     }
 
-    // [목록 내 수정/삭제] - 이벤트 위임 (가장 중요: 클래스명 매칭)
     document.addEventListener('click', function(e) {
-        // .btn-delete 또는 .btn-edit 클래스를 가진 가장 가까운 요소를 찾음
         const btnDelete = e.target.closest('.btn-delete');
         const btnEdit = e.target.closest('.btn-edit');
 
         if (btnDelete) {
-            const rcId = btnDelete.getAttribute('data-id');
+            const rcId = btnDelete.dataset.id;
             if (rcId && confirm('정말 삭제하시겠습니까?')) {
                 deleteReceiver(rcId);
             }
         } else if (btnEdit) {
-            const rcId = btnEdit.getAttribute('data-id');
+            const rcId = btnEdit.dataset.id;
             if (rcId) {
                 loadReceiverDetail(rcId);
             }
         }
     });
 
-    // --- 4. 핵심 비동기 함수들 ---
 
-    // [초기 로드] 페이지 진입 시 목록 가져오기
     loadReceiverList();
 
     function loadReceiverList() {
@@ -102,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(err => console.error("전체 목록 조회 실패: " + err));
     }
 
-    // [조회] 수정 버튼 클릭 시 단건 데이터 로드 및 폼 열기
     function loadReceiverDetail(rcId) {
         fetch(`/api/receiver/${rcId}`)
         .then(res => {
@@ -120,13 +134,11 @@ document.addEventListener('DOMContentLoaded', function() {
             formSection.style.display = 'block';
             if (btnOpenAddForm) btnOpenAddForm.style.display = 'none';
 
-            // 폼 위치로 부드럽게 이동
             window.scrollTo({ top: formSection.offsetTop - 50, behavior: 'smooth' });
         })
         .catch(err => alert(err.message));
     }
 
-    // [저장] 등록(POST) 또는 수정(PATCH)
     function saveReceiver() {
         const rcId = document.getElementById('rcId').value;
         const data = {
@@ -157,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(err => alert(err.message));
     }
 
-    // [삭제] DELETE 요청
     function deleteReceiver(rcId) {
         fetch(`/api/receiver/${rcId}`, getFetchOptions('DELETE'))
         .then(res => {
@@ -171,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(err => alert(err.message));
     }
 
-    // [렌더링] HTML 목록 생성 및 주입
     function renderReceiverList(list) {
         const listBody = document.getElementById('receiver-body');
         if (!listBody) return;

@@ -1,7 +1,5 @@
 package com.goodee.beedan.repository.member;
 
-import com.goodee.beedan.common.constant.MemberAuthority;
-import com.goodee.beedan.config.exception.EntityNotFoundException;
 import com.goodee.beedan.config.exception.MemberNotFoundException;
 import com.goodee.beedan.dto.member.MemberApproveDto;
 import com.goodee.beedan.entity.Member;
@@ -22,7 +20,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByMemNmAndMemEml(String MemNm, String MemEml);
     Optional<Member> findByMemLgnIdAndMemEml(String MemLgnId, String MemEml);
 
-    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER'")
+    @Query("SELECT m FROM Member m " +
+            "WHERE m.memAut = 'USER' " +
+            "AND m.memStt NOT IN ('WITHDRAWN', 'PENDING')")
     Page<Member> findAllUsers(Pageable pageable);
 
     @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status")

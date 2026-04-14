@@ -31,9 +31,6 @@ public class UnipassService {
         return fetchUnipassRawData(hblNo, blYear);
     }
 
-    public String getCargoStatusForScheduler(String hblNo, String blYear) {
-        return fetchUnipassRawData(hblNo, blYear); // 스케줄러에서는 캐시를 사용하지 않도록 직접 호출
-    }
 
     private String fetchUnipassRawData(String hblNo, String blYear) {
         RestTemplate restTemplate = new RestTemplate();
