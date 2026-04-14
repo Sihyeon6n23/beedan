@@ -40,11 +40,22 @@ public class OrderService {
     private final StockRepository stockRepository;
 
     private final ThumbnailRedisService thumbnailRedisService;
+    private static final String THUMB_URL = "/api/images/thumb/";
 
     public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
         memberRepository.getByIdOrThrow(memId);
         Page<Order> orderList = orderRepository.findByMember_MemIdOrderByOrdBaseCreDtDesc(memId, pageable);
         return orderList.map(this::mapToOrderDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderDto> getListByAdmin(Long adminMemId, Pageable pageable) {
+        Member member = memberRepository.getByIdOrThrow(adminMemId);
+        member.validateAdmin();
+
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+
+        return orderPage.map(this::mapToOrderDto);
     }
 
     @Transactional(readOnly = true)
@@ -194,7 +205,7 @@ public class OrderService {
 
             summaryName = (totalItems > 1) ? firstItemName + " 외 " + (totalItems - 1) + "건" : firstItemName;
 
-            if (firstItem.getOrdItmThumbKey() != null) repThumbUrl = "/api/images/thumb/" + firstItem.getOrdItmThumbKey();
+            if (firstItem.getOrdItmThumbKey() != null) repThumbUrl = THUMB_URL + firstItem.getOrdItmThumbKey();
 
 
             orderItemDtos = orderItems.stream()
@@ -202,7 +213,7 @@ public class OrderService {
                             .ordItmNm(item.getOrdItmNm())
                             .ordItmQn(item.getOrdItmQn())
                             .ordItmThumbKey(item.getOrdItmThumbKey())
-                            .ordItmThumbUrl(item.getOrdItmThumbKey() != null ? "/api/images/thumb/" + item.getOrdItmThumbKey() : null)
+                            .ordItmThumbUrl(item.getOrdItmThumbKey() != null ? THUMB_URL + item.getOrdItmThumbKey() : null)
                             .build())
                     .toList();
         }
@@ -234,10 +245,15 @@ public class OrderService {
 
     private OrderDto.ShipmentResponseDto mapToShipmentDto(Shipment shipment) {
         List<OrderDto.ShipmentItemResponseDto> shipmentItemDtos = shipment.getShipmentItems().stream()
-                .map(shItem -> OrderDto.ShipmentItemResponseDto.builder()
-                        .ordItmNm(shItem.getOrdItmNm()) // ShipmentItem 엔티티의 상품명 바로 사용
-                        .shQn(shItem.getShQn())         // ShipmentItem 엔티티의 배송 수량 바로 사용
-                        .build())
+                .map(shItem -> {
+                    String thumbKey = (shItem.getOrderItem() != null) ? shItem.getOrderItem().getOrdItmThumbKey() : null;
+
+                    return OrderDto.ShipmentItemResponseDto.builder()
+                            .ordItmNm(shItem.getOrdItmNm())
+                            .shQn(shItem.getShQn())
+                            .ordItmThumbUrl(thumbKey != null ? THUMB_URL + thumbKey : null)
+                            .build();
+                })
                 .toList();
 
         return OrderDto.ShipmentResponseDto.builder()
@@ -253,16 +269,6 @@ public class OrderService {
                 .shCusStt(shipment.getShCusStt())
                 .shipmentItems(shipmentItemDtos)
                 .build();
-    }
-
-    @Transactional(readOnly = true)
-    public Page<OrderDto> getListByAdmin(Long adminMemId, Pageable pageable) {
-        Member member = memberRepository.getByIdOrThrow(adminMemId);
-        member.validateAdmin();
-
-        Page<Order> orderPage = orderRepository.findAll(pageable);
-
-        return orderPage.map(this::mapToOrderDto);
     }
 
 }

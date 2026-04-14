@@ -35,7 +35,7 @@ sonarqube {
 		property "sonar.projectKey", "beedan"       // 프로젝트 고유 키
 		property "sonar.projectName", "beedan"    // 표시될 이름
 		property "sonar.host.url", "http://localhost:9000" // 소나큐브 서버 주소
-		property "sonar.token", "squ_56a9dc209b09f941d507cbfaf31ed496f9f45973"
+		property "sonar.token", project.findProperty('SONAR_TOKEN') ?: ""
 
 		property "sonar.sourceEncoding", "UTF-8"
 

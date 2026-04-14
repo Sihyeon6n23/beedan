@@ -1,4 +1,10 @@
 {
+  "gradeResolveEnabled" : false,
+  "exchangeRateEnabled" : false,
+  "chatAutoCloseEnabled" : false,
+  "shipmentSyncEnabled" : true,
+  "autoCrawlingEnabled" : false,
+  "unipassEnabled" : false,
   "is_auto_crawling_enabled" : false,
   "auto_crawling_start_dt" : "2026-04-01T10:00",
   "auto_crawling_interval" : null,
@@ -23,5 +29,9 @@
   "is_unipass_enabled" : false,
   "unipass_start_dt" : "2026-04-13T04:21",
   "unipass_interval" : null,
-  "last_unipass_run_time" : null
+  "last_unipass_run_time" : null,
+  "is_shipment_sync_enabled" : true,
+  "shipment_sync_start_dt" : "2026-04-14T15:46",
+  "shipment_sync_interval" : "1",
+  "last_shipment_sync_run_time" : "2026-04-14 16:50:36"
 }

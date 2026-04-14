@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
           ~{fragments/sidebar :: frame('ORDER', 'ORDER MANAGEMENT', ~{::sidebar})},
@@ -138,18 +138,18 @@
 
                     <a th:if="${orders.hasPrevious()}"
                        class="admin-chat-page-button admin-chat-page-button--wide"
-                       th:href="@{/admin/order/list(page=${orders.number - 1})}">Prev</a>
+                       th:href="@{/order/list(page=${orders.number - 1})}">Prev</a>
                     <span th:unless="${orders.hasPrevious()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
 
                     <th:block th:if="${totalPages > 0}">
                         <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}" class="admin-chat-page-button"
                            th:classappend="${pageNumber == orders.number} ? ' is-current' : ''"
                            th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
-                           th:href="@{/admin/order/list(page=${pageNumber})}">01</a>
+                           th:href="@{/order/list(page=${pageNumber})}">01</a>
                     </th:block>
 
                     <a th:if="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide"
-                       th:href="@{/admin/order/list(page=${orders.number + 1})}">Next</a>
+                       th:href="@{/order/list(page=${orders.number + 1})}">Next</a>
                     <span th:unless="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
                 </div>
             </footer>

@@ -34,6 +34,11 @@
                    th:classappend="${activeSub == 'sns'} ? ' sidebar-menu__child-link--current' : ''">
                     SNS 로그인 연동
                 </a>
+                <a th:href="@{/receiver}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'receiver'} ? ' sidebar-menu__child-link--current' : ''">
+                    배송지 정보 추가
+                </a>
             </div>
         </div>
 

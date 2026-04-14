@@ -1,10 +1,8 @@
 package com.goodee.beedan.config.security;
 
-import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.entity.Member;
 import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -12,7 +10,6 @@ import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 

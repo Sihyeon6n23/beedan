@@ -1,6 +1,5 @@
 package com.goodee.beedan.entity;
 
-import com.goodee.beedan.common.constant.ShipmentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

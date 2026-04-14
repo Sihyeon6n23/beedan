@@ -11,7 +11,8 @@ import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.ShipmentRepository;
-import com.goodee.beedan.scheduler.Order.UnipassScheduler;
+import com.goodee.beedan.scheduler.shipping.ShipmentScheduler;
+import com.goodee.beedan.scheduler.shipping.UnipassScheduler;
 import com.goodee.beedan.service.admin.AdminMemberService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.order.TrackingService;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@lombok.extern.slf4j.Slf4j
 @RestController
 @RequestMapping("/api/admin/member")
 @RequiredArgsConstructor
@@ -41,6 +41,7 @@ public class AdminMemberApiController {
 
     private final ShipmentRepository shipmentRepository;
     private final UnipassScheduler unipassScheduler;
+    private final ShipmentScheduler shipmentScheduler;
 
     @GetMapping("/list")
     public ResponseEntity<MemberListResponse> getMemberList(
@@ -66,7 +67,7 @@ public class AdminMemberApiController {
     public ResponseEntity<Page<OrderDto>> getMemberOrders(
             @PathVariable Long memId,
             @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<OrderDto> orderList = orderService.getOrderList(memId, pageable);
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId,pageable);
         return ResponseEntity.ok(orderList);
     }
 
@@ -81,7 +82,7 @@ public class AdminMemberApiController {
 
         orderService.updateOrderStatus(ordId, ordStt);
 
-        Page<OrderDto> orderList = orderService.getOrderList(memId, pageable);
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId,pageable);
         return ResponseEntity.ok(orderList);
     }
 
@@ -102,7 +103,7 @@ public class AdminMemberApiController {
 
     @PostMapping("/shipment/{shId}/demo-progress")
     public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId) {
-        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+        Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
         ShipmentStatus nextStatus = switch (shipment.getShStt()) {
             case PREPARING -> ShipmentStatus.SHIPPING;
@@ -124,4 +125,9 @@ public class AdminMemberApiController {
         return ResponseEntity.ok("통관 정보 수동 동기화가 완료되었습니다.");
     }
 
+    @PostMapping("/shipment/sync-shipment")
+    public ResponseEntity<String> syncShipmentManually() {
+        shipmentScheduler.syncShipmentStatus();
+        return ResponseEntity.ok("배송 상태 수동 동기화가 완료되었습니다.");
+    }
 }
