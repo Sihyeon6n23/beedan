@@ -52,56 +52,30 @@ public class AdminQuoteController {
     private final QuoteShipFeeService quoteShipFeeService;
     private final BuyerGradePolicyRepository buyerGradePolicyRepository;
     private final com.goodee.beedan.repository.quote.ShippingRateRepository shippingRateRepository;
+    private final com.goodee.beedan.repository.quote.NegotiationRepository negotiationRepository;
 
     @GetMapping("/negotiation/list")
     public String negotiationList(Model model,
                                   @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
-        Long myId = userDetails != null ? userDetails.getMemberId() : null;
-        List<Negotiation> ngList = negotiationService.findAll();
-
+        // 전체 협상 + 견적 수 + 미열람 수 + 회원 정보 (1 쿼리)
         List<Map<String, Object>> negotiations = new ArrayList<>();
-        for (Negotiation ng : ngList) {
+        for (Object[] row : negotiationRepository.findAllNegotiationsWithSummaryForAdmin()) {
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("ngId", ng.getNgId());
-            item.put("ngNm", ng.getNgNm());
-            item.put("ongoing", ng.isOngoing());
-            item.put("ngCreDt", ng.getNgCreDt());
-            item.put("ngEndDt", ng.getNgEndDt());
+            item.put("ngId", (Long) row[0]);
+            item.put("ngNm", (String) row[1]);
+            item.put("ngCreDt", row[2]);
+            item.put("ngEndDt", row[3]);
+            item.put("ongoing", row[3] == null);
 
-            // 유효 견적 목록 (상대방 TEMP_SAVE 제외)
-            List<QuoteBase> quotes = quoteBaseRepository.findAllActiveByNgId(ng.getNgId(), myId);
-
-            // 유효 견적이 0개면 목록에서 제외
-            if (quotes.isEmpty()) continue;
-
-            item.put("quoteCount", quotes.size());
-
-            // 미열람 견적 존재 여부
-            boolean hasUnread = quotes.stream().anyMatch(q -> q.getQuAdOpYn() == null || !q.getQuAdOpYn());
-            item.put("hasUnread", hasUnread);
-
-            // 미열람 견적 수 및 ID 목록
-            List<Long> unreadQuIds = quotes.stream()
-                    .filter(q -> q.getQuAdOpYn() == null || !q.getQuAdOpYn())
-                    .map(QuoteBase::getQuId)
-                    .collect(java.util.stream.Collectors.toList());
-            item.put("unreadCount", unreadQuIds.size());
-            item.put("unreadQuIds", unreadQuIds.stream()
-                    .map(String::valueOf)
-                    .collect(java.util.stream.Collectors.joining(",")));
-
-            // 최근 견적 업데이트 시간
-            LocalDateTime latestUpdate = quotes.stream()
-                    .map(QuoteBase::getQuUpdDt)
-                    .filter(java.util.Objects::nonNull)
-                    .max(LocalDateTime::compareTo)
-                    .orElse(ng.getNgCreDt());
-            item.put("latestUpdate", latestUpdate);
-
-            // 회원 정보
-            Member member = memberRepository.findById(ng.getMemId()).orElse(null);
-            item.put("memNm", member != null ? member.getMemNm() : "-");
-            item.put("memBizTtl", member != null ? member.getMemBizTtl() : "-");
+            long quoteCount = ((Number) row[4]).longValue();
+            long unreadCount = ((Number) row[5]).longValue();
+            item.put("quoteCount", quoteCount);
+            item.put("hasUnread", unreadCount > 0);
+            item.put("unreadCount", unreadCount);
+            item.put("unreadQuIds", ""); // 개별 ID는 더 이상 필요 없음 (네고 디테일에서 개별 처리)
+            item.put("latestUpdate", row[6] != null ? row[6] : row[2]);
+            item.put("memNm", row[7] != null ? (String) row[7] : "-");
+            item.put("memBizTtl", row[8] != null ? (String) row[8] : "-");
 
             negotiations.add(item);
         }
@@ -171,33 +145,31 @@ public class AdminQuoteController {
     public String quoteList(@RequestParam(required = false) Long ngId, Model model,
                             @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         Long myId = userDetails != null ? userDetails.getMemberId() : null;
-        // ngId가 있으면 해당 협상의 견적만, 없으면 전체 (상대방 TEMP_SAVE 제외)
-        List<QuoteBase> quoteList = (ngId != null)
-                ? quoteBaseRepository.findAllActiveByNgId(ngId, myId)
-                : quoteBaseRepository.findAllActive(myId);
+        // 견적 + 협상명 조인 조회 (1 쿼리)
+        List<Object[]> rows = (ngId != null)
+                ? quoteBaseRepository.findAllActiveWithNgNmByNgIdForAdmin(ngId)
+                : quoteBaseRepository.findAllActiveWithNgNmForAdmin();
 
         List<Map<String, Object>> quotes = new ArrayList<>();
-        for (QuoteBase qb : quoteList) {
+        for (Object[] row : rows) {
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("quId", qb.getQuId());
-            item.put("quCd", qb.getQuCd());
-            try {
-                Negotiation ng = negotiationService.findById(qb.getNgId());
-                item.put("ngNm", ng.getNgNm());
-            } catch (Exception e) {
-                item.put("ngNm", "");
-            }
-            item.put("quStt", qb.getQuStt().name());
-            item.put("quOpYn", qb.getQuAdOpYn() != null && qb.getQuAdOpYn());
-            item.put("quCreDt", qb.getQuCreDt());
-            item.put("quUpdDt", qb.getQuUpdDt());
+            item.put("quId", (Long) row[0]);
+            QuoteStatus quStt = (QuoteStatus) row[1];
+            Boolean quAdOpYn = (Boolean) row[2];
+            item.put("quCd", (String) row[3]);
+            item.put("ngNm", row[8] != null ? (String) row[8] : "");
+            item.put("quStt", quStt.name());
+            item.put("quOpYn", quAdOpYn != null && quAdOpYn);
+            item.put("quCreDt", row[4]);
+            item.put("quUpdDt", row[5]);
 
-            // 표시용 상태
-            String displayStt = qb.getQuStt().name();
-            if (qb.getQuStt() == QuoteStatus.SUBMITTED && myId != null) {
-                boolean sender = myId.equals(qb.getQuSid()) || (qb.getQuSid() == null && myId.equals(qb.getQuRid()));
+            String displayStt = quStt.name();
+            if (quStt == QuoteStatus.SUBMITTED && myId != null) {
+                Long quSid = (Long) row[6];
+                Long quRid = (Long) row[7];
+                boolean sender = myId.equals(quSid) || (quSid == null && myId.equals(quRid));
                 if (!sender) {
-                    displayStt = (qb.getQuAdOpYn() != null && qb.getQuAdOpYn()) ? "CONFIRMED" : "UNREAD";
+                    displayStt = (quAdOpYn != null && quAdOpYn) ? "CONFIRMED" : "UNREAD";
                 }
             }
             item.put("displayStt", displayStt);

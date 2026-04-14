@@ -27,4 +27,8 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
     // 페이지별 평균 체류 시간 + 조회수
     @Query("SELECT pv.pvPage, AVG(pv.pvDwellSec), COUNT(pv) FROM PageView pv WHERE pv.pvDwellSec IS NOT NULL AND pv.pvCreDt BETWEEN :from AND :to GROUP BY pv.pvPage ORDER BY AVG(pv.pvDwellSec) DESC")
     List<Object[]> avgDwellByPage(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    // 상품별 조회수 + 상품명 JOIN (N+1 제거)
+    @Query("SELECT pv.pvRefId, COUNT(pv), s.stNm, s.stPurCnt FROM PageView pv JOIN Stock s ON pv.pvRefId = s.stId WHERE pv.pvPage = 'STOCK_DETAIL' AND pv.pvCreDt BETWEEN :from AND :to GROUP BY pv.pvRefId, s.stNm, s.stPurCnt ORDER BY COUNT(pv) DESC")
+    List<Object[]> countStockViewsWithName(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

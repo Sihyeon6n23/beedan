@@ -51,6 +51,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
   
     long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 
+    // 월별 가입자 수 (GROUP BY)
+    @Query("SELECT MONTH(m.memCreDt), COUNT(m) FROM Member m WHERE m.memCreDt BETWEEN :from AND :to GROUP BY MONTH(m.memCreDt)")
+    List<Object[]> countGroupByMonth(@org.springframework.data.repository.query.Param("from") java.time.LocalDateTime from,
+                                     @org.springframework.data.repository.query.Param("to") java.time.LocalDateTime to);
+
     boolean existsByMemEml(String memEml);
 
     default Member getByIdOrThrow(Long memId) {

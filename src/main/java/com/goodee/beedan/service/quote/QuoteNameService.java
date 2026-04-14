@@ -25,12 +25,13 @@ public class QuoteNameService {
      * AI로 협상 이름 생성
      * @param companyName 고객사명
      * @param productNames 상품명 목록
-     * @return 예: "비단물산_에센셜티셔츠외3"
+     * @return 예: "(주)비단물산 에센셜티셔츠외3건"
      */
     public String generateName(String companyName, List<String> productNames) {
         try {
             String prompt = "고객사명은 '" + companyName + "'이고 상품은 " + productNames + "입니다. " +
-                    "20자 이내로 '고객사명_대표상품외N건' 형식의 견적 이름을 만들어주세요. " +
+                    "20자 이내로 '고객사명 대표상품외N건' 형식의 견적 이름을 만들어주세요. " +
+                    "언더바(_)는 사용하지 말고 공백으로 구분하세요. " +
                     "대표상품은 첫 번째 상품명을 짧게 줄여주세요. " +
                     "상품이 1개면 '외N건'은 빼주세요. " +
                     "반드시 이름만 응답하세요. 따옴표나 설명 없이 이름만.";
@@ -51,8 +52,8 @@ public class QuoteNameService {
                     .path("content").path("parts").get(0)
                     .path("text").asText().trim();
 
-            // 혹시 따옴표가 포함되면 제거
-            name = name.replace("\"", "").replace("'", "").trim();
+            // 따옴표, 언더바 제거
+            name = name.replace("\"", "").replace("'", "").replace("_", " ").trim();
 
             log.info("AI 견적 이름 생성: {}", name);
             return name;
@@ -60,7 +61,7 @@ public class QuoteNameService {
         } catch (Exception e) {
             log.error("AI 견적 이름 생성 실패: {}", e.getMessage());
             // 실패 시 기본 이름
-            String fallback = companyName + "_" + productNames.get(0);
+            String fallback = companyName + " " + productNames.get(0);
             if (productNames.size() > 1) {
                 fallback += "외" + (productNames.size() - 1);
             }
