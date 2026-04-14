@@ -76,7 +76,6 @@ public class MemberService {
         Long accountLockDurationMinutes = policy.getAccountLockDurationMinutes();
 
         // 시도 횟수 도달시 잠금 로직
-        // 비활성화 계정은 왜 잠기는것..
         if (loginTryCount < maxLoginFailureCount) {
             member.setMemLgnTr(++loginTryCount);
             accountStatus.setLoginTryCount(loginTryCount);
@@ -84,9 +83,11 @@ public class MemberService {
 
         if (loginTryCount.equals(maxLoginFailureCount)) {
             LocalDateTime now = LocalDateTime.now();
-            member.setMemLocDt(now.plusMinutes(accountLockDurationMinutes));
+            LocalDateTime unlockTime = now.plusMinutes(accountLockDurationMinutes);
+            member.setMemLocDt(unlockTime);
             member.setMemStt(MemberStatus.LOCK.toString());
             accountStatus.setAccountStatus(MemberStatus.LOCK.toString());
+            accountStatus.setAccountLockDateTime(unlockTime);
         }
 
         return accountStatus;
@@ -112,7 +113,8 @@ public class MemberService {
                 .memBizDtAdr(memberForm.getCompanyAddressDetail())
                 .memCeoPhn(memberForm.getCeoPhone())
                 .memCmpTel(memberForm.getCmpPhone())
-                .memStt(MemberStatus.PENDING.toString()) // 가입요청상태로 회원가입 요청
+                .memStt(MemberStatus.ACTIVE.toString())
+                .memBizYn(false) // 사업자인증상태 미인증으로 가입
                 .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
                 .memLgnTr(0L)
                 .memMbPhn(phoneVerificationDto.getPhoneNumber())
@@ -271,8 +273,8 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public List<MemberApproveDto> findPendingMembersWithFiles() {
-        return memberRepository.findPendingMembersWithFiles();
+    public List<MemberApproveDto> findBizPendingMembersWithFiles() {
+        return memberRepository.findBizPendingMembersWithFiles();
     }
 
     private Boolean checkMemberAuthority(Long memId){
@@ -280,4 +282,7 @@ public class MemberService {
         return member.getMemAut().equals(MemberAuthority.ADMIN);
     }
 
+    public boolean isDuplicatedPhoneNumber(String phoneNumber) {
+        return memberRepository.existsByMemMbPhn(phoneNumber);
+    }
 }

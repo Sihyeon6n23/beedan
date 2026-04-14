@@ -42,13 +42,49 @@ public class AuthRestController {
     }
 
     // impUid반환함.
+    // AuthRestController.java 수정 및 추가
+
     @PostMapping("/phone-certification")
-    public Mono<ResponseEntity<Map<String, Object>>> postPhoneVerification (
+    public Mono<ResponseEntity<Map<String, Object>>> postPhoneVerification(
             @RequestBody Map<String, String> body) {
+
         String impUid = body.get("impUid");
-        return portOneService.verify(impUid)
-                .map(resultMap -> ResponseEntity.ok(resultMap))
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+        if (impUid == null || impUid.isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body(Map.of("message", "인증 정보가 없습니다.")));
+        }
+        Mono<Map<String,Object>> portOneResult = portOneService.verify(impUid);
+        // 1. PortOne에서 정보 조회
+        return portOneService.MonoToPhoneVerificationDto(portOneResult)
+                .map(dto -> {
+                    String phoneNumber = dto.getPhoneNumber();
+
+                    // 2. DB 중복 체크 (MemberService 활용)
+                    boolean isDuplicated = memberService.isDuplicatedPhoneNumber(phoneNumber);
+
+                    if (isDuplicated) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
+                                .body(Map.<String, Object>of(
+                                        "success", false,
+                                        "message", "이미 가입된 전화번호입니다. 다른 번호를 사용하거나 아이디 찾기를 이용해주세요."
+                                ));
+                    }
+
+                    // 3. 성공 시 응답 (이름과 번호 일부를 내려주어 프론트에서 표시 가능)
+                    return ResponseEntity.ok(Map.<String, Object>of(
+                            "success", true,
+                            "name", dto.getName(),
+                            "phone", phoneNumber,
+                            "message", "인증에 성공하였습니다."
+                    ));
+                })
+                .onErrorResume(e -> {
+                    log.error("본인인증 검증 중 오류 발생: ", e);
+                    return Mono.just(ResponseEntity.internalServerError()
+                            .body(Map.<String, Object>of(  // <--- 여기 타입을 명시!
+                                    "success", false,
+                                    "message", "인증 서버와의 통신에 실패했습니다."
+                            )));
+                });
     }
 
     @PostMapping("/idChecked")

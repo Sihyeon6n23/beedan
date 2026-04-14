@@ -2,6 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="sidebar(activeMain, activeSub)">
     <div class="sidebar-scope">
+        <a th:href="@{/root/dashboard}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'dashboard'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">dashboard</span>
+            <span>통계 대시보드</span>
+        </a>
+
         <a th:href="@{/root/security}"
            class="sidebar-menu__link"
            th:classappend="${activeMain == 'security'} ? ' sidebar-menu__link--current' : ''">

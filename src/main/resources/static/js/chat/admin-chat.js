@@ -10,11 +10,13 @@
   var adminMessageInput = document.querySelector("[data-admin-message-input]");
   var adminMessageSendButton = document.querySelector("[data-admin-message-send]");
   var adminMessageList = document.querySelector("[data-admin-message-list]");
+  var qrApiBaseUrl = detailPage ? (detailPage.dataset.qrApiBaseUrl || "") : "";
   var adminImageTrigger = document.querySelector("[data-admin-image-trigger]");
   var adminImageInput = document.querySelector("[data-admin-image-input]");
   var adminMessageScrollBody = document.querySelector(".admin-chat-detail-body");
   var pendingDetailUrl = "";
   var pendingRoomId = "";
+  var isSendingAdminMessage = false;
   var detailRoomId = detailPage ? detailPage.dataset.roomId : "";
   var detailAdminName = detailPage ? detailPage.dataset.adminName : "담당자";
   var detailMemberBizName = detailPage ? detailPage.dataset.memberBizName : "상호명 미등록";
@@ -28,6 +30,7 @@
   var feedbackBox = document.querySelector("[data-admin-chat-feedback]");
   var feedbackText = document.querySelector("[data-admin-chat-feedback-text]");
   var feedbackTimer = null;
+  var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -395,11 +398,11 @@
     }
 
     var qrUrl = img.dataset.qrUrl;
-    if (!qrUrl) {
-      return;
+    if (!qrUrl || !qrApiBaseUrl) {
+        return;
     }
 
-    img.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(qrUrl);
+    img.src = qrApiBaseUrl + encodeURIComponent(qrUrl);
   }
 
   function hydrateExistingAdminQuoteCards() {
@@ -689,7 +692,7 @@
   // 관리자가 입력한 메시지를 전송 비동기 요청(서버에 저장 요청)
   function sendAdminChatMessage() {
     // 입력 메시지는 REST로 저장 요청하고, 실제 화면 확정은 WebSocket 수신 결과로 처리
-    if (!detailRoomId || !adminMessageInput || !detailCanWrite) {
+    if (!detailRoomId || !adminMessageInput || !detailCanWrite || isSendingAdminMessage) {
       return;
     }
 
@@ -698,6 +701,11 @@
       adminMessageInput.focus();
       return;
     }
+
+    // 서버 응답을 기다리지 않고 입력창을 먼저 비워 연속 입력 시 체감 지연을 줄임
+    adminMessageInput.value = "";
+    adminMessageInput.focus();
+    isSendingAdminMessage = true;
 
     var pendingMessageElement = appendPendingAdminMessage(content);
 
@@ -713,18 +721,24 @@
       })
     }).then(function (response) {
       if (!response.ok) {
-        throw new Error("메시지 전송 요청에 실패했습니다.");
+        throw new Error("Failed to send admin chat message.");
       }
 
       return response.json();
-    }).then(function () {
-      adminMessageInput.value = "";
-      adminMessageInput.focus();
     }).catch(function (error) {
       if (pendingMessageElement) {
         pendingMessageElement.remove();
       }
+
+      // 전송 실패 시 사용자가 다시 보낼 수 있게 입력값을 복구
+      if (adminMessageInput && !adminMessageInput.value.trim()) {
+        adminMessageInput.value = content;
+        adminMessageInput.focus();
+      }
+
       console.error(error);
+    }).finally(function () {
+      isSendingAdminMessage = false;
     });
   }
 
@@ -788,7 +802,7 @@
 
       // WebSocket/STOMP 클라이언트 생성
       stompClient = new StompJs.Client({
-        brokerURL: "ws://" + window.location.host + "/ws",
+        brokerURL: wsProtocol + window.location.host + "/ws",
         reconnectDelay: 5000,
         debug: function () {},
 

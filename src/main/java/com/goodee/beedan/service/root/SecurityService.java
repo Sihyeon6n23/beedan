@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @Service
@@ -19,14 +18,29 @@ import java.io.IOException;
 public class SecurityService {
     private final ObjectMapper objectMapper;
     private SecurityPolicyDto cachedPolicy;
+
+    // 주의: 아래 '💡 실무 팁'을 꼭 읽어주세요!
     private final String filePath = "src/main/resources/security-policy.json";
 
     @PostConstruct
-    public void init() throws IOException {
+    public void init() {
         File file = new File(filePath);
-        if (file.exists()) {
-            this.cachedPolicy = objectMapper.readValue(file, SecurityPolicyDto.class);
-        } else {
+        try {
+            if (file.exists()) {
+                this.cachedPolicy = objectMapper.readValue(file, SecurityPolicyDto.class);
+                log.info("기존 보안 정책 파일을 로드했습니다.");
+            } else {
+                File parentDir = file.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+
+                this.cachedPolicy = new SecurityPolicyDto();
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, this.cachedPolicy);
+                log.info("새로운 보안 정책 파일을 생성했습니다: {}", file.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            log.error("보안 정책 초기화 중 오류 발생: {}", e.getMessage(), e);
             this.cachedPolicy = new SecurityPolicyDto();
         }
     }
@@ -37,8 +51,14 @@ public class SecurityService {
 
     public void saveSecurityPolicyDto(SecurityPolicyDto secPolDto) throws IOException {
         File file = new File(filePath);
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, secPolDto);
 
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, secPolDto);
         this.cachedPolicy = secPolDto;
+        log.info("보안 정책이 성공적으로 저장되었습니다.");
     }
 }

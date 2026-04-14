@@ -43,6 +43,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
+    private static final String REDIRECT_SIGNIN = "redirect:/auth/signin";
+
     private final QuoteBaseService quoteBaseService;
     private final QuoteDetailService quoteDetailService;
     private final QuoteInfoRepository quoteInfoRepository;
@@ -57,30 +59,22 @@ public class PaymentController {
     private final com.goodee.beedan.repository.quote.QuoteBaseRepository quoteBaseRepository;
     private final com.goodee.beedan.service.quote.QuoteNotificationService quoteNotificationService;
     private final OrderService orderService;
+    private final com.goodee.beedan.repository.pageview.PageViewRepository pageViewRepository;
 
     @Value("${toss.payments.secret-key}")
     private String tossSecretKey;
 
     @GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails, Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
-        List<Payment> payments = paymentRepository.findAllByMemIdOrderByPyPdAtDesc(userDetails.getMemberId());
-
-        // 각 결제에 견적 코드 추가
+        // 결제 + 견적코드 + 협상명 조인 조회 (1 쿼리)
         List<Map<String, Object>> paymentList = new java.util.ArrayList<>();
-        for (Payment p : payments) {
+        for (Object[] row : paymentRepository.findAllWithQuoteInfoByMemId(userDetails.getMemberId())) {
             Map<String, Object> item = new java.util.LinkedHashMap<>();
-            item.put("payment", p);
-            try {
-                QuoteBase qb = quoteBaseService.findById(p.getQuId());
-                item.put("quCd", qb.getQuCd());
-                Negotiation ng = negotiationService.findById(qb.getNgId());
-                item.put("ngNm", ng.getNgNm());
-            } catch (Exception e) {
-                item.put("quCd", "-");
-                item.put("ngNm", "-");
-            }
+            item.put("payment", (Payment) row[0]);
+            item.put("quCd", row[1] != null ? (String) row[1] : "-");
+            item.put("ngNm", row[2] != null ? (String) row[2] : "-");
             paymentList.add(item);
         }
 
@@ -91,7 +85,7 @@ public class PaymentController {
     @GetMapping("/check")
     public String getCheck(@RequestParam Long quId, Model model,
                            @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
@@ -144,6 +138,7 @@ public class PaymentController {
         model.addAttribute("calculatedTotal", calculatedTotal);
         model.addAttribute("quId", quId);
 
+
         return "/payment/payment-check";
     }
 
@@ -155,7 +150,7 @@ public class PaymentController {
                                  @RequestParam Long amount,
                                  @RequestParam(required = false) String method,
                                  @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         // 1. 토스페이먼츠 결제 승인 API 호출
         RestTemplate restTemplate = new RestTemplate();
@@ -258,7 +253,7 @@ public class PaymentController {
                                  @RequestParam(required = false) String orderId,
                                  @AuthenticationPrincipal MemberUserDetails userDetails,
                                  Model model) {
-        if (userDetails == null) return "redirect:/auth/signin";
+        if (userDetails == null) return REDIRECT_SIGNIN;
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);

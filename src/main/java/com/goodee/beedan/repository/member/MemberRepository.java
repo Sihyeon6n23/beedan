@@ -45,13 +45,21 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "m.memId, m.memNm, m.memBizNo, m.memCreDt, f.filePat, f.fileUuid) " +
             "FROM Member m " +
             "LEFT JOIN FileUpload f ON m.memId = f.brdRefNo AND f.brdRefTy = 'SIGNUP' AND f.fileDelYn = false " +
-            "WHERE m.memStt = 'PENDING' " +
+            "WHERE m.memBizYn = false " +
             "ORDER BY m.memCreDt DESC")
-    List<MemberApproveDto> findPendingMembersWithFiles();
+    List<MemberApproveDto> findBizPendingMembersWithFiles();
+  
+    long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    // 월별 가입자 수 (GROUP BY)
+    @Query("SELECT MONTH(m.memCreDt), COUNT(m) FROM Member m WHERE m.memCreDt BETWEEN :from AND :to GROUP BY MONTH(m.memCreDt)")
+    List<Object[]> countGroupByMonth(@org.springframework.data.repository.query.Param("from") java.time.LocalDateTime from,
+                                     @org.springframework.data.repository.query.Param("to") java.time.LocalDateTime to);
 
     boolean existsByMemEml(String memEml);
 
     default Member getByIdOrThrow(Long memId) {
         return findById(memId).orElseThrow(() -> new MemberNotFoundException("해당 사용자를 찾을 수 없습니다. ID: " + memId));
     }
+    boolean existsByMemMbPhn(String phoneNumber);
 }

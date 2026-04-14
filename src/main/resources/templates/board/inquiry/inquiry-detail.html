@@ -25,7 +25,14 @@
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
 
-    <section class="inquiry-page inquiry-detail-page" th:attr="data-inquiry-id=${inquiryBoardDetail.brdId}">
+    <section class="inquiry-page inquiry-detail-page"
+             th:attr="
+              data-inquiry-id=${inquiryBoardDetail.brdId},
+              data-action-message=${actionMessage != null ? actionMessage : ''},
+              data-result-delete-success=${serverMessage != null ? serverMessage.deleteSuccess : ''},
+              data-result-upload-success=${serverMessage != null ? serverMessage.uploadSuccess : ''},
+              data-result-fail=${serverMessage != null ? serverMessage.fail : ''},
+              data-result-fail-reasons=${serverMessage != null ? #strings.listJoin(serverMessage.failReason, '||') : ''}">
         <header class="inquiry-shell inquiry-shell--header">
             <div class="inquiry-shell__heading">
                 <span class="inquiry-kicker">Inquiry Detail</span>
@@ -48,8 +55,8 @@
                     <div class="inquiry-detail-article__title-row">
                         <h3 class="inquiry-detail-article__title" th:text="${inquiryBoardDetail.brdTtl}">문의 제목</h3>
                         <span class="inquiry-badge"
-                              th:text="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).RECEIVED ? '접수' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).IN_PROGRESS ? '처리중' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).ANSWERED ? '답변완료' : '취소'}"
-                              th:classappend="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).RECEIVED ? ' inquiry-badge--received' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).IN_PROGRESS ? ' inquiry-badge--progress' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).ANSWERED ? ' inquiry-badge--answered' : ' inquiry-badge--cancelled'}">접수</span>
+                              th:text="${inquiryBoardDetail.brdInqStt.name() == 'RECEIVED' ? '접수' : inquiryBoardDetail.brdInqStt.name() == 'IN_PROGRESS' ? '처리중' : inquiryBoardDetail.brdInqStt.name() == 'ANSWERED' ? '답변완료' : '취소'}"
+                              th:classappend="${inquiryBoardDetail.brdInqStt.name() == 'RECEIVED' ? ' inquiry-badge--received' : inquiryBoardDetail.brdInqStt.name() == 'IN_PROGRESS' ? ' inquiry-badge--progress' : inquiryBoardDetail.brdInqStt.name() == 'ANSWERED' ? ' inquiry-badge--answered' : ' inquiry-badge--cancelled'}">접수</span>
                     </div>
 
                     <div class="inquiry-detail-article__meta">
@@ -93,7 +100,7 @@
             </article>
 
             <section class="inquiry-detail-note"
-                     th:if="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).CANCELLED and !#strings.isEmpty(inquiryBoardDetail.brdCanRe)}">
+                     th:if="${inquiryBoardDetail.brdInqStt.name() == 'CANCELLED' and !#strings.isEmpty(inquiryBoardDetail.brdCanRe)}">
                 <strong>취소 사유</strong>
                 <p th:text="${#strings.isEmpty(inquiryBoardDetail.brdCanRe) ? '취소 사유가 등록되지 않았습니다.' : inquiryBoardDetail.brdCanRe}">취소 사유</p>
             </section>
@@ -129,7 +136,7 @@
                             <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-edit-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
                             <p class="inquiry-detail-inline-form__error is-hidden" data-reply-edit-error>답변 내용을 입력해 주세요.</p>
                         </div>
-                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${inquiryBoardDetail.reply.fileList}, isMultiple=true)}"></div>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(5, ${inquiryBoardDetail.reply.fileList}, true)}"></div>
                         <div class="inquiry-detail-inline-form__actions-wrap">
                             <div class="inquiry-detail-inline-form__actions">
                                 <button type="button" class="inquiry-detail-action" data-reply-edit-cancel>취소</button>
@@ -149,7 +156,7 @@
                             <textarea class="inquiry-detail-inline-form__textarea" rows="10" data-reply-create-textarea placeholder="답변 내용을 입력해 주세요."></textarea>
                             <p class="inquiry-detail-inline-form__error is-hidden" data-reply-create-error>답변 내용을 입력해 주세요.</p>
                         </div>
-                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${null}, isMultiple=true)}"></div>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(5, ${null}, true)}"></div>
                         <div class="inquiry-detail-inline-form__actions-wrap">
                             <div class="inquiry-detail-inline-form__actions">
                                 <button type="button" class="inquiry-detail-action" data-reply-create-cancel>취소</button>
@@ -162,9 +169,9 @@
                 <div class="inquiry-detail-empty"
                      th:if="${inquiryBoardDetail.reply == null and (!isAdmin or !inquiryBoardDetail.canAnswer)}">
                     <strong th:if="${isAdmin}"
-                            th:text="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).CANCELLED ? '취소된 문의입니다.' : '아직 등록된 답변이 없습니다.'}">아직 등록된 답변이 없습니다.</strong>
+                            th:text="${inquiryBoardDetail.brdInqStt.name() == 'CANCELLED' ? '취소된 문의입니다.' : '아직 등록된 답변이 없습니다.'}">아직 등록된 답변이 없습니다.</strong>
                     <strong th:unless="${isAdmin}"
-                            th:text="${inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).RECEIVED ? '문의가 접수되어 확인을 기다리고 있습니다.' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).IN_PROGRESS ? '문의 내용을 확인하고 있습니다.' : inquiryBoardDetail.brdInqStt == T(com.goodee.beedan.common.constant.InquiryStatus).CANCELLED ? '취소된 문의입니다.' : '등록된 답변이 없습니다.'}">등록된 답변이 없습니다.</strong>
+                            th:text="${inquiryBoardDetail.brdInqStt.name() == 'RECEIVED' ? '문의가 접수되어 확인을 기다리고 있습니다.' : inquiryBoardDetail.brdInqStt.name() == 'IN_PROGRESS' ? '문의 내용을 확인하고 있습니다.' : inquiryBoardDetail.brdInqStt.name() == 'CANCELLED' ? '취소된 문의입니다.' : '등록된 답변이 없습니다.'}">등록된 답변이 없습니다.</strong>
                 </div>
             </section>
         </section>
@@ -221,7 +228,9 @@
             </div>
         </section>
     </section>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+    <script defer th:src="@{/js/file/fileUpload.js}"></script>
     <script defer th:src="@{/js/board/inquiry.js}"></script>
 </th:block>
 </html>

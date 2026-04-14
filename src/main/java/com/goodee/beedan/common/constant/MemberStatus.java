@@ -4,6 +4,5 @@ public enum MemberStatus {
     ACTIVE,
     INACTIVE,
     LOCK,
-    PENDING,
     WITHDRAWN
 }

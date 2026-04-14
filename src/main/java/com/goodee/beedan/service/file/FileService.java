@@ -152,10 +152,11 @@ public class FileService {
             // 저장시 파일명에서 확장자 .을 제외한 나머지 .은 _처리 후 업로드
             String uuid = UUID.randomUUID().toString();
             String datePath = getDatePath();
+
             uploadToDisk(file, uuid, ext);
 
             fileListDtoList.add(FileDto.builder()
-                    .fileUuid(uuid + "." + ext)
+                    .fileUuid(uuid)
                     .fileNm(sanitizeFileName(originalName))
                     .fileExt(ext)
                     .fileSz(fileSize)
@@ -166,7 +167,7 @@ public class FileService {
 
             FileUpload fileUpload = FileUpload.builder()
                     .fileNm(sanitizeFileName(originalName))
-                    .fileUuid(uuid + "." + ext)
+                    .fileUuid(uuid)
                     .brdRefTy(refDto.getRefTy())
                     .brdRefNo(refDto.getRefNo())
                     .fileSz(file.getSize())
@@ -299,10 +300,9 @@ public class FileService {
     }
 
     // 물리파일 저장
-    private String uploadToDisk(MultipartFile file, String uuid, String ext) throws IOException {
+    private void uploadToDisk(MultipartFile file, String uuid, String ext) throws IOException {
         Path fullPath = Paths.get(uploadPath, getDatePath(), uuid + "." + ext);
         file.transferTo(fullPath.toFile());
-        return fullPath.toString();
     }
 
     // 물리 파일 삭제
@@ -392,7 +392,7 @@ public class FileService {
         if (Boolean.TRUE.equals(policy.getIsFileUploadAllowListEnabled())) {
             String ext = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase().trim();
 
-            Set<String> allowSet = policy.getFileUploadAllowSet();
+            Set<String> allowSet = policy.getFileUploadAllowList();
 
             if (allowSet != null && !allowSet.isEmpty()) {
                 return allowSet.contains(ext);

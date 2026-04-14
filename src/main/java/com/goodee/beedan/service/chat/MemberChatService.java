@@ -23,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -93,50 +92,55 @@ public class MemberChatService {
                 .build();
     }
 
-    // 회원 본인의 채팅방 목록을 조회, 마지막 메시지와 미읽음 여부를 함께 반환
+    // 회원 본인 목록 화면에 필요한 값(방 정보, 마지막 메시지, 읽음 여부)을 한 번에 조회
     public List<MemberChatRoomListDto> getMemberChatRooms(Long memId) {
-        return chatRoomRepository.findMemberChatRoomsByMemIdOrderByActiveFirst(memId)
+        return chatRoomRepository.findMemberChatRoomListSummaries(memId)
                 .stream()
-                .map(chatRoom -> mapToMemberChatRoomListDto(chatRoom, memId))
+                .map(this::mapToMemberChatRoomListDto)
                 .toList();
     }
 
     // 채팅방 기본 정보와 마지막 메시지, 읽음 상태를 조합해 사용자 채팅 목록 DTO로 변환
-    private MemberChatRoomListDto mapToMemberChatRoomListDto(ChatRoom chatRoom, Long memId) {
-        // 가장 최신 메시지 조회
-        Optional<ChatMessage> lastMessage = chatMessageRepository
-                .findFirstByChRoIdOrderByChMsCreDtDesc(chatRoom.getChRoId());
-
-        // 사용자 기준 읽음 상태 조회
-        Optional<ChatRoomReadStatus> roomReadStatus = chatRoomReadStatusRepository
-                .findByMemIdAndChRoId(memId, chatRoom.getChRoId());
+    private MemberChatRoomListDto mapToMemberChatRoomListDto(ChatRoomRepository.MemberChatRoomListProjection row) {
+        // 마지막 메시지 타입에 따라 목록에서 보여줄 요약 문구를 결정
+        String lastMessageSummary = getChatRoomListSummary(
+                row.getLastMessageType(),
+                row.getLastMessageContent()
+        );
 
         return MemberChatRoomListDto.builder()
-                .chRoId(chatRoom.getChRoId())
-                .chRoTtl(chatRoom.getChRoTtl())
-                .chRoStt(chatRoom.getChRoStt())
-                .lastMessageContent(lastMessage.map(this::getChatRoomListSummary).orElse(null))
-                .lastMessageCreatedAt(lastMessage.map(ChatMessage::getChMsCreDt).orElse(null))
-                .chRoCreDt(chatRoom.getChRoCreDt())
-                .unread(roomReadStatus.map(ChatRoomReadStatus::getChRoReStUnrYn).orElse(false))
-                .chRoClsRsn(chatRoom.getChRoClsRsn())
+                .chRoId(row.getChRoId())
+                .chRoTtl(row.getChRoTtl())
+                // projection에서는 enum이 아니라 문자열로 오므로 valueOf로 변환
+                .chRoStt(ChatRoomStatus.valueOf(row.getChRoStt()))
+                .lastMessageContent(lastMessageSummary)
+                .lastMessageCreatedAt(row.getLastMessageCreatedAt())
+                .chRoCreDt(row.getChRoCreDt())
+                // native query에서 unread를 정수(1/0)로 받아서 Boolean으로 변환
+                .unread(row.getUnread() != null && row.getUnread() == 1)
+                .chRoClsRsn(row.getChRoClsRsn() != null
+                                ? ChatRoomCloseReason.valueOf(row.getChRoClsRsn())
+                                : null
+                )
                 .build();
     }
 
-    private String getChatRoomListSummary(ChatMessage lastMessage) {
-        if (lastMessage == null) {
+    private String getChatRoomListSummary(String lastMessageType, String lastMessageContent) {
+        if (lastMessageType == null) {
             return null;
         }
 
-        if (lastMessage.getChMsTp() == ChatMessageType.IMAGE) {
+        // 이미지 메시지는 고정 문구로 표시
+        if (ChatMessageType.IMAGE.name().equals(lastMessageType)) {
             return "이미지를 보냈습니다.";
         }
 
-        if (lastMessage.getChMsTp() == ChatMessageType.QUOTE_CARD) {
+        // 견적 카드 메시지도 고정 문구로 표시
+        if (ChatMessageType.QUOTE_CARD.name().equals(lastMessageType)) {
             return "견적을 보냈습니다.";
         }
 
-        return lastMessage.getChMsCon();
+        return lastMessageContent;
     }
 
     // 회원 본인 채팅방 상세 조회와 마지막 메시지 기준 읽음 상태 갱신
