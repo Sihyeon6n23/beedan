@@ -53,11 +53,11 @@
                                     </div>
                                     <div class="flex bg-surface-container-high p-1 items-center">
                                         <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-primary has-[:checked]:text-white">
-                                            <input type="radio" name="isLoginSecurityEnabled" value="true" th:checked="${policy.isLoginFailureLimitEnabled}" class="hidden">
+                                            <input type="radio" name="isLoginSecurityEnabled" value="true" th:checked="${policy.isLoginSecurityEnabled}" class="hidden">
                                             <span class="text-[10px] font-black uppercase tracking-wider">On</span>
                                         </label>
                                         <label class="px-4 py-1.5 cursor-pointer transition-all has-[:checked]:bg-zinc-800 has-[:checked]:text-white">
-                                            <input type="radio" name="isLoginSecurityEnabled" value="false" th:checked="${!policy.isLoginFailureLimitEnabled}" class="hidden">
+                                            <input type="radio" name="isLoginSecurityEnabled" value="false" th:checked="${!policy.isLoginSecurityEnabled}" class="hidden">
                                             <span class="text-[10px] font-black uppercase tracking-wider">Off</span>
                                         </label>
                                     </div>

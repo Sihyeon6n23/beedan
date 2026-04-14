@@ -2,6 +2,7 @@ package com.goodee.beedan.config.security;
 
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.dto.member.AccountStatusDto;
+import com.goodee.beedan.dto.member.auth.SignInErrorMessageDto;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.member.MemberService;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -27,6 +29,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler {
     private final SecurityService securityService;
     private final MemberService memberService;
@@ -106,8 +109,8 @@ public class CustomFailureHandler extends SimpleUrlAuthenticationFailureHandler 
         } catch (UsernameNotFoundException e) {
             errorMessage = "계정 정보가 존재하지 않거나 일치하지 않습니다.";
         } finally {
-            String encodedMessage = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
-            setDefaultFailureUrl("/auth/signin?error=true&message=" + encodedMessage);
+            request.getSession().setAttribute("errorMessage", new SignInErrorMessageDto("인증실패", errorMessage));
+            setDefaultFailureUrl("/auth/signin");
             super.onAuthenticationFailure(request, response, exception);
         }
     }
