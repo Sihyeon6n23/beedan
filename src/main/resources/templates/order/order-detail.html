@@ -19,6 +19,14 @@
     <link rel="stylesheet" th:href="@{/css/order/order-detail.css}">
 
     <style>
+        .order-management-list .admin-chat-list-head,
+        .order-management-list .admin-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(70px, 1.8fr) minmax(40px, 0.8fr) minmax(220px, 3.2fr) minmax(60px, 0.6fr) minmax(60px, 0.9fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
+
         .swiper-button-next, .swiper-button-prev {
             color: #333;
             width: 40px;

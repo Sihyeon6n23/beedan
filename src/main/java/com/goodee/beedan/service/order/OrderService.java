@@ -2,7 +2,6 @@ package com.goodee.beedan.service.order;
 
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
-import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.dto.order.WebhookShipmentRequest;
 import com.goodee.beedan.entity.*;
@@ -155,6 +154,7 @@ public class OrderService {
                     .order(order)
                     .shRcvNm(addressInfo.getQuDtRcNm())
                     .shAdr(addressInfo.getQuDtRcAdr())
+                    .shAdrDt(addressInfo.getQuDtRcAdrDt())
                     .shStt(ShipmentStatus.PREPARING)
                     .shCarCd(webhookRequest.getShCarNo())
                     .shTraNo(webhookRequest.getShTraNo())
