@@ -21,9 +21,9 @@ public class ChatSchedulerService {
 
     @Transactional
     public int closeInactiveChatRooms(long inactiveHours) {
-//        LocalDateTime now = LocalDateTime.now();
-        // 테스트용 dev 시간
-        LocalDateTime now = AppDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        // 테스트용 dev 시간(사용하려면 전역 JPA Auditing 설정을 해야함)
+//        LocalDateTime now = AppDateTime.now();
         LocalDateTime cutoff = now.minusHours(inactiveHours);
 
         List<ChatRoomStatus> activeStatuses = List.of(ChatRoomStatus.OPEN, ChatRoomStatus.ONGOING);

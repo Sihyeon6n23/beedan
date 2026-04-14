@@ -23,11 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -220,6 +216,19 @@ public class AdminChatService {
                 .build();
 
         chatRoomReadStatusRepository.save(adminReadStatus);
+
+        // 상담 시작 즉시 사용자/관리자 목록과 방 상태를 실시간으로 갱신
+        chatRealtimeService.publishMemberSummary(chatRoom.getMemId());
+        chatRealtimeService.publishAdminSummary();
+        chatRealtimeService.publishRoomStatus(
+                chRoId,
+                ChatRoomStatusEventDto.builder()
+                        .eventType("ROOM_STATUS")
+                        .chRoId(chRoId)
+                        .chRoStt(chatRoom.getChRoStt())
+                        .chRoClsRsn(chatRoom.getChRoClsRsn())
+                        .build()
+        );
     }
 
     // 담당자 본인이 채팅방을 종료 처리
@@ -351,18 +360,23 @@ public class AdminChatService {
         List<ChatMessage> chatMessages = chatMessageRepository
                 .findByChRoIdOrderByChMsCreDtAsc(chRoId);
 
-        // 사용자 정보 조회
-        Member member = memberRepository.findById(chatRoom.getMemId())
-                .orElseGet(Member::new);
-
-        // 담당자 정보 조회
-        Member admin = null;
+        // 사용자/담당자 정보를 한 번에 조회해서 map으로 생성
+        List<Long> memberIds = new ArrayList<>();
+        memberIds.add(chatRoom.getMemId());
         if (chatRoom.getMemAdId() != null) {
-            admin = memberRepository.findById(chatRoom.getMemAdId())
-                    .orElseGet(Member::new);
+            memberIds.add(chatRoom.getMemAdId());
         }
 
-        // 진행중 상담방을 담당자 본인이 조회하면 관리자 미읽음 상태를 읽음으로 갱신
+        Map<Long, Member> memberMap = memberRepository.findByMemIdIn(memberIds).stream()
+                .collect(Collectors.toMap(Member::getMemId, member -> member));
+
+        Member member = memberMap.getOrDefault(chatRoom.getMemId(), new Member());
+        Member admin = chatRoom.getMemAdId() != null
+                ? memberMap.getOrDefault(chatRoom.getMemAdId(), new Member())
+                : null;
+
+        // 진행중 상담방을 담당 관리자 본인이 열면 읽음 상태를 갱신하되,
+        // 실제 값이 달라질 때만 save 해서 불필요한 update를 줄임
         if (chatRoom.getChRoStt() == ChatRoomStatus.ONGOING
                 && chatRoom.getMemAdId() != null
                 && chatRoom.getMemAdId().equals(memAdId)) {
@@ -373,18 +387,31 @@ public class AdminChatService {
                             .chRoId(chRoId)
                             .build());
 
-            chatRoomReadStatus.setChRoReStUnrYn(false); // 미읽음 여부 FALSE -> 읽음
-            if (!chatMessages.isEmpty()) {
-                chatRoomReadStatus.setChMsLastId(chatMessages.getLast().getChMsId()); // 마지막 메시지 갱신
+            Long lastMessageId = !chatMessages.isEmpty()
+                    ? chatMessages.getLast().getChMsId()
+                    : null;
+
+            boolean unreadChanged = Boolean.TRUE.equals(chatRoomReadStatus.getChRoReStUnrYn());
+            boolean lastMessageChanged = !Objects.equals(chatRoomReadStatus.getChMsLastId(), lastMessageId);
+
+            if (unreadChanged || lastMessageChanged) {
+                chatRoomReadStatus.setChRoReStUnrYn(false); // 미읽음 여부 FALSE -> 읽음
+                chatRoomReadStatus.setChMsLastId(lastMessageId); // 마지막 메시지 갱신
+                chatRoomReadStatusRepository.save(chatRoomReadStatus);
             }
-            chatRoomReadStatusRepository.save(chatRoomReadStatus);
         }
 
         List<AdminChatMessageDto> messageDtos = chatMessages.stream()
                 .map(this::mapToAdminChatMessageDto)
                 .toList();
 
-        return mapToAdminChatRoomDetailDto(chatRoom, member, admin, messageDtos, chatRoom.getMemAdId() != null && chatRoom.getMemAdId().equals(memAdId));
+        return mapToAdminChatRoomDetailDto(
+                chatRoom,
+                member,
+                admin,
+                messageDtos,
+                chatRoom.getMemAdId() != null && chatRoom.getMemAdId().equals(memAdId)
+        );
     }
 
     // 관리자 채팅 이미지 메시지 전송

@@ -22,4 +22,5 @@ public class InquiryBoardListDto {
     private String memNm;               // 작성자(관리자/사용자) 이름
     private Boolean hasReply;           // 답글 존재 여부
     private Boolean replyEdited;        // 답글 수정 여부
+    private Boolean hasAttachment;      // 문의 원글 첨부 존재 여부
 }

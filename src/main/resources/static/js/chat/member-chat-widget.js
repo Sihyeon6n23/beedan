@@ -42,6 +42,9 @@
   var loginModal = widget.querySelector("[data-login-modal]");
   var loginModalCloseButtons = widget.querySelectorAll("[data-login-modal-close]");
   var loginModalConfirmButton = widget.querySelector("[data-login-modal-confirm]");
+  var memberChatToast = widget.querySelector("[data-member-chat-toast]");
+  var memberChatToastTitle = widget.querySelector("[data-member-chat-toast-title]");
+  var memberChatToastText = widget.querySelector("[data-member-chat-toast-text]");
   var newChatButton = widget.querySelector("[data-new-chat-trigger]");
 
   var isFirstTopicsLoaded = false;
@@ -61,6 +64,7 @@
   var currentViewName = "chatbot";
   var memberImageBindingsInitialized = false;
   var panelHideTimer = null;
+  var memberChatToastTimer = null;
   var isAuthenticated = widget.dataset.authenticated === "true";
   var loginUrl = widget.dataset.loginUrl || "/auth/signin";
   var csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
@@ -217,7 +221,7 @@
         summarySubscription.unsubscribe();
       }
 
-      summarySubscription = stompClient.subscribe("/sub/chat/users/" + memberId, function () {
+      summarySubscription = stompClient.subscribe("/sub/chat/users/" + memberId + "/summary", function () {
         loadMemberChatRooms({ animateList: false });
       });
     }
@@ -232,6 +236,44 @@
     launcherBadge.classList.toggle("is-hidden", !isVisible);
     launcherBadge.setAttribute("aria-hidden", isVisible ? "false" : "true");
     setChatListNavUnreadVisible(isVisible);
+  }
+
+  // 토스트 메시지 출력
+  function showMemberChatToast(title, description) {
+    if (!memberChatToast || !memberChatToastTitle || !memberChatToastText || !title) {
+      return;
+    }
+
+    memberChatToastTitle.textContent = title;
+    memberChatToastText.textContent = description || "";
+
+    if (memberChatToastTimer) {
+      window.clearTimeout(memberChatToastTimer);
+      memberChatToastTimer = null;
+    }
+
+    // 현재 화면에 따라 토스트 위치를 다르게 잡는다.
+    memberChatToast.classList.remove("member-chat-toast--default", "member-chat-toast--room");
+    memberChatToast.classList.add(
+      currentViewName === "chat-room"
+        ? "member-chat-toast--room"
+        : "member-chat-toast--default"
+    );
+
+    memberChatToast.classList.remove("is-hidden");
+    requestAnimationFrame(function () {
+      memberChatToast.classList.add("is-visible");
+      memberChatToast.setAttribute("aria-hidden", "false");
+    });
+
+    memberChatToastTimer = window.setTimeout(function () {
+      memberChatToast.classList.remove("is-visible");
+      memberChatToast.setAttribute("aria-hidden", "true");
+
+      window.setTimeout(function () {
+        memberChatToast.classList.add("is-hidden");
+      }, 200);
+    }, 2600);
   }
 
   function setChatListNavUnreadVisible(isVisible) {
@@ -1303,7 +1345,7 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to load member chat rooms.");
+          throw new Error("채팅 목록을 불러오지 못했습니다.");
         }
 
         return response.json();
@@ -1318,6 +1360,7 @@
       })
       .catch(function (error) {
         hasLoadedMemberChatRooms = false;
+        showMemberChatToast("채팅 목록 조회에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       });
   }
@@ -1345,7 +1388,7 @@
     return fetch("/api/chatbot/topics/first")
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to load first-level topics.");
+          throw new Error("챗봇 질문 목록을 불러오지 못했습니다.");
         }
 
         return response.json();
@@ -1365,6 +1408,7 @@
         scrollChatbotToTop();
       })
       .catch(function (error) {
+        showMemberChatToast("챗봇 목록 조회에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       });
   }
@@ -1376,7 +1420,7 @@
     return fetch("/api/chatbot/topics/" + topicId + "/next")
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to load next chatbot step.");
+          throw new Error("다음 질문을 불러오지 못했습니다.");
         }
 
         return response.json();
@@ -1396,6 +1440,7 @@
         }
       })
       .catch(function (error) {
+        showMemberChatToast("챗봇 응답 조회에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       });
   }
@@ -1407,7 +1452,7 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to load member chat room detail.");
+          throw new Error("채팅방 내용을 불러오지 못했습니다.");
         }
 
         return response.json();
@@ -1421,6 +1466,7 @@
         loadMemberChatRooms({ animateList: false });
       })
       .catch(function (error) {
+        showMemberChatToast("채팅방 조회에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       });
   }
@@ -1435,7 +1481,7 @@
       })
         .then(function (response) {
           if (!response.ok) {
-            throw new Error("Failed to refresh member chat room detail.");
+            throw new Error("채팅방 정보를 새로고침하지 못했습니다.");
           }
 
           return response.json();
@@ -1446,6 +1492,7 @@
           loadMemberChatRooms({ animateList: false });
         })
         .catch(function (error) {
+          showMemberChatToast("채팅 상태 갱신에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
           console.error(error);
         });
   }
@@ -1488,7 +1535,7 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to send member chat message.");
+          throw new Error("메시지를 전송하지 못했습니다.");
         }
 
         return response.json();
@@ -1507,6 +1554,7 @@
           chatRoomMessageInput.focus();
         }
 
+        showMemberChatToast("메시지 전송에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       })
       .finally(function () {
@@ -1535,7 +1583,7 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to send member chat image.");
+          throw new Error("이미지를 전송하지 못했습니다.");
         }
 
         return response.json();
@@ -1547,6 +1595,7 @@
         return loadMemberChatRooms({ animateList: false });
       })
       .catch(function (error) {
+        showMemberChatToast("이미지 전송에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
         if (chatRoomImageInput) {
           chatRoomImageInput.value = "";
@@ -1571,7 +1620,7 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to close member chat room.");
+          throw new Error("채팅방을 종료하지 못했습니다.");
         }
 
         currentChatRoomId = null;
@@ -1599,12 +1648,13 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to open chat room from chatbot.");
+          throw new Error("상담 채팅방을 열지 못했습니다.");
         }
 
         return response.json();
       })
       .catch(function (error) {
+        showMemberChatToast("상담 연결에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       });
   }
@@ -1622,12 +1672,13 @@
     })
       .then(function (response) {
         if (!response.ok) {
-          throw new Error("Failed to open new inquiry chat room.");
+          throw new Error("새 문의 채팅방을 열지 못했습니다.");
         }
 
         return response.json();
       })
       .catch(function (error) {
+        showMemberChatToast("새 문의 채팅방 생성에 실패했습니다.", "잠시 후 다시 시도해 주세요.");
         console.error(error);
       });
   }
