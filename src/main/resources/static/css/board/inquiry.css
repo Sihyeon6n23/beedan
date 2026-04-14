@@ -1463,16 +1463,18 @@
 .inquiry-modal__lead {
   color: var(--color-on-background);
   font-family: var(--font-headline);
-  font-size: 1.1rem;
+  font-size: 1.22rem;
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
   line-height: 1.35;
+  white-space: pre-line;
 }
 
 .inquiry-modal__description {
   color: var(--color-secondary);
   font-size: 0.98rem;
   line-height: 1.7;
+  white-space: pre-line;
 }
 
 .inquiry-modal__textarea {

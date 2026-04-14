@@ -21,10 +21,8 @@ function openShipmentModal(shId) {
 function loadShipmentDetail(data) {
     if (!data) return '<div style="padding:20px; text-align:center;">데이터를 불러올 수 없습니다.</div>';
 
-    // 국내 배송 데이터 존재 여부 확인
-    const hasDomesticDetails = data.details && data.details.length > 0;
-    // 국내 배송이 없으면 통관 내역을 열어둠(open), 있으면 닫아둠
-    const customsAccordionOpen = !hasDomesticDetails ? 'open' : '';
+    const hasDomesticDetails = data.details && data.details.length > 0;    // 국내 배송 데이터 존재 여부 확인
+    const customsAccordionOpen = !hasDomesticDetails ? 'open' : '';  // 국내 배송이 없으면 통관 내역을 열어둠(open), 있으면 닫아둠
 
     let html = `
         <div class="tracking-info-summary">
@@ -54,7 +52,7 @@ function loadShipmentDetail(data) {
         <div class="tracking-timeline" style="margin-top: 20px;">
     `;
 
-    // 1. 해외 통관 내역 (동적 open 적용)
+    // 1. 해외 통관 내역
     if (data.customsDetails && data.customsDetails.length > 0) {
         html += `
             <div style="margin-bottom: 20px;">
@@ -82,8 +80,7 @@ function loadShipmentDetail(data) {
 
     // 2. 국내 배송 내역
     if (!hasDomesticDetails) {
-        // 국내 배송도 없고 통관 내역도 없는 경우
-        if (!data.customsDetails || data.customsDetails.length === 0) {
+        if (!data.customsDetails || data.customsDetails.length === 0) {  // 국내 배송도 없고 통관 내역도 없는 경우
             html += `
                 <div style="text-align: center; padding: 40px; color: #888; background: #fafafa; border-radius: 8px;">
                     <p style="margin: 0;">아직 배송 정보가 등록되지 않았습니다.</p>
@@ -97,7 +94,6 @@ function loadShipmentDetail(data) {
         data.details.forEach((item, index) => {
             const isFirst = index === 0;
             const dotColor = isFirst ? '#d9534f' : '#ccc';
-            // 시간 포맷 처리 (T 제거 및 16자 커팅)
             const timeStr = item.time ? item.time.replace('T', ' ').substring(0, 16) : '';
 
             html += `
@@ -119,22 +115,18 @@ function loadShipmentDetail(data) {
 
 function openShipmentModal(shId) {
     const modal = document.querySelector('#orderTrackingModal');
-    const modalBody = modal.querySelector('.modal-body'); // 뼈대가 아닌 내용이 들어갈 곳 타겟팅
+    const modalBody = modal.querySelector('.modal-body');
 
-    // 1. 모달 창 화면에 띄우기 (CSS 구조에 따라 'block' 또는 'flex' 사용)
     modal.style.display = 'flex';
-
-    // 2. 로딩 메시지 출력
     modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
 
-    // 3. 데이터 가져오기
     fetch(`/api/shipments/${shId}/track`)
         .then(response => {
             if (!response.ok) throw new Error('네트워크 응답에 문제가 있습니다.');
             return response.json();
         })
         .then(data => {
-            // 4. HTML 생성 후 모달 바디에 삽입
+
             const html = loadShipmentDetail(data);
             modalBody.innerHTML = html;
         })
@@ -144,7 +136,29 @@ function openShipmentModal(shId) {
         });
 }
 
-// 모달 닫기 함수 (js 파일에 없었다면 추가해 주세요)
+function cancelOrder(ordId) {
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    if (!confirm("정말로 주문을 취소하시겠습니까?")) return;
+
+    fetch(`/api/orders/${ordId}`, {
+        method: 'DELETE',
+        headers: {
+            [csrfHeader]: csrfToken
+        }
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('주문 취소에 실패했습니다.');
+            alert("주문이 취소되었습니다.");
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("주문 취소 중 오류가 발생했습니다. 다시 시도해주세요.");
+        });
+}
+
 function closeModal() {
     document.querySelector('#orderTrackingModal').style.display = 'none';
 }

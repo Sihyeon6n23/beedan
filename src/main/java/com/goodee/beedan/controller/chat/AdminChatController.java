@@ -6,6 +6,7 @@ import com.goodee.beedan.dto.chat.AdminChatRoomListDto;
 import com.goodee.beedan.dto.chat.AdminChatRoomSearchDto;
 import com.goodee.beedan.service.chat.AdminChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/admin/chat")
 public class AdminChatController {
     private final AdminChatService adminChatService;
+
+    @Value("${qr.api.base-url}")
+    private String qrApiBaseUrl;
 
     // 관리자 채팅 목록
     @GetMapping("/list")
@@ -62,6 +66,7 @@ public class AdminChatController {
                 .getAdminChatRoomDetail(chRoId, userDetails.getMemberId());
 
         model.addAttribute("chatRoomDetail", chatRoomDetail);
+        model.addAttribute("qrApiBaseUrl", qrApiBaseUrl);
 
         return "/admin/chat/chat-detail";
     }

@@ -10,11 +10,13 @@
   var adminMessageInput = document.querySelector("[data-admin-message-input]");
   var adminMessageSendButton = document.querySelector("[data-admin-message-send]");
   var adminMessageList = document.querySelector("[data-admin-message-list]");
+  var qrApiBaseUrl = detailPage ? (detailPage.dataset.qrApiBaseUrl || "") : "";
   var adminImageTrigger = document.querySelector("[data-admin-image-trigger]");
   var adminImageInput = document.querySelector("[data-admin-image-input]");
   var adminMessageScrollBody = document.querySelector(".admin-chat-detail-body");
   var pendingDetailUrl = "";
   var pendingRoomId = "";
+  var isSendingAdminMessage = false;
   var detailRoomId = detailPage ? detailPage.dataset.roomId : "";
   var detailAdminName = detailPage ? detailPage.dataset.adminName : "담당자";
   var detailMemberBizName = detailPage ? detailPage.dataset.memberBizName : "상호명 미등록";
@@ -28,6 +30,7 @@
   var feedbackBox = document.querySelector("[data-admin-chat-feedback]");
   var feedbackText = document.querySelector("[data-admin-chat-feedback-text]");
   var feedbackTimer = null;
+  var wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
 
   filterGroups.forEach(function (group) {
     group.addEventListener("click", function (event) {
@@ -339,17 +342,18 @@
     });
   }
 
-  function scrollAdminChatToBottom() {
-    if (!adminMessageScrollBody) {
-      return;
-    }
+  function scrollAdminChatToBottom(useSmooth) {
+        if (!adminMessageScrollBody) {
+            return;
+        }
 
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        adminMessageScrollBody.scrollTop = adminMessageScrollBody.scrollHeight;
-      });
-    });
-  }
+        window.setTimeout(function () {
+            adminMessageScrollBody.scrollTo({
+                top: adminMessageScrollBody.scrollHeight,
+                behavior: useSmooth ? "smooth" : "auto"
+            });
+        }, 90);
+    }
 
   // 견적 카드(제목 + 링크 + QR Code) 만들기
   function buildAdminChatQuoteCard(message) {
@@ -373,18 +377,38 @@
     link.href = message.chMsLnkUrl || "#";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = "견적 보기";
+    link.textContent = "견적 초안 열기";
     card.appendChild(link);
 
     if (message.chMsLnkUrl) {
-      var qr = document.createElement("img");
-      qr.className = "admin-chat-quote-card__qr";
-      qr.alt = "견적 QR 코드";
-      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(message.chMsLnkUrl);
-      card.appendChild(qr);
+        var qr = document.createElement("img");
+        qr.className = "admin-chat-quote-card__qr";
+        qr.alt = "견적 QR 코드";
+        qr.dataset.qrUrl = message.chMsLnkUrl;
+        applyQuoteQrImage(qr);
+        card.appendChild(qr);
     }
 
     return card;
+  }
+
+  function applyQuoteQrImage(img) {
+    if (!img) {
+      return;
+    }
+
+    var qrUrl = img.dataset.qrUrl;
+    if (!qrUrl || !qrApiBaseUrl) {
+        return;
+    }
+
+    img.src = qrApiBaseUrl + encodeURIComponent(qrUrl);
+  }
+
+  function hydrateExistingAdminQuoteCards() {
+    document.querySelectorAll(".admin-chat-quote-card__qr[data-qr-url]").forEach(function (img) {
+      applyQuoteQrImage(img);
+    });
   }
 
   // 이미지 메시지 버블 만들기
@@ -474,9 +498,12 @@
 
     removeEmptyDetailPlaceholder();
 
+    // 실시간 수신 메시지 날짜가 바뀌었으면 먼저 날짜 divider 추가
+    appendAdminDateDividerIfNeeded(message.chMsCreDt);
+
     var article = document.createElement("article");
     article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
-    article.style.animationDelay = "0ms";
+    article.classList.add("admin-chat-animate-in");
 
     var content = document.createElement("div");
     content.className = "admin-chat-detail-message__content";
@@ -486,8 +513,6 @@
 
     var time = document.createElement("span");
     time.textContent = formatAdminChatMessageTime(message.chMsCreDt);
-
-    appendAdminDateDividerIfNeeded(message.chMsCreDt);
 
     var bubble = buildAdminChatMessageBubble(message, true);
 
@@ -502,8 +527,8 @@
     content.appendChild(messageTime);
     article.appendChild(content);
     adminMessageList.appendChild(article);
-    scrollAdminChatToBottom();
-    moveClosedPanelToBottom();
+      scrollAdminChatToBottom(true);
+      moveClosedPanelToBottom();
   }
 
   function appendPendingAdminMessage(messageText) {
@@ -516,7 +541,7 @@
 
     var article = document.createElement("article");
     article.className = "admin-chat-detail-message admin-chat-detail-message--admin";
-    article.style.animationDelay = "0ms";
+    article.classList.add("admin-chat-animate-in");
     article.dataset.pending = "true";
 
     var content = document.createElement("div");
@@ -539,9 +564,9 @@
     article.appendChild(content);
     adminMessageList.appendChild(article);
 
-    scrollAdminChatToBottom();
+      scrollAdminChatToBottom(true);
 
-    return article;
+      return article;
   }
 
   // 메시지를 받았을 때 메시지 append
@@ -551,8 +576,12 @@
 
       removeEmptyDetailPlaceholder();
 
+      // 실시간 수신 메시지 날짜가 바뀌었으면 먼저 날짜 divider 추가
+      appendAdminDateDividerIfNeeded(message.chMsCreDt);
+
       var article = document.createElement("article");
       article.className = "admin-chat-detail-message admin-chat-detail-message--client";
+      article.classList.add("admin-chat-animate-in");
 
       var avatar = document.createElement("div");
       avatar.className = "admin-chat-detail-message__avatar";
@@ -577,8 +606,6 @@
 
       meta.appendChild(sender);
 
-      appendAdminDateDividerIfNeeded(message.chMsCreDt);
-
       var bubble = buildAdminChatMessageBubble(message, false);
 
       var messageTime = document.createElement("span");
@@ -593,9 +620,8 @@
       article.appendChild(avatar);
       article.appendChild(content);
       adminMessageList.appendChild(article);
-
-      scrollAdminChatToBottom();
-      moveClosedPanelToBottom();
+        scrollAdminChatToBottom(true);
+        moveClosedPanelToBottom();
     }
 
   document.addEventListener("click", function (event) {
@@ -666,7 +692,7 @@
   // 관리자가 입력한 메시지를 전송 비동기 요청(서버에 저장 요청)
   function sendAdminChatMessage() {
     // 입력 메시지는 REST로 저장 요청하고, 실제 화면 확정은 WebSocket 수신 결과로 처리
-    if (!detailRoomId || !adminMessageInput || !detailCanWrite) {
+    if (!detailRoomId || !adminMessageInput || !detailCanWrite || isSendingAdminMessage) {
       return;
     }
 
@@ -675,6 +701,11 @@
       adminMessageInput.focus();
       return;
     }
+
+    // 서버 응답을 기다리지 않고 입력창을 먼저 비워 연속 입력 시 체감 지연을 줄임
+    adminMessageInput.value = "";
+    adminMessageInput.focus();
+    isSendingAdminMessage = true;
 
     var pendingMessageElement = appendPendingAdminMessage(content);
 
@@ -690,18 +721,24 @@
       })
     }).then(function (response) {
       if (!response.ok) {
-        throw new Error("메시지 전송 요청에 실패했습니다.");
+        throw new Error("Failed to send admin chat message.");
       }
 
       return response.json();
-    }).then(function () {
-      adminMessageInput.value = "";
-      adminMessageInput.focus();
     }).catch(function (error) {
       if (pendingMessageElement) {
         pendingMessageElement.remove();
       }
+
+      // 전송 실패 시 사용자가 다시 보낼 수 있게 입력값을 복구
+      if (adminMessageInput && !adminMessageInput.value.trim()) {
+        adminMessageInput.value = content;
+        adminMessageInput.focus();
+      }
+
       console.error(error);
+    }).finally(function () {
+      isSendingAdminMessage = false;
     });
   }
 
@@ -765,7 +802,7 @@
 
       // WebSocket/STOMP 클라이언트 생성
       stompClient = new StompJs.Client({
-        brokerURL: "ws://" + window.location.host + "/ws",
+        brokerURL: wsProtocol + window.location.host + "/ws",
         reconnectDelay: 5000,
         debug: function () {},
 
@@ -800,6 +837,7 @@
 
               if (pendingMessage) {
                 pendingMessage.removeAttribute("data-pending");
+                pendingMessage.classList.remove("admin-chat-animate-in");
 
                 var pendingTime = pendingMessage.querySelector(".admin-chat-detail-message__time");
                 if (pendingTime) {
@@ -883,8 +921,9 @@
   // 상세 진입 시
   if (detailPage) {
     renderExistingAdminDateDividers();
+    hydrateExistingAdminQuoteCards();
     setChatState(detailPage.dataset.chatStatus || "ONGOING");
-    scrollAdminChatToBottom();
+    scrollAdminChatToBottom(false);
     if (adminMessageInput && detailPage.dataset.chatStatus === "ONGOING" && detailCanWrite) {
       adminMessageInput.focus();
     }

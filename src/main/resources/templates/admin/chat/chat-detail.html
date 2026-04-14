@@ -16,7 +16,7 @@
     <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
 
       <section class="admin-chat-page admin-chat-detail-page"
-               th:attr="data-chat-status=${chatRoomDetail.chRoStt.name()}, data-room-id=${chatRoomDetail.chRoId}, data-admin-name=${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}, data-member-biz-name=${chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록'}, data-member-name=${chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록'}, data-can-write=${chatRoomDetail.canWrite}">
+               th:attr="data-chat-status=${chatRoomDetail.chRoStt.name()}, data-room-id=${chatRoomDetail.chRoId}, data-admin-name=${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}, data-member-biz-name=${chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록'}, data-member-name=${chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록'}, data-can-write=${chatRoomDetail.canWrite}, data-qr-api-base-url=${qrApiBaseUrl}">
         <section class="admin-chat-shell admin-chat-shell--detail-board">
             <header class="admin-chat-detail-topbar">
                 <div class="admin-chat-detail-topbar__side">
@@ -117,12 +117,12 @@
                                                th:href="${message.chMsLnkUrl}"
                                                target="_blank"
                                                rel="noopener noreferrer">
-                                                견적 보기
+                                                견적 초안 열기
                                             </a>
 
                                             <img class="admin-chat-quote-card__qr"
                                                  th:if="${message.chMsLnkUrl != null}"
-                                                 th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + #strings.urlEncode(message.chMsLnkUrl)}"
+                                                 th:attr="data-qr-url=${message.chMsLnkUrl}"
                                                  alt="견적 QR 코드">
                                         </div>
                                     </div>
@@ -156,15 +156,11 @@
             <footer class="admin-chat-detail-footer"
                     th:classappend="${chatRoomDetail.chRoStt.name() == 'ONGOING'} ? '' : ' is-hidden'"
                     data-composer="ONGOING">
-                <a th:href="@{/stock/list(chatRoomId=${chatRoomDetail.chRoId})}"
-                   class="admin-chat-quote-button"
-                   th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-quote-button--disabled' : ''"
-                   data-admin-quote-link>
-                    견적 보내기
-                </a>
                 <div class="admin-chat-detail-footer__composer admin-chat-detail-footer__composer--stitch">
                     <button type="button"
                             class="admin-chat-attach-button"
+                            title="이미지 첨부하기"
+                            aria-label="이미지 첨부하기"
                             th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-attach-button--disabled' : ''"
                             th:disabled="${!chatRoomDetail.canWrite}"
                             data-admin-image-trigger>
@@ -182,6 +178,8 @@
                            data-admin-message-input>
                     <button type="button"
                             class="admin-chat-send-button"
+                            title="전송"
+                            aria-label="전송"
                             th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-send-button--disabled' : ''"
                             th:disabled="${!chatRoomDetail.canWrite}"
                             data-admin-message-send>
@@ -189,6 +187,8 @@
                     </button>
                     <a th:href="@{/stock/list(chatRoomId=${chatRoomDetail.chRoId})}"
                        class="admin-chat-quote-button"
+                       title="견적 초안 작성"
+                       aria-label="견적 초안 작성"
                        th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-quote-button--disabled' : ''"
                        data-admin-quote-link>
                         견적 보내기

@@ -7,7 +7,7 @@
 
 <div th:fragment="notificationDropdown" id="notiDropdown" class="dropdown-panel hidden absolute right-0 z-50">
     <div class="flex flex-col h-full">
-        <header class="p-4 border-b border-[var(--pub-border)] flex justify-between items-center bg-[var(--pub-bg-card)]">
+        <header class="p-4 border-b border-[var(--pub-border)] flex justify-between items-center bg-[var(--pub-bg-card)]" style="border-bottom-color: #ebe6da;">
             <h3 class="text-sm font-bold text-[var(--pub-text-main)]">Notifications</h3>
             <button type="button" onclick="handleAction('readAll')" class="text-link text-xs">Mark all as read</button>
         </header>
@@ -16,7 +16,7 @@
                 <li class="py-23 text-center text-xs text-[var(--pub-text-muted)]">알림을 불러오는 중...</li>
             </ul>
         </div>
-        <footer class="p-3 border-t border-[var(--pub-border)] bg-[var(--pub-bg-sidebar)] text-center">
+        <footer class="p-3 border-t text-center" style="background-color: #f3eee3; border-top-color: #ebe6da;">
             <a th:href="@{/notification/list}" class="text-xs font-bold no-underline">View All Notifications</a>
         </footer>
     </div>

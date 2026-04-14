@@ -22,6 +22,7 @@ public abstract class QuoteDetail_ {
 	public static final String QU_DT_GRP = "quDtGrp";
 	public static final String UN_GNM = "unGNm";
 	public static final String QU_DT_KR_PR = "quDtKrPr";
+	public static final String QU_DT_RC_ADR_DT = "quDtRcAdrDt";
 	public static final String QU_DT_PR = "quDtPr";
 	public static final String QU_DT_QN = "quDtQn";
 	public static final String QU_DT_RC_NM = "quDtRcNm";
@@ -31,6 +32,7 @@ public abstract class QuoteDetail_ {
 	public static final String RC_ID = "rcId";
 	public static final String QU_DT_RC_PHN = "quDtRcPhn";
 	public static final String QU_DT_FG_PR = "quDtFgPr";
+	public static final String QU_DT_RC_IAM_YN = "quDtRcIamYn";
 
 	
 	/**
@@ -94,6 +96,11 @@ public abstract class QuoteDetail_ {
 	public static volatile SingularAttribute<QuoteDetail, BigDecimal> quDtKrPr;
 	
 	/**
+	 * @see com.goodee.beedan.entity.QuoteDetail#quDtRcAdrDt
+	 **/
+	public static volatile SingularAttribute<QuoteDetail, String> quDtRcAdrDt;
+	
+	/**
 	 * @see com.goodee.beedan.entity.QuoteDetail#quDtPr
 	 **/
 	public static volatile SingularAttribute<QuoteDetail, BigDecimal> quDtPr;
@@ -142,6 +149,11 @@ public abstract class QuoteDetail_ {
 	 * @see com.goodee.beedan.entity.QuoteDetail
 	 **/
 	public static volatile EntityType<QuoteDetail> class_;
+	
+	/**
+	 * @see com.goodee.beedan.entity.QuoteDetail#quDtRcIamYn
+	 **/
+	public static volatile SingularAttribute<QuoteDetail, Boolean> quDtRcIamYn;
 
 }
 

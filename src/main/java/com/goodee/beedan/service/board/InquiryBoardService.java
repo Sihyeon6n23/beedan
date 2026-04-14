@@ -5,7 +5,6 @@ import com.goodee.beedan.common.constant.InquiryStatus;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.dto.board.inquiry.*;
-import com.goodee.beedan.dto.board.notice.BoardResultMessage;
 import com.goodee.beedan.dto.board.notice.BoardResultResponseDto;
 import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
@@ -15,7 +14,6 @@ import com.goodee.beedan.repository.board.BoardRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.file.FileUtils;
-import com.goodee.beedan.service.mail.MailService;
 import com.goodee.beedan.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,7 +24,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +34,6 @@ public class InquiryBoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
-    private final MailService mailService;
     private final FileService fileService;
     private final FileUtils fileUtils;
 
@@ -50,7 +49,18 @@ public class InquiryBoardService {
                 pageable
         );
 
-        return userInquiryBoards.map(this::mapToInquiryBoardListDto);
+        // 현재 페이지의 문의 ID들만 모아서 답변을 한 번에 조회
+        List<Long> inquiryBoardIds = userInquiryBoards.getContent().stream()
+                .map(Board::getBrdId)
+                .toList();
+
+        // 부모 문의 ID -> 답변 Board 로 매핑해서 목록 변환 시 재사용
+        Map<Long, Board> replyBoardMap = boardRepository
+                .findByBrdPrnIdInAndBrdTyAndBrdDelYnFalse(inquiryBoardIds, BoardType.INQUIRY_ANSWER)
+                .stream()
+                .collect(Collectors.toMap(Board::getBrdPrnId, reply -> reply));
+
+        return userInquiryBoards.map(inquiryBoard -> mapToInquiryBoardListDto(inquiryBoard, replyBoardMap));
     }
 
     // 관리자 목록 조회
@@ -80,22 +90,32 @@ public class InquiryBoardService {
             );
         }
 
-        return adminInquiryBoards.map(this::mapToInquiryBoardListDto);
+        // 현재 페이지의 문의 ID들만 모아서 답변을 한 번에 조회
+        List<Long> inquiryBoardIds = adminInquiryBoards.getContent().stream()
+                .map(Board::getBrdId)
+                .toList();
+
+        // 부모 문의 ID -> 답변 Board 로 매핑해서 목록 변환 시 재사용
+        Map<Long, Board> replyBoardMap = boardRepository
+                .findByBrdPrnIdInAndBrdTyAndBrdDelYnFalse(inquiryBoardIds, BoardType.INQUIRY_ANSWER)
+                .stream()
+                .collect(Collectors.toMap(Board::getBrdPrnId, reply -> reply));
+
+        return adminInquiryBoards.map(inquiryBoard -> mapToInquiryBoardListDto(inquiryBoard, replyBoardMap));
     }
 
-    private InquiryBoardListDto mapToInquiryBoardListDto(Board inquiryBoard) {
-        // 문의 작성자 조회
-        Member member = memberRepository.findById(inquiryBoard.getMember().getMemId())
-                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
-        // 문의 답글 조회
-        Optional<Board> replyBoard = boardRepository
-                .findByBrdPrnIdAndBrdTyAndBrdDelYnFalse(inquiryBoard.getBrdId(), BoardType.INQUIRY_ANSWER);
+    private InquiryBoardListDto mapToInquiryBoardListDto(Board inquiryBoard, Map<Long, Board> replyBoardMap) {
+        // BoardRepository에서 member를 JOIN FETCH로 같이 읽어왔으므로
+        // 목록 변환 시에는 board.getMember()를 바로 사용하고 회원을 다시 조회하지 않음
+        Member member = inquiryBoard.getMember();
 
-        boolean hasReply = replyBoard.isPresent(); // 답글이 있는지, 없는지
-        boolean replyEdited = replyBoard
-                .map(reply -> reply.getBrdUpdDt() != null // 수정 시간이 있고
-                        && !reply.getBrdUpdDt().equals(reply.getBrdCreDt())) // 생성 시간과 수정 시간이 다르다면
-                .orElse(false);
+        // 배치 조회해 둔 답변 맵에서 현재 문의의 답변을 꺼내서 사용
+        Board replyBoard = replyBoardMap.get(inquiryBoard.getBrdId());
+
+        boolean hasReply = replyBoard != null;
+        boolean replyEdited = replyBoard != null
+                && replyBoard.getBrdUpdDt() != null
+                && !replyBoard.getBrdUpdDt().equals(replyBoard.getBrdCreDt());
 
         return InquiryBoardListDto.builder()
                 .brdId(inquiryBoard.getBrdId())
@@ -259,7 +279,8 @@ public class InquiryBoardService {
         }
 
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .actionMessage("문의가 등록되었습니다.")
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .targetId(savedBoard.getBrdId())
                 .build();
     }
@@ -309,7 +330,8 @@ public class InquiryBoardService {
         fileResults.addAll(fileDeleteResults);
 
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .actionMessage("문의가 수정되었습니다.")
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .build();
     }
 
@@ -385,19 +407,9 @@ public class InquiryBoardService {
                 inquiryBoard.getBrdId()
         );
 
-        // 답글을 단 문의의 회원 정보 조회
-        Member inquiryMember = memberRepository.findById(inquiryBoard.getMember().getMemId())
-                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
-        // 메일 알림 (인자값 때문에 일단 비활성화)
-//        mailService.sendMail(
-//                inquiryMember.getMemEml(),
-//                NotificationType.INQUIRY_ANSWER_CREATE,
-//                inquiryBoard.getBrdTtl(), // detail은 보류(임시로 제목 넣어놨음)
-//                inquiryBoard.getBrdId()
-//        );
-
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .actionMessage("답변이 등록되었습니다.")
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .targetId(savedReplyBoard.getBrdId())
                 .build();
     }
@@ -459,19 +471,9 @@ public class InquiryBoardService {
                 inquiryBoard.getBrdId()
         );
 
-        // 답글을 단 문의의 회원 정보 조회
-        Member inquiryMember = memberRepository.findById(inquiryBoard.getMember().getMemId())
-                .orElseThrow(() -> new IllegalArgumentException("문의 작성자 정보를 찾을 수 없습니다."));
-        // 메일 알림 (인자값 때문에 일단 비활성화)
-//        mailService.sendMail(
-//                inquiryMember.getMemEml(),
-//                NotificationType.INQUIRY_ANSWER_UPDATE,
-//                inquiryBoard.getBrdTtl(), // detail은 보류(임시로 제목 넣어놨음)
-//                inquiryBoard.getBrdId()
-//        );
-
         return BoardResultResponseDto.builder()
-                .message(fileUtils.generateBoardResultMessage(fileUtils.buildBoardResultMessage(fileResults), false))
+                .actionMessage("답변이 수정되었습니다.")
+                .boardResultMessage(fileUtils.buildBoardResultMessage(fileResults))
                 .build();
     }
 

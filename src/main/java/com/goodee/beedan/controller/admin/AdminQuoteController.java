@@ -2,6 +2,7 @@ package com.goodee.beedan.controller.admin;
 
 import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.dto.quote.CartToQuoteDto;
+import com.goodee.beedan.dto.quote.QuoteRequestDto;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.buyer.BuyerGradePolicyRepository;
 import com.goodee.beedan.repository.member.MemberRepository;
@@ -13,6 +14,7 @@ import com.goodee.beedan.repository.receiver.ReceiverRepository;
 import com.goodee.beedan.repository.stock.StockRepository;
 import com.goodee.beedan.service.exchangeRate.ExchangeRateService;
 import com.goodee.beedan.service.quote.*;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -219,11 +221,6 @@ public class AdminQuoteController {
             return "redirect:/admin/quote/write?quId=" + quId;
         }
 
-        // TEMP_SAVE 상태면 write 페이지로 이동 (이어서 작성)
-        if (quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE) {
-            return "redirect:/admin/quote/write?quId=" + quId;
-        }
-
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         Member member = memberRepository.findById(negotiation.getMemId()).orElse(null);
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
@@ -351,8 +348,10 @@ public class AdminQuoteController {
     @GetMapping("/quote/write")
     public String quoteWrite(@RequestParam(required = false) Long quId,
                              @RequestParam(required = false) Long fromQuId,
+                             @RequestParam(required = false) Long chatRoomId,
                              @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails writerDetails,
-                             Model model) {
+                             Model model,
+                             HttpSession session) {
 
         // 재작성 진입: fromQuId → 기존 견적에서 새 견적 생성
         Long sourceQuId = quId; // 데이터를 로드할 원본 quId
@@ -389,6 +388,8 @@ public class AdminQuoteController {
         model.addAttribute("quId", quId);
         model.addAttribute("quCd", quoteBase.getQuCd());
 
+        model.addAttribute("chatRoomId", chatRoomId);
+
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         model.addAttribute("ngNm", negotiation.getNgNm());
 
@@ -401,27 +402,39 @@ public class AdminQuoteController {
         model.addAttribute("unitGroups", unitGroups);
 
         // 견적 상세 복원 (재작성 시 원본 견적에서 로드)
+        // 신규 초안이면 세션의 quoteItems를, 기존 초안/재작성이면 DB의 QuoteDetail을 우선 사용
+        @SuppressWarnings("unchecked") // Object를 List<...>로 캐스팅할 때 뜨는 unchecked cast 경고 무시
+        List<QuoteRequestDto.QuoteRequestItemDto> sessionItems =
+                (List<QuoteRequestDto.QuoteRequestItemDto>) session.getAttribute("quoteItems_" + quId);
+
         List<QuoteDetail> savedDetails = quoteDetailService.findAllByQuote(sourceQuId);
         QuoteInfo savedInfo = quoteInfoRepository.findByQuId(sourceQuId).orElse(null);
 
         if (savedDetails != null && !savedDetails.isEmpty()) {
+            // 기존 저장된 견적 상세가 있으면 DB 데이터를 우선 복원
             LinkedHashMap<Integer, List<QuoteDetail>> groups = new LinkedHashMap<>();
             int autoGrp = -1;
             for (QuoteDetail d : savedDetails) {
                 int grp = d.getQuDtGrp() != null ? d.getQuDtGrp() : autoGrp--;
                 groups.computeIfAbsent(grp, k -> new ArrayList<>()).add(d);
             }
+
             List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
             int no = 1;
             for (List<QuoteDetail> group : groups.values()) {
                 QuoteDetail first = group.get(0);
                 Stock stock = first.getStId() != null
-                        ? stockRepository.findById(first.getStId()).orElse(null) : null;
+                        ? stockRepository.findById(first.getStId()).orElse(null)
+                        : null;
                 if (stock == null) continue;
+
                 HsCode hsCode = stock.getCatId() != null
-                        ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null) : null;
+                        ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null)
+                        : null;
+
                 quoteItems.add(CartToQuoteDto.Item.fromDraftGroup(no++, stock, group, defaultUnit, hsCode));
             }
+
             model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
 
             if (savedInfo != null) {
@@ -429,6 +442,25 @@ public class AdminQuoteController {
                 model.addAttribute("draftSiId", savedInfo.getSiId());
                 model.addAttribute("draftStiId", savedInfo.getStiId());
             }
+
+        } else if (sessionItems != null && !sessionItems.isEmpty()) {
+            // 관리자 채팅 유입으로 새 초안을 만들었을 때는 세션에 담긴 상품으로 화면 구성
+            List<CartToQuoteDto.Item> quoteItems = new ArrayList<>();
+
+            for (int i = 0; i < sessionItems.size(); i++) {
+                QuoteRequestDto.QuoteRequestItemDto item = sessionItems.get(i);
+
+                Stock stock = stockRepository.findById(item.getStId()).orElse(null);
+                if (stock == null) continue;
+
+                HsCode hsCode = stock.getCatId() != null
+                        ? hsCodeRepository.findByCatId(stock.getCatId()).orElse(null)
+                        : null;
+
+                quoteItems.add(CartToQuoteDto.Item.of(i + 1, stock, item.getQty(), defaultUnit, hsCode));
+            }
+
+            model.addAttribute("cartToQuote", CartToQuoteDto.builder().items(quoteItems).build());
         }
 
         // 기존 운임 데이터 로드 (임시저장 복원 / 재작성 모두)

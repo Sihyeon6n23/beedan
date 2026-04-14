@@ -17,24 +17,26 @@
     <link rel="stylesheet" th:href="@{/css/notification/notification.css}">
 </head>
 <body class="bg-background flex flex-col min-h-screen">
-<header th:replace="~{fragments/header :: headerFragment}"></header>
+  <header th:replace="~{fragments/header :: headerFragment}"></header>
 
-<div class="app-layout flex flex-grow w-full pt-16"
-     th:classappend="${sidebar} ? ' app-layout--with-sidebar' : ''">
+  <div class="app-layout flex flex-grow w-full pt-16" th:classappend="${sidebar} ? ' app-layout--with-sidebar' : ''">
     <div th:if="${sidebar}" class="app-layout__sidebar flex-shrink-0">
         <aside th:replace="${sidebar}"></aside>
     </div>
 
-    <div class="app-layout__content"
-         th:classappend="${sidebar} ? '' : 'mx-auto'">
+    <div class="app-layout__content" th:classappend="${sidebar} ? '' : 'mx-auto'">
         <main th:replace="${content}"></main>
     </div>
-</div>
-<footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
-<th:block sec:authorize="isAnonymous() or hasRole('USER')">
+
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footerFragment}" class="w-full"></footer>
+
+  <th:block sec:authorize="isAnonymous() or hasRole('USER')">
     <div th:replace="~{fragments/chat/member-widget :: memberChatWidget}"></div>
-</th:block>
+  </th:block>
 
 <script defer th:src="@{/js/notification/notification.js}"></script>
+<script defer th:src="@{/js/tracking/page-tracking.js}"></script>
 </body>
 </html>

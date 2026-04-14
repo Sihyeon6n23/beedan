@@ -13,8 +13,8 @@ class UnipassServiceTest {
 
     @Test
     void UnipassTest() {
-        String testHblNo = "301910788412";
-        String testYear = "2026";
+        String testHblNo = "";
+        String testYear = "";
 
         String response = unipassService.getCargoStatus(testHblNo, testYear);
 
