@@ -13,8 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -26,17 +27,41 @@ public class ShipmentScheduler {
     private final TrackingService trackingService;
     private final SchedulerService schedulerService;
 
-    @Scheduled(cron = "0 0 */3 * * *") // 3시간마다
+    @Scheduled(fixedDelay = 60000) // 1분마다
+    public void trackShipmentSync() {
+        LocalDateTime now = LocalDateTime.now();
+        SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
+
+        if (!setting.getIsShipmentSyncEnabled()) return;
+        if (setting.getShipmentSyncStartDt() == null) return;
+
+        LocalDateTime startDt = LocalDateTime.parse(setting.getShipmentSyncStartDt());
+        if (now.isBefore(startDt)) return;
+
+        long hoursElapsed = Duration.between(startDt, now).toHours();
+        long intervalHours = Long.parseLong(setting.getShipmentSyncInterval());
+        LocalDateTime nextRun = startDt.plusHours((hoursElapsed / intervalHours) * intervalHours);
+
+        if (now.isBefore(nextRun)) return;
+
+        if (setting.getLastShipmentSyncRunTime() != null) {
+            LocalDateTime lastRun = LocalDateTime.parse(setting.getLastShipmentSyncRunTime());
+            if (!lastRun.isBefore(nextRun)) return;
+        }
+
+        syncShipmentStatus();
+
+        setting.setLastShipmentSyncRunTime(now.toString());
+        try {
+            schedulerService.saveSchedulerSetting(setting);
+            log.info("배송 상태 동기화 스케줄러 실행 완료");
+        } catch (IOException e) {
+            log.error("배송 상태 동기화 스케줄러 설정 저장 실패: {}", e.getMessage());
+        }
+    }
+
     public void syncShipmentStatus() {
         try {
-            SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
-
-            // 배송 동기화가 비활성화된 경우 실행하지 않음
-            if (!setting.getIsShipmentSyncEnabled()) {
-                log.info("배송 상태 동기화가 비활성화되어 있어 실행을 건너뜁니다.");
-                return;
-            }
-
             log.info("배송 상태 동기화 스케줄러 시작");
 
             List<Shipment> targets = shipmentRepository.findByShSttIn(
@@ -59,9 +84,6 @@ public class ShipmentScheduler {
                 waitForRateLimit();
             }
 
-            // 실행 기록 저장
-            setting.setLastShipmentSyncRunTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            schedulerService.saveSchedulerSetting(setting);
 
             log.info("배송 상태 동기화 완료 - 성공: {}, 실패: {}", successCount, failCount);
 
