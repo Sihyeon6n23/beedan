@@ -39,15 +39,15 @@ public class GlobalControllerAdvice {
         return "error/common";
     }
 
-    @ExceptionHandler(Exception.class)
-    public String handleException(Exception e, Model model) {
-        model.addAttribute("message", "요청을 처리하는 중 오류가 발생했습니다.");
-        return "error/common";
-    }
-
     @ExceptionHandler(BusinessException.class)
     public String handleBusinessException(BusinessException e, Model model) {
         model.addAttribute("message", e.getMessage());
+        return "error/common";
+    }
+
+    @ExceptionHandler(Exception.class)
+    public String handleException(Exception e, Model model) {
+        model.addAttribute("message", "요청을 처리하는 중 오류가 발생했습니다.");
         return "error/common";
     }
 

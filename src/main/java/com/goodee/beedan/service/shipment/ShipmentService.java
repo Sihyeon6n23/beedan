@@ -57,7 +57,7 @@ public class ShipmentService {
             case PREPARING -> shipment.setShStt(ShipmentStatus.SHIPPING);
             case SHIPPING -> shipment.setShStt(ShipmentStatus.DELIVERING);
             case DELIVERING -> shipment.setShStt(ShipmentStatus.DELIVERED);
-            default -> throw new IllegalStateException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
+            default -> throw new IllegalArgumentException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
         }
 
         syncOrderStatus(shipment.getOrder());
