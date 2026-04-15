@@ -68,7 +68,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             session.setAttribute("passwordExpiration", true);
         }
 
-
         // 세션 로그에 회원 ID 기록
         try {
             Object principal = authentication.getPrincipal();

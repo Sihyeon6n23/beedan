@@ -21,8 +21,8 @@
     <section class="inquiry-page inquiry-write-page">
         <header class="inquiry-shell inquiry-shell--header">
             <div class="inquiry-shell__heading">
-                <span class="inquiry-kicker" th:text="${boardRequestDto.brdId == null ? 'New Notice' : 'Edit Notice'}">Notice</span>
-                <h2 class="inquiry-title" th:text="${boardRequestDto.brdId == null ? '공지사항 작성' : '공지사항 수정'}">공지사항</h2>
+                <span class="inquiry-kicker" th:text="${isEdit ? 'Edit Notice' : 'New Notice'}">Notice</span>
+                <h2 class="inquiry-title" th:text="${isEdit ? '공지사항 수정' : '공지사항 작성'}">공지사항</h2>
             </div>
             <div class="inquiry-shell__rule"><span></span></div>
         </header>
@@ -30,7 +30,7 @@
         <section class="inquiry-write-panel">
             <form class="inquiry-write-form"
                   id="inquiry-write-form"
-                  th:action="${boardRequestDto.brdId == null ? '/notice/write' : '/notice/edit'}"
+                  th:action="${isEdit ? '/notice/edit' : '/notice/write'}"
                   th:object="${boardRequestDto}"
                   method="post"
                   enctype="multipart/form-data">
@@ -66,11 +66,12 @@
                         <div class="inquiry-write-field">
                             <label class="inquiry-write-field__label">첨부 파일</label>
                             <th:block th:if="${isEdit}">
-                            <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${boardRequestDto.fileList}, isMultiple=true)}"></div>
+                            <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${fileList}, isMultiple=true)}"></div>
                             </th:block>
                             <th:block th:if="${!isEdit}">
                                 <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=null, isMultiple=true)}"></div>
                             </th:block>
+                            <p th:if="${#fields.hasErrors('newFiles')}" th:errors="*{newFiles}" class="text-error text-xs font-bold mt-1 error-text-wrap leading-relaxed"></p>
                         </div>
 
                 </div>
@@ -84,7 +85,6 @@
         </section>
     </section>
 
-    <script defer th:src="@{/js/file/fileUpload.js}"></script>
     <script defer th:src="@{/js/file/fileUpload.js}"></script>
     <script th:inline="javascript">
         // ✅ 브라우저가 fileUpload.js(defer)까지 모두 완벽하게 읽을 때까지 기다립니다.

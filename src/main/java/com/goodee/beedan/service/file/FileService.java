@@ -445,17 +445,19 @@ public class FileService {
         return namePart.replace(".", "_") + extensionPart;
     }
 
-    public boolean validateFileCount(List<MultipartFile> files, int maxCount) {
-        if (files == null) return false;
-
-        // 실제 파일이 존재하는 것만 필터링해서 카운트
-        long actualCount = files.stream()
-                .filter(file -> !file.isEmpty()) // 0바이트 혹은 빈 객체 제외
+    public boolean validateFileCount(List<MultipartFile> newFiles, long existFilesCount, long deleteFilesCount, long maxLimit) {
+        // 1. 실제 데이터가 있는 파일만 카운트 (null 및 비어있는 객체 제외)
+        long actualNewFilesCount = (newFiles == null) ? 0L : newFiles.stream()
+                .filter(file -> file != null && !file.isEmpty())
                 .count();
 
-        if (actualCount > maxCount) {
-            return false;
-        }
-        return true;
+        // 2. 가용 슬롯 계산식: (최대 제한 - 현재 개수 + 삭제될 개수)
+        long uploadEnableCount = maxLimit - existFilesCount + deleteFilesCount;
+
+        log.info("검증 로그 - 신규: {}, 기존: {}, 삭제예정: {}, 가용슬롯: {}",
+                actualNewFilesCount, existFilesCount, deleteFilesCount, uploadEnableCount);
+
+        // 3. 비교
+        return actualNewFilesCount <= uploadEnableCount;
     }
 }

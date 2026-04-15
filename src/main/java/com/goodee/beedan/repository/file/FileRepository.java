@@ -21,6 +21,12 @@ public interface FileRepository extends JpaRepository<FileUpload, Long> {
 """)
     boolean existsByRefDto(@Param("ref") RefDto ref);
 
+    @Query("SELECT COUNT(f) FROM FileUpload f " +
+            "WHERE f.brdRefTy = :#{#ref.refTy} " +
+            "AND f.brdRefNo = :#{#ref.refNo} " +
+            "AND f.fileDelYn = false")
+    long countActiveFiles(@Param("ref") RefDto ref);
+
     @Query("""
     SELECT DISTINCT f.brdRefNo 
     FROM FileUpload f 
