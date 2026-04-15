@@ -147,6 +147,15 @@ public class AdminMemberApiController {
         if(userDetails == null) throw new MemberNotFoundException();
         
         unipassScheduler.runUnipassTracking();
+
+        try {
+            SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
+            setting.setLastUnipassRunTime(LocalDateTime.now().toString());
+            schedulerService.saveSchedulerSetting(setting);
+        } catch (IOException e) {
+            log.error("통관 수동 동기화 설정 저장 실패: {}", e.getMessage());
+        }
+
         return ResponseEntity.ok("통관 정보 수동 동기화가 완료되었습니다.");
     }
 

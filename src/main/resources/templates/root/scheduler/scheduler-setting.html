@@ -85,13 +85,13 @@
                     <!-- ON/OFF 라디오 -->
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="exchangeRateEnabled" value="true"
-                                   th:checked="${setting.exchangeRateEnabled}">
+                            <input type="radio" name="isExchangeRateEnabled" value="true"
+                                   th:checked="${setting.isExchangeRateEnabled}">
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="exchangeRateEnabled" value="false"
-                                   th:checked="${!setting.exchangeRateEnabled}">
+                            <input type="radio" name="isExchangeRateEnabled" value="false"
+                                   th:checked="${!setting.isExchangeRateEnabled}">
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>
@@ -138,13 +138,13 @@
 
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="gradeResolveEnabled" value="true"
-                                   th:checked="${setting.gradeResolveEnabled}">
+                            <input type="radio" name="isGradeResolveEnabled" value="true"
+                                   th:checked="${setting.isGradeResolveEnabled}">
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="gradeResolveEnabled" value="false"
-                                   th:checked="${!setting.gradeResolveEnabled}">
+                            <input type="radio" name="isGradeResolveEnabled" value="false"
+                                   th:checked="${!setting.isGradeResolveEnabled}">
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>
