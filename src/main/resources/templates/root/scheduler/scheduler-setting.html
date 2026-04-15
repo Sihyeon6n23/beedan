@@ -22,7 +22,7 @@
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
 
             <form id="policyForm" th:action="@{/root/scheduler/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <!-- 자동 크롤링 설정 -->
+                <!-- 1. 자동 크롤링 설정 -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">schedule</span>
@@ -186,13 +186,13 @@
                     <!-- ON/OFF 라디오 -->
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="chatAutoCloseEnabled" value="true"
-                                   th:checked="${setting.chatAutoCloseEnabled}">
+                            <input type="radio" name="isChatAutoCloseEnabled" value="true"
+                                   th:checked="${setting.isChatAutoCloseEnabled}">
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="chatAutoCloseEnabled" value="false"
-                                   th:checked="${!setting.chatAutoCloseEnabled}">
+                            <input type="radio" name="isChatAutoCloseEnabled" value="false"
+                                   th:checked="${!setting.isChatAutoCloseEnabled}">
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>
@@ -267,7 +267,7 @@
                     </button>
                 </section>
 
-                <!-- 5. 전시용 신규 상품 갱신 -->
+                <!-- 6. 전시용 신규 상품 갱신 -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">new_releases</span>
@@ -310,7 +310,7 @@
                     </button>
                 </section>
 
-                <!-- 6. 통관 물품 갱신 주기 설정 -->
+                <!-- 7. 통관 물품 갱신 주기 설정 -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">schedule</span>
@@ -366,11 +366,11 @@
                     </button>
                 </section>
 
-                <!-- 7. 배송 상태 동기화 -->
+                <!-- 8. 배송 상태 동기화 -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">local_shipping</span>
-                        <h2 class="text-xl font-bold tracking-tight uppercase">6. 배송 상태 동기화</h2>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">8. 배송 상태 동기화</h2>
                     </div>
 
                     <!-- ON/OFF 라디오 -->

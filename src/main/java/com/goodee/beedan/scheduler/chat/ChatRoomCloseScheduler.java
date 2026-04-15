@@ -26,7 +26,7 @@ public class ChatRoomCloseScheduler {
         SchedulerSettingDto schedulerSetting = schedulerService.getSchedulerSetting();
 
         // 자동 종료 기능이 꺼져 있으면 바로 종료
-        if (!schedulerSetting.isChatAutoCloseEnabled()) return;
+        if (!schedulerSetting.getIsChatAutoCloseEnabled()) return;
 
         // 시작 시각이나 실행 주기가 비어 있으면 안전하게 실행 X
         if (schedulerSetting.getChatAutoCloseStartDt() == null
@@ -56,7 +56,9 @@ public class ChatRoomCloseScheduler {
         // 마지막 메시지 이후 3일 지난 OPEN/ONGOING 채팅방을 실제로 자동 종료
         long inactiveHours = Long.parseLong(schedulerSetting.getChatAutoCloseInterval());
         int closedCount = chatSchedulerService.closeInactiveChatRooms(inactiveHours);
-        log.info("채팅방 자동 종료 스케줄러 실행 완료 - 종료된 채팅방 수: {}", closedCount);
+        if (closedCount > 0) {
+            log.info("비활성 {}시간 초과 채팅방 자동 종료 완료 - 종료된 채팅방 수: {}", inactiveHours, closedCount);
+        }
 
         // 이번 실행 시각을 저장해 다음 실행 주기 계산 기준으로 사용
         schedulerSetting.setLastChatAutoCloseRunTime(now.toString());
