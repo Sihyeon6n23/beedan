@@ -35,7 +35,7 @@ public class UnipassScheduler {
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
         if (!setting.getIsUnipassEnabled()) return;
-        if (setting.getUnipassStartDt() == null) return;
+        if (setting.getUnipassStartDt() == null || setting.getUnipassStartDt().isBlank()) return;
 
         LocalDateTime startDt = LocalDateTime.parse(setting.getUnipassStartDt());
         if (now.isBefore(startDt)) return;
@@ -46,7 +46,7 @@ public class UnipassScheduler {
 
         if (now.isBefore(nextRun)) return;
 
-        if (setting.getLastUnipassRunTime() != null) {
+        if (setting.getLastUnipassRunTime() != null && !setting.getLastUnipassRunTime().isBlank()) {
             LocalDateTime lastRun = LocalDateTime.parse(setting.getLastUnipassRunTime());
             if (!lastRun.isBefore(nextRun)) return;
         }
