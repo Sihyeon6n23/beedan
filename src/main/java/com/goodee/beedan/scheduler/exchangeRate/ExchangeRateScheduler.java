@@ -31,7 +31,7 @@ public class ExchangeRateScheduler {
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
         // OFF면 리턴
-        if (!setting.isExchangeRateEnabled()) return;
+        if (!setting.getIsExchangeRateEnabled()) return;
 
         // 시작 일자 확인
         if (setting.getExchangeRateStartDt() == null) return;
