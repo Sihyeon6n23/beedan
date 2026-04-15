@@ -158,10 +158,11 @@ public class QuoteBaseService {
      * 운영자 열람 처리
      */
     @Transactional
-    public QuoteBase adminOpen(Long quId) {
+    public QuoteBase adminOpen(Long quId, Long adminMemId) {
         QuoteBase quoteBase = findById(quId);
-        quoteBase.adminOpened();
-        log.info("운영자 열람 처리 완료. ID: {}", quId);
+        quoteBase.adminOpened(adminMemId);
+        log.info("운영자 열람 처리 완료. ID: {}, adminMemId: {}, quRid: {}",
+                quId, adminMemId, quoteBase.getQuRid());
         return quoteBase;
     }
 

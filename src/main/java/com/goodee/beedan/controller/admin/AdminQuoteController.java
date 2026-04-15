@@ -1,6 +1,8 @@
 package com.goodee.beedan.controller.admin;
 
+import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.QuoteStatus;
+import lombok.extern.slf4j.Slf4j;
 import com.goodee.beedan.dto.quote.CartToQuoteDto;
 import com.goodee.beedan.dto.quote.QuoteRequestDto;
 import com.goodee.beedan.entity.*;
@@ -29,13 +31,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin")
 public class AdminQuoteController {
-
-    private static final String REDIRECT_QUOTE_LIST = "redirect:/admin/quote/list";
 
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
@@ -189,7 +191,9 @@ public class AdminQuoteController {
     public String quoteDetail(@RequestParam Long quId, Model model,
                               @AuthenticationPrincipal com.goodee.beedan.config.security.MemberUserDetails userDetails) {
         QuoteBase quoteBase = quoteBaseService.findById(quId);
-        if (quoteBase == null) return REDIRECT_QUOTE_LIST;
+        if (quoteBase == null) {
+            throw new NoSuchElementException("해당 견적을 찾을 수 없습니다.");
+        }
 
         // TEMP_SAVE 상태면 write 페이지로 이동 (이어서 작성)
         if (quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE) {
@@ -308,6 +312,17 @@ public class AdminQuoteController {
         model.addAttribute("inspectionAmount", inspectionAmount);
         model.addAttribute("isAdmin", true);
 
+        // 사업자 승인 미완료 여부 (승인 버튼 비활성용)
+        String customerBizStt = member != null ? member.getMemBizStt() : null;
+        boolean bizUnapproved = customerBizStt != null
+                && (MemberBizStatus.REQUEST.toString().equals(customerBizStt)
+                    || MemberBizStatus.REJECT.toString().equals(customerBizStt));
+        log.info("[견적 상세] quId={} customerId={} memBizStt={} bizUnapproved={}",
+                quId,
+                member != null ? member.getMemId() : null,
+                customerBizStt, bizUnapproved);
+        model.addAttribute("bizUnapproved", bizUnapproved);
+
         // 현재 사용자가 이 견적의 작성자인지 (작성자면 액션 버튼 숨김)
         boolean isSender = false;
         if (userDetails != null) {
@@ -332,7 +347,9 @@ public class AdminQuoteController {
         Long sourceQuId = quId; // 데이터를 로드할 원본 quId
         if (fromQuId != null) {
             QuoteBase oldQuote = quoteBaseService.findById(fromQuId);
-            if (oldQuote == null) return REDIRECT_QUOTE_LIST;
+            if (oldQuote == null) {
+                throw new NoSuchElementException("재작성할 견적을 찾을 수 없습니다.");
+            }
 
             // 송신자 = admin (나), 수신자 = 상대방
             Long myId = writerDetails != null ? writerDetails.getMemberId() : null;
@@ -354,10 +371,14 @@ public class AdminQuoteController {
 
         }
 
-        if (quId == null) return REDIRECT_QUOTE_LIST;
+        if (quId == null) {
+            throw new IllegalArgumentException("견적 정보가 없습니다.");
+        }
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
-        if (quoteBase == null) return REDIRECT_QUOTE_LIST;
+        if (quoteBase == null) {
+            throw new NoSuchElementException("해당 견적을 찾을 수 없습니다.");
+        }
 
         model.addAttribute("activeStep", 1);
         model.addAttribute("quId", quId);

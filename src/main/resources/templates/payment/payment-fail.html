@@ -13,10 +13,31 @@
 </th:block>
 
 <th:block th:fragment="content">
-<div style="padding:60px 0; text-align:center;">
-    <h1 style="font-size:32px; font-weight:700; margin-bottom:16px;">결제에 실패했습니다</h1>
-    <p style="color:#737373; margin-bottom:32px;">다시 시도해주세요.</p>
-    <a href="/quote/list" style="color:#705d00; font-weight:600;">견적 목록으로 돌아가기</a>
+<div style="min-height:calc(100vh - 64px - 60px);
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            text-align:center; padding:40px 20px;">
+    <h1 style="font-size:32px; font-weight:700; margin:0 0 16px;">결제에 실패했습니다</h1>
+
+    <p th:if="${message != null and !message.isEmpty()}"
+       style="color:#262626; margin:0 0 8px; font-size:15px;"
+       th:text="${message}">결제 실패 사유</p>
+    <p th:if="${code != null and !code.isEmpty()}"
+       style="color:#a3a3a3; margin:0 0 24px; font-size:13px;"
+       th:text="'사유 코드: ' + ${code}">사유 코드</p>
+    <p th:if="${message == null or message.isEmpty()}"
+       style="color:#737373; margin:0 0 32px;">잠시 후 다시 시도해 주세요.</p>
+
+    <div style="display:flex; gap:12px; justify-content:center; margin-top:8px;">
+        <a th:if="${quId != null}"
+           th:href="@{/payment/check(quId=${quId})}"
+           style="padding:10px 20px; border:1px solid #705d00; color:#705d00; font-weight:600; text-decoration:none;">결제 다시하기</a>
+        <a th:if="${quId != null}"
+           th:href="@{/quote/detail(quId=${quId})}"
+           style="padding:10px 20px; border:1px solid #d4d4d4; color:#525252; font-weight:600; text-decoration:none;">견적 상세로</a>
+        <a href="/quote/list"
+           style="padding:10px 20px; color:#737373; font-weight:600; text-decoration:none;">견적 목록</a>
+    </div>
 </div>
 </th:block>
 </html>

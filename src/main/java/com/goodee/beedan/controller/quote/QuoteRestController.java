@@ -1,5 +1,6 @@
 package com.goodee.beedan.controller.quote;
 
+import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.TransportType;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.entity.*;
@@ -82,8 +83,9 @@ public class QuoteRestController {
 
     // ── 운영자 견적 열람 처리 ─────────────────────────────────
     @PostMapping("/{quId}/admin-opened")
-    public ResponseEntity<Void> markAdminOpened(@PathVariable Long quId) {
-        QuoteBase qb = quoteBaseService.adminOpen(quId);
+    public ResponseEntity<Void> markAdminOpened(@PathVariable Long quId,
+                                                @AuthenticationPrincipal MemberUserDetails userDetails) {
+        QuoteBase qb = quoteBaseService.adminOpen(quId, userDetails.getMemberId());
         quoteNotificationService.notifyOnReview(qb);
         return ResponseEntity.ok().build();
     }
@@ -91,6 +93,22 @@ public class QuoteRestController {
     // ── 견적 승인 ─────────────────────────────────
     @PostMapping("/{quId}/approve")
     public ResponseEntity<Void> approveQuote(@PathVariable Long quId) {
+        // 사업자 미승인(REQUEST/REJECT) 사용자의 견적은 승인 불가
+        QuoteBase target = quoteBaseService.findById(quId);
+        Negotiation negotiation = negotiationService.findById(target.getNgId());
+        Member customer = memberRepository.findById(negotiation.getMemId()).orElse(null);
+        String customerBizStt = customer != null ? customer.getMemBizStt() : null;
+        log.info("[견적 승인 시도] quId={} customerId={} memBizStt={}",
+                quId,
+                customer != null ? customer.getMemId() : null,
+                customerBizStt);
+
+        if (customerBizStt != null
+                && (MemberBizStatus.REQUEST.toString().equals(customerBizStt)
+                    || MemberBizStatus.REJECT.toString().equals(customerBizStt))) {
+            throw new IllegalStateException("사업자 승인이 안 된 사용자입니다.");
+        }
+
         QuoteBase qb = quoteBaseService.approve(quId);
         quoteNotificationService.notifyOnApprove(qb);
         return ResponseEntity.ok().build();
