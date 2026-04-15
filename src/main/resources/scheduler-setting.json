@@ -1,4 +1,7 @@
 {
+  "unipassEnabled" : false,
+  "chatAutoCloseEnabled" : true,
+  "autoCrawlingEnabled" : true,
   "gradeResolveEnabled" : false,
   "shipmentSyncEnabled" : false,
   "exchangeRateEnabled" : true,
@@ -25,7 +28,7 @@
   "is_chat_auto_close_enabled" : true,
   "chat_auto_close_start_dt" : "2026-04-01T00:00",
   "chat_auto_close_interval" : "1",
-  "last_chat_auto_close_run_time" : "2026-04-15T12:21:47.158321900",
+  "last_chat_auto_close_run_time" : "2026-04-15T14:09:48.696360800",
   "is_unipass_enabled" : false,
   "unipass_start_dt" : "",
   "unipass_interval" : "1",
