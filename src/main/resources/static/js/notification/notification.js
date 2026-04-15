@@ -29,13 +29,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const numCount = Number.parseInt(count, 10);
         if (numCount > 0) {
-           badge.innerText = numCount > 6 ? '6+' : numCount;
-           badge.classList.remove('hidden');
-           badge.style.setProperty('display', 'flex', 'important');
+            badge.innerText = numCount > 6 ? '6+' : numCount;
+
+            badge.classList.remove('hidden');
+            badge.style.setProperty('display', 'flex', 'important');
         } else {
-           badge.innerText = '';
-           badge.classList.add('hidden');
-           badge.style.setProperty('display', 'none', 'important');
+            badge.innerText = '';
+
+            badge.classList.add('hidden');
+            badge.style.setProperty('display', 'none', 'important');
         }
     };
 

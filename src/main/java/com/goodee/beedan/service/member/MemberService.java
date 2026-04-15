@@ -1,6 +1,7 @@
 package com.goodee.beedan.service.member;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.file.RefDto;
@@ -76,7 +77,6 @@ public class MemberService {
         Long accountLockDurationMinutes = policy.getAccountLockDurationMinutes();
 
         // 시도 횟수 도달시 잠금 로직
-        // 비활성화 계정은 왜 잠기는것..
         if (loginTryCount < maxLoginFailureCount) {
             member.setMemLgnTr(++loginTryCount);
             accountStatus.setLoginTryCount(loginTryCount);
@@ -84,9 +84,11 @@ public class MemberService {
 
         if (loginTryCount.equals(maxLoginFailureCount)) {
             LocalDateTime now = LocalDateTime.now();
-            member.setMemLocDt(now.plusMinutes(accountLockDurationMinutes));
+            LocalDateTime unlockTime = now.plusMinutes(accountLockDurationMinutes);
+            member.setMemLocDt(unlockTime);
             member.setMemStt(MemberStatus.LOCK.toString());
             accountStatus.setAccountStatus(MemberStatus.LOCK.toString());
+            accountStatus.setAccountLockDateTime(unlockTime);
         }
 
         return accountStatus;
@@ -102,6 +104,14 @@ public class MemberService {
     public void insertMember(MemberFormDto memberForm,
                              PhoneVerificationDto phoneVerificationDto,
                              BizDto validateBizDto) {
+        // 사업자 기 인증 계정 자동인증?
+        String bizStt = MemberBizStatus.REQUEST.toString();
+
+        if (memberRepository.existsByMemBizNoAndMemBizStt(
+                validateBizDto.getBNo(),
+                MemberBizStatus.APPROVAL_MANUAL.toString())) {
+            bizStt = MemberBizStatus.APPROVAL_AUTO.toString();
+        }
 
         Member member = Member.builder()
                 .memLgnId(memberForm.getUserLoginId())
@@ -112,8 +122,9 @@ public class MemberService {
                 .memBizDtAdr(memberForm.getCompanyAddressDetail())
                 .memCeoPhn(memberForm.getCeoPhone())
                 .memCmpTel(memberForm.getCmpPhone())
-                .memStt(MemberStatus.PENDING.toString()) // 가입요청상태로 회원가입 요청
-                .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
+                .memStt(MemberStatus.ACTIVE.toString())
+                .memBizStt(bizStt)
+                .memAut(MemberAuthority.USER)
                 .memLgnTr(0L)
                 .memMbPhn(phoneVerificationDto.getPhoneNumber())
                 .memCi(phoneVerificationDto.getCi())
@@ -129,8 +140,7 @@ public class MemberService {
 
         try {
             Member saveMember = memberRepository.save(member);
-            List<MultipartFile> fileList = new ArrayList<>();
-            fileList.add(memberForm.getNewFiles());
+            List<MultipartFile> fileList = memberForm.getNewFiles();
             fileService.saveFile(fileList, RefDto.builder()
                     .refTy("SIGNUP")
                     .refNo(saveMember.getMemId())
@@ -151,9 +161,9 @@ public class MemberService {
         return memberRepository.existsByMemLgnId(username);
     }
 
-    public void allowAccount(Long memberId) {
+    public void approveAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
-        member.approve();
+        member.bizApprove();
     }
 
 
@@ -161,9 +171,9 @@ public class MemberService {
         return memberRepository.existsByMemEml(email);
     }
 
-    public void inactiveAccount(Long memberId) {
+    public void rejectAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
-        member.inactive();
+        member.bizReject();
     }
 
     public void resetPassword(String token, PasswordResetDto resetDto) {
@@ -271,8 +281,17 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public List<MemberApproveDto> findPendingMembersWithFiles() {
-        return memberRepository.findPendingMembersWithFiles();
+    public List<MemberApproveDto> findBizPendingMembersWithFiles() {
+        try {
+            List<MemberApproveDto> result = memberRepository.findBizPendingMembersWithFiles(
+                    MemberBizStatus.REQUEST.toString(),
+                    MemberStatus.WITHDRAWN.toString()
+            );
+            return result;
+        } catch (Exception e) {
+            log.error("여기서 터졌네요! 에러 원인: ", e); // 에러의 정체를 밝혀줍니다.
+            throw e;
+        }
     }
 
     private Boolean checkMemberAuthority(Long memId){
@@ -280,4 +299,7 @@ public class MemberService {
         return member.getMemAut().equals(MemberAuthority.ADMIN);
     }
 
+    public boolean isDuplicatedPhoneNumber(String phoneNumber) {
+        return memberRepository.existsByMemMbPhn(phoneNumber);
+    }
 }

@@ -79,6 +79,10 @@ public class MemberChatService {
 
         chatRoomReadStatusRepository.save(roomReadStatus);
 
+        // 새 OPEN 채팅방 생성 즉시 사용자/관리자 목록에 반영
+        chatRealtimeService.publishMemberSummary(memId);
+        chatRealtimeService.publishAdminSummary();
+
         return mapToChatRoomOpenResultDto(savedRoom, false);
     }
 

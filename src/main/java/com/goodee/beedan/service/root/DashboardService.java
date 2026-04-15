@@ -24,11 +24,17 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class DashboardService {
 
+    private static final double PERCENTAGE_MULTIPLIER = 1000.0;
+    private static final double PERCENTAGE_DIVISOR = 10.0;
+    private static final int POPULAR_PRODUCT_MIN_VIEWS = 10;
+    private static final String PAGE_STOCK_DETAIL = "STOCK_DETAIL";
+
     private final PageViewRepository pageViewRepository;
     private final CartRepository cartRepository;
     private final SessionLogRepository sessionLogRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final QuoteBaseRepository quoteBaseRepository;
+    private final com.goodee.beedan.repository.quote.NegotiationRepository negotiationRepository;
     private final MemberRepository memberRepository;
     private final StockRepository stockRepository;
     private final PaymentRepository paymentRepository;
@@ -37,13 +43,22 @@ public class DashboardService {
      * 전환 퍼널 데이터
      */
     public Map<String, Object> getFunnel(LocalDateTime from, LocalDateTime to) {
-        long views = pageViewRepository.countByPvPageAndPvCreDtBetween("STOCK_DETAIL", from, to);
-        long carts = cartRepository.count(); // 현재 장바구니 총 건수 (누적)
-        long quotes = quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.SUBMITTED, from, to)
-                + quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.APPROVED, from, to)
-                + quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.REJECTED, from, to)
-                + quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
-        long paid = quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to);
+        long views = pageViewRepository.countByPvPageAndPvCreDtBetween(PAGE_STOCK_DETAIL, from, to);
+        long carts = cartRepository.count();
+
+        // 상태별 건수 1쿼리로 (퍼널 + 견적현황 공용)
+        Map<QuoteStatus, Long> statusMap = new EnumMap<>(QuoteStatus.class);
+        for (QuoteStatus s : QuoteStatus.values()) statusMap.put(s, 0L);
+        for (Object[] row : quoteBaseRepository.countGroupByStatus(from, to)) {
+            statusMap.put((QuoteStatus) row[0], (Long) row[1]);
+        }
+
+        long quotes = statusMap.getOrDefault(QuoteStatus.SUBMITTED, 0L)
+                + statusMap.getOrDefault(QuoteStatus.APPROVED, 0L)
+                + statusMap.getOrDefault(QuoteStatus.REJECTED, 0L)
+                + statusMap.getOrDefault(QuoteStatus.PAID, 0L);
+        long paid = statusMap.getOrDefault(QuoteStatus.PAID, 0L);
+        long negotiations = negotiationRepository.countByNgCreDtBetween(from, to);
 
         Map<String, Object> funnel = new LinkedHashMap<>();
         funnel.put("views", views);
@@ -53,7 +68,9 @@ public class DashboardService {
         funnel.put("viewToCart", views > 0 ? Math.round((double) carts / views * 100) : 0);
         funnel.put("cartToQuote", carts > 0 ? Math.round((double) quotes / carts * 100) : 0);
         funnel.put("quoteToPaid", quotes > 0 ? Math.round((double) paid / quotes * 100) : 0);
-        funnel.put("totalConversion", views > 0 ? Math.round((double) paid / views * 1000) / 10.0 : 0);
+        funnel.put("negotiations", negotiations);
+        funnel.put("totalConversion", negotiations > 0 ? Math.round((double) paid / negotiations * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
+        funnel.put("_statusMap", statusMap); // 견적현황에서 재사용
         return funnel;
     }
 
@@ -61,9 +78,9 @@ public class DashboardService {
      * 인기 상품 TOP 10 (조회수 + 카트수 + 구매수)
      */
     public List<Map<String, Object>> getPopularProducts(LocalDateTime from, LocalDateTime to, int limit) {
-        // 상품별 조회수 (PageView 기준)
-        List<Object[]> hitCounts = pageViewRepository.countStockViewsGrouped(from, to);
-        // 상품별 카트 수
+        // 상품별 조회수 + 상품명 + 구매수 JOIN (1 쿼리)
+        List<Object[]> hitCounts = pageViewRepository.countStockViewsWithName(from, to);
+        // 상품별 카트 수 (1 쿼리)
         Map<Long, Long> cartMap = new HashMap<>();
         cartRepository.countByStockGrouped().forEach(row -> cartMap.put((Long) row[0], (Long) row[1]));
 
@@ -73,22 +90,20 @@ public class DashboardService {
             if (rank >= limit) break;
             Long stId = (Long) row[0];
             long viewCount = (Long) row[1];
-            Stock stock = stockRepository.findById(stId).orElse(null);
-            if (stock == null) continue;
-
+            String stNm = (String) row[2];
+            long purchaseCount = row[3] != null ? ((Number) row[3]).longValue() : 0;
             long cartCount = cartMap.getOrDefault(stId, 0L);
-            long purchaseCount = stock.getStPurCnt() != null ? stock.getStPurCnt() : 0;
 
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("rank", ++rank);
             item.put("stId", stId);
-            item.put("stNm", stock.getStNm());
+            item.put("stNm", stNm);
             item.put("views", viewCount);
             item.put("carts", cartCount);
             item.put("purchases", purchaseCount);
-            item.put("viewToCart", viewCount > 0 ? Math.round((double) cartCount / viewCount * 1000) / 10.0 : 0);
-            item.put("cartToPurchase", cartCount > 0 ? Math.round((double) purchaseCount / cartCount * 1000) / 10.0 : 0);
-            item.put("totalConversion", viewCount > 0 ? Math.round((double) purchaseCount / viewCount * 1000) / 10.0 : 0);
+            item.put("viewToCart", viewCount > 0 ? Math.round((double) cartCount / viewCount * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
+            item.put("cartToPurchase", cartCount > 0 ? Math.round((double) purchaseCount / cartCount * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
+            item.put("totalConversion", viewCount > 0 ? Math.round((double) purchaseCount / viewCount * PERCENTAGE_MULTIPLIER) / PERCENTAGE_DIVISOR : 0);
             result.add(item);
         }
         return result;
@@ -102,7 +117,7 @@ public class DashboardService {
 
         // 전환율 기준 정렬 (조회 10건 이상만)
         List<Map<String, Object>> filtered = all.stream()
-                .filter(m -> ((Number) m.get("views")).longValue() >= 10)
+                .filter(m -> ((Number) m.get("views")).longValue() >= POPULAR_PRODUCT_MIN_VIEWS)
                 .toList();
 
         List<Map<String, Object>> best = filtered.stream()
@@ -122,13 +137,16 @@ public class DashboardService {
     /**
      * 견적 처리 현황
      */
-    public Map<String, Long> getQuoteStatusCounts(LocalDateTime from, LocalDateTime to) {
+    public Map<String, Long> getQuoteStatusCounts(Map<String, Object> funnel) {
+        Object raw = funnel.get("_statusMap");
+        if (!(raw instanceof Map)) return Map.of("approved", 0L, "submitted", 0L, "rejected", 0L, "expired", 0L);
+        @SuppressWarnings("unchecked")
+        Map<QuoteStatus, Long> statusMap = (Map<QuoteStatus, Long>) raw;
         Map<String, Long> counts = new LinkedHashMap<>();
-        counts.put("approved", quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.APPROVED, from, to)
-                + quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.PAID, from, to));
-        counts.put("submitted", quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.SUBMITTED, from, to));
-        counts.put("rejected", quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.REJECTED, from, to));
-        counts.put("expired", quoteBaseRepository.countByQuSttAndQuCreDtBetween(QuoteStatus.EXPIRED, from, to));
+        counts.put("approved", statusMap.getOrDefault(QuoteStatus.APPROVED, 0L) + statusMap.getOrDefault(QuoteStatus.PAID, 0L));
+        counts.put("submitted", statusMap.getOrDefault(QuoteStatus.SUBMITTED, 0L));
+        counts.put("rejected", statusMap.getOrDefault(QuoteStatus.REJECTED, 0L));
+        counts.put("expired", statusMap.getOrDefault(QuoteStatus.EXPIRED, 0L));
         return counts;
     }
 
@@ -136,16 +154,24 @@ public class DashboardService {
      * 월별 가입자 추이 (최근 6개월)
      */
     public List<Map<String, Object>> getMonthlySignups(int year, int month) {
+        YearMonth start = YearMonth.of(year, month).minusMonths(5);
+        YearMonth end = YearMonth.of(year, month);
+        LocalDateTime from = start.atDay(1).atStartOfDay();
+        LocalDateTime to = end.atEndOfMonth().atTime(23, 59, 59);
+
+        // 1쿼리로 월별 집계
+        Map<Integer, Long> monthMap = new LinkedHashMap<>();
+        for (Object[] row : memberRepository.countGroupByMonth(from, to)) {
+            monthMap.put(((Number) row[0]).intValue(), (Long) row[1]);
+        }
+
         List<Map<String, Object>> result = new ArrayList<>();
         for (int i = 5; i >= 0; i--) {
             YearMonth ym = YearMonth.of(year, month).minusMonths(i);
-            LocalDateTime from = ym.atDay(1).atStartOfDay();
-            LocalDateTime to = ym.atEndOfMonth().atTime(23, 59, 59);
-            long count = memberRepository.countByMemCreDtBetween(from, to);
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("label", ym.getMonthValue() + "월");
-            row.put("count", count);
-            result.add(row);
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("label", ym.getMonthValue() + "월");
+            item.put("count", monthMap.getOrDefault(ym.getMonthValue(), 0L));
+            result.add(item);
         }
         return result;
     }
@@ -157,11 +183,11 @@ public class DashboardService {
         String[] days = {"월", "화", "수", "목", "금", "토", "일"};
         long[] counts = new long[7];
 
-        var quotes = quoteBaseRepository.findAllByQuCreDtBetweenOrderByQuCreDtDesc(from, to);
-        for (var qb : quotes) {
-            if (qb.getQuStt() == null || qb.getQuStt() == QuoteStatus.TEMP_SAVE) continue;
-            int dow = qb.getQuCreDt().getDayOfWeek().getValue() - 1; // 0=월 ~ 6=일
-            counts[dow]++;
+        // 1쿼리 GROUP BY (MySQL DAYOFWEEK: 1=일 2=월 ... 7=토)
+        for (Object[] row : quoteBaseRepository.countGroupByDayOfWeek(from, to)) {
+            int mysqlDow = ((Number) row[0]).intValue(); // 1=일, 2=월, ..., 7=토
+            int idx = (mysqlDow + 5) % 7; // 변환: 0=월, 1=화, ..., 6=일
+            counts[idx] = (Long) row[1];
         }
 
         List<Map<String, Object>> result = new ArrayList<>();
@@ -242,29 +268,23 @@ public class DashboardService {
      * 문의 유형별 통계 (채팅방 제목 기준)
      */
     public List<Map<String, Object>> getInquiryStats(LocalDateTime from, LocalDateTime to) {
-        List<ChatRoom> rooms = chatRoomRepository.findAll().stream()
-                .filter(r -> r.getChRoCreDt() != null && !r.getChRoCreDt().isBefore(from) && !r.getChRoCreDt().isAfter(to))
-                .toList();
+        // 1쿼리 GROUP BY
+        List<Object[]> rows = chatRoomRepository.countGroupByTopic(from, to);
 
-        // 제목(=토픽명)별 집계
-        Map<String, Long> counts = new LinkedHashMap<>();
-        for (ChatRoom r : rooms) {
-            String topic = r.getChRoTtl() != null ? r.getChRoTtl().trim() : "기타";
-            counts.merge(topic, 1L, Long::sum);
-        }
+        long total = 0;
+        for (Object[] row : rows) total += (Long) row[1];
 
-        long total = rooms.size();
+        long finalTotal = total;
         List<Map<String, Object>> result = new ArrayList<>();
-        counts.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(e -> {
-                    Map<String, Object> item = new LinkedHashMap<>();
-                    item.put("category", e.getKey());
-                    item.put("count", e.getValue());
-                    item.put("pct", total > 0 ? Math.round(e.getValue() * 100.0 / total) : 0);
-                    result.add(item);
-                });
-
+        for (Object[] row : rows) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            String topic = row[0] != null ? ((String) row[0]).trim() : "기타";
+            long count = (Long) row[1];
+            item.put("category", topic);
+            item.put("count", count);
+            item.put("pct", finalTotal > 0 ? Math.round(count * 100.0 / finalTotal) : 0);
+            result.add(item);
+        }
         return result;
     }
 

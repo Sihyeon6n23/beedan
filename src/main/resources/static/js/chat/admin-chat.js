@@ -7,6 +7,9 @@
   var modalClosers = document.querySelectorAll("[data-modal-close]");
   var assignConfirmButton = document.querySelector("[data-assign-confirm]");
   var closeConfirmButton = document.querySelector("[data-modal-confirm-close]");
+  var adminActionErrorTitle = document.querySelector("[data-admin-action-error-title]");
+  var adminActionErrorLead = document.querySelector("[data-admin-action-error-lead]");
+  var adminActionErrorDescription = document.querySelector("[data-admin-action-error-description]");
   var adminMessageInput = document.querySelector("[data-admin-message-input]");
   var adminMessageSendButton = document.querySelector("[data-admin-message-send]");
   var adminMessageList = document.querySelector("[data-admin-message-list]");
@@ -14,10 +17,15 @@
   var adminImageTrigger = document.querySelector("[data-admin-image-trigger]");
   var adminImageInput = document.querySelector("[data-admin-image-input]");
   var adminMessageScrollBody = document.querySelector(".admin-chat-detail-body");
+  var adminChatToast = document.querySelector("[data-admin-chat-toast]");
+  var adminChatToastText = document.querySelector("[data-admin-chat-toast-text]");
+  var adminChatFeedback = document.querySelector("[data-admin-chat-feedback]");
+  var adminChatFeedbackText = document.querySelector("[data-admin-chat-feedback-text]");
   var pendingDetailUrl = "";
   var pendingRoomId = "";
   var isSendingAdminMessage = false;
   var detailRoomId = detailPage ? detailPage.dataset.roomId : "";
+  var adminChatToastTimer = null;
   var detailAdminName = detailPage ? detailPage.dataset.adminName : "담당자";
   var detailMemberBizName = detailPage ? detailPage.dataset.memberBizName : "상호명 미등록";
   var detailMemberName = detailPage ? detailPage.dataset.memberName : "이름 미등록";
@@ -61,23 +69,52 @@
   }
 
   function showAdminChatFeedback(message) {
-    if (!feedbackBox || !feedbackText) {
+    if (!adminChatFeedback || !adminChatFeedbackText) {
       return;
     }
 
-    if (feedbackTimer) {
-      window.clearTimeout(feedbackTimer);
+    adminChatFeedbackText.textContent = message;
+    adminChatFeedback.classList.remove("is-hidden");
+    adminChatFeedback.setAttribute("aria-hidden", "false");
+  }
+
+  function hideAdminChatFeedback() {
+    if (!adminChatFeedback) {
+      return;
     }
 
-    feedbackText.textContent = message;
-    feedbackBox.classList.remove("is-hidden");
-    feedbackBox.setAttribute("aria-hidden", "false");
-
-    feedbackTimer = window.setTimeout(function () {
-      feedbackBox.classList.add("is-hidden");
-      feedbackBox.setAttribute("aria-hidden", "true");
-    }, 2500);
+    adminChatFeedback.classList.add("is-hidden");
+    adminChatFeedback.setAttribute("aria-hidden", "true");
   }
+
+  function showAdminChatToast(message) {
+      if (!adminChatToast || !adminChatToastText || !message) {
+        return;
+      }
+
+      adminChatToastText.textContent = message;
+
+      if (adminChatToastTimer) {
+        window.clearTimeout(adminChatToastTimer);
+        adminChatToastTimer = null;
+      }
+
+      adminChatToast.classList.remove("is-hidden");
+      requestAnimationFrame(function () {
+        adminChatToast.classList.add("is-visible");
+        adminChatToast.setAttribute("aria-hidden", "false");
+      });
+
+      // 짧게 보여주고 자동으로 사라지게
+      adminChatToastTimer = window.setTimeout(function () {
+        adminChatToast.classList.remove("is-visible");
+        adminChatToast.setAttribute("aria-hidden", "true");
+
+        window.setTimeout(function () {
+          adminChatToast.classList.add("is-hidden");
+        }, 200);
+      }, 2600);
+    }
 
    function setAdminChatListLoading(isLoading) {
         if (!listPage) {
@@ -155,12 +192,15 @@
           currentList.replaceWith(nextList);
           currentPagination.replaceWith(nextPagination);
 
+          // 목록 갱신이 성공했으면 이전 에러 상태 숨김
+          hideAdminChatFeedback();
+
           if (pushHistory !== false) {
             window.history.pushState({}, "", requestUrl);
           }
         } catch (error) {
-            console.error(error);
             showAdminChatFeedback("목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+            console.error(error);
         } finally { // 성공/실패 상관없이 잠금 해제
           isListRefreshing = false;
           setAdminChatListLoading(false);
@@ -489,6 +529,19 @@
     modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
   }
 
+  function showAdminActionErrorModal(title, lead, description) {
+    if (!adminActionErrorTitle || !adminActionErrorLead || !adminActionErrorDescription) {
+      return;
+    }
+
+    // 상담 시작/종료 실패 시 공용 에러 모달에 문구를 채워 보여줌
+    adminActionErrorTitle.textContent = title || "처리 실패";
+    adminActionErrorLead.textContent = lead || "요청 처리 중 오류가 발생했습니다.";
+    adminActionErrorDescription.textContent = description || "잠시 후 다시 시도해 주세요.";
+
+    toggleModal("action-error", true);
+  }
+
   // 관리자 메시지 HTML 추가
   function appendAdminMessage(message) {
     // 관리자 본인이 보낸 확정 메시지를 우측 말풍선으로 렌더링
@@ -644,7 +697,7 @@
     });
   });
 
-  // 관리자 상담 시작 비동기 요청
+  // 관리자 상담(배정) 시작 비동기 요청
   function startAdminChatRoom() {
     if (!pendingRoomId) {
       return;
@@ -664,6 +717,13 @@
         window.location.href = pendingDetailUrl;
       }
     }).catch(function (error) {
+      // 확인 모달은 닫고, 실패 전용 에러 모달 출력
+      toggleModal("assign", false);
+      showAdminActionErrorModal(
+        "상담 시작 실패",
+        "상담 시작 처리 중 오류가 발생했습니다.",
+        "잠시 후 다시 시도해 주세요."
+      );
       console.error(error);
     });
   }
@@ -685,6 +745,13 @@
       toggleModal("close", false);
       setChatState("CLOSED");
     }).catch(function (error) {
+      // 확인 모달은 닫고, 실패 전용 에러 모달 출력
+      toggleModal("close", false);
+      showAdminActionErrorModal(
+        "상담 종료 실패",
+        "상담 종료 처리 중 오류가 발생했습니다.",
+        "잠시 후 다시 시도해 주세요."
+      );
       console.error(error);
     });
   }
@@ -721,7 +788,7 @@
       })
     }).then(function (response) {
       if (!response.ok) {
-        throw new Error("Failed to send admin chat message.");
+        throw new Error("메시지 전송에 실패했습니다.");
       }
 
       return response.json();
@@ -736,6 +803,7 @@
         adminMessageInput.focus();
       }
 
+      showAdminChatToast("메시지 전송에 실패했습니다. 다시 시도해 주세요.");
       console.error(error);
     }).finally(function () {
       isSendingAdminMessage = false;
@@ -766,8 +834,8 @@
         adminImageInput.value = "";
       }
     }).catch(function (error) {
+      showAdminChatToast("이미지 전송에 실패했습니다. 다시 시도해 주세요.");
       console.error(error);
-      showAdminChatFeedback("이미지 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       if (adminImageInput) {
         adminImageInput.value = "";
       }

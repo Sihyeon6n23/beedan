@@ -241,8 +241,8 @@
   <script th:src="@{/js/auth/biz-number-validation.js}"></script>
   <script th:src="@{/js/auth/phone-certification.js}"></script>
   <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
-
-  <script>
+  <script th:src="@{/js/file/fileUpload.js}"></script>
+  <script th:inline="javascript">
     const csrfToken = document.querySelector('meta[name="_csrf"]').content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
@@ -280,7 +280,15 @@
     let emailCheckedInput = document.getElementById("emailCheckedInput");
     let emailAvailableDiv = document.getElementById("emailAvailable");
 
+    const PORTONE_STORE_ID = [[${portoneStoreId}]];
+    const PORTONE_CHANNEL_KEY = [[${portoneChannelKey}]];
+
     document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById('inquiry-write-form');
+
+      if (window.InquiryUploader) {
+        window.InquiryUploader.init();
+      }
 
       if (phoneCheckedInput.value === "true") {
         phoneAvailable.classList.remove("hidden");
@@ -314,24 +322,65 @@
         lockInputFields([emailInput]);
       }
     });
-
     certifyPhoneBtn.addEventListener('click', async () => {
-      const response = await PortOne.requestIdentityVerification({
-        storeId: "store-6e274706-e18d-4cc0-95b4-f9da97355da2",
-        identityVerificationId: `identity-verification-${crypto.randomUUID()}`,
-        channelKey: "channel-key-fe0517f7-44f1-4916-b471-2a71918fe5e3"
-      });
+      try {
+        // 1. PortOne 본인인증 팝업 호출
+        const response = await PortOne.requestIdentityVerification({
+          storeId: PORTONE_STORE_ID, // 주입된 변수 사용
+          channelKey: PORTONE_CHANNEL_KEY, // 주입된 변수 사용
+          identityVerificationId: `identity-verification-${crypto.randomUUID()}`
+        });
 
-      if (response.code !== undefined) {
-        return alert(response.message);
+        // 인증 창을 닫거나 취소한 경우 처리
+        if (response.code !== undefined) {
+          return alert("인증이 취소되었습니다: " + response.message);
+        }
+
+        // 2. 서버 API를 호출하여 번호 추출 및 중복 체크 수행
+        // response.identityVerificationId가 서버의 impUid 파라미터로 전달됩니다.
+        const checkResult = await axios.post("/api/auth/phone-certification", {
+          impUid: response.identityVerificationId
+        });
+
+        // 3. 서버 응답 결과 처리
+        // 응답 DTO의 success 필드가 true인 경우 (중복 없음)
+        if (checkResult.data.success) {
+          // hidden input에 값 세팅
+          document.getElementById("imp_uid").value = response.identityVerificationId;
+
+          // UI 업데이트
+          phoneAvailable.classList.remove("hidden");
+          phoneAvailable.classList.add("flex");
+
+          // 버튼 비활성화
+          certifyPhoneBtn.disabled = true;
+          certifyPhoneBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+          // 체크 여부 hidden input 업데이트
+          phoneCheckedInput.value = "true";
+
+          // (선택) 인증된 이름을 상호명이나 대표자명에 자동 입력하고 싶을 경우
+          // if (checkResult.data.name) pNmEl.value = checkResult.data.name;
+
+          alert(checkResult.data.message || "본인인증이 완료되었습니다.");
+        }
+
+      } catch (error) {
+        console.error("본인인증 검증 중 에러 발생:", error);
+
+        // 서버에서 409 (Conflict) 에러를 보낸 경우 (중복 번호)
+        if (error.response && error.response.status === 409) {
+          alert(error.response.data.message);
+        } else {
+          alert("인증 처리 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        }
+
+        // 실패 시 UI 초기화
+        phoneCheckedInput.value = "false";
+        document.getElementById("imp_uid").value = "";
+        phoneAvailable.classList.add("hidden");
+        phoneAvailable.classList.remove("flex");
       }
-
-      document.getElementById("imp_uid").value = response.identityVerificationId;
-      phoneAvailable.classList.remove("hidden");
-      phoneAvailable.classList.add("flex");
-      certifyPhoneBtn.disabled = true;
-      certifyPhoneBtn.classList.add("opacity-50", "cursor-not-allowed");
-      phoneCheckedInput.value = true;
     });
 
     let searchPostCodeBtn = document.getElementById("searchPostCode");

@@ -1,10 +1,10 @@
 package com.goodee.beedan.config.security;
 
-import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.entity.Member;
 import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@EqualsAndHashCode(of = "username")
+@Slf4j
 public class MemberUserDetails implements UserDetails, OidcUser {
     private String username;
     private String password;
@@ -47,17 +49,17 @@ public class MemberUserDetails implements UserDetails, OidcUser {
     @Override
     public boolean isAccountNonLocked() {
         if (accountStatus.equals(MemberStatus.ACTIVE.toString()) || accountLockExpirationTime == null) {
-            System.out.println(accountLockExpirationTime);
+            log.info("{}",accountLockExpirationTime);
             return true;
         } else {
-            System.out.println(accountLockExpirationTime.isBefore(LocalDateTime.now()));
+            log.info("{}",accountLockExpirationTime.isBefore(LocalDateTime.now()));
             return accountLockExpirationTime.isBefore(LocalDateTime.now());
         }
     }
     // ACTIVE만 TRUE
     @Override
     public boolean isEnabled() {
-        System.out.println(this.accountStatus.equals(MemberStatus.ACTIVE.toString()));
+        log.info("{}",this.accountStatus.equals(MemberStatus.ACTIVE.toString()));
         if (this.accountStatus.equals(MemberStatus.LOCK.toString())) {
             return true;
         }

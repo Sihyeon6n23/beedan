@@ -176,4 +176,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     );
     // 채팅방 자동 종료 대상 조회
     List<ChatRoom> findByChRoSttInAndChRoLastMsDtBefore(Collection<ChatRoomStatus> chRoStts, LocalDateTime cutoff);
+
+    // 기간 내 토픽별 문의 건수
+    @Query("SELECT cr.chRoTtl, COUNT(cr) FROM ChatRoom cr WHERE cr.chRoCreDt BETWEEN :from AND :to GROUP BY cr.chRoTtl ORDER BY COUNT(cr) DESC")
+    List<Object[]> countGroupByTopic(@org.springframework.data.repository.query.Param("from") LocalDateTime from,
+                                     @org.springframework.data.repository.query.Param("to") LocalDateTime to);
 }

@@ -11,9 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class MemberCreateFormDto {
 
     @Size(min = 4, max = 20, message = "아이디는 4~20자 사이여야 합니다.")

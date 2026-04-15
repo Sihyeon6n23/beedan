@@ -66,7 +66,7 @@ const DASHBOARD_TEMPLATE = `
 
 function loadMemberList(page) {
     const activeFilter = document.querySelector('.admin-chat-filter.is-active');
-    const status = activeFilter ? activeFilter.getAttribute('data-status') : 'ALL';
+    const status = activeFilter ? activeFilter.dataset.status : 'ALL';
     const keyword = document.getElementById('search-input').value.trim();
 
     const params = new URLSearchParams({
@@ -140,9 +140,7 @@ function getStatusInfo(status) {
     const map = {
         'ACTIVE':   { className: 'admin-chat-badge--open',    text: '활성' },
         'INACTIVE': { className: 'admin-chat-badge--ongoing', text: '비활성' },
-        'LOCK':     { className: 'admin-chat-badge--locked',  text: '잠금' },
-        'PENDING':  { className: 'admin-chat-badge--pending', text: '대기' },
-        'WITHDRAWN':{ className: 'admin-chat-badge--closed',  text: '탈퇴' }
+        'LOCK':     { className: 'admin-chat-badge--locked',  text: '잠금' }
     };
     return map[status] || { className: '', text: '기타' };
 }
@@ -154,7 +152,7 @@ function renderPagination(pageData) {
     if (pageData.totalPages <= 0) { area.innerHTML = ''; return; }
 
     let html = '<div class="admin-chat-pagination">';
-    html += `<button class="admin-chat-page-button ${pageData.first ? 'is-disabled' : ''}" onclick="${!pageData.first ? `loadMemberList(${pageData.number - 1})` : ''}">Prev</button>`;
+    html += `<button class="admin-chat-page-button ${pageData.last ? 'is-disabled' : ''}"  onclick="${pageData.last ? '' : 'loadMemberList(' + (pageData.number + 1) + ')'}">Next</button>`;
 
     const startPage = Math.floor(pageData.number / 5) * 5;
     const endPage = Math.min(startPage + 4, pageData.totalPages - 1);
@@ -163,7 +161,7 @@ function renderPagination(pageData) {
         html += `<button class="admin-chat-page-button ${i === pageData.number ? 'is-current' : ''}" onclick="loadMemberList(${i})">${(i + 1).toString().padStart(2, '0')}</button>`;
     }
 
-    html += `<button class="admin-chat-page-button ${pageData.last ? 'is-disabled' : ''}" onclick="${!pageData.last ? `loadMemberList(${pageData.number + 1})` : ''}">Next</button>`;
+    html += `<button class="admin-chat-page-button ${pageData.last ? 'is-disabled' : ''}" onclick="${pageData.last ? '' : 'loadMemberList(' + (pageData.number + 1) + ')'}">Next</button>`;
     html += '</div>';
     area.innerHTML = html;
 }
@@ -175,7 +173,7 @@ function openMemberModal(memId) {
     modal.classList.remove('hidden');
 
     document.body.classList.add('modal-open');
-    modal.setAttribute('data-current-member-id', memId);
+    modal.dataset.currentMemberId = memId;
 
     setupDashboardLayout();
     initModalData(memId);
@@ -195,7 +193,8 @@ function initModalData(memId) {
         .then(data => {
             document.querySelector('.member-id').textContent = data.memLgnId;
             document.querySelector('.join-date').textContent = data.memCreDt ? data.memCreDt.split('T')[0] : '';
-            document.querySelector('.member-name').textContent = data.memNm;
+
+            document.querySelector('.member-nm').textContent = data.memNm;
 
             renderModalOrders(data.recentOrders);
             renderModalShipments(data.recentShipments);
@@ -205,7 +204,9 @@ function initModalData(memId) {
         })
         .catch(error => {
             console.error('Error:', error);
-            document.querySelector('.member-name').textContent = "데이터 로드 실패";
+
+            const nameEl = document.querySelector('.member-nm');
+            if(nameEl) nameEl.textContent = "데이터 로드 실패";
         });
 }
 
@@ -217,7 +218,7 @@ function closeMemberModal() {
 function restoreDashboard() {
     const modal = document.getElementById('memberDetailModal');
 
-    const memId = modal.getAttribute('data-current-member-id');
+    const memId = modal.dataset.currentMemberId;
 
     if (memId) {
         setupDashboardLayout();
@@ -323,7 +324,7 @@ function renderModalInquiries(input) {
         html += `
             <article class="list-item ${isResolved ? 'opacity-60' : ''}">
                 <div class="inquiry-meta">
-                    <span class="status-text ${!isResolved ? 'text-yellow' : ''}">${statusText}</span>
+                    <span class="status-text ${isResolved ? '' : 'text-yellow'}">${statusText}</span>
                     <span class="time">${dateStr}</span>
                 </div>
 
@@ -420,7 +421,7 @@ async function viewFullOrderList(memId, page = 0) {
                             <th>주문번호</th>
                             <th>주문일자</th>
                             <th>주문품목</th>
-                            <th>배송지/수령자</th>
+                            <th>수령자</th>
                             <th class="text-center">총금액</th>
                             <th class="text-center">상태</th>
                             <th class="text-center">관리</th>
@@ -452,11 +453,11 @@ async function viewFullOrderList(memId, page = 0) {
         const rowsHtml = data.content.map(order => {
             const sttInfo = getOrderBadgeTheme(order.ordBaseStt);
             const amount = order.ordBaseTtAm ? order.ordBaseTtAm.toLocaleString('ko-KR') : '0';
-            const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.substring(0, 10).replace(/-/g, '.') : '-';
+            const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.substring(0, 10).replaceAll('-', '.') : '-';
 
             return `
                 <tr>
-                    <td class="order-id">#${order.ordBaseNo}</td>
+                    <td class="order-id" style="text-align: center;">${order.ordBaseNo}</td>
                     <td class="order-date">${dateStr}</td>
 
                     <td class="order-summary">
@@ -464,7 +465,6 @@ async function viewFullOrderList(memId, page = 0) {
                     </td>
 
                     <td class="order-address">
-                        <p>${order.ordBaseAdr}</p>
                         <p>${order.ordBaseRcvNm}</p>
                     </td>
 
@@ -484,7 +484,7 @@ async function viewFullOrderList(memId, page = 0) {
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate(${order.ordBaseId})" title="변경상태저장">
+                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate('${order.ordBaseId}')" title="변경상태저장">
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
@@ -502,11 +502,11 @@ async function viewFullOrderList(memId, page = 0) {
         let paginationHtml = `<span class="showing-text">Showing ${startItem}-${endItem} of ${data.totalElements} orders</span>`;
         paginationHtml += `<div class="fragment-pagination">`;
 
-        if (!data.first) {
+        if(data.first) {
+            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
+        } else {
             paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memId}', ${data.number - 1})">
                 <span class="material-symbols-outlined">chevron_left</span></button>`;
-        } else {
-            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
         }
 
         for (let i = 0; i < data.totalPages; i++) {
@@ -514,10 +514,10 @@ async function viewFullOrderList(memId, page = 0) {
             paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullOrderList('${memId}', ${i})">${i + 1}</button>`;
         }
 
-        if (!data.last) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
-        } else {
+        if(data.last) {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullOrderList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
         }
 
         paginationHtml += `</div>`;
@@ -564,10 +564,10 @@ async function viewFullShipmentList(memId, page = 0) {
                 <table class="fragment-table">
                     <thead>
                         <tr>
-                            <th>송장번호</th>
+                            <th>택배사/송장번호</th>
                             <th>배송 시작일자</th>
-                            <th>배송물품</th>
-                            <th>배송지 / 배송현황</th>
+                            <th>수령인/배송물품</th>
+                            <th>배송지</th>
                             <th class="text-center">상태</th>
                             <th class="text-center">관리</th>
                         </tr>
@@ -597,9 +597,20 @@ async function viewFullShipmentList(memId, page = 0) {
 
         const rowsHtml = data.content.map(shipment => {
             const sttInfo = getShipmentBadgeTheme(shipment.shStt);
-            const dateStr = shipment.shCreDt ? shipment.shCreDt.substring(0, 10).replace(/-/g, '.') : '-';
-
+            const dateStr = shipment.shCreDt ? shipment.shCreDt.substring(0, 10).replaceAll('-', '.') : '-';
             let itemSummary = '상품 정보 없음';
+            const courierMap = {
+                "kr.cjlogistics": "CJ대한통운",
+                "kr.epost": "우체국택배",
+                "kr.hanjin": "한진택배",
+                "kr.lotteglogis": "롯데택배",
+                "kr.logen": "로젠택배",
+                "kr.cvsnet": "GS25 편의점택배",
+                "kr.cupost": "CU 편의점택배"
+            };
+            let displayName = courierMap[shipment.shCarCd] || "택배사 미정";
+            let displayNo = shipment.shTraNo || "";
+
             if (shipment.items && shipment.items.length > 0) {
                 const firstItemName = shipment.items[0].ordItmNm;
                 itemSummary = shipment.items.length > 1
@@ -609,7 +620,7 @@ async function viewFullShipmentList(memId, page = 0) {
 
             return `
                 <tr>
-                    <td class="shipment-id">${shipment.shCarNm || '택배사 미정'}-${shipment.shTraNo || ''}</td>
+                    <td class="shipment-id">${displayName}-${displayNo}</td>
                     <td class="shipment-date">${dateStr}</td>
 
                     <td class="shipment-summary">
@@ -627,7 +638,7 @@ async function viewFullShipmentList(memId, page = 0) {
                     </td>
 
                     <td>
-                        <button class="btn-edit" onclick="shipmentDetail(${shipment.shId}, ${memId}, ${data.number})">상세보기</button>
+                        <button class="btn-edit" onclick="shipmentDetail('${shipment.shId}', '${memId}', ${data.number})">상세보기</button>
                     </td>
                 </tr>
             `;
@@ -642,10 +653,10 @@ async function viewFullShipmentList(memId, page = 0) {
         paginationHtml += `<div class="fragment-pagination">`;
 
         // Prev
-        if (!data.first) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
-        } else {
+        if(data.first) {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
         }
 
         // Pages
@@ -655,10 +666,10 @@ async function viewFullShipmentList(memId, page = 0) {
         }
 
         // Next
-        if (!data.last) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
-        } else {
+        if(data.last) {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
         }
 
         paginationHtml += `</div>`;
@@ -675,7 +686,7 @@ async function viewFullShipmentList(memId, page = 0) {
 async function submitOrderStatusUpdate(orderId) {
     const selectElement = document.getElementById(`status-select-${orderId}`);
     const newStatus = selectElement.value;
-    const memberId = document.getElementById('memberDetailModal').getAttribute('data-current-member-id');
+    const memberId = document.getElementById('memberDetailModal').dataset.currentMemberId;
     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
@@ -714,13 +725,13 @@ async function shipmentDetail(shId, memId, page) {
     contentArea.innerHTML = `
         <div class="order-history-fragment">
             <div class="fragment-top">
-                <button class="btn-go-back" onclick="viewFullShipmentList(${memId}, ${page})">
+                <button class="btn-go-back" onclick="viewFullShipmentList('${memId}', ${page})">
                     <span class="material-symbols-outlined">arrow_back</span> 목록으로 돌아가기
                 </button>
 
                 <div class="title-row" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="fragment-title" style="margin: 0;">TRACKING Details</h2>
-                    <button onclick="advanceDemoStatus(${shId}, ${memId}, ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
+                    <button onclick="advanceDemoStatus('${shId}', '${memId}', ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
                         다음 배송 단계
                     </button>
                 </div>
@@ -893,7 +904,7 @@ async function viewFullInquiryIList(memId, page = 0) {
     `;
 
     try {
-        const url = `/api/admin/inquiries/${memId}?page=${page}`;
+        const url = `/api/admin/inquiries/${memId}?page=${page}&size=8`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -905,7 +916,7 @@ async function viewFullInquiryIList(memId, page = 0) {
             paginationArea.innerHTML = '';
             return;
         }
-
+// 8개
         const rowsHtml = data.content.map(inquiry => {
             const statusMap = {
                 RECEIVED: { text: '접수', className: 'badge-yellow' },
@@ -914,7 +925,7 @@ async function viewFullInquiryIList(memId, page = 0) {
                 CANCELLED: { text: '취소', className: 'badge-red' }
             };
             const sttInfo = statusMap[inquiry.brdInqStt] || { text: '미확인', className: 'badge-gray' };
-            const dateStr = inquiry.brdCreDt ? inquiry.brdCreDt.substring(0, 10).replace(/-/g, '.') : '-';
+            const dateStr = inquiry.brdCreDt ? inquiry.brdCreDt.substring(0, 10).replaceAll('-', '.') : '-';
             const companyName = inquiry.memBizTtl || '상호명 미등록';
 
             return `
@@ -942,11 +953,11 @@ async function viewFullInquiryIList(memId, page = 0) {
         let paginationHtml = `<span class="showing-text">Showing ${startItem}-${endItem} of ${data.totalElements} inquiries</span>`;
         paginationHtml += `<div class="fragment-pagination">`;
 
-        if (!data.first) {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number - 1})">
-                <span class="material-symbols-outlined">chevron_left</span></button>`;
-        } else {
+        if(data.first) {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
+        } else {
+            paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number - 1})">
+                        <span class="material-symbols-outlined">chevron_left</span></button>`;
         }
 
         for (let i = 0; i < data.totalPages; i++) {
@@ -954,11 +965,11 @@ async function viewFullInquiryIList(memId, page = 0) {
             paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullInquiryIList('${memId}', ${i})">${i + 1}</button>`;
         }
 
-        if (!data.last) {
+        if (data.last) {
+            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
+        } else {
             paginationHtml += `<button class="page-arrow" onclick="viewFullInquiryIList('${memId}', ${data.number + 1})">
                 <span class="material-symbols-outlined">chevron_right</span></button>`;
-        } else {
-            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
         }
 
         paginationHtml += `</div>`;

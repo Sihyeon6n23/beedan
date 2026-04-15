@@ -11,7 +11,8 @@ import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.ShipmentRepository;
-import com.goodee.beedan.scheduler.Order.UnipassScheduler;
+import com.goodee.beedan.scheduler.shipping.ShipmentScheduler;
+import com.goodee.beedan.scheduler.shipping.UnipassScheduler;
 import com.goodee.beedan.service.admin.AdminMemberService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.order.TrackingService;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@lombok.extern.slf4j.Slf4j
 @RestController
 @RequestMapping("/api/admin/member")
 @RequiredArgsConstructor
@@ -41,6 +41,7 @@ public class AdminMemberApiController {
 
     private final ShipmentRepository shipmentRepository;
     private final UnipassScheduler unipassScheduler;
+    private final ShipmentScheduler shipmentScheduler;
 
     @GetMapping("/list")
     public ResponseEntity<MemberListResponse> getMemberList(
@@ -65,14 +66,16 @@ public class AdminMemberApiController {
     @GetMapping("/order/{memId}")
     public ResponseEntity<Page<OrderDto>> getMemberOrders(
             @PathVariable Long memId,
-            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<OrderDto> orderList = orderService.getOrderList(memId, pageable);
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @PageableDefault(size = 6, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
 
     @PatchMapping("/order/{memId}/status")
     public ResponseEntity<Page<OrderDto>> updateOrderStatus(
             @PathVariable("memId") Long memId,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestBody Map<String, Object> orderData, // ordBaseId, OrderStatus
             @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
 
@@ -81,14 +84,14 @@ public class AdminMemberApiController {
 
         orderService.updateOrderStatus(ordId, ordStt);
 
-        Page<OrderDto> orderList = orderService.getOrderList(memId, pageable);
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
 
     @GetMapping("/shipment/{memId}")
     public ResponseEntity<Page<ShipmentDto>> getMemberShipments(
             @PathVariable Long memId,
-            @PageableDefault(size = 10, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 6, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<ShipmentDto> shipmentList = adminMemberService.getShipmentList(memId, pageable);
 
         return ResponseEntity.ok(shipmentList);
@@ -101,8 +104,8 @@ public class AdminMemberApiController {
     }
 
     @PostMapping("/shipment/{shId}/demo-progress")
-    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId) {
-        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(() -> new IllegalArgumentException("배송 내역을 찾을 수 없습니다."));
+    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
         ShipmentStatus nextStatus = switch (shipment.getShStt()) {
             case PREPARING -> ShipmentStatus.SHIPPING;
@@ -113,7 +116,7 @@ public class AdminMemberApiController {
 
         ShipmentDto dto = ShipmentDto.builder().shStt(nextStatus).build();
 
-        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), dto);
+        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), userDetails.getMemberId(), dto);
 
         return ResponseEntity.ok("배송 상태가 " + nextStatus.name() + " (으)로 변경되었습니다.");
     }
@@ -124,4 +127,9 @@ public class AdminMemberApiController {
         return ResponseEntity.ok("통관 정보 수동 동기화가 완료되었습니다.");
     }
 
+    @PostMapping("/shipment/sync-shipment")
+    public ResponseEntity<String> syncShipmentManually() {
+        shipmentScheduler.syncShipmentStatus();
+        return ResponseEntity.ok("배송 상태 수동 동기화가 완료되었습니다.");
+    }
 }

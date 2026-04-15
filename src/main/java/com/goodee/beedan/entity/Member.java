@@ -1,6 +1,7 @@
 package com.goodee.beedan.entity;
 
 import com.goodee.beedan.common.constant.MemberAuthority;
+import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.MemberStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -66,41 +67,44 @@ public class Member {
 
     private LocalDateTime memUpdPwDt;
 
+    private String memBizStt;
 
-    public void approve() {
-        if (this.memStt.equals(MemberStatus.ACTIVE.toString())) {
+    public void bizApprove() {
+        if (this.memStt.equals(MemberBizStatus.APPROVAL_MANUAL.toString())) {
             throw new IllegalArgumentException("이미 승인이 완료된 계정입니다.");
         }
-        this.memStt = MemberStatus.ACTIVE.toString();
+        this.memBizStt = MemberBizStatus.APPROVAL_MANUAL.toString();
     }
 
-    public void inactive() {
-        if (this.memStt.equals(MemberStatus.INACTIVE.toString())) {
-            throw new IllegalArgumentException("이미 비활성화가 완료된 계정입니다.");
+    public void bizReject() {
+        if (this.memStt.equals(MemberBizStatus.REJECT.toString())) {
+            throw new IllegalArgumentException("이미 반려된 계정입니다.");
         }
-        this.memStt = MemberStatus.INACTIVE.toString();
+        this.memBizStt = MemberBizStatus.REJECT.toString();
+    }
+
+    private String generateWithdrawnValue() {
+        return MemberStatus.WITHDRAWN.toString() + "_" + UUID.randomUUID().toString().substring(0, 4);
     }
 
     public void withdraw() {
-        this.memLgnId = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        this.memLgnId = null;
+        this.memEml = null;
+        this.memMbPhn = null;
+        this.memBizNo = null;
+        this.memLgnPw = "WITHDRAWN_" + UUID.randomUUID().toString().substring(0, 4);
+        this.memNm = null;
+        this.memBizTtl = null;
+        this.memCeoNm = null;
+        this.memPosCd = null;
+        this.memBizAdr = null;
+        this.memBizDtAdr = null;
+        this.memCeoPhn = null;
+        this.memCmpTel = null;
+        this.memCi = null;
+        this.memBizStt = null;
 
-        this.memLgnPw = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-
-        this.memEml = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memNm = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memMbPhn = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        // Ci값은 암호화해서 별도 저장?
-        // this.memCi = ;
-
-        this.memBizNo = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memBizTtl = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memCeoNm = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-
-        this.memPosCd = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memBizAdr = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memBizDtAdr = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memCeoPhn = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
-        this.memCmpTel = MemberStatus.WITHDRAWN.toString() + UUID.randomUUID().toString();
+        // 4. 상태값은 반드시 탈퇴로 변경
         this.memStt = MemberStatus.WITHDRAWN.toString();
     }
 

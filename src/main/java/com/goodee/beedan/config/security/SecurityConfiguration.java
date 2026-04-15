@@ -1,6 +1,10 @@
 package com.goodee.beedan.config.security;
 
+import com.goodee.beedan.dto.member.auth.SignInErrorMessageDto;
+import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import com.goodee.beedan.service.auth.CustomOAuth2UserService;
+import com.goodee.beedan.service.root.SecurityService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +19,12 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 
 @Configuration
-public class SecurityConfiguration {;
+@RequiredArgsConstructor
+public class SecurityConfiguration {
+
+    private final SecurityService securityService;
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, CustomFailureHandler customFailureHandler, CustomOAuth2UserService customOAuth2UserService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, CustomFailureHandler customFailureHandler, CustomOAuth2UserService customOAuth2UserService, SessionRegistry sessionRegistry) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/webhook/**")
@@ -41,7 +48,23 @@ public class SecurityConfiguration {;
                         .permitAll()
                 )
                 .sessionManagement(session -> session
-                        .sessionFixation().changeSessionId() // 세션 고정 공격 방지 (권장)
+                        // 1. 세션 타임아웃(유효하지 않은 세션) 처리 (Root level)
+                        .invalidSessionStrategy((request, response) -> {
+                            request.getSession().setAttribute("errorMessage",
+                                    new SignInErrorMessageDto("세션만료", "세션이 만료되었습니다. 재로그인 해주시기 바랍니다."));
+                            response.sendRedirect("/auth/signin");
+                        })
+                        // 2. 동시 로그인 제어 (Child level)
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(-1)
+                                .sessionRegistry(sessionRegistry)
+                                .expiredSessionStrategy(event -> {
+                                    HttpServletRequest request = event.getRequest();
+                                    request.getSession().setAttribute("errorMessage",
+                                            new SignInErrorMessageDto("중복로그인", "다른 사용자가 로그인하여 로그아웃 처리됩니다."));
+                                    event.getResponse().sendRedirect("/auth/signin");
+                                })
+                        )
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/auth/signin")

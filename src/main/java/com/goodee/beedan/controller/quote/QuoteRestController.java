@@ -61,6 +61,11 @@ public class QuoteRestController {
     private final QuoteNotificationService quoteNotificationService;
     private final com.goodee.beedan.service.cart.CartService cartService;
 
+    // 금액 계산 상수
+    private static final BigDecimal DEFAULT_INSURANCE_RATE = new BigDecimal("0.005");
+    private static final BigDecimal DEFAULT_DUTY_RATE = new BigDecimal("0.13");
+    private static final BigDecimal VAT_RATE = new BigDecimal("0.10");
+
     private static final Map<String, String> REGION_NAMES = Map.of(
             "SEOUL", "서울특별시",
             "GYEONGGI", "경기도",
@@ -253,7 +258,7 @@ public class QuoteRestController {
                             .map(QuoteDetail::getStId)
                             .distinct().collect(java.util.stream.Collectors.toList());
                     cartService.clearCartItems(userDetails.getMemberId(), stIds);
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             }
 
             return ResponseEntity.ok(Map.of(
@@ -337,14 +342,14 @@ public class QuoteRestController {
                 try {
                     var bgp = buyerGradePolicyRepository.findByBgpGrAndBgpAcYnTrue(grade).orElse(null);
                     if (bgp != null) bgpId = bgp.getBgpId();
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
                 try {
                     var policies = feePolicyService.findAllActiveByGrade(grade);
                     var commPolicy = policies.stream()
                             .filter(fp -> "SERVICE_COMMISSION".equals(fp.getFpFeeTy()))
                             .findFirst().orElse(null);
                     if (commPolicy != null) fpId = commPolicy.getFpId();
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
 
                 quoteInfo.updateFeeInfo(
                         fee.getServiceFee(),
@@ -378,7 +383,7 @@ public class QuoteRestController {
                         insuranceRate = si.getSiAm();
                     }
                 } catch (Exception ignored) {
-                    insuranceRate = new BigDecimal("0.005");
+                    insuranceRate = DEFAULT_INSURANCE_RATE;
                 }
             }
 
@@ -470,7 +475,7 @@ public class QuoteRestController {
                 factorySupplyMap.merge(faKey, itemKrw, BigDecimal::add);
 
                 // 품목별 관세율 + 공급가 보관 (안분 계산용)
-                BigDecimal dutyRate = new BigDecimal("0.13");
+                BigDecimal dutyRate = DEFAULT_DUTY_RATE;
                 try {
                     if (stock.getCatId() != null) {
                         var hsCode = hsCodeRepository.findByCatId(stock.getCatId()).orElse(null);
@@ -478,7 +483,7 @@ public class QuoteRestController {
                             dutyRate = hsCode.getHsDuRa();
                         }
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
                 factoryItemDetails.computeIfAbsent(faKey, k -> new ArrayList<>())
                         .add(new BigDecimal[]{ itemKrw, dutyRate });
             }
@@ -548,7 +553,7 @@ public class QuoteRestController {
                         shippingFee = sr.getApplicableAmount(groupDozen);
                         sizeType = sr.getSizeType(groupDozen);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
                 // admin 수동 오버라이드 적용
                 DraftRequest.ManualShipFee manual = manualMap.get(factoryIdx);
                 if (manual != null) {
@@ -560,9 +565,9 @@ public class QuoteRestController {
 
                 // 항만/통관/HS
                 BigDecimal portFee = BigDecimal.ZERO, customsFee = BigDecimal.ZERO, hsCodeFee = BigDecimal.ZERO;
-                try { portFee = portCustomsRateService.findActiveByType("PORT").getApplicableAmount(sizeType); } catch (Exception ignored) {}
-                try { customsFee = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception ignored) {}
-                try { hsCodeFee = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception ignored) {}
+                try { portFee = portCustomsRateService.findActiveByType("PORT").getApplicableAmount(sizeType); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
+                try { customsFee = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
+                try { hsCodeFee = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
                 if (manual != null) {
                     if (manual.getPortFee() != null) portFee = manual.getPortFee();
                     if (manual.getCustomsFee() != null) customsFee = manual.getCustomsFee();
@@ -582,7 +587,7 @@ public class QuoteRestController {
                 BigDecimal grpDutyTotal = BigDecimal.ZERO;
                 BigDecimal grpVatTotal = BigDecimal.ZERO;
                 BigDecimal grpInsAm = shipFee.getQsfInsAm() != null ? shipFee.getQsfInsAm() : BigDecimal.ZERO;
-                BigDecimal representativeDutyRate = new BigDecimal("0.13");
+                BigDecimal representativeDutyRate = DEFAULT_DUTY_RATE;
 
                 for (BigDecimal[] detail : itemDetails) {
                     BigDecimal itemSupply = detail[0];
@@ -597,7 +602,7 @@ public class QuoteRestController {
 
                     BigDecimal itemCif = itemSupply.add(itemShipping).add(itemIns);
                     BigDecimal itemDuty = itemCif.multiply(itemDutyRate).setScale(0, RoundingMode.HALF_UP);
-                    BigDecimal itemVat = itemCif.add(itemDuty).multiply(new BigDecimal("0.10")).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemVat = itemCif.add(itemDuty).multiply(VAT_RATE).setScale(0, RoundingMode.HALF_UP);
 
                     grpDutyTotal = grpDutyTotal.add(itemDuty);
                     grpVatTotal = grpVatTotal.add(itemVat);
@@ -654,7 +659,7 @@ public class QuoteRestController {
                             .map(DraftRequest.DraftItem::getStId)
                             .distinct().collect(java.util.stream.Collectors.toList());
                     cartService.clearCartItems(userDetails.getMemberId(), stIds);
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             }
 
             return ResponseEntity.ok(Map.of(
@@ -753,7 +758,7 @@ public class QuoteRestController {
                         sizeType = sr.getSizeType(groupDozen);
                         transportType = sr.getSrTrspTy().name();
                         srUpdatedAt = sr.getSrUpDt();
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
                 }
 
                 // 항만/통관/HS
@@ -766,9 +771,9 @@ public class QuoteRestController {
                     PortCustomsRate pr = portCustomsRateService.findActiveByType("PORT");
                     grpPort = pr.getApplicableAmount(sizeType);
                     pcrUpdatedAt = pr.getPcrUpDt();
-                } catch (Exception ignored) {}
-                try { grpCustoms = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception ignored) {}
-                try { grpHsCode = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
+                try { grpCustoms = portCustomsRateService.findActiveByType("CUSTOMS").getApplicableAmount(sizeType); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
+                try { grpHsCode = portCustomsRateService.findActiveByType("HS_CODE").getApplicableAmount(sizeType); } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
 
                 // 보험 (그룹 전체)
                 BigDecimal grpInsurance = BigDecimal.ZERO;
@@ -794,9 +799,9 @@ public class QuoteRestController {
                     grpCif = grpCif.add(itemCif);
 
                     BigDecimal itemDutyRate = (gi.getDutyRate() != null && gi.getDutyRate().compareTo(BigDecimal.ZERO) > 0)
-                            ? gi.getDutyRate() : new BigDecimal("0.13");
+                            ? gi.getDutyRate() : DEFAULT_DUTY_RATE;
                     BigDecimal itemDuty = itemCif.multiply(itemDutyRate).setScale(0, RoundingMode.HALF_UP);
-                    BigDecimal itemVat = itemCif.add(itemDuty).multiply(new BigDecimal("0.10")).setScale(0, RoundingMode.HALF_UP);
+                    BigDecimal itemVat = itemCif.add(itemDuty).multiply(VAT_RATE).setScale(0, RoundingMode.HALF_UP);
 
                     grpDuty = grpDuty.add(itemDuty);
                     grpVat = grpVat.add(itemVat);
@@ -805,7 +810,7 @@ public class QuoteRestController {
                 // 대표 관세율 (표시용, 실제 계산은 품목별)
                 BigDecimal avgDutyRateDisplay = dutyRateCount > 0
                         ? dutyRateSum.divide(BigDecimal.valueOf(dutyRateCount), 4, RoundingMode.HALF_UP)
-                        : new BigDecimal("0.13");
+                        : DEFAULT_DUTY_RATE;
 
                 // 그룹 소계
                 BigDecimal grpSubtotal = grpShipping.add(grpPort).add(grpCustoms).add(grpHsCode)
@@ -879,7 +884,7 @@ public class QuoteRestController {
                             buyerGrade = buyer.getBgpGr();
                         }
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             } else if (userDetails != null) {
                 // 3순위: 로그인 사용자 (최초 견적, quId 없는 경우)
                 try {
@@ -888,7 +893,7 @@ public class QuoteRestController {
                         Buyer buyer = buyerService.findByBizNo(member.getMemBizNo());
                         buyerGrade = buyer.getBgpGr();
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             }
 
             LocalDateTime svcEffFrom = null, svcEffTo = null;
@@ -907,7 +912,7 @@ public class QuoteRestController {
                     svcEffFrom = commissionPolicy.getFpEfFrDt();
                     svcEffTo = commissionPolicy.getFpEfToDt();
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
 
             try {
                 FeePolicy docPolicy = feePolicyService
@@ -921,7 +926,7 @@ public class QuoteRestController {
                     docEffFrom = docPolicy.getFpEfFrDt();
                     docEffTo = docPolicy.getFpEfToDt();
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
 
             BigDecimal procurementTotal = serviceFee.add(docFee);
 
@@ -936,7 +941,7 @@ public class QuoteRestController {
                 if (shippingPolicy != null) {
                     shippingDiscountRate = shippingPolicy.getFpVal();
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
 
             BigDecimal standardServiceFee = null;
             if (!"STANDARD".equals(buyerGrade)) {
@@ -949,7 +954,7 @@ public class QuoteRestController {
                     if (standardCommission != null && request.getItemTotalKrw() != null) {
                         standardServiceFee = standardCommission.apply(request.getItemTotalKrw());
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             }
 
             // ── 4. 국내 배달비 계산 ─────────────────
@@ -966,7 +971,7 @@ public class QuoteRestController {
                                 fallbackRegion = defaultRcv.getRcRgn();
                             }
                         }
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
                 }
                 // 공장 그룹 수 = 국내 배송 건수 (출발지가 다르면 별도 배송)
                 int shipCount = Math.max(factoryGroups.size(), items.isEmpty() ? 0 : 1);
@@ -998,7 +1003,7 @@ public class QuoteRestController {
                             .build());
                     domesticFee = domesticFee.add(sub);
                     domesticCount += rc.getValue();
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("처리 중 무시된 예외: {}", e.getMessage()); }
             }
 
             return ResponseEntity.ok(EstimateFeeResponse.builder()
