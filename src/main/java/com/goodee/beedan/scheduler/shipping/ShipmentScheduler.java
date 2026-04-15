@@ -32,7 +32,7 @@ public class ShipmentScheduler {
             SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
             // 배송 동기화가 비활성화된 경우 실행하지 않음
-            if (!setting.isShipmentSyncEnabled()) {
+            if (!setting.getIsShipmentSyncEnabled()) {
                 log.info("배송 상태 동기화가 비활성화되어 있어 실행을 건너뜁니다.");
                 return;
             }

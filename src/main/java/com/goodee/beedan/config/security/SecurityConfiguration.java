@@ -79,7 +79,7 @@ public class SecurityConfiguration {
 
                         // 6) USER 전용
                         .requestMatchers(
-                                "/api/quote/**", "/quote/**",
+                                "/quote/**",
                                 "/api/payment/**", "/payment/**",
                                 "/api/orders/**", "/order/**",
                                 "/api/shipments/**",
@@ -97,7 +97,8 @@ public class SecurityConfiguration {
                         // 7) 로그인 사용자 공통
                         .requestMatchers(
                                 "/mypage/**",
-                                "/ws", "/ws/**"
+                                "/ws", "/ws/**",
+                                "/api/quote/**"
                         ).authenticated()
 
                         // 8) 그 외 전부 인증 필요

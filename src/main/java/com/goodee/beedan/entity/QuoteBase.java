@@ -81,8 +81,12 @@ public class QuoteBase {
         this.quStt = QuoteStatus.PAID;
     }
 
-    public void adminOpened() {
+    public void adminOpened(Long adminMemId) {
         this.quAdOpYn = true;
+        // 사용자 제출 시 quSid==quRid==userId 로 들어오므로, 첫 어드민 열람 시 수신자를 어드민으로 갱신
+        if (adminMemId != null && this.quRid != null && this.quRid.equals(this.quSid)) {
+            this.quRid = adminMemId;
+        }
     }
 
     public void userOpened() {

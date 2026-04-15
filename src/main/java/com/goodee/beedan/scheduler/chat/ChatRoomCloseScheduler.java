@@ -26,7 +26,7 @@ public class ChatRoomCloseScheduler {
         SchedulerSettingDto schedulerSetting = schedulerService.getSchedulerSetting();
 
         // 자동 종료 기능이 꺼져 있으면 바로 종료
-        if (!schedulerSetting.isChatAutoCloseEnabled()) return;
+        if (!schedulerSetting.getIsChatAutoCloseEnabled()) return;
 
         // 시작 시각이나 실행 주기가 비어 있으면 안전하게 실행 X
         if (schedulerSetting.getChatAutoCloseStartDt() == null
