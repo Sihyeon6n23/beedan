@@ -27,7 +27,7 @@ public class SchedulerSettingDto {
     // 2. 환율
     // 2.1 자동 환율 갱신 ON/OFF
     @JsonProperty("is_exchange_rate_enabled")
-    private boolean isExchangeRateEnabled = false;
+    private Boolean isExchangeRateEnabled = false;
 
     // 2.2 환율 갱신 시작 일시
     @JsonProperty("exchange_rate_start_dt")
@@ -44,7 +44,7 @@ public class SchedulerSettingDto {
 
     // 3. 고객 등급 재산정
     @JsonProperty("is_grade_resolve_enabled")
-    private boolean isGradeResolveEnabled = false;
+    private Boolean isGradeResolveEnabled = false;
 
     @JsonProperty("grade_resolve_start_dt")
     private String gradeResolveStartDt;
