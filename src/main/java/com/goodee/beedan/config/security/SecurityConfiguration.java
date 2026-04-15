@@ -30,11 +30,78 @@ public class SecurityConfiguration {
                         .ignoringRequestMatchers("/api/webhook/**")
                 )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다.
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers("/error/**").permitAll()
-                                .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
-                                .requestMatchers("/images/**").permitAll()
-                                .requestMatchers("/signup", "/**").permitAll() // 인증
-                        //.anyRequest().authenticated() // 그 외
+
+                        // 1) 공개 경로
+                        .requestMatchers(
+                                "/",
+                                "/about",
+                                "/error/**",
+                                "/css/**",
+                                "/js/**",
+                                "/image/**",
+                                "/stock/**",
+                                "/notice/list/**",
+                                "/notice/detail/**",
+                                "/api/tracking/**",
+                                "/api/stock/list",
+                                "/files/**"
+                        ).permitAll()
+
+                        // 2) 로그인은 필요하지만 공개 API로 열면 안 되는 예외 경로
+                        .requestMatchers(
+                                "/auth/kakao/**",
+                                "/auth/passwd/change",
+                                "/api/auth/disconnectSns"
+                        ).authenticated()
+
+                        // 3) 인증/로그인 관련
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/auth/**"
+                        ).permitAll()
+
+                        // 4) ROOT 전용
+                        .requestMatchers(
+                                "/root/**",
+                                "/api/root/**"
+                        ).hasRole("ROOT")
+
+                        // 5) ADMIN / ROOT 전용
+                        .requestMatchers(
+                                "/api/admin/chat/**", "/admin/chat/**",
+                                "/api/admin/inquiry/**", "/admin/inquiry/**", "/api/admin/inquiries/**",
+                                "/admin/quote/**", "/admin/negotiation/**",
+                                "/api/admin/member/**", "/admin/member/**",
+                                "/api/newstock/**", "/admin/newstock/**", "/api/admin/stock/**", "/admin/stock/**",
+                                "/api/admin/require/**", "/admin/require/**",
+                                "/notice/write/**", "/notice/edit/**"
+                        ).hasAnyRole("ADMIN", "ROOT")
+
+                        // 6) USER 전용
+                        .requestMatchers(
+                                "/api/quote/**", "/quote/**",
+                                "/api/payment/**", "/payment/**",
+                                "/api/orders/**", "/order/**",
+                                "/api/shipments/**",
+                                "/api/notification/**", "/notification/**",
+                                "/api/receiver/**", "/receiver/**",
+                                "/api/images/**",
+                                "/api/cart/**", "/cart/**",
+                                "/api/wishlist/**", "/wishlist/**",
+                                "/api/stock/myitem/**", "/myitem/**",
+                                "/api/require/**", "/require/**",
+                                "/api/inquiries/**", "/inquiry/**",
+                                "/api/chat/**", "/api/chatbot/**"
+                        ).hasRole("USER")
+
+                        // 7) 로그인 사용자 공통
+                        .requestMatchers(
+                                "/mypage/**",
+                                "/ws", "/ws/**"
+                        ).authenticated()
+
+                        // 8) 그 외 전부 인증 필요
+                        .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
                         .loginPage("/auth/signin")
@@ -73,6 +140,12 @@ public class SecurityConfiguration {
                         )
                         .failureHandler((request, response, exception) -> {
                             response.sendRedirect("/auth/signin?error=" + exception.getMessage());
+                        })
+                )
+                .exceptionHandling(ex -> ex              // ← 여기 추가
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            request.setAttribute("message", "잘못된 접근입니다.");
+                            request.getRequestDispatcher("/error/denied").forward(request, response);
                         })
                 );
         return http.build();
