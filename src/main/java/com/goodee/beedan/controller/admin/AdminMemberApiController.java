@@ -2,6 +2,7 @@ package com.goodee.beedan.controller.admin;
 
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
+import com.goodee.beedan.config.exception.MemberNotFoundException;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.admin.MemberListDto;
 import com.goodee.beedan.dto.admin.MemberListResponse;
@@ -49,6 +50,8 @@ public class AdminMemberApiController {
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal MemberUserDetails userDetails) {
+        if(userDetails == null) throw new MemberNotFoundException();
+
         Page<MemberListDto> memberListDtos = adminMemberService.getMembersByStatusAndKeyword(status, keyword, pageable);
 
         boolean isRoot = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ROOT"));
@@ -57,7 +60,9 @@ public class AdminMemberApiController {
     }
 
     @GetMapping("/{memId}/summary")
-    public ResponseEntity<MemberSummaryDto> getMemberSummary(@PathVariable Long memId) {
+    public ResponseEntity<MemberSummaryDto> getMemberSummary(@PathVariable Long memId, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        if(userDetails == null) throw new MemberNotFoundException();
+
         MemberSummaryDto summaryDto = adminMemberService.getMemberSummary(memId);
 
         return ResponseEntity.ok(summaryDto);
@@ -66,43 +71,56 @@ public class AdminMemberApiController {
     @GetMapping("/order/{memId}")
     public ResponseEntity<Page<OrderDto>> getMemberOrders(
             @PathVariable Long memId,
-            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<OrderDto> orderList = orderService.getListByAdmin(memId,pageable);
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @PageableDefault(size = 6, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+        if(userDetails == null) throw new MemberNotFoundException();
+
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
 
     @PatchMapping("/order/{memId}/status")
     public ResponseEntity<Page<OrderDto>> updateOrderStatus(
             @PathVariable("memId") Long memId,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestBody Map<String, Object> orderData, // ordBaseId, OrderStatus
             @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+        if(userDetails == null) throw new MemberNotFoundException();
 
         Long ordId = Long.valueOf(orderData.get("ordBaseId").toString());
         OrderStatus ordStt = OrderStatus.valueOf(orderData.get("ordBaseStt").toString());
 
         orderService.updateOrderStatus(ordId, ordStt);
 
-        Page<OrderDto> orderList = orderService.getListByAdmin(memId,pageable);
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
 
     @GetMapping("/shipment/{memId}")
     public ResponseEntity<Page<ShipmentDto>> getMemberShipments(
             @PathVariable Long memId,
-            @PageableDefault(size = 10, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 6, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal MemberUserDetails userDetails) {
+        if(userDetails == null) throw new MemberNotFoundException();
+
         Page<ShipmentDto> shipmentList = adminMemberService.getShipmentList(memId, pageable);
 
         return ResponseEntity.ok(shipmentList);
     }
 
     @GetMapping("/shipment/{shId}/track")
-    public ResponseEntity<TrackingResponseDto> getTracking(@PathVariable("shId") Long shId) {
+    public ResponseEntity<TrackingResponseDto> getTracking(@PathVariable("shId") Long shId, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        if(userDetails == null) throw new MemberNotFoundException();
+
         TrackingResponseDto result = trackingService.getTrackingInfo(shId);
+
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/shipment/{shId}/demo-progress")
-    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId) {
+    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId, @AuthenticationPrincipal MemberUserDetails userDetails) {
+        if(userDetails == null) throw new MemberNotFoundException();
+
         Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
         ShipmentStatus nextStatus = switch (shipment.getShStt()) {
@@ -114,13 +132,15 @@ public class AdminMemberApiController {
 
         ShipmentDto dto = ShipmentDto.builder().shStt(nextStatus).build();
 
-        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), dto);
+        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), userDetails.getMemberId(), dto);
 
         return ResponseEntity.ok("배송 상태가 " + nextStatus.name() + " (으)로 변경되었습니다.");
     }
 
     @PostMapping("/shipment/sync-unipass")
-    public ResponseEntity<String> syncUnipassManually() {
+    public ResponseEntity<String> syncUnipassManually(@AuthenticationPrincipal MemberUserDetails userDetails) {
+        if(userDetails == null) throw new MemberNotFoundException();
+        
         unipassScheduler.runUnipassTracking();
         return ResponseEntity.ok("통관 정보 수동 동기화가 완료되었습니다.");
     }

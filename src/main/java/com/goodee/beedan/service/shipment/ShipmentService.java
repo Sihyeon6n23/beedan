@@ -4,8 +4,10 @@ import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
+import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.entity.Order;
 import com.goodee.beedan.entity.Shipment;
+import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.repository.order.ShipmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import java.util.List;
 public class ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final OrderRepository orderRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
     public Page<ShipmentDto> getShipmentList(Long memId, Long ordId, Pageable pageable) {
@@ -54,14 +57,15 @@ public class ShipmentService {
             case PREPARING -> shipment.setShStt(ShipmentStatus.SHIPPING);
             case SHIPPING -> shipment.setShStt(ShipmentStatus.DELIVERING);
             case DELIVERING -> shipment.setShStt(ShipmentStatus.DELIVERED);
-            default -> throw new IllegalStateException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
+            default -> throw new IllegalArgumentException("다음 배송 단계로 자동 업데이트할 수 없는 상태입니다.");
         }
 
         syncOrderStatus(shipment.getOrder());
     }
 
-    public ShipmentDto updateStatusFromAdmin(Long shId, Long ordId, ShipmentDto dto) {
+    public ShipmentDto updateStatusFromAdmin(Long shId, Long ordId, Long memId, ShipmentDto dto) {
         Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
+        memberRepository.getByIdOrThrow(memId).validateAdmin();
 
         if (!shipment.getOrder().getOrdBaseId().equals(ordId)) throw new IllegalArgumentException("해당 주문의 배송 내역이 아닙니다.");
 

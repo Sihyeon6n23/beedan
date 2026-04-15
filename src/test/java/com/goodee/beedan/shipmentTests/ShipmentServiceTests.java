@@ -196,7 +196,7 @@ class ShipmentServiceTests {
         when(shipmentRepository.getByIdOrThrow(shId)).thenReturn(shipment);
 
         // When
-        ShipmentDto result = shipmentService.updateStatusFromAdmin(shId, ordId, dto);
+        ShipmentDto result = shipmentService.updateStatusFromAdmin(shId, ordId, 2L,dto);
 
         // Then
         assertThat(result.getShStt()).isEqualTo(ShipmentStatus.SHIPPING);
@@ -215,7 +215,7 @@ class ShipmentServiceTests {
                 .thenThrow(new EntityNotFoundException("배송 내역을 찾을 수 없습니다. ID: " + shId));
 
         // When & Then
-        assertThatThrownBy(() -> shipmentService.updateStatusFromAdmin(shId, ordId, dto))
+        assertThatThrownBy(() -> shipmentService.updateStatusFromAdmin(shId, ordId, 2L, dto))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("배송 내역을 찾을 수 없습니다. ID: 1");
     }
@@ -230,7 +230,7 @@ class ShipmentServiceTests {
         when(shipmentRepository.getByIdOrThrow(shId)).thenThrow(new EntityNotFoundException("배송 내역을 찾을 수 없습니다. ID: 1"));
 
         // When & Then
-        assertThatThrownBy(() -> shipmentService.updateStatusFromAdmin(shId, ordId, dto))
+        assertThatThrownBy(() -> shipmentService.updateStatusFromAdmin(shId, ordId, 2L, dto))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("배송 내역을 찾을 수 없습니다.");
     }

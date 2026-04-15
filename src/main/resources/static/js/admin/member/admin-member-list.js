@@ -421,7 +421,7 @@ async function viewFullOrderList(memId, page = 0) {
                             <th>주문번호</th>
                             <th>주문일자</th>
                             <th>주문품목</th>
-                            <th>배송지/수령자</th>
+                            <th>수령자</th>
                             <th class="text-center">총금액</th>
                             <th class="text-center">상태</th>
                             <th class="text-center">관리</th>
@@ -453,11 +453,11 @@ async function viewFullOrderList(memId, page = 0) {
         const rowsHtml = data.content.map(order => {
             const sttInfo = getOrderBadgeTheme(order.ordBaseStt);
             const amount = order.ordBaseTtAm ? order.ordBaseTtAm.toLocaleString('ko-KR') : '0';
-            const dateStr = inquiry.brdCreDt ? inquiry.brdCreDt.substring(0, 10).replaceAll('-', '.') : '-';
+            const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.substring(0, 10).replaceAll('-', '.') : '-';
 
             return `
                 <tr>
-                    <td class="order-id">#${order.ordBaseNo}</td>
+                    <td class="order-id" style="text-align: center;">${order.ordBaseNo}</td>
                     <td class="order-date">${dateStr}</td>
 
                     <td class="order-summary">
@@ -465,7 +465,6 @@ async function viewFullOrderList(memId, page = 0) {
                     </td>
 
                     <td class="order-address">
-                        <p>${order.ordBaseAdr}</p>
                         <p>${order.ordBaseRcvNm}</p>
                     </td>
 
@@ -565,10 +564,10 @@ async function viewFullShipmentList(memId, page = 0) {
                 <table class="fragment-table">
                     <thead>
                         <tr>
-                            <th>송장번호</th>
+                            <th>택배사/송장번호</th>
                             <th>배송 시작일자</th>
-                            <th>배송물품</th>
-                            <th>배송지 / 배송현황</th>
+                            <th>수령인/배송물품</th>
+                            <th>배송지</th>
                             <th class="text-center">상태</th>
                             <th class="text-center">관리</th>
                         </tr>
@@ -600,6 +599,18 @@ async function viewFullShipmentList(memId, page = 0) {
             const sttInfo = getShipmentBadgeTheme(shipment.shStt);
             const dateStr = shipment.shCreDt ? shipment.shCreDt.substring(0, 10).replaceAll('-', '.') : '-';
             let itemSummary = '상품 정보 없음';
+            const courierMap = {
+                "kr.cjlogistics": "CJ대한통운",
+                "kr.epost": "우체국택배",
+                "kr.hanjin": "한진택배",
+                "kr.lotteglogis": "롯데택배",
+                "kr.logen": "로젠택배",
+                "kr.cvsnet": "GS25 편의점택배",
+                "kr.cupost": "CU 편의점택배"
+            };
+            let displayName = courierMap[shipment.shCarCd] || "택배사 미정";
+            let displayNo = shipment.shTraNo || "";
+
             if (shipment.items && shipment.items.length > 0) {
                 const firstItemName = shipment.items[0].ordItmNm;
                 itemSummary = shipment.items.length > 1
@@ -609,7 +620,7 @@ async function viewFullShipmentList(memId, page = 0) {
 
             return `
                 <tr>
-                    <td class="shipment-id">${shipment.shCarNm || '택배사 미정'}-${shipment.shTraNo || ''}</td>
+                    <td class="shipment-id">${displayName}-${displayNo}</td>
                     <td class="shipment-date">${dateStr}</td>
 
                     <td class="shipment-summary">
@@ -893,7 +904,7 @@ async function viewFullInquiryIList(memId, page = 0) {
     `;
 
     try {
-        const url = `/api/admin/inquiries/${memId}?page=${page}`;
+        const url = `/api/admin/inquiries/${memId}?page=${page}&size=8`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -905,7 +916,7 @@ async function viewFullInquiryIList(memId, page = 0) {
             paginationArea.innerHTML = '';
             return;
         }
-
+// 8개
         const rowsHtml = data.content.map(inquiry => {
             const statusMap = {
                 RECEIVED: { text: '접수', className: 'badge-yellow' },

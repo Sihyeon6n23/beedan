@@ -31,8 +31,8 @@ main > div {
 }
 
 .search-input-wrapper {
-    flex: 1;
-    min-width: 250px;
+    flex: 0 1 300px;
+    min-width: 200px;
     display: flex;
     align-items: center;
     background-color: var(--bg-input);
@@ -51,6 +51,18 @@ main > div {
 .search-input-wrapper .material-symbols-outlined {
     color: var(--text-muted);
     font-size: 1.25rem;
+}
+
+.search-category-select {
+    background-color: var(--bg-input);
+    border: none;
+    outline: none;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    min-width: 140px;
 }
 
 .date-input-wrapper {
@@ -672,3 +684,8 @@ main > div {
         align-items: flex-start;
     }
 }
+
+  .field-error {
+    font-size: 0.7rem;
+    color: #dc2626;
+  }

@@ -87,6 +87,17 @@
                 </div>
             </div>
 
+            <!-- 첨부파일 -->
+            <div class="req-field">
+                <label class="req-field__label">첨부파일</label>
+                <div class="req-upload__zone" id="upload-zone">
+                    <span class="material-symbols-outlined">cloud_upload</span>
+                    <p>클릭하거나 파일을 드래그하세요</p>
+                </div>
+                <input type="file" id="fileInput" name="files" multiple style="display:none">
+                <div id="file-list"></div>
+            </div>
+
             <!-- 버튼 -->
             <div class="req-write__actions">
                 <button type="button" id="btn-draft" class="req-btn req-btn--draft">임시 저장</button>
