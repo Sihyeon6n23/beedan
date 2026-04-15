@@ -33,6 +33,15 @@ public class NotificationApiController {
         return ResponseEntity.ok(notificationDtoList);
     }
 
+    @DeleteMapping
+    public ResponseEntity<List<NotificationDto>> deleteAll(@AuthenticationPrincipal MemberUserDetails userDetails){
+        notificationService.deleteAll(userDetails.getMemberId());
+
+        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
+
+        return ResponseEntity.ok(notificationDtoList);
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<List<NotificationDto>> read(
             @PathVariable("id") Long notiId,
@@ -49,15 +58,6 @@ public class NotificationApiController {
             @PathVariable("id")Long notiId,
             @AuthenticationPrincipal MemberUserDetails userDetails){
         notificationService.deleteNotification(notiId, userDetails.getMemberId());
-
-        List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
-
-        return ResponseEntity.ok(notificationDtoList);
-    }
-
-    @DeleteMapping
-    public ResponseEntity<List<NotificationDto>> deleteAll(@AuthenticationPrincipal MemberUserDetails userDetails){
-        notificationService.deleteAll(userDetails.getMemberId());
 
         List<NotificationDto> notificationDtoList = notificationService.getUnReadNotificationList(userDetails.getMemberId());
 
