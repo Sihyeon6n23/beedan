@@ -15,7 +15,7 @@ import java.io.IOException;
 @Slf4j
 public class SchedulerService {
     private final ObjectMapper objectMapper;
-    private SchedulerSettingDto cachedSetting;
+    private volatile SchedulerSettingDto cachedSetting;
     private final String filePath = "src/main/resources/scheduler-setting.json";
 
     @PostConstruct

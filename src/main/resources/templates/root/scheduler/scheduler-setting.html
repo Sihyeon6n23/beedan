@@ -288,7 +288,7 @@
                             <option value="6" th:selected="${setting.newStockUpdateInterval == '6'}">6시간</option>
                             <option value="12" th:selected="${setting.newStockUpdateInterval == '12'}">12시간</option>
                             <option value="24" th:selected="${setting.newStockUpdateInterval == '24'}">1일</option>
-                            <option value="48" th:selected="${setting.newStockUpdateInterval == '24'}">2일</option>
+                            <option value="48" th:selected="${setting.newStockUpdateInterval == '48'}">2일</option>
                             <option value="168" th:selected="${setting.newStockUpdateInterval == '168'}">7일</option>
                         </select>
                     </div>
@@ -505,30 +505,20 @@
             function updateInputStatus(section) {
               const radioOn = section.querySelector('input[type="radio"][value="true"]');
               const editableFields = section.querySelectorAll(
-                  'input[type="number"], input[type="text"]:not([readonly]), input[type="datetime-local"], select'
+                  'input[type="number"], input[type="text"]:not([readonly]), input[type="datetime-local"]'
               );
 
-              if (!editableFields.length) return;
+              if (!editableFields.length || !radioOn) return;
 
               const enableField = (field) => {
-                  if (field.tagName === 'SELECT') {
-                      field.disabled = false;
-                  } else {
-                      field.readOnly = false;
-                  }
-
+                  field.readOnly = false;
                   field.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-zinc-100');
                   field.classList.add('bg-surface-container-high');
                   field.classList.add('focus:bg-surface-container-lowest', 'focus:border-l-4', 'focus:border-primary', 'transition-all');
               };
 
               const disableField = (field) => {
-                  if (field.tagName === 'SELECT') {
-                      field.disabled = true;
-                  } else {
-                      field.readOnly = true;
-                  }
-
+                  field.readOnly = true;
                   field.classList.add('opacity-50', 'cursor-not-allowed', 'bg-zinc-100');
                   field.classList.remove('bg-surface-container-high');
                   field.classList.remove('focus:bg-surface-container-lowest', 'focus:border-l-4', 'focus:border-primary');

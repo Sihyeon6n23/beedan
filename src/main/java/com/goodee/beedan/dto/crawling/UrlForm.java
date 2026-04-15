@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UrlForm {
-    @NotBlank(message = "Url을 입력하세요.")
+    @NotBlank
     private String urlUrl;
-    @NotBlank(message = "브랜드명을 입력하세요.")
+    @NotBlank
     private String brNm;
-    @NotBlank(message = "카테고리를 입력하세요.")
+    @NotBlank
     private String catNm;
 }

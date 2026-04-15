@@ -30,6 +30,7 @@ public class AdminStockService {
 
     // 첫 호출 + 검색 조건 적용 조회
     public Page<AdminStockDto> findAdminStocks(String keyword,
+                                               String category,
                                                LocalDateTime startDate,
                                                LocalDateTime endDate,
                                                Pageable pageable) {
@@ -44,6 +45,9 @@ public class AdminStockService {
                         cb.like(cb.lower(root.get("stBrNm")), pattern),
                         cb.like(cb.lower(root.get("stCd")), pattern)
                 ));
+            }
+            if (category != null && !category.isBlank()) {
+                predicates.add(cb.equal(root.get("stCatNm"), category));
             }
             if (startDate != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("stCraDt"), startDate));
@@ -95,6 +99,7 @@ public class AdminStockService {
     // 상품 정보 수정
     public void updateStock(Long stId, AdminStockDto adminStockDto) {
         Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+        stock.setStCd(adminStockDto.getStCd());
         stock.setStBrNm(adminStockDto.getStBrNm());
         stock.setStCatNm(adminStockDto.getStCatNm());
         stock.setStNm(adminStockDto.getStNm());

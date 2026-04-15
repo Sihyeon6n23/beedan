@@ -35,6 +35,9 @@
             <input type="text" id="search-keyword" placeholder="상품명, 브랜드명, 상품코드 검색">
             <span class="material-symbols-outlined">search</span>
         </div>
+        <select id="search-category" class="search-category-select">
+            <option value="">전체 카테고리</option>
+        </select>
         <div class="date-input-wrapper">
             <input type="date" id="search-start-date">
             <span>~</span>
@@ -104,24 +107,29 @@
                 <div class="form-group">
                     <label>상품코드</label>
                     <input type="text" id="modal-stCd">
+                    <span class="field-error" data-for="stCd"></span>
                 </div>
                 <div class="form-group">
                     <label>상품명</label>
                     <input type="text" id="modal-stNm">
+                    <span class="field-error" data-for="stNm"></span>
                 </div>
                 <div class="form-group">
                     <label>브랜드</label>
                     <input type="text" id="modal-stBrNm" list="brand-list">
+                    <span class="field-error" data-for="stBrNm"></span>
                     <datalist id="brand-list"></datalist>
                 </div>
                 <div class="form-group">
                     <label>카테고리</label>
                     <input type="text" id="modal-stCatNm" list="category-list">
+                    <span class="field-error" data-for="stCatNm"></span>
                     <datalist id="category-list"></datalist>
                 </div>
                 <div class="form-group">
                     <label>가격</label>
                     <input type="number" id="modal-stPr" step="0.01">
+                    <span class="field-error" data-for="stPr"></span>
                 </div>
                 <div class="form-group">
                     <label>통화</label>
@@ -180,6 +188,7 @@
         sessionStorage.setItem('stockListState', JSON.stringify({
             page: currentPage,
             keyword: document.getElementById('search-keyword').value.trim(),
+            category: document.getElementById('search-category').value,
             startDate: document.getElementById('search-start-date').value,
             endDate: document.getElementById('search-end-date').value
         }));
@@ -190,6 +199,7 @@
         if (!saved) return;
         const state = JSON.parse(saved);
         document.getElementById('search-keyword').value = state.keyword || '';
+        document.getElementById('search-category').value = state.category || '';
         document.getElementById('search-start-date').value = state.startDate || '';
         document.getElementById('search-end-date').value = state.endDate || '';
         currentPage = state.page || 0;
@@ -215,6 +225,8 @@
             dl.innerHTML = categoriesList.map(c => '<option value="' + c.catNm + '">').join('');
             const sel = document.getElementById('batch-category-select');
             sel.innerHTML = '<option value="">카테고리 선택</option>' + categoriesList.map(c => '<option value="' + c.catNm + '">' + c.catNm + '</option>').join('');
+            const searchCat = document.getElementById('search-category');
+            searchCat.innerHTML = '<option value="">전체 카테고리</option>' + categoriesList.map(c => '<option value="' + c.catNm + '">' + c.catNm + '</option>').join('');
         });
     }
 
@@ -260,11 +272,13 @@
         document.getElementById('check-all').checked = false;
         document.getElementById('batch-actions').style.display = 'none';
         const keyword = document.getElementById('search-keyword').value.trim();
+        const category = document.getElementById('search-category').value;
         const startDate = document.getElementById('search-start-date').value;
         const endDate = document.getElementById('search-end-date').value;
 
         let params = 'page=' + page;
         if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
+        if (category) params += '&category=' + encodeURIComponent(category);
         if (startDate) params += '&startDate=' + startDate;
         if (endDate) params += '&endDate=' + endDate;
 
@@ -280,6 +294,13 @@
             .catch(err => {
                 console.error('목록 로드 실패:', err);
             });
+    }
+
+    // 이스케이프 헬퍼
+     function esc(str) {
+     if (str == null) return '';
+     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+         .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     // ===== 테이블 렌더링 =====
@@ -489,9 +510,40 @@
         }
     }
 
+    // ===== 모달 폼 검증 =====
+    function validateEditModal() {
+        document.querySelectorAll('#editModal .field-error').forEach(el => el.textContent = '');
+
+        const fields = [
+            { id: 'modal-stCd',    forKey: 'stCd',    msg: '상품코드를 입력하세요.' },
+            { id: 'modal-stNm',    forKey: 'stNm',    msg: '상품명을 입력하세요.' },
+            { id: 'modal-stBrNm',  forKey: 'stBrNm',  msg: '브랜드명을 입력하세요.' },
+            { id: 'modal-stCatNm', forKey: 'stCatNm',  msg: '카테고리를 입력하세요.' },
+            { id: 'modal-stPr',    forKey: 'stPr',     msg: '가격을 입력하세요.' },
+        ];
+
+        for (const f of fields) {
+            if (!document.getElementById(f.id).value.trim()) {
+                document.querySelector('#editModal [data-for="' + f.forKey + '"]').textContent = f.msg;
+                document.getElementById(f.id).focus();
+                return false;
+            }
+        }
+
+        if (Number(document.getElementById('modal-stPr').value) < 0) {
+            document.querySelector('#editModal [data-for="stPr"]').textContent = '가격은 0 이상이어야 합니다.';
+            document.getElementById('modal-stPr').focus();
+            return false;
+        }
+
+        return true;
+    }
+
     // ===== 저장 =====
     window.saveStock = function() {
         if (!currentStId) return;
+        if (!validateEditModal()) return;
+
         const dto = {
             stCd: document.getElementById('modal-stCd').value,
             stNm: document.getElementById('modal-stNm').value,
@@ -539,6 +591,7 @@
     // ===== 초기화 =====
     window.resetSearch = function() {
         document.getElementById('search-keyword').value = '';
+        document.getElementById('search-category').value = '';
         document.getElementById('search-start-date').value = '';
         document.getElementById('search-end-date').value = '';
         sessionStorage.removeItem('stockListState');
