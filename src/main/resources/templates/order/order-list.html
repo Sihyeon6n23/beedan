@@ -97,7 +97,11 @@
             </div>
 
             <div class="admin-chat-list-body">
-                <div th:unless="${#lists.isEmpty(orders)}" th:each="order : ${orders}" class="admin-chat-row">
+                <div th:if="${orders.isEmpty()}" style="text-align: center; padding: 20px;">
+                    <p>주문 이력이 없습니다</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty()}" th:each="order : ${orders}" class="admin-chat-row">
 
                     <div class="admin-chat-row__primary">
                         <div class="admin-chat-row__text">
@@ -132,7 +136,7 @@
                 </div>
             </div>
 
-            <footer class="admin-chat-shell admin-chat-shell--pagination" th:if="${orders.totalPages > 0}">
+            <footer class="admin-chat-shell admin-chat-shell--pagination" th:if="${!orders.isEmpty() and orders.totalPages > 0}">
                 <div class="admin-chat-pagination"
                      th:with="currentPage=${orders.number}, totalPages=${orders.totalPages}, startPage=${(currentPage / 5) * 5}, endPage=${(startPage + 4 < totalPages) ? startPage + 4 : totalPages - 1}">
 

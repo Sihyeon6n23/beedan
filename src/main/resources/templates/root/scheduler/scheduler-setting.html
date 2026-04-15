@@ -326,12 +326,12 @@
                     <!-- ON/OFF 라디오 -->
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="unipassEnabled" value="true" th:checked="${setting.unipassEnabled}">
+                            <input type="radio" name="isUnipassEnabled" value="true" th:checked="${setting.isUnipassEnabled}">
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="unipassEnabled" value="false"
-                                   th:checked="${!setting.unipassEnabled}">
+                            <input type="radio" name="isUnipassEnabled" value="false"
+                                   th:checked="${!setting.isUnipassEnabled}">
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>
@@ -383,12 +383,12 @@
                     <!-- ON/OFF 라디오 -->
                     <div class="flex items-center gap-8 py-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="shipmentSyncEnabled" value="true" th:checked="${setting.shipmentSyncEnabled}">
+                            <input type="radio" name="isShipmentSyncEnabled" value="true" th:checked="${setting.isShipmentSyncEnabled}">
                             <span class="text-sm font-bold">ON</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="shipmentSyncEnabled" value="false"
-                                   th:checked="${!setting.shipmentSyncEnabled}">
+                            <input type="radio" name="isShipmentSyncEnabled" value="false"
+                                   th:checked="${!setting.isShipmentSyncEnabled}">
                             <span class="text-sm font-bold">OFF</span>
                         </label>
                     </div>

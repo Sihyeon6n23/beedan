@@ -94,7 +94,7 @@ public class SchedulerSettingDto {
 
     // 7. UNIPASS API 호출 (해외 배송/통관 상태 추적)
     @JsonProperty("is_unipass_enabled")
-    private boolean isUnipassEnabled = false;
+    private Boolean isUnipassEnabled = false;
 
     @JsonProperty("unipass_start_dt")
     private String unipassStartDt;
@@ -108,7 +108,7 @@ public class SchedulerSettingDto {
 
     // 8. 배송 상태 동기화
     @JsonProperty("is_shipment_sync_enabled")
-    private boolean isShipmentSyncEnabled = false;
+    private Boolean isShipmentSyncEnabled = false;
 
     @JsonProperty("shipment_sync_start_dt")
     private String shipmentSyncStartDt;

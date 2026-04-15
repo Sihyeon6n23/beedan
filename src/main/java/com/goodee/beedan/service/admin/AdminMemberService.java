@@ -134,6 +134,7 @@ public class AdminMemberService {
 
     @Transactional(readOnly = true)
     public Page<ShipmentDto> getShipmentList(Long memId,Pageable pageable){
+        memberRepository.getByIdOrThrow(memId);
         Page<Shipment> shipments = shipmentRepository.findByMemberId(memId, pageable);
         return  shipments.map(this::mapToShipmentDto);
     }
