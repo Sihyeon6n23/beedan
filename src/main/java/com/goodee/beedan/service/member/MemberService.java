@@ -104,6 +104,14 @@ public class MemberService {
     public void insertMember(MemberFormDto memberForm,
                              PhoneVerificationDto phoneVerificationDto,
                              BizDto validateBizDto) {
+        // 사업자 기 인증 계정 자동인증?
+        String bizStt = MemberBizStatus.REQUEST.toString();
+
+        if (memberRepository.existsByMemBizNoAndMemBizStt(
+                validateBizDto.getBNo(),
+                MemberBizStatus.APPROVAL_MANUAL.toString())) {
+            bizStt = MemberBizStatus.APPROVAL_AUTO.toString();
+        }
 
         Member member = Member.builder()
                 .memLgnId(memberForm.getUserLoginId())
@@ -115,8 +123,8 @@ public class MemberService {
                 .memCeoPhn(memberForm.getCeoPhone())
                 .memCmpTel(memberForm.getCmpPhone())
                 .memStt(MemberStatus.ACTIVE.toString())
-                .memBizStt(MemberBizStatus.REQUEST.toString()) // 사업자인증상태 미인증으로 가입
-                .memAut(MemberAuthority.USER) // 회원가입 요청시 USER로 요청
+                .memBizStt(bizStt)
+                .memAut(MemberAuthority.USER)
                 .memLgnTr(0L)
                 .memMbPhn(phoneVerificationDto.getPhoneNumber())
                 .memCi(phoneVerificationDto.getCi())
@@ -132,8 +140,7 @@ public class MemberService {
 
         try {
             Member saveMember = memberRepository.save(member);
-            List<MultipartFile> fileList = new ArrayList<>();
-            fileList.add(memberForm.getNewFiles());
+            List<MultipartFile> fileList = memberForm.getNewFiles();
             fileService.saveFile(fileList, RefDto.builder()
                     .refTy("SIGNUP")
                     .refNo(saveMember.getMemId())

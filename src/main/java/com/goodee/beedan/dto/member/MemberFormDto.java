@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -61,7 +63,7 @@ public class MemberFormDto {
     private Boolean emailCheckedInput;
 
     // 사업자등록증 파일
-    private MultipartFile newFiles;
+    private List<MultipartFile> newFiles;
 
     public boolean isPasswordMatching() {
         if (this.password == null || this.confirmPassword == null) {

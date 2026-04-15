@@ -444,4 +444,18 @@ public class FileService {
         // 이름 부분의 모든 마침표를 언더바로 치환 후 결합
         return namePart.replace(".", "_") + extensionPart;
     }
+
+    public boolean validateFileCount(List<MultipartFile> files, int maxCount) {
+        if (files == null) return false;
+
+        // 실제 파일이 존재하는 것만 필터링해서 카운트
+        long actualCount = files.stream()
+                .filter(file -> !file.isEmpty()) // 0바이트 혹은 빈 객체 제외
+                .count();
+
+        if (actualCount > maxCount) {
+            return false;
+        }
+        return true;
+    }
 }
