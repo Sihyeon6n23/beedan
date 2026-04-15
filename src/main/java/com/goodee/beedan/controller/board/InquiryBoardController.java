@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequiredArgsConstructor
@@ -49,13 +51,15 @@ public class InquiryBoardController {
     // 사용자 상세
     @GetMapping("/detail")
     public String getInquiryDetail(Model model,
-                         @RequestParam("id") Long brdId,
-                         @AuthenticationPrincipal MemberUserDetails userDetails) {
+                                   @RequestParam("id") Long brdId,
+                                   @RequestParam(value = "returnUrl", required = false) String returnUrl,
+                                   @AuthenticationPrincipal MemberUserDetails userDetails) {
         InquiryBoardDetailDto inquiryBoardDetail = inquiryBoardService
                 .getUserInquiryBoardDetail(brdId, userDetails.getMemberId());
 
         model.addAttribute("inquiryBoardDetail", inquiryBoardDetail);
         model.addAttribute("isAdmin", false);
+        model.addAttribute("returnUrl", returnUrl);
 
         return "board/inquiry/inquiry-detail";
     }
@@ -90,8 +94,9 @@ public class InquiryBoardController {
     // 사용자 문의 수정 화면
     @GetMapping("/edit")
     public String editInquiry(Model model,
-                       @RequestParam("id") Long brdId,
-                       @AuthenticationPrincipal MemberUserDetails userDetails) {
+                              @RequestParam("id") Long brdId,
+                              @RequestParam(value = "returnUrl", required = false) String returnUrl,
+                              @AuthenticationPrincipal MemberUserDetails userDetails) {
         InquiryBoardDetailDto inquiryBoardDetail = inquiryBoardService
                 .getUserInquiryBoardDetail(brdId, userDetails.getMemberId());
 
@@ -103,6 +108,7 @@ public class InquiryBoardController {
 
         model.addAttribute("brdId", brdId);
         model.addAttribute("inquiryBoardEditDto", inquiryBoardEditDto);
+        model.addAttribute("returnUrl", returnUrl);
 
         return "board/inquiry/inquiry-edit";
     }
@@ -110,6 +116,7 @@ public class InquiryBoardController {
     // 사용자 문의 수정 처리
     @PostMapping("/edit")
     public String editInquiry(@RequestParam("id") Long brdId,
+                              @RequestParam(value = "returnUrl", required = false) String returnUrl,
                               @ModelAttribute InquiryBoardEditDto inquiryBoardEditDto,
                               @AuthenticationPrincipal MemberUserDetails userDetails,
                               RedirectAttributes reAttr) throws IOException {
@@ -122,6 +129,11 @@ public class InquiryBoardController {
         }
         if (boardResultResponseDto.getActionMessage() != null) {
             reAttr.addFlashAttribute("actionMessage", boardResultResponseDto.getActionMessage());
+        }
+
+        if (returnUrl != null && !returnUrl.isBlank()) {
+            return "redirect:/inquiry/detail?id=" + brdId + "&returnUrl=" +
+                    URLEncoder.encode(returnUrl, StandardCharsets.UTF_8);
         }
 
         return "redirect:/inquiry/detail?id=" + brdId;

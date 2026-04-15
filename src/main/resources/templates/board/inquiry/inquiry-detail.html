@@ -45,7 +45,15 @@
             <article class="inquiry-detail-article">
                 <div class="inquiry-detail-article__utility">
                     <a class="inquiry-detail-back"
+                       th:if="${returnUrl == null or #strings.isEmpty(returnUrl)}"
                        th:href="${isAdmin} ? @{/admin/inquiry/list} : @{/inquiry/list}">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        <span>목록으로</span>
+                    </a>
+
+                    <a class="inquiry-detail-back"
+                       th:unless="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="${returnUrl}">
                         <span class="material-symbols-outlined">arrow_back</span>
                         <span>목록으로</span>
                     </a>
@@ -63,6 +71,7 @@
                         <span th:text="${inquiryBoardDetail.memBizTtl}">(주)회사명</span>
                         <span th:text="${inquiryBoardDetail.memNm}">홍길동</span>
                         <span th:text="${#temporals.format(inquiryBoardDetail.brdCreDt, 'yyyy.MM.dd')}">2026.04.05</span>
+                        <span th:if="${inquiryBoardDetail.edited}">(수정됨)</span>
                     </div>
                 </div>
 
@@ -74,8 +83,12 @@
                 <div class="inquiry-detail-article__footer" th:if="${!isAdmin and (inquiryBoardDetail.canEdit or inquiryBoardDetail.canCancel)}">
                     <div class="inquiry-detail-actions">
                         <a class="inquiry-detail-action inquiry-detail-action--primary"
-                           th:if="${inquiryBoardDetail.canEdit}"
+                           th:if="${inquiryBoardDetail.canEdit and (returnUrl == null or #strings.isEmpty(returnUrl))}"
                            th:href="@{/inquiry/edit(id=${inquiryBoardDetail.brdId})}">문의 수정</a>
+
+                        <a class="inquiry-detail-action inquiry-detail-action--primary"
+                           th:if="${inquiryBoardDetail.canEdit and !(returnUrl == null or #strings.isEmpty(returnUrl))}"
+                           th:href="@{/inquiry/edit(id=${inquiryBoardDetail.brdId}, returnUrl=${returnUrl})}">문의 수정</a>
 
                         <button type="button"
                                 class="inquiry-detail-action"

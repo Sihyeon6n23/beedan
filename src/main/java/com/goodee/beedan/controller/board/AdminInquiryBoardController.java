@@ -53,12 +53,14 @@ public class AdminInquiryBoardController {
     @GetMapping("/detail")
     public String getInquiryDetail(Model model,
                                    @RequestParam("id") Long brdId,
+                                   @RequestParam(value = "returnUrl", required = false) String returnUrl,
                                    @AuthenticationPrincipal MemberUserDetails userDetails) {
         InquiryBoardDetailDto adminInquiryBoardDetail = inquiryBoardService
                 .getAdminInquiryBoardDetail(brdId, userDetails.getMemberId());
 
         model.addAttribute("inquiryBoardDetail", adminInquiryBoardDetail);
         model.addAttribute("isAdmin", true);
+        model.addAttribute("returnUrl", returnUrl);
 
         return "/board/inquiry/inquiry-detail";
     }
