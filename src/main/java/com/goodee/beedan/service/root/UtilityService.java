@@ -5,10 +5,9 @@ import com.goodee.beedan.dto.root.utility.UtilitySettingDto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -16,26 +15,34 @@ import java.io.IOException;
 public class UtilityService {
 
     private final ObjectMapper objectMapper;
-    private UtilitySettingDto cachedSetting;
-    private final String filePath = "src/main/resources/utility-setting.json";
+    private final RedisTemplate<String, Object> redisTemplate;
+    private static final String REDIS_KEY = "setting:utility";
 
     @PostConstruct
-    public void init() throws IOException {
-        File file = new File(filePath);
-        if (file.exists()) {
-            cachedSetting = objectMapper.readValue(file, UtilitySettingDto.class);
-        } else {
-            cachedSetting = new UtilitySettingDto();
+    public void init() {
+        if (redisTemplate.opsForValue().get(REDIS_KEY) == null) {
+            UtilitySettingDto initial;
+            try {
+                ClassPathResource resource = new ClassPathResource("utility-setting.json");
+                initial = objectMapper.readValue(resource.getInputStream(), UtilitySettingDto.class);
+                log.info("유틸리티 설정을 JSON 파일에서 Redis로 초기 로딩했습니다.");
+            } catch (Exception e) {
+                initial = new UtilitySettingDto();
+                log.info("유틸리티 설정을 기본값으로 Redis에 초기화했습니다.");
+            }
+            redisTemplate.opsForValue().set(REDIS_KEY, initial);
         }
     }
 
     public UtilitySettingDto getUtilitySetting() {
-        return cachedSetting;
+        Object value = redisTemplate.opsForValue().get(REDIS_KEY);
+        if (value == null) {
+            return new UtilitySettingDto();
+        }
+        return objectMapper.convertValue(value, UtilitySettingDto.class);
     }
 
-    public void saveUtilitySetting(UtilitySettingDto utilitySettingDto) throws IOException {
-        File file = new File(filePath);
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, utilitySettingDto);
-        cachedSetting = utilitySettingDto;
+    public void saveUtilitySetting(UtilitySettingDto utilitySettingDto) {
+        redisTemplate.opsForValue().set(REDIS_KEY, utilitySettingDto);
     }
 }

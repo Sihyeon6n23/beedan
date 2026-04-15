@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -54,12 +53,8 @@ public class UnipassScheduler {
         runUnipassTracking();
 
         setting.setLastUnipassRunTime(now.toString());
-        try {
-            schedulerService.saveSchedulerSetting(setting);
-            log.info("UNIPASS 스케줄러 실행 완료");
-        } catch (IOException e) {
-            log.error("UNIPASS 스케줄러 설정 저장 실패: {}", e.getMessage());
-        }
+        schedulerService.saveSchedulerSetting(setting);
+        log.info("UNIPASS 스케줄러 실행 완료");
     }
 
     @Transactional

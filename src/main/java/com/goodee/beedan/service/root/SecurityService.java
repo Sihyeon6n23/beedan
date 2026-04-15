@@ -3,62 +3,50 @@ package com.goodee.beedan.service.root;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Getter
 public class SecurityService {
     private final ObjectMapper objectMapper;
-    private SecurityPolicyDto cachedPolicy;
-
-    // 주의: 아래 '💡 실무 팁'을 꼭 읽어주세요!
-    private final String filePath = "src/main/resources/security-policy.json";
+    private final RedisTemplate<String, Object> redisTemplate;
+    private static final String REDIS_KEY = "setting:security";
 
     @PostConstruct
     public void init() {
-        File file = new File(filePath);
-        try {
-            if (file.exists()) {
-                this.cachedPolicy = objectMapper.readValue(file, SecurityPolicyDto.class);
-                log.info("기존 보안 정책 파일을 로드했습니다.");
-            } else {
-                File parentDir = file.getParentFile();
-                if (parentDir != null && !parentDir.exists()) {
-                    parentDir.mkdirs();
-                }
-
-                this.cachedPolicy = new SecurityPolicyDto();
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, this.cachedPolicy);
-                log.info("새로운 보안 정책 파일을 생성했습니다: {}", file.getAbsolutePath());
+        if (redisTemplate.opsForValue().get(REDIS_KEY) == null) {
+            SecurityPolicyDto initial;
+            try {
+                ClassPathResource resource = new ClassPathResource("security-policy.json");
+                initial = objectMapper.readValue(resource.getInputStream(), SecurityPolicyDto.class);
+                log.info("보안 정책을 JSON 파일에서 Redis로 초기 로딩했습니다.");
+            } catch (Exception e) {
+                initial = new SecurityPolicyDto();
+                log.info("보안 정책을 기본값으로 Redis에 초기화했습니다.");
             }
-        } catch (IOException e) {
-            log.error("보안 정책 초기화 중 오류 발생: {}", e.getMessage(), e);
-            this.cachedPolicy = new SecurityPolicyDto();
+            redisTemplate.opsForValue().set(REDIS_KEY, initial);
         }
     }
 
     public SecurityPolicyDto getSecPolDto() {
-        return cachedPolicy;
+        Object value = redisTemplate.opsForValue().get(REDIS_KEY);
+        if (value == null) {
+            return new SecurityPolicyDto();
+        }
+        return objectMapper.convertValue(value, SecurityPolicyDto.class);
     }
 
-    public void saveSecurityPolicyDto(SecurityPolicyDto secPolDto) throws IOException {
-        File file = new File(filePath);
+    public SecurityPolicyDto getCachedPolicy() {
+        return getSecPolDto();
+    }
 
-        File parentDir = file.getParentFile();
-        if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, secPolDto);
-        this.cachedPolicy = secPolDto;
+    public void saveSecurityPolicyDto(SecurityPolicyDto secPolDto) {
+        redisTemplate.opsForValue().set(REDIS_KEY, secPolDto);
         log.info("보안 정책이 성공적으로 저장되었습니다.");
     }
 }

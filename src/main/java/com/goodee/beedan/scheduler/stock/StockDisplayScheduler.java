@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,11 +42,7 @@ public class StockDisplayScheduler {
         stockDisplayService.refreshNewStocks();
 
         setting.setLastNewStockUpdateTime(LocalDateTime.now().toString());
-        try {
-            schedulerService.saveSchedulerSetting(setting);
-        } catch (IOException e) {
-            log.error("스케줄러 설정 저장 실패", e);
-        }
+        schedulerService.saveSchedulerSetting(setting);
     }
 
     @Scheduled(fixedDelay = 60000)
@@ -69,10 +64,6 @@ public class StockDisplayScheduler {
         stockDisplayService.refreshPopularStocks();
 
         setting.setLastPopularStockUpdateTime(LocalDateTime.now().toString());
-        try {
-            schedulerService.saveSchedulerSetting(setting);
-        } catch (IOException e) {
-            log.error("스케줄러 설정 저장 실패", e);
-        }
+        schedulerService.saveSchedulerSetting(setting);
     }
 }

@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -71,10 +70,6 @@ public class ExchangeRateScheduler {
 
         // 마지막 실행 시간 저장
         setting.setLastExchangeRateRunTime(LocalDateTime.now().toString());
-        try {
-            schedulerService.saveSchedulerSetting(setting);
-        } catch (IOException e) {
-            log.error("스케줄러 설정 저장 실패", e);
-        }
+        schedulerService.saveSchedulerSetting(setting);
     }
 }
