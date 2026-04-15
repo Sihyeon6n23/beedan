@@ -2,6 +2,7 @@ package com.goodee.beedan.devUtils;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.service.notification.NotificationService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -29,6 +30,12 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(NoSuchElementException.class)
     public String handleNoSuchElement(NoSuchElementException e, Model model) {
+        model.addAttribute("message", e.getMessage());
+        return "error/common";
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleAccessDenied(AccessDeniedException e, Model model) {
         model.addAttribute("message", e.getMessage());
         return "error/common";
     }

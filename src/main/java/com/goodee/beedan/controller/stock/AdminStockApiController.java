@@ -5,6 +5,7 @@ import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
 import com.goodee.beedan.service.stock.AdminStockService;
 import com.goodee.beedan.service.stock.StockService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,13 +29,14 @@ public class AdminStockApiController {
     @GetMapping("/list")
     public Page<AdminStockDto> list (
             @RequestParam(required = false) String keyword
+            , @RequestParam(required = false) String category
             , @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate startDate
             , @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
             , @RequestParam(defaultValue = "0") int page) {
         LocalDateTime start = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime end = endDate != null ? endDate.atTime(23, 59, 59) : null;
         Pageable pageable = PageRequest.of(page, 20, Sort.by(Sort.Direction.DESC, "stId"));
-        return adminStockService.findAdminStocks(keyword, start, end, pageable);
+        return adminStockService.findAdminStocks(keyword, category, start, end, pageable);
     }
 
     // 노출 여부 반전
@@ -54,7 +56,7 @@ public class AdminStockApiController {
     // 상품 정보 수정
     @PutMapping("/{stId}")
     public ResponseEntity<Void> update(@PathVariable Long stId,
-                                       @RequestBody AdminStockDto adminStockDto) {
+                                       @Valid @RequestBody AdminStockDto adminStockDto) {
         adminStockService.updateStock(stId, adminStockDto);
         return ResponseEntity.ok().build();
     }

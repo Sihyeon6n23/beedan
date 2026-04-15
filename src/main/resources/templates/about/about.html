@@ -491,6 +491,186 @@
 
 
 <!-- ============================================================ -->
+<!--  LOCATION / MAP                                               -->
+<!-- ============================================================ -->
+<section class="bg-surface-container-lowest">
+    <div class="max-w-[1400px] mx-auto px-12 py-28">
+        <div class="text-center mb-20 reveal">
+            <p class="font-headline font-extrabold text-[10px] tracking-[0.3em] text-primary uppercase mb-3">Location</p>
+            <h2 class="font-headline font-black text-4xl md:text-5xl tracking-tighter mb-4">찾아오시는 길</h2>
+            <p class="text-secondary text-sm max-w-lg mx-auto leading-relaxed">
+                서울 금천구 가산디지털2로 95 (가산동)
+            </p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-12 items-start">
+            <!-- Left: SVG Map -->
+            <div class="lg:w-7/12 reveal-left">
+                <div class="bg-neutral-900 p-8 relative overflow-hidden">
+                    <svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                        <!-- Background Grid -->
+                        <defs>
+                            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2a2a2a" stroke-width="0.5"/>
+                            </pattern>
+                        </defs>
+                        <rect width="700" height="500" fill="#1a1a1a"/>
+                        <rect width="700" height="500" fill="url(#grid)"/>
+
+                        <!-- Major Roads -->
+                        <!-- 가산디지털2로 (Main horizontal road) -->
+                        <line x1="0" y1="250" x2="700" y2="250" stroke="#3d3d3d" stroke-width="18"/>
+                        <line x1="0" y1="250" x2="700" y2="250" stroke="#4a4a4a" stroke-width="14"/>
+                        <text x="580" y="240" fill="#666" font-size="9" font-family="Manrope" font-weight="700" letter-spacing="1">가산디지털2로</text>
+
+                        <!-- 디지털로 (Vertical road left) -->
+                        <line x1="180" y1="0" x2="180" y2="500" stroke="#3d3d3d" stroke-width="18"/>
+                        <line x1="180" y1="0" x2="180" y2="500" stroke="#4a4a4a" stroke-width="14"/>
+                        <text x="185" y="32" fill="#666" font-size="9" font-family="Manrope" font-weight="700" letter-spacing="1" transform="rotate(90, 185, 32)">디지털로</text>
+
+                        <!-- 벚꽃로 (Vertical road right) -->
+                        <line x1="520" y1="0" x2="520" y2="500" stroke="#3d3d3d" stroke-width="16"/>
+                        <line x1="520" y1="0" x2="520" y2="500" stroke="#444" stroke-width="12"/>
+                        <text x="525" y="420" fill="#666" font-size="9" font-family="Manrope" font-weight="700" letter-spacing="1" transform="rotate(90, 525, 420)">벚꽃로</text>
+
+                        <!-- Minor road horizontal top -->
+                        <line x1="180" y1="140" x2="520" y2="140" stroke="#333" stroke-width="8"/>
+
+                        <!-- Minor road horizontal bottom -->
+                        <line x1="180" y1="370" x2="520" y2="370" stroke="#333" stroke-width="8"/>
+
+                        <!-- Minor vertical road -->
+                        <line x1="350" y1="140" x2="350" y2="370" stroke="#333" stroke-width="8"/>
+
+                        <!-- Building Blocks (simplified) -->
+                        <rect x="200" y="158" rx="0" ry="0" width="130" height="72" fill="#252525" stroke="#333" stroke-width="1"/>
+                        <text x="265" y="198" fill="#555" font-size="9" font-family="Inter" text-anchor="middle" font-weight="500">가산 W-CENTER</text>
+
+                        <rect x="370" y="158" rx="0" ry="0" width="130" height="72" fill="#252525" stroke="#333" stroke-width="1"/>
+                        <text x="435" y="198" fill="#555" font-size="9" font-family="Inter" text-anchor="middle" font-weight="500">에이스하이엔드타워</text>
+
+                        <rect x="200" y="278" rx="0" ry="0" width="130" height="72" fill="#252525" stroke="#333" stroke-width="1"/>
+                        <text x="265" y="318" fill="#555" font-size="9" font-family="Inter" text-anchor="middle" font-weight="500">가산디지털엠밸리</text>
+
+                        <!-- BEEDAN HQ Building (highlighted) -->
+                        <rect x="370" y="278" rx="0" ry="0" width="130" height="72" fill="#2a2400" stroke="#ffd700" stroke-width="2"/>
+                        <rect x="370" y="278" width="130" height="3" fill="#ffd700"/>
+
+                        <!-- BEEDAN Label -->
+                        <text x="435" y="310" fill="#ffd700" font-size="12" font-family="Manrope" text-anchor="middle" font-weight="800" letter-spacing="3">BEEDAN</text>
+                        <text x="435" y="326" fill="#b8a030" font-size="8" font-family="Inter" text-anchor="middle" font-weight="500">본사</text>
+
+                        <!-- Pin icon above BEEDAN -->
+                        <g transform="translate(435, 262)">
+                            <circle cx="0" cy="0" r="8" fill="#ffd700" opacity="0.2">
+                                <animate attributeName="r" values="8;16;8" dur="2s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.2;0;0.2" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="0" cy="-12" r="7" fill="#ffd700"/>
+                            <circle cx="0" cy="-12" r="3" fill="#1a1a1a"/>
+                            <path d="M0,-5 L-4,-12 A7,7 0 1,1 4,-12 Z" fill="#ffd700"/>
+                        </g>
+
+                        <!-- Subway Station -->
+                        <g transform="translate(155, 250)">
+                            <rect x="-50" y="-14" width="100" height="28" rx="0" fill="#1a3a7a" stroke="#2a5aaa" stroke-width="1.5"/>
+                            <circle cx="-34" cy="0" r="8" fill="#2a5aaa"/>
+                            <text x="-34" y="4" fill="white" font-size="8" font-family="Manrope" text-anchor="middle" font-weight="800">7</text>
+                            <text x="10" y="4" fill="white" font-size="9" font-family="Manrope" text-anchor="middle" font-weight="700">가산디지털단지</text>
+                        </g>
+
+                        <!-- Compass -->
+                        <g transform="translate(640, 60)">
+                            <circle cx="0" cy="0" r="20" fill="none" stroke="#444" stroke-width="1"/>
+                            <text x="0" y="-8" fill="#ffd700" font-size="10" font-family="Manrope" text-anchor="middle" font-weight="800">N</text>
+                            <line x1="0" y1="-4" x2="0" y2="6" stroke="#666" stroke-width="1.5"/>
+                            <polygon points="0,-18 -3,-12 3,-12" fill="#ffd700"/>
+                            <polygon points="0,18 -3,12 3,12" fill="#666"/>
+                        </g>
+
+                        <!-- Scale bar -->
+                        <line x1="30" y1="470" x2="130" y2="470" stroke="#555" stroke-width="1.5"/>
+                        <line x1="30" y1="465" x2="30" y2="475" stroke="#555" stroke-width="1.5"/>
+                        <line x1="130" y1="465" x2="130" y2="475" stroke="#555" stroke-width="1.5"/>
+                        <text x="80" y="464" fill="#555" font-size="8" font-family="Inter" text-anchor="middle">200m</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Right: Info Cards -->
+            <div class="lg:w-5/12 space-y-6 reveal-right">
+                <!-- Address -->
+                <div class="bg-surface-container-low p-8 hover-lift">
+                    <div class="flex items-start gap-5">
+                        <div class="w-12 h-12 bg-neutral-900 flex-shrink-0 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-xl text-primary-container">location_on</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-extrabold text-sm tracking-tight mb-2 uppercase">Address</h3>
+                            <p class="text-secondary text-sm leading-relaxed">
+                                서울특별시 금천구 가산디지털2로 95
+                            </p>
+                            <p class="text-secondary/60 text-xs mt-1">
+                                95, Gasan digital 2-ro, Geumcheon-gu, Seoul, Korea
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subway -->
+                <div class="bg-surface-container-low p-8 hover-lift">
+                    <div class="flex items-start gap-5">
+                        <div class="w-12 h-12 bg-neutral-900 flex-shrink-0 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-xl text-primary-container">train</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-extrabold text-sm tracking-tight mb-2 uppercase">Subway</h3>
+                            <p class="text-secondary text-sm leading-relaxed">
+                                7호선 <span class="font-bold text-on-surface">가산디지털단지역</span> 5번 출구
+                            </p>
+                            <p class="text-secondary/60 text-xs mt-1">도보 약 5분</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bus -->
+                <div class="bg-surface-container-low p-8 hover-lift">
+                    <div class="flex items-start gap-5">
+                        <div class="w-12 h-12 bg-neutral-900 flex-shrink-0 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-xl text-primary-container">directions_bus</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-extrabold text-sm tracking-tight mb-2 uppercase">Bus</h3>
+                            <p class="text-secondary text-sm leading-relaxed">
+                                가산디지털단지 정류장 하차
+                            </p>
+                            <p class="text-secondary/60 text-xs mt-1">간선 571 · 금천01 · 관악02</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hours -->
+                <div class="bg-surface-container-low p-8 hover-lift">
+                    <div class="flex items-start gap-5">
+                        <div class="w-12 h-12 bg-neutral-900 flex-shrink-0 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-xl text-primary-container">schedule</span>
+                        </div>
+                        <div>
+                            <h3 class="font-headline font-extrabold text-sm tracking-tight mb-2 uppercase">Business Hours</h3>
+                            <p class="text-secondary text-sm leading-relaxed">
+                                월 &mdash; 금 &nbsp; <span class="font-bold text-on-surface">09:00 ~ 18:00</span>
+                            </p>
+                            <p class="text-secondary/60 text-xs mt-1">토 · 일 · 공휴일 휴무</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================ -->
 <!--  CTA                                                          -->
 <!-- ============================================================ -->
 <section class="bg-neutral-900 text-white">

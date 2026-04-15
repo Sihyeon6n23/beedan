@@ -269,6 +269,7 @@
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">브랜드</label>
                     <input type="text" name="brNm" list="brand-list-modal" placeholder="브랜드명" class="admin-crawling-input"/>
+                    <span class="field-error" data-for="crawl-brNm"></span>
                     <datalist id="brand-list-modal">
                         <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
                     </datalist>
@@ -276,6 +277,7 @@
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">카테고리</label>
                     <input type="text" name="catNm" list="cat-list-modal" placeholder="카테고리명" class="admin-crawling-input"/>
+                    <span class="field-error" data-for="crawl-catNm"></span>
                     <datalist id="cat-list-modal">
                         <option value="AI 자동 분류"></option>
                         <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
@@ -285,23 +287,28 @@
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">상품 컨테이너 selector</label>
                 <input type="text" name="selItem" placeholder=".product-item" class="admin-crawling-input"/>
+                <span class="field-error" data-for="selItem"></span>
             </div>
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">상품명 selector</label>
                 <input type="text" name="selNm" placeholder=".product-name" class="admin-crawling-input"/>
+                <span class="field-error" data-for="selNm"></span>
             </div>
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">가격 selector</label>
                 <input type="text" name="selPr" placeholder=".product-price" class="admin-crawling-input"/>
+                <span class="field-error" data-for="selPr"></span>
             </div>
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">이미지 selector</label>
                 <input type="text" name="selImg" placeholder="img.product-img" class="admin-crawling-input"/>
+                <span class="field-error" data-for="selImg"></span>
             </div>
             <div class="admin-crawling-field">
                 <label class="admin-crawling-label">통화 기호</label>
                 <input type="text" name="currency" list="currency-list" placeholder="¥" maxlength="5" required
                        class="admin-crawling-input"/>
+                <span class="field-error" data-for="crawl-currency"></span>
                 <datalist id="currency-list">
                     <option value="¥">JPY</option>
                     <option value="$">USD</option>
@@ -334,6 +341,7 @@
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">브랜드</label>
                     <input type="text" name="brNm" list="brand-list-modal2" placeholder="브랜드명" class="admin-crawling-input"/>
+                    <span class="field-error" data-for="shopify-brNm"></span>
                     <datalist id="brand-list-modal2">
                         <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
                     </datalist>
@@ -341,6 +349,7 @@
                 <div class="admin-crawling-field">
                     <label class="admin-crawling-label">카테고리</label>
                     <input type="text" name="catNm" list="cat-list-modal2" placeholder="카테고리명" class="admin-crawling-input"/>
+                    <span class="field-error" data-for="shopify-catNm"></span>
                     <datalist id="cat-list-modal2">
                         <option value="AI 자동 분류"></option>
                         <option th:each="cat : ${categories}" th:value="${cat.catNm}"></option>
@@ -351,6 +360,7 @@
                 <label class="admin-crawling-label">통화 기호</label>
                 <input type="text" name="currency" list="currency-list-shopify" placeholder="₩" maxlength="5" required
                        class="admin-crawling-input"/>
+                <span class="field-error" data-for="shopify-currency"></span>
                 <datalist id="currency-list-shopify">
                     <option value="¥">JPY</option>
                     <option value="€">EUR</option>
@@ -374,6 +384,21 @@
 </div>
 
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<script defer th:src="@{/js/file/fileUpload.js}"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        if (window.InquiryUploader) InquiryUploader.init();
+
+        const manualForm = document.querySelector('form[action$="/manual"]');
+        if (manualForm) {
+            manualForm.addEventListener('submit', () => {
+                const uploader = manualForm.querySelector('[data-inquiry-upload]')?._uploader;
+                if (uploader) uploader.syncToInput();
+            });
+        }
+    });
+</script>
 
 <script th:inline="javascript">
     const csrfToken = /*[[${_csrf.token}]]*/ '';
@@ -658,16 +683,62 @@
         document.getElementById('shopifyModal').classList.add('is-open');
     }
 
+    // Jsoup(HTML) 모달 검증
+    function validateCrawlForm(form) {
+        form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+        const fields = [
+            { name: 'brNm',    forKey: 'crawl-brNm',    msg: '브랜드명을 입력하세요.' },
+            { name: 'catNm',   forKey: 'crawl-catNm',   msg: '카테고리를 입력하세요.' },
+            { name: 'selItem', forKey: 'selItem',        msg: '상품 컨테이너 selector를 입력하세요.' },
+            { name: 'selNm',   forKey: 'selNm',          msg: '상품명 selector를 입력하세요.' },
+            { name: 'selPr',   forKey: 'selPr',          msg: '가격 selector를 입력하세요.' },
+            { name: 'selImg',  forKey: 'selImg',         msg: '이미지 selector를 입력하세요.' },
+            { name: 'currency', forKey: 'crawl-currency', msg: '통화 기호를 입력하세요.' },
+        ];
+
+        for (const f of fields) {
+            if (!form[f.name].value.trim()) {
+                form.querySelector('[data-for="' + f.forKey + '"]').textContent = f.msg;
+                form[f.name].focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Shopify 모달 검증
+    function validateShopifyForm(form) {
+        form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+        const fields = [
+            { name: 'brNm',     forKey: 'shopify-brNm',     msg: '브랜드명을 입력하세요.' },
+            { name: 'catNm',    forKey: 'shopify-catNm',     msg: '카테고리를 입력하세요.' },
+            { name: 'currency', forKey: 'shopify-currency',  msg: '통화 기호를 입력하세요.' },
+        ];
+
+        for (const f of fields) {
+            if (!form[f.name].value.trim()) {
+                form.querySelector('[data-for="' + f.forKey + '"]').textContent = f.msg;
+                form[f.name].focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
     // HTML 모달 submit
     document.getElementById('crawlForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const modal = document.getElementById('crawlModal');
         if (modal.dataset.mode === 'edit') {
+            if (!validateCrawlForm(this)) return;
             // 셀렉터 수정 모드 → 일반 form submit
             modal.dataset.mode = '';
             this.method = 'post';
             this.submit();
         } else {
+            if (!validateCrawlForm(this)) return;
             // 크롤링 모드 → 셀렉터 저장 후 크롤링 실행
             saveSelectorAndRun(this);
         }
@@ -678,6 +749,7 @@
         e.preventDefault();
         const modal = document.getElementById('shopifyModal');
         if (modal.dataset.mode === 'edit') {
+            if (!validateShopifyForm(this)) return;
             // 통화 수정 모드 → 셀렉터 저장만
             const id = modal.dataset.editId;
             const formData = new FormData(this);
@@ -691,6 +763,7 @@
             .then(() => location.reload())
             .catch(() => alert('저장 실패'));
         } else {
+            if (!validateShopifyForm(this)) return;
             // 크롤링 모드
             saveSelectorAndRun(this);
         }
