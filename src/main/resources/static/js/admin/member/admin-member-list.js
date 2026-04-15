@@ -599,6 +599,18 @@ async function viewFullShipmentList(memId, page = 0) {
             const sttInfo = getShipmentBadgeTheme(shipment.shStt);
             const dateStr = shipment.shCreDt ? shipment.shCreDt.substring(0, 10).replaceAll('-', '.') : '-';
             let itemSummary = '상품 정보 없음';
+            const courierMap = {
+                "kr.cjlogistics": "CJ대한통운",
+                "kr.epost": "우체국택배",
+                "kr.hanjin": "한진택배",
+                "kr.lotteglogis": "롯데택배",
+                "kr.logen": "로젠택배",
+                "kr.cvsnet": "GS25 편의점택배",
+                "kr.cupost": "CU 편의점택배"
+            };
+            let displayName = courierMap[shipment.shCarCd] || "택배사 미정";
+            let displayNo = shipment.shTraNo || "";
+
             if (shipment.items && shipment.items.length > 0) {
                 const firstItemName = shipment.items[0].ordItmNm;
                 itemSummary = shipment.items.length > 1
@@ -608,7 +620,7 @@ async function viewFullShipmentList(memId, page = 0) {
 
             return `
                 <tr>
-                    <td class="shipment-id">${shipment.shCarCd || '택배사 미정'}-${shipment.shTraNo || ''}</td>
+                    <td class="shipment-id">${displayName}-${displayNo}</td>
                     <td class="shipment-date">${dateStr}</td>
 
                     <td class="shipment-summary">
