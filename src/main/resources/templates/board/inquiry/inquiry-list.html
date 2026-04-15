@@ -150,6 +150,7 @@
         <section class="inquiry-shell inquiry-shell--list">
             <div class="inquiry-list-head" aria-hidden="true">
                 <div>문의 제목</div>
+                <div>첨부</div>
                 <div>상태</div>
                 <div>회사 상호명</div>
                 <div>등록일</div>
@@ -165,6 +166,13 @@
                         <div class="inquiry-row__text">
                             <h2 th:text="${board.brdTtl}">문의 제목</h2>
                         </div>
+                    </div>
+
+                    <div class="inquiry-row__file">
+                          <span th:if="${board.hasAttachment}"
+                                class="material-symbols-outlined">
+                              attach_file
+                          </span>
                     </div>
 
                     <div class="inquiry-row__status">
@@ -199,6 +207,13 @@
                         <div class="inquiry-row__text">
                             <h2 th:text="${board.brdTtl}">문의 제목</h2>
                         </div>
+                    </div>
+
+                    <div class="inquiry-row__file">
+                          <span th:if="${board.hasAttachment}"
+                                class="material-symbols-outlined">
+                              attach_file
+                          </span>
                     </div>
 
                     <div class="inquiry-row__status">

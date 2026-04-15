@@ -32,8 +32,8 @@ public abstract class Member_ {
 	public static final String MEM_LGN_PW = "memLgnPw";
 	public static final String MEM_BIZ_ADR = "memBizAdr";
 	public static final String MEM_CI = "memCi";
+	public static final String MEM_BIZ_STT = "memBizStt";
 	public static final String MEM_UPD_PW_DT = "memUpdPwDt";
-	public static final String MEM_BIZ_YN = "memBizYn";
 	public static final String MEM_BIZ_DT_ADR = "memBizDtAdr";
 	public static final String MEM_ID = "memId";
 
@@ -149,14 +149,14 @@ public abstract class Member_ {
 	public static volatile SingularAttribute<Member, String> memCi;
 	
 	/**
+	 * @see com.goodee.beedan.entity.Member#memBizStt
+	 **/
+	public static volatile SingularAttribute<Member, String> memBizStt;
+	
+	/**
 	 * @see com.goodee.beedan.entity.Member#memUpdPwDt
 	 **/
 	public static volatile SingularAttribute<Member, LocalDateTime> memUpdPwDt;
-	
-	/**
-	 * @see com.goodee.beedan.entity.Member#memBizYn
-	 **/
-	public static volatile SingularAttribute<Member, Boolean> memBizYn;
 	
 	/**
 	 * @see com.goodee.beedan.entity.Member#memBizDtAdr

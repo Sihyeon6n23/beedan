@@ -14,13 +14,13 @@ public class MemberApproveRestController {
 
     @PostMapping("/approve/{memId}")
     public ResponseEntity<String> approveMember(@PathVariable Long memId) {
-        memberService.allowAccount(memId);
+        memberService.approveAccount(memId);
         return ResponseEntity.ok("Approved");
     }
 
     @PostMapping("/deny/{memId}")
     public ResponseEntity<String> denyMember(@PathVariable Long memId) {
-        memberService.inactiveAccount(memId);
+        memberService.rejectAccount(memId);
         return ResponseEntity.ok("Denied");
     }
 }
