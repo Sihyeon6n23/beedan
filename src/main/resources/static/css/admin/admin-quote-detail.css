@@ -502,8 +502,16 @@ main > div {
     justify-content: center;
 }
 
-.aqd-btn--approve:hover {
+.aqd-btn--approve:hover:not(:disabled):not(.is-disabled) {
     filter: brightness(1.05);
+}
+
+.aqd-btn:disabled,
+.aqd-btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+    pointer-events: none;
 }
 
 .aqd-btn--reject {

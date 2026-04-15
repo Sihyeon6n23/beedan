@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,13 +33,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Controller
 @RequestMapping("/quote")
 @RequiredArgsConstructor
 public class    QuoteController {
-
-    private static final String REDIRECT_SIGNIN = "redirect:/auth/signin";
 
     private final NegotiationService negotiationService;
     private final QuoteBaseService quoteBaseService;
@@ -187,7 +187,6 @@ public class    QuoteController {
                           @RequestParam(defaultValue = "1") int page,
                           @RequestParam(defaultValue = "desc") String sort,
                           Model model) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
         Long memId = userDetails.getMemberId();
 
         int pageSize = 10;
@@ -259,7 +258,14 @@ public class    QuoteController {
         Long sourceQuId = quId; // 데이터를 로드할 원본 quId
         if (fromQuId != null) {
             QuoteBase oldQuote = quoteBaseService.findById(fromQuId);
-            if (oldQuote == null) return "redirect:/mainPage";
+            if (oldQuote == null) {
+                throw new NoSuchElementException("재작성할 견적을 찾을 수 없습니다.");
+            }
+            Negotiation oldNegotiation = negotiationService.findById(oldQuote.getNgId());
+            if (oldNegotiation == null
+                    || !oldNegotiation.getMemId().equals(userDetails.getMemberId())) {
+                throw new AccessDeniedException("해당 견적에 접근할 권한이 없습니다.");
+            }
 
             // 송신자 = 나, 수신자 = 상대방
             Long myId = userDetails != null ? userDetails.getMemberId() : null;
@@ -280,18 +286,20 @@ public class    QuoteController {
 
         }
 
-        // quId 없으면 메인으로 리다이렉트
         if (quId == null) {
-            return "redirect:/mainPage";
+            throw new IllegalArgumentException("견적 정보가 없습니다.");
         }
 
         QuoteBase quoteBase = quoteBaseService.findById(quId);
         if (quoteBase == null) {
-            return "redirect:/mainPage";
+            throw new NoSuchElementException("해당 견적을 찾을 수 없습니다.");
         }
 
         Long myId = userDetails != null ? userDetails.getMemberId() : null;
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        if (negotiation == null || !negotiation.getMemId().equals(myId)) {
+            throw new AccessDeniedException("해당 견적에 접근할 권한이 없습니다.");
+        }
 
         // 사용자 소유 협상의 TEMP_SAVE 초안은, 사용자가 송신자인 경우 이어서 작성 가능
         boolean isUserOwnedTempDraft = quoteBase.getQuStt() == QuoteStatus.TEMP_SAVE
@@ -412,18 +420,23 @@ public class    QuoteController {
     public String getDetail(@RequestParam Long quId,
                             @AuthenticationPrincipal MemberUserDetails userDetails,
                             Model model) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
-
         QuoteBase quoteBase = quoteBaseService.findById(quId);
-
-        // 상대방의 TEMP_SAVE 견적 접근 차단
-        Long myId = userDetails.getMemberId();
-        if (QuoteStatus.TEMP_SAVE.equals(quoteBase.getQuStt())
-                && !myId.equals(quoteBase.getQuSid())) {
-            return "redirect:/quote/list";
+        if (quoteBase == null) {
+            throw new NoSuchElementException("해당 견적을 찾을 수 없습니다.");
         }
 
+        Long myId = userDetails.getMemberId();
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        if (negotiation == null || !negotiation.getMemId().equals(myId)) {
+            throw new AccessDeniedException("해당 견적에 접근할 권한이 없습니다.");
+        }
+
+        // 상대방의 TEMP_SAVE 견적 접근 차단
+        if (QuoteStatus.TEMP_SAVE.equals(quoteBase.getQuStt())
+                && !myId.equals(quoteBase.getQuSid())) {
+            throw new AccessDeniedException("임시저장된 견적은 작성자만 조회할 수 있습니다.");
+        }
+
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
 
@@ -560,7 +573,6 @@ public class    QuoteController {
     public String getNegotiationList(@AuthenticationPrincipal MemberUserDetails userDetails,
                                      @RequestParam(defaultValue = "1") int page,
                                      Model model) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
         Long memId = userDetails.getMemberId();
 
         // 유효 견적이 있는 협상 + 견적 수 + 미열람 수 (1 쿼리)
@@ -601,14 +613,14 @@ public class    QuoteController {
     public String getNegotiationDetail(@AuthenticationPrincipal MemberUserDetails userDetails,
                                        @RequestParam Long ngId,
                                        Model model) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
-
         Negotiation negotiation = negotiationService.findById(ngId);
-        if (negotiation == null) return "redirect:/quote/negotiation/list";
+        if (negotiation == null) {
+            throw new NoSuchElementException("협상을 찾을 수 없습니다.");
+        }
 
         // 소유자 검증
         if (!negotiation.getMemId().equals(userDetails.getMemberId())) {
-            return "redirect:/quote/negotiation/list";
+            throw new AccessDeniedException("해당 협상에 접근할 권한이 없습니다.");
         }
 
         Long memId = userDetails.getMemberId();

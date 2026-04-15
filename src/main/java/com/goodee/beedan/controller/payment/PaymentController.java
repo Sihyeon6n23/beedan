@@ -1,6 +1,7 @@
 package com.goodee.beedan.controller.payment;
 
 import com.goodee.beedan.common.constant.PaymentMethod;
+import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,14 +38,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Controller
 @RequestMapping("/payment")
 @RequiredArgsConstructor
 public class PaymentController {
-
-    private static final String REDIRECT_SIGNIN = "redirect:/auth/signin";
 
     private final QuoteBaseService quoteBaseService;
     private final QuoteDetailService quoteDetailService;
@@ -66,8 +67,6 @@ public class PaymentController {
 
     @GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails, Model model) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
-
         // 결제 + 견적코드 + 협상명 조인 조회 (1 쿼리)
         List<Map<String, Object>> paymentList = new java.util.ArrayList<>();
         for (Object[] row : paymentRepository.findAllWithQuoteInfoByMemId(userDetails.getMemberId())) {
@@ -85,12 +84,23 @@ public class PaymentController {
     @GetMapping("/check")
     public String getCheck(@RequestParam Long quId, Model model,
                            @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
-
         QuoteBase quoteBase = quoteBaseService.findById(quId);
+        if (quoteBase == null) {
+            throw new NoSuchElementException("해당 견적을 찾을 수 없습니다.");
+        }
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        if (negotiation == null
+                || !negotiation.getMemId().equals(userDetails.getMemberId())) {
+            throw new AccessDeniedException("해당 견적에 접근할 권한이 없습니다.");
+        }
+        if (quoteBase.getQuStt() == QuoteStatus.PAID) {
+            throw new IllegalStateException("이미 결제가 완료된 견적입니다.");
+        }
+        if (quoteBase.getQuStt() != QuoteStatus.APPROVED) {
+            throw new IllegalStateException("결제를 진행할 수 있는 견적이 아닙니다.");
+        }
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
-        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
 
         // 회원 정보 (법인 정보 프리필용)
         Member member = memberRepository.findById(userDetails.getMemberId()).orElse(null);
@@ -150,7 +160,22 @@ public class PaymentController {
                                  @RequestParam Long amount,
                                  @RequestParam(required = false) String method,
                                  @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
+        // 0. 견적 소유자 + 상태 검증 (토스 호출 전)
+        QuoteBase quoteBase = quoteBaseService.findById(quId);
+        if (quoteBase == null) {
+            throw new NoSuchElementException("결제할 견적을 찾을 수 없습니다.");
+        }
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        if (negotiation == null
+                || !negotiation.getMemId().equals(userDetails.getMemberId())) {
+            throw new AccessDeniedException("해당 견적에 접근할 권한이 없습니다.");
+        }
+        if (quoteBase.getQuStt() == QuoteStatus.PAID) {
+            throw new IllegalStateException("이미 결제가 완료된 견적입니다.");
+        }
+        if (quoteBase.getQuStt() != QuoteStatus.APPROVED) {
+            throw new IllegalStateException("결제를 진행할 수 있는 견적이 아닙니다.");
+        }
 
         // 1. 토스페이먼츠 결제 승인 API 호출
         RestTemplate restTemplate = new RestTemplate();
@@ -182,7 +207,6 @@ public class PaymentController {
         }
 
         // 2. Payment 엔티티 생성 및 저장
-        QuoteBase quoteBase = quoteBaseService.findById(quId);
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
 
         PaymentMethod paymentMethod = "CARD".equalsIgnoreCase(method)
@@ -217,8 +241,7 @@ public class PaymentController {
         }
         // 고객 거래 실적 누적
         try {
-            Negotiation ng = negotiationService.findById(quoteBase.getNgId());
-            Member customer = memberRepository.findById(ng.getMemId()).orElse(null);
+            Member customer = memberRepository.findById(negotiation.getMemId()).orElse(null);
             if (customer != null && customer.getMemBizNo() != null) {
                 buyerService.updateAfterPayment(
                         buyerService.findByBizNo(customer.getMemBizNo()).getById(),
@@ -253,12 +276,17 @@ public class PaymentController {
                                  @RequestParam(required = false) String orderId,
                                  @AuthenticationPrincipal MemberUserDetails userDetails,
                                  Model model) {
-        if (userDetails == null) return REDIRECT_SIGNIN;
-
         QuoteBase quoteBase = quoteBaseService.findById(quId);
+        if (quoteBase == null) {
+            throw new NoSuchElementException("해당 견적을 찾을 수 없습니다.");
+        }
+        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
+        if (negotiation == null
+                || !negotiation.getMemId().equals(userDetails.getMemberId())) {
+            throw new AccessDeniedException("해당 견적에 접근할 권한이 없습니다.");
+        }
         QuoteInfo quoteInfo = quoteInfoRepository.findByQuId(quId).orElse(null);
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
-        Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
         Member member = memberRepository.findById(userDetails.getMemberId()).orElse(null);
 
         // 품목 소계
@@ -285,7 +313,13 @@ public class PaymentController {
 
 
     @GetMapping("/fail")
-    public String getFail() {
+    public String getFail(@RequestParam(required = false) Long quId,
+                          @RequestParam(required = false) String code,
+                          @RequestParam(required = false) String message,
+                          Model model) {
+        model.addAttribute("quId", quId);
+        model.addAttribute("code", code);
+        model.addAttribute("message", message);
         return "/payment/payment-fail";
     }
 
