@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('배송지 정보 관리', 'Receiver Address Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('Receiver', 'Receiver Info Management', ~{::sidebar})},
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 배송지 관리</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Receiver', 'Receiver Management')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('member', 'receiver')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
@@ -82,6 +82,23 @@
           box-shadow: 0 6px 14px rgba(26, 28, 28, 0.08);
         }
 
+    #btnSaveReceiver {
+    background-color: #e2e2e2;
+    color: #1a1c1c;
+    border: none;
+    padding: 4px 8px;
+    font-size: 0.55rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    min-width: 45px;
+    height: 24px;
+    }
+
+    #btnSaveReceiver:hover {
+        background-color: #f3f3f3;
+    }
     </style>
 
     <section class="admin-chat-page admin-chat-list-page receiver-management-list">

@@ -122,6 +122,24 @@
                 </button>
             </nav>
 
+            <!-- 사용자 채팅/챗봇 비동기 오류를 짧게 안내하는 토스트 -->
+            <div class="member-chat-toast is-hidden"
+                 data-member-chat-toast
+                 role="status"
+                 aria-live="polite"
+                 aria-atomic="true"
+                 aria-hidden="true">
+                <span class="material-symbols-outlined member-chat-toast__icon">error</span>
+                <div class="member-chat-toast__body">
+                    <p class="member-chat-toast__title" data-member-chat-toast-title>
+                        요청을 처리하지 못했습니다.
+                    </p>
+                    <p class="member-chat-toast__text" data-member-chat-toast-text>
+                        잠시 후 다시 시도해 주세요.
+                    </p>
+                </div>
+            </div>
+
             <div class="member-chat-modal is-hidden" data-chat-modal aria-hidden="true">
                 <div class="member-chat-modal__backdrop" data-chat-modal-close></div>
                 <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-chat-modal-title">

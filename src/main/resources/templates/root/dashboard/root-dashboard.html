@@ -125,7 +125,7 @@
             <p class="kpi-value" th:text="${funnel['views']}">0</p>
         </div>
         <div class="kpi-card">
-            <div class="kpi-top"><div class="kpi-icon"><span class="material-symbols-outlined">trending_up</span></div><span class="kpi-label">전체 전환율</span></div>
+            <div class="kpi-top"><div class="kpi-icon"><span class="material-symbols-outlined">trending_up</span></div><span class="kpi-label">협상→결제 전환율</span></div>
             <p class="kpi-value"><span th:text="${funnel['totalConversion']}">0</span><span class="kpi-unit">%</span></p>
         </div>
         <div class="kpi-card">
@@ -138,36 +138,25 @@
     <div class="funnel-card">
         <h2 class="card-title">Conversion Funnel</h2>
         <p class="card-sub">상품 조회부터 결제 완료까지 단계별 전환 현황</p>
-        <div class="funnel-row"
-             th:with="v=${funnel['views']}, c=${funnel['carts']}, q=${funnel['quotes']}, p=${funnel['paid']},
-                      mx=${v > c ? (v > q ? (v > p ? v : p) : (q > p ? q : p)) : (c > q ? (c > p ? c : p) : (q > p ? q : p))},
-                      mx2=${mx > 0 ? mx : 1},
-                      rawView=${v > 0 ? v * 130 / mx2 : 0}, hView=${rawView > 30 ? rawView : 30},
-                      rawCart=${c > 0 ? c * 130 / mx2 : 0}, hCart=${rawCart > 30 ? rawCart : 30},
-                      rawQuote=${q > 0 ? q * 130 / mx2 : 0}, hQuote=${rawQuote > 30 ? rawQuote : 30},
-                      rawPaid=${p > 0 ? p * 130 / mx2 : 0}, hPaid=${rawPaid > 30 ? rawPaid : 30}">
+        <div class="funnel-row" style="display:flex; align-items:center;">
             <div class="funnel-step">
                 <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['views'], 1, 'COMMA')}">0</div>
                 <div class="funnel-name">상품 조회</div>
-                <div class="funnel-bar" th:style="'height:' + ${hView} + 'px; width:75%; background:linear-gradient(180deg,#ffd700,#f5c518);'"><span class="funnel-pct" th:text="${funnel['views'] > 0 ? '100%' : '0%'}">0%</span></div>
             </div>
             <div class="funnel-arrow"><span class="material-symbols-outlined">chevron_right</span><span class="funnel-arrow-rate" th:text="${funnel['viewToCart']} + '%'">0%</span></div>
             <div class="funnel-step">
                 <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['carts'], 1, 'COMMA')}">0</div>
                 <div class="funnel-name">장바구니</div>
-                <div class="funnel-bar" th:style="'height:' + ${hCart} + 'px; width:65%; background:linear-gradient(180deg,#f5c518,#e5b200);'"><span class="funnel-pct" th:text="${funnel['viewToCart']} + '%'">0%</span></div>
             </div>
             <div class="funnel-arrow"><span class="material-symbols-outlined">chevron_right</span><span class="funnel-arrow-rate" th:text="${funnel['cartToQuote']} + '%'">0%</span></div>
             <div class="funnel-step">
                 <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['quotes'], 1, 'COMMA')}">0</div>
                 <div class="funnel-name">견적 요청</div>
-                <div class="funnel-bar" th:style="'height:' + ${hQuote} + 'px; width:55%; background:linear-gradient(180deg,#e5b200,#c4960a);'"><span class="funnel-pct" th:text="${funnel['quotes'] > 0 and mv > 0 ? (funnel['quotes'] * 100 / mv) + '%' : '0%'}">0%</span></div>
             </div>
             <div class="funnel-arrow"><span class="material-symbols-outlined">chevron_right</span><span class="funnel-arrow-rate" th:text="${funnel['quoteToPaid']} + '%'">0%</span></div>
             <div class="funnel-step">
                 <div class="funnel-num" th:text="${#numbers.formatInteger(funnel['paid'], 1, 'COMMA')}">0</div>
                 <div class="funnel-name">결제 완료</div>
-                <div class="funnel-bar" th:style="'height:' + ${hPaid} + 'px; width:45%; background:linear-gradient(180deg,#c4960a,#705d00);'"><span class="funnel-pct" th:text="${funnel['totalConversion']} + '%'">0%</span></div>
             </div>
         </div>
     </div>

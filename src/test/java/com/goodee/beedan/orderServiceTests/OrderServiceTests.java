@@ -318,7 +318,7 @@ class OrderServiceTests {
         given(orderRepository.findAll(pageable)).willReturn(orderPage);
 
         // when
-        Page<OrderDto> result = orderService.getListByAdmin(adminMemId, pageable);
+        Page<OrderDto> result = orderService.getListByAdmin(1L, adminMemId, pageable);
 
         // then
         assertNotNull(result);
@@ -336,7 +336,7 @@ class OrderServiceTests {
 
         // when & then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> orderService.getListByAdmin(userMemId, pageable));
+            () -> orderService.getListByAdmin(userMemId, 1L, pageable));
         assertEquals("관리자만 주문 목록을 조회할 수 있습니다.", exception.getMessage());
     }
 }

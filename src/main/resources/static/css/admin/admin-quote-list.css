@@ -25,7 +25,7 @@ main > div {
     width: 1120px !important;
     min-width: 1024px !important;
     margin-left: 0 !important;
-    padding: 0 !important;
+    padding: 1.5rem 0 0 0 !important;
 }
 
 /* Header */

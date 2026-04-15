@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="actionErrorModal">
+    <section class="admin-chat-modal is-hidden" data-modal="action-error" aria-hidden="true">
+        <div class="admin-chat-modal__backdrop" data-modal-close></div>
+        <div class="admin-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="admin-action-error-title">
+            <div class="admin-chat-modal__header">
+                <div class="admin-chat-modal__accent"></div>
+                <div class="admin-chat-modal__icon admin-chat-modal__icon--framed">
+                    <span class="material-symbols-outlined">error</span>
+                </div>
+            </div>
+
+            <div class="admin-chat-modal__body">
+                <h2 id="admin-action-error-title"
+                    class="admin-chat-modal__title"
+                    data-admin-action-error-title>처리 실패</h2>
+                <div class="admin-chat-modal__content-stack admin-chat-modal__content-stack--dense">
+                    <p class="admin-chat-modal__lead"
+                       data-admin-action-error-lead>요청 처리 중 오류가 발생했습니다.</p>
+                    <p class="admin-chat-modal__description"
+                       data-admin-action-error-description>잠시 후 다시 시도해 주세요.</p>
+                </div>
+            </div>
+
+            <div class="admin-chat-modal__actions">
+                <button type="button" class="btn-primary" data-modal-close>확인</button>
+            </div>
+        </div>
+    </section>
+</th:block>
+</html>

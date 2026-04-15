@@ -22,10 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +57,13 @@ public class InquiryBoardService {
                 .stream()
                 .collect(Collectors.toMap(Board::getBrdPrnId, reply -> reply));
 
-        return userInquiryBoards.map(inquiryBoard -> mapToInquiryBoardListDto(inquiryBoard, replyBoardMap));
+        // 문의 원글(INQUIRY)에 첨부가 있는 게시글 번호만 한 번에 조회
+        java.util.Set<Long> attachmentBoardIdSet = inquiryBoardIds.isEmpty()
+                ? Collections.emptySet()
+                : fileService.getFileYnSet(BoardType.INQUIRY.name(), inquiryBoardIds);
+
+        return userInquiryBoards.map(inquiryBoard ->
+                mapToInquiryBoardListDto(inquiryBoard, replyBoardMap, attachmentBoardIdSet));
     }
 
     // 관리자 목록 조회
@@ -101,10 +104,20 @@ public class InquiryBoardService {
                 .stream()
                 .collect(Collectors.toMap(Board::getBrdPrnId, reply -> reply));
 
-        return adminInquiryBoards.map(inquiryBoard -> mapToInquiryBoardListDto(inquiryBoard, replyBoardMap));
+        // 문의 원글(INQUIRY)에 첨부가 있는 게시글 번호만 한 번에 조회
+        Set<Long> attachmentBoardIdSet = inquiryBoardIds.isEmpty()
+                ? Collections.emptySet()
+                : fileService.getFileYnSet(BoardType.INQUIRY.name(), inquiryBoardIds);
+
+        return adminInquiryBoards.map(inquiryBoard ->
+                mapToInquiryBoardListDto(inquiryBoard, replyBoardMap, attachmentBoardIdSet));
     }
 
-    private InquiryBoardListDto mapToInquiryBoardListDto(Board inquiryBoard, Map<Long, Board> replyBoardMap) {
+    private InquiryBoardListDto mapToInquiryBoardListDto(
+            Board inquiryBoard,
+            Map<Long, Board> replyBoardMap,
+            Set<Long> attachmentBoardIdSet
+    ) {
         // BoardRepository에서 member를 JOIN FETCH로 같이 읽어왔으므로
         // 목록 변환 시에는 board.getMember()를 바로 사용하고 회원을 다시 조회하지 않음
         Member member = inquiryBoard.getMember();
@@ -126,6 +139,7 @@ public class InquiryBoardService {
                 .memNm(member.getMemNm())
                 .hasReply(hasReply)
                 .replyEdited(replyEdited)
+                .hasAttachment(attachmentBoardIdSet.contains(inquiryBoard.getBrdId()))
                 .build();
     }
 

@@ -41,9 +41,9 @@ public class ChatRoomCloseScheduler {
 //                schedulerSetting.getLastChatAutoCloseRunTime());
 
         // 현재 시각과 설정된 시작 시각을 비교하기 위해 LocalDateTime으로 변환
-//        LocalDateTime now = LocalDateTime.now();
-        // 테스트용 dev 시간
-        LocalDateTime now = AppDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        // 테스트용 dev 시간(사용하려면 전역 JPA Auditing 설정을 해야함)
+//        LocalDateTime now = AppDateTime.now();
         LocalDateTime start = LocalDateTime.parse(schedulerSetting.getChatAutoCloseStartDt());
 
         // 아직 시작 시각 전이면 이번 실행은 건너뜀

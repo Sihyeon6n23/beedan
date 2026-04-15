@@ -87,6 +87,7 @@ public class OrderDto {
         private String ordItmNm;
         private Integer shQn;
         private Long prodId;
+        private String ordItmThumbUrl;
     }
 
     @Data @Builder

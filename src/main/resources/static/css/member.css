@@ -49,10 +49,6 @@
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.border-dashed {
-  border-style: dashed !important;
-}
-
 /* Colors and Opacity */
 .text-on-primary-container {
   color: var(--color-on-primary-container) !important;

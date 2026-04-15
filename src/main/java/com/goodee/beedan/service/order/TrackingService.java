@@ -3,7 +3,6 @@ package com.goodee.beedan.service.order;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.goodee.beedan.common.constant.ShipmentStatus;
-import com.goodee.beedan.dto.admin.MemberSummaryDto;
 import com.goodee.beedan.dto.order.TrackingDetailDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.entity.Shipment;
@@ -39,7 +38,7 @@ public class TrackingService {
     private String clientSecret;
 
     public TrackingResponseDto getTrackingInfo(Long shId) {
-        Shipment shipment = shipmentRepository.findById(shId).orElseThrow(() -> new IllegalArgumentException("배송 정보를 찾을 수 없습니다."));
+        Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
         List<TrackingResponseDto.TrackingDetail> customsDetails = new ArrayList<>();
         if (shipment.getShHblNo() != null) {
