@@ -181,6 +181,7 @@ public class StockService {
         Category category = categoryRepository.findByCatNm(newStockForm.getCatNm())
                 .orElseGet(() -> categoryRepository.save(Category.builder().catNm(newStockForm.getCatNm()).build()));
 
+        boolean isReq = newStockForm.getStReqMemId() != null;
         Stock save = stockRepository.save(Stock.builder()
                 .stCd(newStockForm.getStCd())
                 .stNm(newStockForm.getStNm())
@@ -191,10 +192,10 @@ public class StockService {
                 .stPr(newStockForm.getStPr())
                 .stCur(newStockForm.getStCur())
                 .stReqMemId(newStockForm.getStReqMemId())
-                .stExpYn(true)
+                .stExpYn(false)
                 .stUseYn(true)
                 .stDelYn(false)
-                .stReqYn(true)
+                .stReqYn(isReq)
                 .stCraDt(null)
                 .stCreDt(LocalDateTime.now())
                 .stUpdDt(null)

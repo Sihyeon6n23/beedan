@@ -50,14 +50,6 @@ public class OrderApiController {
         return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
     }
 
-    @PatchMapping("/{id}/admin") // 배송 상태 변경
-    public ResponseEntity<OrderDto> updateOrderStatus(@PathVariable("id") Long ordId,
-                                                      @RequestParam("newStatus") OrderStatus newStatus,
-                                                      @AuthenticationPrincipal MemberUserDetails userDetails) {
-        orderService.updateOrderStatus(ordId, newStatus);
-        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<OrderDto> cancelOrder(@PathVariable("id") Long ordId,
                                                 @AuthenticationPrincipal MemberUserDetails userDetails) {

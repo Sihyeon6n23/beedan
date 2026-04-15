@@ -364,7 +364,6 @@ main > div {
 /* 뱃지 */
 .badge { padding: 3px 8px; font-size: 9px; font-weight: bold; border-radius: 2px; }
 .badge-gray { background: #e2e2e2; color: #1a1c1c; }
-.badge-yellow { background: #ffd700; color: #705d00; }
 
 /* --- 배송 카드 특화 --- */
 .shipping-card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 13px; border-left: 4px solid #ffd700; margin-bottom: 20px; height: 28%;}
@@ -495,7 +494,7 @@ main > div {
     background-color: #f4f1e8; color: #525252; font-size: 10px; font-weight: bold; text-transform: uppercase;
     padding: 16px 24px;
 }
-.fragment-table td { padding: 20px 20px; border-bottom: 1px solid #f4f4f5; }
+.fragment-table td { padding: 10px 10px; border-bottom: 1px solid #f4f4f5; font-size: 12px; }
 .order-id { font-weight: bold; font-size: 14px; color: #18181b; }
 .order-date { color: #71717a; font-size: 14px; }
 .order-summary strong { color: #18181b; font-size: 14px;}
@@ -618,4 +617,6 @@ main > div {
             color: inherit;
 }
 
-
+body.modal-open {
+    overflow: hidden;
+}

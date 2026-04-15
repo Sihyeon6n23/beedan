@@ -58,10 +58,10 @@ public class SchedulerSettingDto {
 
     // 4. 전시용 신규 상품 업데이트 시간 설정
     @JsonProperty("new_stock_update_start_dt")
-    private String newStockUpdateStartDt;
+    private String newStockUpdateStartDt = "2026-04-01T00:00";
 
     @JsonProperty("new_stock_update_interval")
-    private String newStockUpdateInterval;
+    private String newStockUpdateInterval = "48";
 
     @JsonProperty("last_new_stock_update_time")
     private String lastNewStockUpdateTime;
@@ -69,7 +69,7 @@ public class SchedulerSettingDto {
 
     // 5. 전시용 전월 인기 상품 업데이트 설정 (매월 N일)
     @JsonProperty("popular_stock_update_day")
-    private String popularStockUpdateDay;
+    private String popularStockUpdateDay = "1";
 
     @JsonProperty("last_popular_stock_update_time")
     private String lastPopularStockUpdateTime;
