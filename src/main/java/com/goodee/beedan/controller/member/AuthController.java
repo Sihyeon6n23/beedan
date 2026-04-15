@@ -85,7 +85,7 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        if (fileService.validateFileCount(memberForm.getNewFiles(), 0)) {
+        if (!fileService.validateFileCount(memberForm.getNewFiles(), 0,0,1L)) {
             bindingResult.rejectValue("newFiles", "fileInvalidCount", "파일 업로드 개수를 초과했습니다.");
             log.info("파일 업로드 개수를 초과했습니다.");
             return "/member/auth/signup";
@@ -111,7 +111,6 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        // 첨부파일 1개만 사용함. CUSTOM 확장자 검사용도.
         List<MultipartFile> files = memberForm.getNewFiles();
         MultipartFile file = files.getFirst();
         if (file != null && !file.isEmpty()) {

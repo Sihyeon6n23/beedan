@@ -3,7 +3,9 @@ package com.goodee.beedan.controller.board;
 import com.goodee.beedan.common.constant.BoardType;
 import com.goodee.beedan.common.constant.SearchType;
 import com.goodee.beedan.dto.board.notice.*;
+import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;
+import com.goodee.beedan.repository.file.FileRepository;
 import com.goodee.beedan.service.board.NoticeBoardService;
 import com.goodee.beedan.service.board.ViewCountService;
 import com.goodee.beedan.service.file.FileService;
@@ -25,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +41,7 @@ public class NoticeBoardController {
     private final NoticeBoardService noticeBoardService;
     private final ViewCountService viewCountService;
     private final FileService fileService;
+    private final FileRepository fileRepository;
 
     @ModelAttribute("searchTypes")
     public Map<String, String> searchTypes() {
@@ -97,9 +101,17 @@ public class NoticeBoardController {
                              Model model) {
 
         if (id != null) {
-            // 수정 모드: 상세 조회 DTO를 가져와서 Request DTO로 변환하여 전달하거나 모델에 직접 매핑
             CommonBoardDetailDto detail = noticeBoardService.getNoticeDetail(id, principal.getName());
-            model.addAttribute("boardRequestDto", detail);
+
+            CommonBoardRequestDto requestDto = CommonBoardRequestDto.builder()
+                    .brdId(detail.getBrdId())
+                    .brdTtl(detail.getBrdTtl())
+                    .brdCon(detail.getBrdCon())
+                    .brdFixYn(detail.getBrdFixYn())
+                    .build();
+
+            model.addAttribute("boardRequestDto", requestDto); // 수정 폼에는 RequestDto를 넘김
+            model.addAttribute("fileList", detail.getFileList()); // 기존 파일 목록은 따로 넘김
             model.addAttribute("isEdit", true);
         } else {
             // 등록 모드
@@ -112,9 +124,18 @@ public class NoticeBoardController {
 
     /** 4. 작성 실행 (CommonBoardRequestDto 사용) */
     @PostMapping("/write")
-    public String postWrite(@ModelAttribute CommonBoardRequestDto boardRequestDto,
+    public String postWrite(@Valid @ModelAttribute("boardRequestDto") CommonBoardRequestDto boardRequestDto,
+                            BindingResult bindingResult,
                             Principal principal,
-                            RedirectAttributes reAttr) throws IOException {
+                            RedirectAttributes reAttr,
+                            Model model) throws IOException {
+        if (!fileService.validateFileCount(boardRequestDto.getNewFiles(), 0, 0, 5L)) {
+            bindingResult.rejectValue("newFiles", "fileInvalidCount", "파일 업로드 개수를 초과했습니다.");
+            log.info("파일 업로드 개수를 초과했습니다.");
+            model.addAttribute("boardRequestDto", boardRequestDto);
+            model.addAttribute("isEdit", false);
+            return "board/notice/notice-write";
+        }
 
         String boardResultMessage = noticeBoardService.writeNotice(boardRequestDto, principal.getName());
         if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
@@ -123,9 +144,28 @@ public class NoticeBoardController {
 
     /** 5. 수정 실행 (CommonBoardRequestDto 사용) */
     @PostMapping("/edit")
-    public String postUpdate(@ModelAttribute CommonBoardRequestDto boardRequestDto,
+    public String postUpdate(@Valid @ModelAttribute("boardRequestDto") CommonBoardRequestDto boardRequestDto,
+                             BindingResult bindingResult,
                              Principal principal,
-                             RedirectAttributes reAttr) throws IOException {
+                             RedirectAttributes reAttr,
+                             Model model) throws IOException {
+        Long brdId = boardRequestDto.getBrdId();
+        long deleteCount = (boardRequestDto.getDeleteUuids() != null) ? boardRequestDto.getDeleteUuids().size() : 0L;
+
+        CommonBoardDetailDto detail = noticeBoardService.getNoticeDetail(brdId, principal.getName());
+        List<FileDto> fileList = (detail != null) ? detail.getFileList() : new ArrayList<>();
+        long existCount = fileList.size();
+
+        if (!fileService.validateFileCount(boardRequestDto.getNewFiles(), existCount, deleteCount, 5L)) {
+            bindingResult.rejectValue("newFiles", "fileInvalidCount", "파일 업로드 개수를 초과했습니다.");
+
+            // 에러 발생 시 View에 필요한 데이터 재입력
+            model.addAttribute("boardRequestDto", boardRequestDto);
+            model.addAttribute("fileList", fileList);
+            model.addAttribute("isEdit", true);
+
+            return "board/notice/notice-write";
+        }
 
         String boardResultMessage = noticeBoardService.updateNotice(boardRequestDto, principal.getName());
         if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
