@@ -101,11 +101,11 @@
                     <p>주문 이력이 없습니다</p>
                 </div>
 
-                <div th:unless="${#lists.isEmpty()}" th:each="order : ${orders}" class="admin-chat-row">
+                <div th:unless="${orders.isEmpty()}" th:each="order : ${orders}" class="admin-chat-row">
 
                     <div class="admin-chat-row__primary">
                         <div class="admin-chat-row__text">
-                            <h2  style="margin-left: 22px" th:text="${order.ordBaseNo}">주문번호</h2>
+                            <h2 style="margin-left: 22px" th:text="${order.ordBaseNo}">주문번호</h2>
                             <img th:if="${order.ordThumbUrl != null}"
                                  th:src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px;">
                             <div th:if="${order.ordThumbUrl == null}" class="order-thumb-none">
@@ -123,16 +123,15 @@
                     </div>
 
                     <div class="admin-chat-row__status">
-                        <span class="admin-chat-badge"
-                              th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (order.ordBaseStt?.name() == 'DELIVERING' || order.ordBaseStt?.name() == 'DELIVERED' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed')}"
-                              th:text="${order.ordBaseStt?.name() == 'PREPARING' ? '상품준비' : (order.ordBaseStt?.name() == 'DELIVERING' ? '배송중' : (order.ordBaseStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소'))}">상태
-                        </span>
+            <span class="admin-chat-badge"
+                  th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (order.ordBaseStt?.name() == 'DELIVERING' || order.ordBaseStt?.name() == 'DELIVERED' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed')}"
+                  th:text="${order.ordBaseStt?.name() == 'PREPARING' ? '상품준비' : (order.ordBaseStt?.name() == 'DELIVERING' ? '배송중' : (order.ordBaseStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소'))}">상태
+            </span>
                     </div>
 
                     <div class="action-btns">
                         <a class="btn-edit" th:href="@{/order/detail(id=${order.ordBaseId})}">상세보기</a>
                     </div>
-
                 </div>
             </div>
 
