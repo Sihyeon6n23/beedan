@@ -34,6 +34,8 @@
                   enctype="multipart/form-data">
                 <div class="inquiry-write-form__stack">
                     <div class="inquiry-write-field">
+                        <input type="hidden" name="returnUrl" th:if="${returnUrl != null and !#strings.isEmpty(returnUrl)}"
+                               th:value="${returnUrl}">
                         <label class="inquiry-write-field__label" for="brdTtl">문의 제목 <em>*</em></label>
                         <input class="inquiry-write-field__input"
                                type="text"
@@ -58,7 +60,13 @@
                 </div>
 
                 <div class="inquiry-write-form__actions">
-                    <a class="inquiry-outline-button" th:href="@{/inquiry/detail(id=${brdId})}">취소</a>
+                    <a class="inquiry-outline-button"
+                       th:if="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="@{/inquiry/detail(id=${brdId})}">취소</a>
+
+                    <a class="inquiry-outline-button"
+                       th:unless="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="@{/inquiry/detail(id=${brdId}, returnUrl=${returnUrl})}">취소</a>
                     <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary">적용</button>
                 </div>
             </form>

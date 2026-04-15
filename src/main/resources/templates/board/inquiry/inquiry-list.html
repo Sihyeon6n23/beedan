@@ -25,7 +25,21 @@
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
 
-    <section class="inquiry-page inquiry-list-page">
+    <section class="inquiry-page inquiry-list-page"
+             th:with="currentListUrl=${isAdmin}
+              ? @{/admin/inquiry/list(
+                  brdInqStt=${searchDto.brdInqStt},
+                  keyword=${searchDto.keyword},
+                  myAnsweredOnly=${searchDto.myAnsweredOnly},
+                  page=${boardPage.number},
+                  size=${searchDto.size}
+                )}
+              : @{/inquiry/list(
+                  brdInqStt=${searchDto.brdInqStt},
+                  keyword=${searchDto.keyword},
+                  page=${boardPage.number},
+                  size=${searchDto.size}
+                )}">
         <header class="inquiry-shell inquiry-shell--header">
             <div class="inquiry-shell__heading">
                 <span class="inquiry-kicker">Inquiry List</span>
@@ -134,7 +148,7 @@
                                th:value="${searchDto.keyword}"
                                placeholder="문의 제목 검색">
 
-                        <button type="submit" class="inquiry-search-form__submit">조회</button>
+                        <button type="submit" class="inquiry-search-form__submit">검색</button>
                     </form>
 
                     <a th:unless="${isAdmin}"
@@ -159,7 +173,7 @@
             <div class="inquiry-list-body" th:classappend="${#lists.isEmpty(boardPage.content)} ? ' inquiry-list-body--empty' : ''">
                 <a th:each="board : ${boardPage.content}"
                    th:if="${isAdmin}"
-                   th:href="@{/admin/inquiry/detail(id=${board.brdId})}"
+                   th:href="@{/admin/inquiry/detail(id=${board.brdId}, returnUrl=${currentListUrl})}"
                    class="inquiry-row"
                    th:classappend="${board.brdInqStt != null and board.brdInqStt.name() == 'RECEIVED'} ? ' inquiry-row--featured' : ''">
                     <div class="inquiry-row__primary">
@@ -200,7 +214,7 @@
 
                 <a th:each="board : ${boardPage.content}"
                    th:unless="${isAdmin}"
-                   th:href="@{/inquiry/detail(id=${board.brdId})}"
+                   th:href="@{/inquiry/detail(id=${board.brdId}, returnUrl=${currentListUrl})}"
                    class="inquiry-row"
                    th:classappend="${board.brdInqStt != null and board.brdInqStt.name() == 'RECEIVED'} ? ' inquiry-row--featured' : ''">
                     <div class="inquiry-row__primary">
