@@ -1,8 +1,6 @@
 package com.goodee.beedan.devUtils;
 
 import com.goodee.beedan.config.exception.BusinessException;
-import com.goodee.beedan.config.exception.EntityNotFoundException;
-import com.goodee.beedan.config.exception.MemberNotFoundException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

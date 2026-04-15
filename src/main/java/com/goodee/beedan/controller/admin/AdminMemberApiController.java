@@ -66,14 +66,16 @@ public class AdminMemberApiController {
     @GetMapping("/order/{memId}")
     public ResponseEntity<Page<OrderDto>> getMemberOrders(
             @PathVariable Long memId,
-            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<OrderDto> orderList = orderService.getListByAdmin(memId,pageable);
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @PageableDefault(size = 6, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
 
     @PatchMapping("/order/{memId}/status")
     public ResponseEntity<Page<OrderDto>> updateOrderStatus(
             @PathVariable("memId") Long memId,
+            @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestBody Map<String, Object> orderData, // ordBaseId, OrderStatus
             @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
 
@@ -82,14 +84,14 @@ public class AdminMemberApiController {
 
         orderService.updateOrderStatus(ordId, ordStt);
 
-        Page<OrderDto> orderList = orderService.getListByAdmin(memId,pageable);
+        Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
 
     @GetMapping("/shipment/{memId}")
     public ResponseEntity<Page<ShipmentDto>> getMemberShipments(
             @PathVariable Long memId,
-            @PageableDefault(size = 10, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 6, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<ShipmentDto> shipmentList = adminMemberService.getShipmentList(memId, pageable);
 
         return ResponseEntity.ok(shipmentList);

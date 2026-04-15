@@ -56,18 +56,6 @@ public class ShipmentApiController {
         return ResponseEntity.ok(updatedShipment);
     }
 
-    @PatchMapping("/{id}/admin")
-    public ResponseEntity<ShipmentDto> updateShipmentFromAdmin(
-            @PathVariable(name="id") Long shId,
-            @RequestParam(name="ordId") Long ordId,
-            @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestBody ShipmentDto dto){
-
-        ShipmentDto shipmentDto = shipmentService.updateStatusFromAdmin(shId, ordId, userDetails.getMemberId(), dto);
-
-        return ResponseEntity.ok(shipmentDto);
-    }
-
     @GetMapping("/{shId}/track")
     public ResponseEntity<TrackingResponseDto> getTrackingInfo(@PathVariable("shId") Long shId) {
         TrackingResponseDto result = trackingService.getTrackingInfo(shId);

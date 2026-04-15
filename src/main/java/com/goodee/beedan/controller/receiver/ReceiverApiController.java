@@ -24,6 +24,17 @@ public class ReceiverApiController {
         return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 
+    @PostMapping
+    public ResponseEntity<List<ReceiverDto>> addReceiver(
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @RequestBody ReceiverDto receiverDto) {
+
+        receiverDto.setMemId(userDetails.getMemberId());
+        receiverService.addReceiverAddr(receiverDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(receiverService.getReceiverList(userDetails.getMemberId()));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ReceiverDto> getReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
@@ -53,16 +64,5 @@ public class ReceiverApiController {
 
 
         return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
-    }
-
-    @PostMapping
-    public ResponseEntity<List<ReceiverDto>> addReceiver(
-            @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestBody ReceiverDto receiverDto) {
-
-        receiverDto.setMemId(userDetails.getMemberId());
-        receiverService.addReceiverAddr(receiverDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 }
