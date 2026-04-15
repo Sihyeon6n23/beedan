@@ -143,6 +143,10 @@ public class RequirementService {
         Requirement r = requirementRepository.findById(reqId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품 요청서입니다."));
 
+        if (memId == null) {
+            throw new IllegalArgumentException("로그인이 필요합니다.");
+        }
+
         if (!isAdmin) {
             if (!r.getMemId().equals(memId)) {
                 throw new IllegalArgumentException("본인의 요청서만 조회할 수 있습니다.");

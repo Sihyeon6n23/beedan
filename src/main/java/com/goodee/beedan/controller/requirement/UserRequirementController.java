@@ -50,8 +50,13 @@ public class UserRequirementController {
     public String requireDetail(@RequestParam Long id,
                                 @AuthenticationPrincipal MemberUserDetails user,
                                 Model model) {
+        if (user == null) {
+            throw new IllegalArgumentException("잘못된 접근입니다.");
+        }
+
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || auth.getAuthority().equals("ROLE_ROOT"));
+
 
             RequireForm form = requirementService.getRequireForm(id, user.getMemberId(), isAdmin);
 
