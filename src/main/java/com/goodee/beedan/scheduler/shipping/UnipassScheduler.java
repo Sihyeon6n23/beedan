@@ -34,7 +34,7 @@ public class UnipassScheduler {
         LocalDateTime now = LocalDateTime.now();
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
-        if (!setting.isUnipassEnabled()) return;
+        if (!setting.getIsUnipassEnabled()) return;
         if (setting.getUnipassStartDt() == null) return;
 
         LocalDateTime startDt = LocalDateTime.parse(setting.getUnipassStartDt());

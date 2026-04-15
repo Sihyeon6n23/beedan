@@ -10,6 +10,7 @@ import com.goodee.beedan.dto.admin.MemberSummaryDto;
 import com.goodee.beedan.dto.order.OrderDto;
 import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
+import com.goodee.beedan.dto.root.scheduler.SchedulerSettingDto;
 import com.goodee.beedan.entity.Shipment;
 import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.scheduler.shipping.ShipmentScheduler;
@@ -18,8 +19,11 @@ import com.goodee.beedan.service.admin.AdminMemberService;
 import com.goodee.beedan.service.order.OrderService;
 import com.goodee.beedan.service.order.TrackingService;
 import com.goodee.beedan.service.shipment.ShipmentService;
+import com.goodee.beedan.service.root.SchedulerService;
 import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,6 +32,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -35,6 +41,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminMemberApiController {
+    private static final Logger log = LoggerFactory.getLogger(AdminMemberApiController.class);
     private final AdminMemberService adminMemberService;
     private final OrderService orderService;
     private final TrackingService trackingService;
@@ -43,6 +50,7 @@ public class AdminMemberApiController {
     private final ShipmentRepository shipmentRepository;
     private final UnipassScheduler unipassScheduler;
     private final ShipmentScheduler shipmentScheduler;
+    private final SchedulerService schedulerService;
 
     @GetMapping("/list")
     public ResponseEntity<MemberListResponse> getMemberList(
@@ -99,10 +107,7 @@ public class AdminMemberApiController {
     @GetMapping("/shipment/{memId}")
     public ResponseEntity<Page<ShipmentDto>> getMemberShipments(
             @PathVariable Long memId,
-            @PageableDefault(size = 6, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable,
-            @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if(userDetails == null) throw new MemberNotFoundException();
-
+            @PageableDefault(size = 6, sort = "shCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<ShipmentDto> shipmentList = adminMemberService.getShipmentList(memId, pageable);
 
         return ResponseEntity.ok(shipmentList);
@@ -148,6 +153,15 @@ public class AdminMemberApiController {
     @PostMapping("/shipment/sync-shipment")
     public ResponseEntity<String> syncShipmentManually() {
         shipmentScheduler.syncShipmentStatus();
+
+        try {
+            SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
+            setting.setLastShipmentSyncRunTime(LocalDateTime.now().toString());
+            schedulerService.saveSchedulerSetting(setting);
+        } catch (IOException e) {
+            log.error("배송 상태 수동 동기화 설정 저장 실패: {}", e.getMessage());
+        }
+
         return ResponseEntity.ok("배송 상태 수동 동기화가 완료되었습니다.");
     }
 }
