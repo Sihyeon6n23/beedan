@@ -9,7 +9,7 @@ public class SchedulerSettingDto {
     // 1. 크롤링
     // 1.1 자동 크롤링 ON/OFF
     @JsonProperty("is_auto_crawling_enabled")
-    private boolean isAutoCrawlingEnabled = false;
+    private Boolean isAutoCrawlingEnabled = false;
 
     // 1.2 크롤링 시작 일시 (기준 일자)
     @JsonProperty("auto_crawling_start_dt")
