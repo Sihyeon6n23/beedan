@@ -31,7 +31,7 @@ public class CrawlingScheduler {
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
         // OFF면 리턴
-        if(!setting.isAutoCrawlingEnabled()) return;
+        if(!setting.getIsAutoCrawlingEnabled()) return;
 
         // 아직 시작 일자 안됐으면 리턴
         LocalDateTime startDt = LocalDateTime.parse(setting.getAutoCrawlingStartDt());
