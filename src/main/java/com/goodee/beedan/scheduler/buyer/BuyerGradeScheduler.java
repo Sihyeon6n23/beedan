@@ -25,7 +25,7 @@ public class BuyerGradeScheduler {
         LocalDateTime now = LocalDateTime.now();
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
 
-        if (!setting.isGradeResolveEnabled()) return;
+        if (!setting.getIsGradeResolveEnabled()) return;
 
         if (setting.getGradeResolveStartDt() == null) return;
         LocalDateTime startDt = LocalDateTime.parse(setting.getGradeResolveStartDt());

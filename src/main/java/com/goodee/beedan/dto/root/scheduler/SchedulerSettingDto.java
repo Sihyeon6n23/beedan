@@ -9,7 +9,7 @@ public class SchedulerSettingDto {
     // 1. 크롤링
     // 1.1 자동 크롤링 ON/OFF
     @JsonProperty("is_auto_crawling_enabled")
-    private boolean isAutoCrawlingEnabled = false;
+    private Boolean isAutoCrawlingEnabled = false;
 
     // 1.2 크롤링 시작 일시 (기준 일자)
     @JsonProperty("auto_crawling_start_dt")
@@ -27,7 +27,7 @@ public class SchedulerSettingDto {
     // 2. 환율
     // 2.1 자동 환율 갱신 ON/OFF
     @JsonProperty("is_exchange_rate_enabled")
-    private boolean isExchangeRateEnabled = false;
+    private Boolean isExchangeRateEnabled = false;
 
     // 2.2 환율 갱신 시작 일시
     @JsonProperty("exchange_rate_start_dt")
@@ -44,7 +44,7 @@ public class SchedulerSettingDto {
 
     // 3. 고객 등급 재산정
     @JsonProperty("is_grade_resolve_enabled")
-    private boolean isGradeResolveEnabled = false;
+    private Boolean isGradeResolveEnabled = false;
 
     @JsonProperty("grade_resolve_start_dt")
     private String gradeResolveStartDt;
@@ -95,7 +95,7 @@ public class SchedulerSettingDto {
 
     // 7. UNIPASS API 호출 (해외 배송/통관 상태 추적)
     @JsonProperty("is_unipass_enabled")
-    private boolean isUnipassEnabled = false;
+    private Boolean isUnipassEnabled = false;
 
     @JsonProperty("unipass_start_dt")
     private String unipassStartDt;
@@ -109,7 +109,7 @@ public class SchedulerSettingDto {
 
     // 8. 배송 상태 동기화
     @JsonProperty("is_shipment_sync_enabled")
-    private boolean isShipmentSyncEnabled = false;
+    private Boolean isShipmentSyncEnabled = false;
 
     @JsonProperty("shipment_sync_start_dt")
     private String shipmentSyncStartDt;
