@@ -62,9 +62,12 @@ public class MemberChatService {
             return mapToChatRoomOpenResultDto(activeRoom, true);
         }
 
+        LocalDateTime now = LocalDateTime.now();
+
         ChatRoom newRoom = ChatRoom.builder()
                 .chRoTtl(roomTitle)
                 .chRoStt(ChatRoomStatus.OPEN)
+                .chRoLastMsDt(now)
                 .memId(memId)
                 .build();
 

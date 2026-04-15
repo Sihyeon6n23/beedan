@@ -78,19 +78,20 @@ public class SchedulerSettingDto {
     // 6. 채팅방 자동 종료 설정
     // 6.1 ON/OFF
     @JsonProperty("is_chat_auto_close_enabled")
-    private boolean isChatAutoCloseEnabled = false;
+    private Boolean isChatAutoCloseEnabled = false;
 
     // 6.2 시작 시각
     @JsonProperty("chat_auto_close_start_dt")
     private String chatAutoCloseStartDt;
 
-    // 6.3 실행 주기(1시간 마다)
+    // 6.3 채팅방 자동 종료 주기(3일)
     @JsonProperty("chat_auto_close_interval")
-    private String chatAutoCloseInterval;
+    private String chatAutoCloseInterval = "72";
 
     // 6.4 마지막 실행 시각
     @JsonProperty("last_chat_auto_close_run_time")
     private String lastChatAutoCloseRunTime;
+
 
     // 7. UNIPASS API 호출 (해외 배송/통관 상태 추적)
     @JsonProperty("is_unipass_enabled")
