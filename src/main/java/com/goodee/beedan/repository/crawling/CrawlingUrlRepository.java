@@ -9,4 +9,6 @@ public interface CrawlingUrlRepository extends JpaRepository<CrawlingUrl, Long> 
     List<CrawlingUrl> findByUrlDelYnFalse();
 
     List<CrawlingUrl> findByUrlDelYnFalseAndUrlUseYnTrueAndUrlAtYnTrue();
+
+    boolean existsByUrlUrlAndUrlDelYnFalse(String urlUrl);
 }

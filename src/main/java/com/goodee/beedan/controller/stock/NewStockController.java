@@ -16,6 +16,7 @@ import com.goodee.beedan.repository.crawling.CrawlingUrlRepository;
 import com.goodee.beedan.service.crawling.CrawlingService;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.stock.StockService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -98,34 +99,16 @@ public class NewStockController {
         return result;
     }
 
+    // URL 등록
     @PostMapping("/url")
-    public String saveUrl(UrlForm urlForm,
+    public String saveUrl(@Valid UrlForm urlForm,
                           RedirectAttributes redirectAttributes) {
-        Brand brand = brandRepository.findByBrNm(urlForm.getBrNm())
-                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(urlForm.getBrNm()).build()));
-
-        Long catId;
-        if ("AI 자동 분류".equals(urlForm.getCatNm())) {
-            catId = 0L;
-        } else {
-            Category category = categoryRepository.findByCatNm(urlForm.getCatNm())
-                    .orElseGet(() -> categoryRepository.save(Category.builder().catNm(urlForm.getCatNm()).build()));
-            catId = category.getCatId();
+        try {
+            String resultMessage = crawlingService.registerNewUrl(urlForm);
+            redirectAttributes.addFlashAttribute("message", resultMessage);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", "등록 실패: " + e.getMessage());
         }
-
-        boolean isShopify = crawlingService.isShopify(urlForm.getUrlUrl());
-
-        crawlingService.saveUrl(
-                CrawlingUrl.builder()
-                .urlUrl(urlForm.getUrlUrl())
-                .brId(brand.getBrId())
-                .catId(catId)
-                .urlTy(isShopify ? "SHOPIFY" : null)
-                .urlUseYn(TRUE)
-                .urlDelYn(FALSE)
-                .urlAtYn(TRUE)
-                .build());
-        redirectAttributes.addFlashAttribute("message", "URL이 등록되었습니다." + (isShopify ? " (Shopify 감지)" : ""));
         return "redirect:/admin/newstock";
     }
 
@@ -152,9 +135,15 @@ public class NewStockController {
             } catch (IOException e) {
                 throw new RuntimeException("파일 저장 실패: " + e.getMessage());
             }
-            FileDto saved = file.getFirst();
-            String imgUrl = "/files/" + saved.getFilePat() + "/" + saved.getFileUuid() + "." + saved.getFileExt();
-            stockService.saveImgUrl(lastId, imgUrl);
+            FileDto saved = file.stream()
+                    .filter(FileDto::isUploaded)
+                    .findFirst()
+                    .orElse(null);
+            if (saved != null) {
+                String imgUrl = "/files/" + saved.getFilePat().replace("\\", "/")
+                        + "/" + saved.getFileUuid() + "." + saved.getFileExt();
+                stockService.saveImgUrl(lastId, imgUrl);
+            }
         }
 
         redirectAttributes.addFlashAttribute("activeTab", "manual");
@@ -185,7 +174,7 @@ public class NewStockController {
     // 셀렉터 수정
     @PostMapping("/selector/{id}")
     public String updateSelector(@PathVariable Long id,
-                                 SelectorForm dto,
+                                 @Valid SelectorForm dto,
                                  RedirectAttributes redirectAttributes) {
         try {
             crawlingService.updateSelector(id, dto);

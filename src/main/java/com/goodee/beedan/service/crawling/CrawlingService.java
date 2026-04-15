@@ -2,6 +2,7 @@ package com.goodee.beedan.service.crawling;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.goodee.beedan.dto.crawling.UrlForm;
 import com.goodee.beedan.entity.Brand;
 import com.goodee.beedan.entity.Category;
 import com.goodee.beedan.entity.CrawlingUrl;
@@ -46,6 +47,44 @@ public class CrawlingService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
+    public String registerNewUrl(UrlForm urlForm) {
+        // 1. 브랜드 처리 로직 (없으면 생성)
+        Brand brand = brandRepository.findByBrNm(urlForm.getBrNm())
+                .orElseGet(() -> brandRepository.save(Brand.builder().brNm(urlForm.getBrNm()).build()));
+
+        // 2. 카테고리 ID 결정 로직
+        Long catId = determineCategoryId(urlForm.getCatNm());
+
+        // 3. Shopify 여부 판별
+        boolean isShopify = isShopify(urlForm.getUrlUrl());
+
+        // 4. 최종 엔티티 빌드 및 저장
+        CrawlingUrl crawlingUrl = CrawlingUrl.builder()
+                .urlUrl(urlForm.getUrlUrl())
+                .brId(brand.getBrId())
+                .catId(catId)
+                .urlTy(isShopify ? "SHOPIFY" : null)
+                .urlUseYn(true)
+                .urlDelYn(false)
+                .urlAtYn(true)
+                .build();
+
+        saveUrl(crawlingUrl);
+
+        return "URL이 등록되었습니다." + (isShopify ? " (Shopify 감지)" : "");
+    }
+
+    // 카테고리 id 결정
+    private Long determineCategoryId(String catNm) {
+        if ("AI 자동 분류".equals(catNm)) {
+            return 0L;
+        }
+        return categoryRepository.findByCatNm(catNm)
+                .orElseGet(() -> categoryRepository.save(Category.builder().catNm(catNm).build()))
+                .getCatId();
+    }
+
+    @Transactional
     public void autoYnChange(Long urlId) {
         CrawlingUrl crawlingUrl = crawlingUrlRepository.findById(urlId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
         crawlingUrl.setUrlAtYn(!crawlingUrl.isUrlAtYn());
@@ -60,7 +99,9 @@ public class CrawlingService {
 
     @Transactional
     public void saveUrl(CrawlingUrl crawlingUrl) {
-
+        if (crawlingUrlRepository.existsByUrlUrlAndUrlDelYnFalse(crawlingUrl.getUrlUrl())) {
+            throw new IllegalArgumentException("이미 등록된 URL입니다.");
+        }
         crawlingUrlRepository.save(crawlingUrl);
     }
 
@@ -80,13 +121,7 @@ public class CrawlingService {
             url.setBrId(brand.getBrId());
         }
         if (dto.getCatNm() != null && !dto.getCatNm().isBlank()) {
-            if ("AI 자동 분류".equals(dto.getCatNm())) {
-                url.setCatId(0L);
-            } else {
-                Category category = categoryRepository.findByCatNm(dto.getCatNm())
-                        .orElseGet(() -> categoryRepository.save(Category.builder().catNm(dto.getCatNm()).build()));
-                url.setCatId(category.getCatId());
-            }
+            url.setCatId(determineCategoryId(dto.getCatNm()));
         }
     }
 
@@ -94,7 +129,9 @@ public class CrawlingService {
     public void deleteUrl(Long urlId) {
         CrawlingUrl url = crawlingUrlRepository.findById(urlId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 URL입니다."));
+        url.setUrlUseYn(false);
         url.setUrlDelYn(true);
+        url.setUrlAtYn(false);
     }
 
 
@@ -228,6 +265,7 @@ public class CrawlingService {
                         .stCraDt(LocalDateTime.now())
                         .stCreDt(LocalDateTime.now())
                         .build());
+                existingNames.add(raw.name());
                 newCount++;
             }
 
@@ -316,6 +354,7 @@ public class CrawlingService {
             // 화면 없는 chrome 브라우저 실행
             try (Browser browser = playwright.chromium().launch(
                     new BrowserType.LaunchOptions()
+                            // 실제로 화면을 띄우지 않고 메모리에서만 실행
                             .setHeadless(true)
                             .setChannel("chrome")
             )) {
@@ -326,7 +365,7 @@ public class CrawlingService {
                     page.navigate(url, new Page.NavigateOptions()
                             .setTimeout(30_000));
 
-                    // 페이지 전체 로딩될때까지 대기
+                    // 페이지 전체 로딩될때까지 대기(networkidle: 네트워크 연결이 500ms 이상 없을 때)
                     page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
                             new Page.WaitForLoadStateOptions().setTimeout(15_000));
 
