@@ -102,7 +102,7 @@ public class AdminMemberApiController {
     }
 
     @PostMapping("/shipment/{shId}/demo-progress")
-    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId) {
+    public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId, @AuthenticationPrincipal MemberUserDetails userDetails) {
         Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
         ShipmentStatus nextStatus = switch (shipment.getShStt()) {
@@ -114,7 +114,7 @@ public class AdminMemberApiController {
 
         ShipmentDto dto = ShipmentDto.builder().shStt(nextStatus).build();
 
-        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), dto);
+        shipmentService.updateStatusFromAdmin(shId, shipment.getOrder().getOrdBaseId(), userDetails.getMemberId(), dto);
 
         return ResponseEntity.ok("배송 상태가 " + nextStatus.name() + " (으)로 변경되었습니다.");
     }

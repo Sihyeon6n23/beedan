@@ -364,7 +364,6 @@ main > div {
 /* 뱃지 */
 .badge { padding: 3px 8px; font-size: 9px; font-weight: bold; border-radius: 2px; }
 .badge-gray { background: #e2e2e2; color: #1a1c1c; }
-.badge-yellow { background: #ffd700; color: #705d00; }
 
 /* --- 배송 카드 특화 --- */
 .shipping-card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 13px; border-left: 4px solid #ffd700; margin-bottom: 20px; height: 28%;}
@@ -618,4 +617,6 @@ main > div {
             color: inherit;
 }
 
-
+body.modal-open {
+    overflow: hidden;
+}
