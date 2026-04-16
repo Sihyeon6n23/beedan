@@ -337,6 +337,21 @@ main > div {
     overflow-y: auto;
 }
 
+#modalContentArea.modal-body {
+    /* 스크롤 기능은 유지 */
+    overflow-y: auto;
+
+    /* IE, Edge용 */
+    -ms-overflow-style: none;
+    /* Firefox용 */
+    scrollbar-width: none;
+}
+
+/* Chrome, Safari, Opera용 */
+#modalContentArea.modal-body::-webkit-scrollbar {
+    display: none;
+}
+
 .modal-col {
     display: flex;
     flex-direction: column;

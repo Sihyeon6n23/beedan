@@ -153,7 +153,7 @@ public class OrderService {
                 .ordBaseStt(OrderStatus.PREPARING)
                 .ordBaseRcvNm(firstItem.getQuDtRcNm())
                 .ordBaseTtAm(payment.getPyTtAm())
-                .ordBaseNo(quoteBase.getQuCd())
+                .ordBaseNo(String.format("%06d", (int) (Math.random() * 1000000)))
                 .build();
         orderRepository.save(order);
 

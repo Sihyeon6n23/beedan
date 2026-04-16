@@ -212,6 +212,9 @@ function initModalData(memId) {
 
 function closeMemberModal() {
     const modal = document.getElementById('memberDetailModal');
+
+    document.body.classList.remove('modal-open');
+
     modal.classList.add('hidden');
 }
 

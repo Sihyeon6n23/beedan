@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 주문 이력 </title>
+<title th:fragment="title">BEEDAN | 주문 관리 </title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('order', 'order-list')}"></div>
@@ -18,7 +18,7 @@
         .order-management-list .admin-chat-list-head,
         .order-management-list .admin-chat-row {
             display: grid !important;
-            grid-template-columns: minmax(70px, 0.6fr) minmax(220px, 2.5fr) minmax(180px, 1.3fr) minmax(40px, 0.7fr) minmax(30px, 0.3fr) !important;
+            grid-template-columns: minmax(40px, 0.6fr) minmax(200px, 2.0fr) minmax(180px, 1.0fr) minmax(40px, 0.7fr) minmax(30px, 0.3fr) !important;
             gap: 1rem;
             align-items: center;
         }
@@ -62,7 +62,7 @@
             align-items: center;
             justify-content: center;
             min-width: 45px;
-            height: 24px;
+            height: 27px;
             transition: all 0.2s ease;
         }
         .order-management-list .btn-edit:hover { background-color: #333; }
@@ -79,7 +79,7 @@
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
                 <span class="admin-chat-kicker">ORDER MANAGEMENT</span>
-                <h2 class="admin-chat-title">주문 관리</h2>
+                <h2 class="admin-chat-title">주문 목록</h2>
 
                 <div class="admin-chat-shell__rule">
                     <span></span>
@@ -90,7 +90,7 @@
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-head" aria-hidden="true">
                 <div>주문번호</div>
-                <div style="text-align: center;">상품명</div>
+                <div style="text-align: left;">상품정보</div>
                 <div>결제 금액</div>
                 <div style="text-align: center;">상태</div>
                 <div style="text-align: center;">관리</div>
@@ -105,16 +105,15 @@
 
                     <div class="admin-chat-row__primary">
                         <div class="admin-chat-row__text">
-                            <h2 style="margin-left: 22px" th:text="${order.ordBaseNo}">주문번호</h2>
-                            <img th:if="${order.ordThumbUrl != null}"
-                                 th:src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px;">
-                            <div th:if="${order.ordThumbUrl == null}" class="order-thumb-none">
-                                <i class="fas fa-box"></i>
-                            </div>
+                            <h2 style="margin-left: 15px" th:text="${order.ordBaseNo}">주문번호</h2>
                         </div>
                     </div>
 
-                    <div class="admin-chat-row__text">
+                    <div class="admin-chat-row__text" style="margin-left: 30px;">
+                        <img th:if="${order.ordThumbUrl != null}" th:src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px;">
+                        <div th:if="${order.ordThumbUrl == null}" class="order-thumb-none">
+                            <i class="fas fa-box"></i>
+                        </div>
                         <p th:text="${order.ordSummaryNm}">상품 정보</p>
                     </div>
 
