@@ -49,9 +49,9 @@
 
             <div class="inquiry-list-body">
                 <a th:each="fixed : ${response.fixedBoards}" th:href="@{/notice/detail(id=${fixed.brdId})}"
-                   class="inquiry-row inquiry-row--featured">
+                   class="inquiry-row">
                     <div class="inquiry-row__no" style="color: #ef4444; font-weight: bold;">-</div>
-                    <div class="inquiry-row__top"><span class="inquiry-badge inquiry-badge--received">공지</span></div>
+                    <div class="inquiry-row__top"><span class="inquiry-badge inquiry-badge--received">TOP</span></div>
                     <div class="inquiry-row__primary">
                         <h2 th:text="${fixed.brdTtl}">고정 공지 제목</h2>
                     </div>
@@ -92,9 +92,11 @@
                         <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">날짜</span>
                     </div>
                 </a>
-                <th:block th:if="${not #lists.isEmpty(response.pagination.content) and #lists.size(response.pagination.content) < 10}"
-                          th:each="spacer : ${#numbers.sequence(1, 10 - #lists.size(response.pagination.content))}">
-                    <div class="inquiry-row-spacer" aria-hidden="true" style="min-height: 2.68rem;"></div>
+                <th:block th:with="totalCount=${#lists.size(response.fixedBoards) + #lists.size(response.pagination.content)}">
+                    <th:block th:if="${totalCount < 10}"
+                              th:each="spacer : ${#numbers.sequence(1, 10 - totalCount)}">
+                        <div class="inquiry-row-spacer" aria-hidden="true" style="min-height: 2.68rem; border-bottom: 1px solid #f1f5f9;"></div>
+                    </th:block>
                 </th:block>
                 <div class="inquiry-empty-state" th:if="${#lists.isEmpty(response.pagination.content)}">
                     <strong>표시할 내용이 없습니다.</strong>
