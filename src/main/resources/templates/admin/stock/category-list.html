@@ -29,7 +29,7 @@
 
     <!-- 필터 -->
     <section style="display:flex; gap:12px; margin-bottom:20px; align-items:center;">
-        <div style="flex:1; display:flex; align-items:center; background:#e8e8e8; padding:8px 16px;">
+        <div style="flex:0 1 300px; min-width:200px; display:flex; align-items:center; background:#e8e8e8; padding:8px 16px;">
             <input type="text" id="catSearch" placeholder="카테고리명 검색"
                    style="flex:1; border:none; background:transparent; outline:none; font-size:13px;">
             <span class="material-symbols-outlined" style="color:#78716c; font-size:20px;">search</span>
@@ -46,7 +46,6 @@
         <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
             <thead>
             <tr style="background:#f3f3f3;">
-                <th style="width:60px; padding:12px 14px; text-align:center; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">ID</th>
                 <th style="width:160px; padding:12px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">카테고리명</th>
                 <th style="width:80px; padding:12px 14px; text-align:center; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">상태</th>
                 <th style="width:140px; padding:12px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">HS 코드</th>
@@ -62,7 +61,6 @@
                     th:data-cat-nm="${c.catNm}"
                     th:data-mapped="${c.hasMapped}"
                     style="border-bottom:1px solid #e7e5e4;">
-                    <td style="padding:14px; text-align:center; font-size:12px; color:#a3a3a3;" th:text="${c.catId}">1</td>
                     <td style="padding:14px; font-size:14px; font-weight:700; color:#1a1c1c;" th:text="${c.catNm}">Category</td>
                     <td style="padding:14px; text-align:center;">
                         <span th:if="${c.hasMapped}"
@@ -95,8 +93,10 @@
         </table>
     </div>
 
-    <p style="text-align:center; padding:20px; color:#a3a3a3; font-size:12px;"
-       th:text="'총 ' + ${categories.size()} + '개 카테고리'"></p>
+    <!-- Pagination -->
+    <footer class="admin-chat-shell admin-chat-shell--pagination" id="catPagination">
+        <div class="admin-chat-pagination" id="catPageNumbers"></div>
+    </footer>
 </section>
 
 <!-- HS 코드 모달 -->
@@ -130,23 +130,54 @@ document.addEventListener('DOMContentLoaded', function () {
     var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
     var currentCatId = null;
 
-    // 검색 + 필터
+    var PAGE_SIZE = 10;
+    var currentPage = 0;
     var searchInput = document.getElementById('catSearch');
     var filterSelect = document.getElementById('catFilter');
+    var pageContainer = document.getElementById('catPageNumbers');
 
-    function applyFilter() {
+    function getFilteredRows() {
         var keyword = searchInput.value.trim().toLowerCase();
         var filter = filterSelect.value;
-        document.querySelectorAll('.cat-row').forEach(function (row) {
+        return Array.from(document.querySelectorAll('.cat-row')).filter(function (row) {
             var name = (row.dataset.catNm || '').toLowerCase();
             var mapped = row.dataset.mapped === 'true';
             var matchSearch = !keyword || name.includes(keyword);
             var matchFilter = filter === 'all' || (filter === 'mapped' && mapped) || (filter === 'unmapped' && !mapped);
-            row.style.display = (matchSearch && matchFilter) ? '' : 'none';
+            return matchSearch && matchFilter;
         });
     }
-    searchInput.addEventListener('input', applyFilter);
-    filterSelect.addEventListener('change', applyFilter);
+
+    function renderPage() {
+        var allRows = document.querySelectorAll('.cat-row');
+        var filtered = getFilteredRows();
+        var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        var start = currentPage * PAGE_SIZE;
+        var end = start + PAGE_SIZE;
+        var visibleSet = new Set(filtered.slice(start, end));
+        allRows.forEach(function (r) { r.style.display = visibleSet.has(r) ? '' : 'none'; });
+
+        if (totalPages <= 1) { pageContainer.innerHTML = ''; return; }
+        var html = '';
+        html += currentPage > 0
+            ? '<a href="#" class="admin-chat-page-button admin-chat-page-button--wide" data-p="' + (currentPage - 1) + '">Prev</a>'
+            : '<span class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>';
+        for (var i = 0; i < totalPages; i++) {
+            html += '<a href="#" class="admin-chat-page-button' + (i === currentPage ? ' is-current' : '') + '" data-p="' + i + '">' + ('0' + (i + 1)).slice(-2) + '</a>';
+        }
+        html += currentPage < totalPages - 1
+            ? '<a href="#" class="admin-chat-page-button admin-chat-page-button--wide" data-p="' + (currentPage + 1) + '">Next</a>'
+            : '<span class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>';
+        pageContainer.innerHTML = html;
+        pageContainer.querySelectorAll('[data-p]').forEach(function (btn) {
+            btn.addEventListener('click', function (e) { e.preventDefault(); currentPage = parseInt(btn.dataset.p); renderPage(); });
+        });
+    }
+
+    searchInput.addEventListener('input', function () { currentPage = 0; renderPage(); });
+    filterSelect.addEventListener('change', function () { currentPage = 0; renderPage(); });
+    renderPage();
 
     // 모달 열기
     document.querySelectorAll('.btn-edit-hs').forEach(function (btn) {
