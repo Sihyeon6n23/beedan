@@ -22,7 +22,6 @@
 
       <div class="bg-surface-container-lowest shadow-4px_20px_rgba_26_28_28_01 p-10 md:p-12 relative">
         <form th:action="@{/auth/signin}" method="post" class="space-y-8">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
           <div class="space-y-2">
             <label class="block font-headline text-[10px] font-medium tracking-widest uppercase text-secondary"

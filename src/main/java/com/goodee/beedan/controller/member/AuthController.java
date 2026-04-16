@@ -185,16 +185,6 @@ public class AuthController {
         return "/member/auth/signin";
     }
 
-    @PostMapping("/signin")
-    public String postSignIn() {
-        return "redirect:/";
-    }
-
-    @PostMapping("/signout")
-    public String postSignOut() {
-        return "redirect:/auth/signin";
-    }
-
     @GetMapping("/find")
     public String getFind() {
         return "/member/auth/find";

@@ -111,6 +111,7 @@ public class SecurityConfiguration {
                 )
                 .formLogin(login -> login
                         .loginPage("/auth/signin")
+                        .loginProcessingUrl("/auth/signin")
                         .successHandler(customSuccessHandler)
                         .failureHandler(customFailureHandler)
                         .permitAll()
