@@ -17,7 +17,9 @@
             <a th:href="@{/stock/list}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">STOCK</a>
             <a th:href="@{/notice/list}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">NOTICE</a>
             <a th:href="@{/about}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">ABOUT</a>
+            <th:if sec:authorize="hasRole('USER')">
             <a th:href="@{/mypage}" class="text-sm font-bold text-stone-600 hover:text-primary transition-colors no-underline">MY PAGE</a>
+            </th:if>
         </nav>
 
         <div class="flex items-center justify-end gap-6 flex-1">

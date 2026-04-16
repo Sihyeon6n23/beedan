@@ -30,34 +30,34 @@ repositories {
 	mavenCentral()
 }
 
-sonarqube {
-	properties {
-		property "sonar.projectKey", "beedan"       // 프로젝트 고유 키
-		property "sonar.projectName", "beedan"    // 표시될 이름
-		property "sonar.host.url", project.findProperty("sonarHostUrl") ?: "http://localhost:9000" // 소나큐브 서버 주소
-		property "sonar.token", project.findProperty('SONAR_TOKEN') ?: ""
-
-		property "sonar.sourceEncoding", "UTF-8"
-
-		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-
-		// 분석에서 제외할 클래스 (선택 사항)
-		property "sonar.exclusions", "**/dto/**, **/entity/**, **/*Application.java, **/application.properties"
-	}
-}
-
-jacoco {
-	toolVersion = "0.8.11"
-}
-
-jacocoTestReport {
-	dependsOn test
-	reports {
-		xml.required = true // SonarQube는 XML 리포트를 읽음 (필수!)
-		csv.required = false
-		html.required = true // 사람이 보기 위한 HTML 리포트
-	}
-}
+//sonarqube {
+//	properties {
+//		property "sonar.projectKey", "beedan"       // 프로젝트 고유 키
+//		property "sonar.projectName", "beedan"    // 표시될 이름
+//		property "sonar.host.url", project.findProperty("sonarHostUrl") ?: "http://localhost:9000" // 소나큐브 서버 주소
+//		property "sonar.token", project.findProperty('SONAR_TOKEN') ?: ""
+//
+//		property "sonar.sourceEncoding", "UTF-8"
+//
+//		property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+//
+//		// 분석에서 제외할 클래스 (선택 사항)
+//		property "sonar.exclusions", "**/dto/**, **/entity/**, **/*Application.java, **/application.properties"
+//	}
+//}
+//
+//jacoco {
+//	toolVersion = "0.8.11"
+//}
+//
+//jacocoTestReport {
+//	dependsOn test
+//	reports {
+//		xml.required = true // SonarQube는 XML 리포트를 읽음 (필수!)
+//		csv.required = false
+//		html.required = true // 사람이 보기 위한 HTML 리포트
+//	}
+//}
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
