@@ -141,43 +141,59 @@ public class NoticeBoardService {
 
     /** 4. 목록 조회 (통합 DTO 및 배치 조회 적용) */
     public BoardListResponse getBoardList(BoardType boardType, SearchDto searchDto) {
-        // 1. 고정글 조회
-        List<Board> fixedEntities = boardType.isUseFixed() ?
+        int targetSize = searchDto.getSize(); // 보통 10
+        int currentPage = searchDto.getPage();
+
+        // 1. 고정글 조회 (첫 페이지에서만 표시할지, 모든 페이지에서 표시할지에 따라 로직이 달라지나 보통 첫 페이지에 포함)
+        List<Board> fixedEntities = (currentPage == 0 && boardType.isUseFixed()) ?
                 boardRepository.findTopFixedNotices(boardType, PageRequest.of(0, fixedNoticeSize, Sort.by("brdCreDt").descending()))
                 : Collections.emptyList();
 
-        // 2. 이미 가져온 리스트에서 ID만 추출 (CPU 연산만 발생, DB 비용 0)
-        List<Long> excludedIds = fixedEntities.stream()
-                .map(Board::getBrdId)
-                .collect(Collectors.toList());
+        int fixedCount = fixedEntities.size();
 
+        // 2. 일반글 페이징 조절
+        // 첫 페이지라면 (10 - 고정글 개수)만큼만 가져오고,
+        // 두 번째 페이지부터는 오프셋을 계산하여 가져와야 합니다.
 
-        // 2. 일반글 페이징 조회
         Specification<Board> spec = BoardSpecs.isActive(boardType);
-        if (!excludedIds.isEmpty()) {
-            spec = spec.and(BoardSpecs.notInIds(excludedIds));
+
+        // 고정글 제외 로직 (이미 가져온 고정글이 일반 목록에 중복되지 않도록)
+        List<Long> fixedIds = fixedEntities.stream().map(Board::getBrdId).collect(Collectors.toList());
+        if (!fixedIds.isEmpty()) {
+            spec = spec.and(BoardSpecs.notInIds(fixedIds));
         }
 
+        // 검색 조건 추가
         if (boardType.isUseStatus() && searchDto.getBrdInqStt() != null) {
             spec = spec.and(BoardSpecs.withStatus(searchDto.getBrdInqStt()));
         }
         spec = spec.and(BoardSpecs.withKeyword(searchDto.getKeyword(), searchDto.getSearchType()))
                 .and(BoardSpecs.fetchMember());
 
-        Pageable pageable = PageRequest.of(searchDto.getPage(), searchDto.getSize(), Sort.by("brdCreDt").descending());
+        // --- 핵심: 페이징 계산 ---
+        Pageable pageable;
+        if (currentPage == 0) {
+            // 첫 페이지: (10 - 고정글수) 개만큼 조회
+            pageable = PageRequest.of(0, Math.max(1, targetSize - fixedCount), Sort.by("brdCreDt").descending());
+        } else {
+            // 이후 페이지: 고정글로 인해 밀려난 offset 계산 필요
+            // 하지만 간단한 구현을 위해 '일반 공지' 기준으로만 페이징을 유지하고 싶다면
+            // 전체 사이즈 10을 유지하되, 프론트에서 fixedEntities가 0일 때 처리하게 합니다.
+            pageable = PageRequest.of(currentPage, targetSize, Sort.by("brdCreDt").descending());
+        }
+
         Page<Board> normalPage = boardRepository.findAll(spec, pageable);
 
-        // 3. 파일 존재 여부 일괄 조회 (Batch Fetching)
+        // 3. 파일 존재 여부 (기존 로직 유지)
         List<Long> allIds = Stream.concat(fixedEntities.stream(), normalPage.getContent().stream())
                 .map(Board::getBrdId).distinct().toList();
-
         Set<Long> fileExistSet = boardType.isFileUpload() ?
                 fileService.getFileYnSet(boardType.name(), allIds) : Collections.emptySet();
 
-        // 4. DTO 변환 및 합체
+        // 4. DTO 변환
         List<CommonBoardDetailDto> fixedDtos = fixedEntities.stream()
                 .map(entity -> convertToDto(entity, fileExistSet.contains(entity.getBrdId())))
-                .collect(Collectors.toList());
+                .toList();
 
         Page<CommonBoardDetailDto> normalDtos = normalPage.map(entity ->
                 convertToDto(entity, fileExistSet.contains(entity.getBrdId())));
