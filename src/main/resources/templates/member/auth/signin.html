@@ -57,6 +57,14 @@
               아이디 또는 비밀번호가 일치하지 않습니다.
             </p>
           </div>
+          <div th:if="${errorMessage == null && successMessage != null}" class="mb-6 p-4 border bg-success-container/10 border-success/20">
+            <p class="text-[10px] font-bold tracking-widest text-success uppercase text-center">
+              변경 성공
+            </p>
+            <p class="text-[10px] text-success/80 text-center mt-1" th:text="${successMessage}">
+              아이디 또는 비밀번호가 일치하지 않습니다.
+            </p>
+          </div>
           <div class="pt-4 space-y-6">
             <button type="submit" class="btn-primary w-full py-5 text-xs">
               Authorize Entry

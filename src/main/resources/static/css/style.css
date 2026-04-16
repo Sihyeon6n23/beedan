@@ -67,6 +67,7 @@
     --color-surface-container-highest: #e2e2e2;
     --color-secondary: #5f5e5e;
     --color-error: #ba1a1a;
+    --color-success:#007BFF;
     --color-outline-variant: #d0c6ab;
     --font-headline: "Manrope", sans-serif;
     --font-body: "Inter", sans-serif;
@@ -1542,6 +1543,22 @@
   }
   .border-error\/20 {
     border-color: color-mix(in srgb, var(--color-error) 20%, transparent);
+  }
+  .text-error\/80 {
+    border-color: color-mix(in srgb, var(--color-error) 80%, transparent);
+  }
+
+  .bg-success-container\/10 {
+    background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
+  }
+  .border-success\/20 {
+    border-color: color-mix(in srgb, var(--color-success) 20%, transparent);
+  }
+  .text-success\/80 {
+    border-color: color-mix(in srgb, var(--color-success) 80%, transparent);
+  }
+  .text-success {
+    color: color-mix(in srgb, var(--color-success) 100%, transparent);
   }
   @media (min-width: 640px) {
     .grid-cols-4 {

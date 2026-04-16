@@ -44,13 +44,13 @@ public class SecurityConfiguration {
                                 "/notice/detail/**",
                                 "/api/tracking/**",
                                 "/api/stock/list",
-                                "/files/**"
+                                "/files/**",
+                                "/auth/passwd/change"
                         ).permitAll()
 
                         // 2) 로그인은 필요하지만 공개 API로 열면 안 되는 예외 경로
                         .requestMatchers(
                                 "/auth/kakao/**",
-                                "/auth/passwd/change",
                                 "/api/auth/disconnectSns"
                         ).authenticated()
 

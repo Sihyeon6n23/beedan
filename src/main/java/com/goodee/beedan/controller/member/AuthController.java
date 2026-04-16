@@ -203,7 +203,6 @@ public class AuthController {
     @GetMapping("/passwd/change")
     public String getPasswdChange(@RequestParam("token_id") String tokenId,
                                   Model model) {
-        // 예외처리 먼저 실행
         memberService.findMemberByToken(tokenId);
 
         model.addAttribute("tokenId", tokenId);
@@ -215,34 +214,33 @@ public class AuthController {
     public String postPasswdChange(@RequestParam("token_id") String tokenId,
                                    @Valid @ModelAttribute PasswordResetDto passwordResetDto,
                                    BindingResult bindingResult,
-                                   Model model) {
-
-        // 1. 기본 필드 검증 (Size, NotBlank 등) 및 비밀번호 일치 확인
-        if (bindingResult.hasErrors() || !passwordResetDto.isPasswordMatching()) {
-
-            // 비밀번호 불일치 시 커스텀 에러 추가
-            if (!passwordResetDto.isPasswordMatching()) {
-                bindingResult.rejectValue("confirmPassword", "error.confirmPassword", "비밀번호가 일치하지 않습니다.");
-            }
-
-            // 중요: 원래 페이지로 돌아갈 때 필요한 데이터를 다시 모델에 담음
+                                   Model model,
+                                   RedirectAttributes rttr) {
+        // 1. @Pattern 등에 의한 정규식 검증 결과 확인
+        if (bindingResult.hasErrors()) {
             model.addAttribute("tokenId", tokenId);
-            // passwordResetDto는 @ModelAttribute에 의해 자동으로 모델에 유지됩니다.
+            bindingResult.rejectValue("password", "error.password", "최소 9자 이상, 영문, 숫자, 특수문자를 포함해야 합니다.");
+            return "member/auth/password-reset";
+        }
 
-            return "member/auth/password-reset"; // 원래 HTML 파일 경로 (forward)
+        // 2. 어노테이션으로 불가능한 로직(일치 여부)은 수동 확인
+        if (!passwordResetDto.isPasswordMatching()) {
+            bindingResult.rejectValue("confirmPassword", "error.confirmPassword", "비밀번호가 일치하지 않습니다.");
+            model.addAttribute("tokenId", tokenId);
+            return "member/auth/password-reset";
         }
 
         try {
             // 2. 서비스 로직 수행 (토큰 확인 및 비밀번호 업데이트)
             memberService.resetPassword(tokenId, passwordResetDto);
         } catch (Exception e) {
-            model.addAttribute("error", "비밀번호 변경 중 오류가 발생했습니다.");
+            model.addAttribute("errorMessage", "비밀번호 변경 중 오류가 발생했습니다.");
             model.addAttribute("tokenId", tokenId);
             return "member/auth/password-reset";
         }
 
-        // 3. 성공 시 리다이렉트 (PRG 패턴)
-        return "redirect:/auth/login?resetSuccess=true";
+        rttr.addFlashAttribute("successMessage", "비밀번호 변경을 완료했습니다.");
+        return "redirect:/auth/signin";
     }
 
 
