@@ -85,10 +85,23 @@
             </div>
         </header>
 
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="주문 목록 필터">
+            <div class="admin-chat-toolbar flex justify-between items-center">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                        <a class="admin-chat-filter" href="#" data-status="PREPARING">상품준비</a>
+                        <a class="admin-chat-filter" href="#" data-status="DELIVERING">배송중</a>
+                        <a class="admin-chat-filter" href="#" data-status="DELIVERED">배송완료</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="admin-chat-shell admin-chat-shell--list">
             <div class="admin-chat-list-head" aria-hidden="true">
                 <div>주문번호</div>
-                <div style="text-align: left; margin-left:28px;">상품정보</div>
+                <div style="text-align: left; margin-left:45px; !important;">상품정보</div>
                 <div>결제 금액</div>
                 <div style="text-align: center;">상태</div>
                 <div style="text-align: center;">관리</div>

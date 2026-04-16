@@ -23,5 +23,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         return findByIdWithShipments(ordId).orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다. ID: " + ordId));
     }
 
-
+    @Query("SELECT o FROM Order o " +
+            "WHERE o.member.memId = :memId " +
+            "AND (:status = 'ALL' OR CAST(o.ordBaseStt AS string) = :status) " +
+            "ORDER BY o.ordBaseCreDt DESC")
+    Page<Order>findAllByMemberIdAndStatus(Long memId, String status, Pageable pageable);
 }

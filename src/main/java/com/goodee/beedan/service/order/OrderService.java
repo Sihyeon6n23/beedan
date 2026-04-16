@@ -49,9 +49,9 @@ public class OrderService {
 
     private static final String THUMB_URL = "/api/images/thumb/";
 
-    public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
+    public Page<OrderDto> getOrderList(Long memId, String status, Pageable pageable){
         memberRepository.getByIdOrThrow(memId);
-        Page<Order> orderList = orderRepository.findByMember_MemIdOrderByOrdBaseCreDtDesc(memId, pageable);
+        Page<Order> orderList = orderRepository.findAllByMemberIdAndStatus(memId, status, pageable);
         return orderList.map(this::mapToOrderDto);
     }
 

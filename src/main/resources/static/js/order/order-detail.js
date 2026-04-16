@@ -150,9 +150,13 @@ function closeModal() {
 // Swiper 초기화 함수
 function initSwipers() {
     const swipers = document.querySelectorAll('.mySwiper');
-    swipers.forEach((swiperElement, index) => {
+
+    swipers.forEach((swiperElement) => {
+        const slideCount = swiperElement.querySelectorAll('.swiper-slide').length;
+
         new Swiper(swiperElement, {
-            loop: true,
+            loop: slideCount > 1,
+
             navigation: {
                 nextEl: swiperElement.querySelector('.swiper-button-next'),
                 prevEl: swiperElement.querySelector('.swiper-button-prev'),
@@ -161,6 +165,7 @@ function initSwipers() {
                 el: swiperElement.querySelector('.swiper-pagination'),
                 clickable: true,
             },
+            watchOverflow: true, // 슬라이드가 1개일 때는 Swiper 기능 비활성화
         });
     });
 }

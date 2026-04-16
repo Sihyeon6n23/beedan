@@ -5,16 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchOrders(page) {
     const listBody = document.getElementById('order-list-body');
     const pagination = document.getElementById('order-pagination');
+    const activeFilter = document.querySelector('.admin-chat-filter.is-active');
+    const status = activeFilter ? activeFilter.dataset.status : 'ALL';
 
     try {
-        const response = await fetch(`/api/orders/list?page=${page}`);
+        const response = await fetch(`/api/orders/list?page=${page}&status=${status}`);
         if (!response.ok) throw new Error("데이터 요청에 실패했습니다.");
 
         const data = await response.json();
 
         renderOrderList(data.content);
         renderPagination(data);
-
     } catch (error) {
         console.error("데이터 로드 실패:", error);
         if (listBody) {
@@ -23,8 +24,22 @@ async function fetchOrders(page) {
     }
 }
 
+document.querySelectorAll('.admin-chat-filter').forEach(button => {
+    button.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        document.querySelectorAll('.admin-chat-filter').forEach(btn => btn.classList.remove('is-active'));
+        button.classList.add('is-active');
+
+        fetchOrders(0);
+    });
+});
+
 function renderOrderList(orders) {
     const listBody = document.getElementById('order-list-body');
+    const activeFilter = document.querySelector('.admin-chat-filter.is-active');
+    const status = activeFilter ? activeFilter.dataset.status : 'ALL';
+
     if (!listBody) return;
 
     if (!orders || orders.length === 0) {
@@ -48,8 +63,8 @@ function renderOrderList(orders) {
         }
 
         const formattedAmount = new Intl.NumberFormat().format(order.ordBaseTtAm || 0);
-        const thumbImg = order.ordThumbUrl
-            ? `<img src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px; width: 70px; height: 70px; object-fit: cover;">`
+        const thumbImg = order.ordThumbUrl ?
+        `<img src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px; width: 70px; height: 70px; object-fit: cover;">`
             : `<div class="order-thumb-none"><i class="fas fa-box"></i></div>`;
 
         return `

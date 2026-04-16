@@ -27,11 +27,12 @@ public class OrderController {
 
     @GetMapping("/list")
     public String orderList(@AuthenticationPrincipal MemberUserDetails userDetails,
+                            @RequestParam(value = "status", defaultValue = "ALL") String status,
                             @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable,
                             Model model) {
         Long memId = userDetails.getMemberId();
 
-        Page<OrderDto> orders = orderService.getOrderList(memId, pageable);
+        Page<OrderDto> orders = orderService.getOrderList(memId, status, pageable);
         model.addAttribute("orders", orders);
 
         return "order/order-list";
