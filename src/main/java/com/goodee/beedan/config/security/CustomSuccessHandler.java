@@ -81,7 +81,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             }
         } catch (Exception e) { /* non-critical: session log */ }
 
-        setDefaultTargetUrl("/mypage");
+        setDefaultTargetUrl("/");
         request.getSession().removeAttribute("loginTempStatus");
 
         super.onAuthenticationSuccess(request, response, authentication);
