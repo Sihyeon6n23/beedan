@@ -113,6 +113,8 @@ public class SecurityConfiguration {
                 .logout(logout -> logout
                         .logoutUrl("/auth/signout")
                         .logoutSuccessUrl("/auth/signin")
+                        .deleteCookies("JSESSIONID") // 쿠키 삭제 추가
+                        .invalidateHttpSession(true)
                         .permitAll()
                 )
                 .sessionManagement(session -> session
