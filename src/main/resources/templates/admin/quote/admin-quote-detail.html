@@ -10,7 +10,7 @@
       )}">
 
 <title th:fragment="title"
-       th:text="${isAdmin != null and isAdmin ? 'BEEDAN | 관리자 견적 상세' : 'BEEDAN | 견적 상세'}">BEEDAN | 견적 상세</title>
+       th:text="'BEEDAN | ' + ${negotiation.ngNm} + ' ' + ${quoteBase.quCd}">BEEDAN | 견적 상세</title>
 
 <th:block th:fragment="sidebar">
     <th:block th:if="${isAdmin != null and isAdmin}">

@@ -14,7 +14,7 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/root/operation-policy.css}">
-    <div class="flex-grow mx-auto px-6 py-10 max-w-6xl">
+    <div class="flex-grow mx-auto px-6 pt-10 pb-20 max-w-6xl">
 
         <section class="mypage-security-page__intro">
             <span class="mypage-security-page__kicker">OPERATION</span>
@@ -42,10 +42,10 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm" id="gradeTable">
                         <thead>
-                            <tr class="bg-surface-container-high text-left">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">등급명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">최소 거래횟수</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">최소 누적금액</th>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">등급명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">최소 거래횟수</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">최소 누적금액</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline">시작일</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline">종료일</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
@@ -63,8 +63,8 @@
                                         <span th:text="${g.bgpGr}"></span>
                                     </span>
                                 </td>
-                                <td class="px-4 py-3" th:text="${g.bgpMinOrdCnt != null} ? ${g.bgpMinOrdCnt} + '회' : '—'"></td>
-                                <td class="px-4 py-3" th:text="${g.bgpMinTtAm != null} ? ${#numbers.formatDecimal(g.bgpMinTtAm, 0, 'COMMA', 0, 'POINT')} : '—'"></td>
+                                <td class="px-4 py-3" style="text-align:center;" th:text="${g.bgpMinOrdCnt != null} ? ${g.bgpMinOrdCnt} + '회' : '—'"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${g.bgpMinTtAm != null} ? ${#numbers.formatDecimal(g.bgpMinTtAm, 0, 'COMMA', 0, 'POINT')} : '—'"></td>
                                 <td class="px-4 py-3" th:text="${g.bgpEfFrDt != null} ? ${#temporals.format(g.bgpEfFrDt, 'yyyy-MM-dd')} : '—'"></td>
                                 <td class="px-4 py-3" th:text="${g.bgpEfToDt != null} ? ${#temporals.format(g.bgpEfToDt, 'yyyy-MM-dd')} : '무기한'"></td>
                                 <td class="px-4 py-3 text-outline cell-wrap" th:text="${g.bgpDes} ?: '—'"></td>
@@ -105,17 +105,17 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm" id="insuranceTable">
                         <thead>
-                            <tr class="bg-surface-container-high text-left">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">보험명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">요율 / 금액</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center w-24">관리</th>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">보험명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">요율 / 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">관리</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
                             <tr th:each="si : ${insurances}" class="hover:bg-surface-container-low transition-colors">
                                 <td class="px-4 py-3 font-bold" th:text="${si.siNm}"></td>
-                                <td class="px-4 py-3" th:text="${si.siAm}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${si.siAm}"></td>
                                 <td class="px-4 py-3 text-outline cell-wrap" th:text="${si.siDes} ?: '—'"></td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1">
@@ -154,17 +154,17 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm" id="inspectionTable">
                         <thead>
-                            <tr class="bg-surface-container-high text-left">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">검사명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">금액</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center w-24">관리</th>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">검사명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">관리</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
                             <tr th:each="sti : ${inspections}" class="hover:bg-surface-container-low transition-colors">
                                 <td class="px-4 py-3 font-bold" th:text="${sti.stiNm}"></td>
-                                <td class="px-4 py-3" th:text="${#numbers.formatDecimal(sti.stiAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sti.stiAm, 0, 'COMMA', 0, 'POINT')}"></td>
                                 <td class="px-4 py-3 text-outline cell-wrap" th:text="${sti.stiDes} ?: '—'"></td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1">
@@ -209,15 +209,15 @@
                         </colgroup>
                         <thead>
                             <tr class="bg-surface-container-high">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">단위명</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">단위당 수량</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">관리</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">단위명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">단위당 수량</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">관리</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
                             <tr th:each="ug : ${unitGroups}" class="hover:bg-surface-container-low transition-colors">
-                                <td class="px-4 py-3 font-bold text-left" th:text="${ug.unGNm}"></td>
-                                <td class="px-4 py-3 text-left" th:text="${ug.unGQn}"></td>
+                                <td class="px-4 py-3 font-bold" style="text-align:left;" th:text="${ug.unGNm}"></td>
+                                <td class="px-4 py-3" style="text-align:left;" th:text="${ug.unGQn}"></td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1">
                                         <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
@@ -259,11 +259,11 @@
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">국가코드</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">운송 방식</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">소형 기준</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">소형 운임</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">소형 운임</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">중형 기준</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">중형 운임</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">중형 운임</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">대형 기준</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">대형 운임</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">대형 운임</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">설명</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">관리</th>
                             </tr>
@@ -277,11 +277,11 @@
                                           th:text="${sr.srTrspTy}"></span>
                                 </td>
                                 <td class="px-4 py-3 text-center" th:text="${sr.srSmQn}"></td>
-                                <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(sr.srSmAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sr.srSmAm, 0, 'COMMA', 0, 'POINT')}"></td>
                                 <td class="px-4 py-3 text-center" th:text="${sr.srMdQn}"></td>
-                                <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(sr.srMdAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sr.srMdAm, 0, 'COMMA', 0, 'POINT')}"></td>
                                 <td class="px-4 py-3 text-center" th:text="${sr.srLgQn}"></td>
-                                <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(sr.srLgAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sr.srLgAm, 0, 'COMMA', 0, 'POINT')}"></td>
                                 <td class="px-4 py-3 text-outline cell-wrap" th:text="${sr.srDes} ?: '—'"></td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1">
@@ -321,24 +321,24 @@
                     <table class="w-full text-sm" id="portFeeTable">
                         <thead>
                             <tr class="bg-surface-container-high">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">비용 종류</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">소형 금액</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">중형 금액</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">대형 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">비용 종류</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">소형 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">중형 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">대형 금액</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">설명</th>
                                 <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">관리</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
                             <tr th:each="pcr : ${portCustomsRates}" class="hover:bg-surface-container-low transition-colors">
-                                <td class="px-4 py-3 font-bold">
+                                <td class="px-4 py-3 font-bold" style="text-align:center;">
                                     <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded"
                                           th:classappend="${pcr.pcrTy == 'PORT'} ? 'bg-blue-50 text-blue-700' : (${pcr.pcrTy == 'CUSTOMS'} ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-violet-700')"
                                           th:text="${pcr.pcrTy}"></span>
                                 </td>
-                                <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(pcr.pcrSmAm, 0, 'COMMA', 0, 'POINT')}"></td>
-                                <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(pcr.pcrMdAm, 0, 'COMMA', 0, 'POINT')}"></td>
-                                <td class="px-4 py-3 text-center" th:text="${#numbers.formatDecimal(pcr.pcrLgAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(pcr.pcrSmAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(pcr.pcrMdAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(pcr.pcrLgAm, 0, 'COMMA', 0, 'POINT')}"></td>
                                 <td class="px-4 py-3 text-outline cell-wrap" th:text="${pcr.pcrDes} ?: '—'"></td>
                                 <td class="px-4 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1">
@@ -363,14 +363,18 @@
 
             <!-- ========== 7. 국내 배송비 설정 ========== -->
             <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div th:if="${!#lists.isEmpty(deliveryRates)}" th:with="ddr=${deliveryRates[0]}">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-primary">local_shipping</span>
                         <h2 class="text-xl font-bold tracking-tight uppercase">7. 국내 배송비 설정</h2>
                         <span class="text-xs text-outline ml-2">(Domestic Delivery)</span>
                     </div>
+                    <button type="button" class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all btn-edit"
+                            th:data-id="${ddr.ddrId}" data-type="delivery">
+                        <span class="material-symbols-outlined text-base">edit</span> 금액 수정
+                    </button>
                 </div>
-                <div th:if="${!#lists.isEmpty(deliveryRates)}" th:with="ddr=${deliveryRates[0]}">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <div class="bg-surface-container-low rounded-lg p-6">
                             <p class="text-xs font-bold text-outline uppercase mb-2">기본 배송비</p>
@@ -392,19 +396,20 @@
                         <span class="text-xs text-outline">설명:</span>
                         <span class="text-sm text-on-surface" th:text="${ddr.ddrDes}"></span>
                     </div>
-                    <div class="flex justify-end mt-4">
-                        <button type="button" class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all btn-edit"
-                                th:data-id="${ddr.ddrId}" data-type="delivery">
-                            <span class="material-symbols-outlined text-base">edit</span> 금액 수정
-                        </button>
-                    </div>
                 </div>
-                <div th:if="${#lists.isEmpty(deliveryRates)}" class="text-center py-8">
+                <div th:if="${#lists.isEmpty(deliveryRates)}">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">7. 국내 배송비 설정</h2>
+                    <span class="text-xs text-outline ml-2">(Domestic Delivery)</span>
+                </div>
+                <div class="text-center py-8">
                     <p class="text-outline mb-4">등록된 배송비가 없습니다.</p>
                     <button type="button" onclick="openModal('deliveryModal')"
                             class="text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
                         <span class="material-symbols-outlined text-base align-middle">add</span> 배송비 등록
                     </button>
+                </div>
                 </div>
             </div>
 
@@ -429,18 +434,18 @@
                             <col style="width:20%;">
                         </colgroup>
                         <thead>
-                            <tr class="bg-surface-container-high text-left">
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">정렬</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">확인 항목 텍스트</th>
-                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">관리</th>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">정렬</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">확인 항목 텍스트</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">관리</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
                             <tr th:each="qsc : ${submitChecks}" class="hover:bg-surface-container-low transition-colors">
-                                <td class="px-4 py-3 text-outline text-center" th:text="${qsc.qscSort}"></td>
+                                <td class="px-4 py-3 text-outline" style="text-align:left;" th:text="${qsc.qscSort}"></td>
                                 <td class="px-4 py-3 cell-wrap" th:text="${qsc.qscDes}"></td>
-                                <td class="px-4 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-1">
+                                <td class="px-4 py-3" style="text-align:right;">
+                                    <div class="flex items-center justify-end gap-1">
                                         <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
                                                 th:data-id="${qsc.qscId}" data-type="submitCheck" title="수정">
                                             <span class="material-symbols-outlined text-base">edit</span>

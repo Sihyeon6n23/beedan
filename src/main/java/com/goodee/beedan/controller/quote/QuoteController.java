@@ -184,22 +184,16 @@ public class    QuoteController {
 
 @GetMapping("/list")
     public String getList(@AuthenticationPrincipal MemberUserDetails userDetails,
-                          @RequestParam(defaultValue = "1") int page,
-                          @RequestParam(defaultValue = "desc") String sort,
                           Model model) {
         Long memId = userDetails.getMemberId();
 
-        int pageSize = 10;
-        org.springframework.data.domain.Sort sortOrder = "asc".equals(sort)
-                ? org.springframework.data.domain.Sort.by("quCreDt").ascending()
-                : org.springframework.data.domain.Sort.by("quCreDt").descending();
-        model.addAttribute("sort", sort);
-
-        // 견적 + 협상명 조인 조회 (1 쿼리)
-        Page<Object[]> quPage = quoteBaseRepository.findAllByMemberWithNgNm(memId, PageRequest.of(page - 1, pageSize, sortOrder));
+        // 전체 로드 (클라이언트 사이드 필터+페이지네이션)
+        List<Object[]> rows = quoteBaseRepository.findAllByMemberWithNgNm(
+                memId, PageRequest.of(0, Integer.MAX_VALUE,
+                        org.springframework.data.domain.Sort.by("quCreDt").descending())).getContent();
 
         List<Map<String, Object>> quotes = new ArrayList<>();
-        for (Object[] row : quPage.getContent()) {
+        for (Object[] row : rows) {
             Long quId = (Long) row[0];
             QuoteStatus quStt = (QuoteStatus) row[1];
             Boolean quUsOpYn = (Boolean) row[2];
@@ -232,16 +226,7 @@ public class    QuoteController {
             quotes.add(item);
         }
 
-        int totalPages = quPage.getTotalPages();
-        List<String> pageLabels = new ArrayList<>();
-        for (int i = 1; i <= totalPages; i++) {
-            pageLabels.add(String.format("%02d", i));
-        }
-
         model.addAttribute("quotes", quotes);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("pageLabels", pageLabels);
         return "/quote/quote-list";
     }
 

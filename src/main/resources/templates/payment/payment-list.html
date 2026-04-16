@@ -69,13 +69,63 @@
                 </a>
             </th:block>
 
-            <div class="ng-empty-state" th:if="${#lists.isEmpty(payments)}">
+            <div class="ng-empty-state" id="paymentEmpty" th:if="${#lists.isEmpty(payments)}">
                 <strong>결제 내역이 없습니다.</strong>
                 <p>아직 결제한 견적이 없습니다.</p>
             </div>
         </div>
     </section>
+
+    <!-- Pagination -->
+    <footer class="ng-shell ng-shell--pagination" id="paymentPagination" style="display:none;">
+        <div class="ng-pagination" id="paymentPageNumbers"></div>
+    </footer>
 </section>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var PAGE_SIZE = 10;
+    var currentPage = 0;
+    var rows = Array.from(document.querySelectorAll('.ng-list-body .ng-row'));
+    var totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    var paginationWrap = document.getElementById('paymentPagination');
+    var pageNumbers = document.getElementById('paymentPageNumbers');
+    var emptyState = document.getElementById('paymentEmpty');
+
+    function renderPage() {
+        var start = currentPage * PAGE_SIZE;
+        var end = start + PAGE_SIZE;
+        rows.forEach(function (r, i) {
+            r.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+        if (emptyState) emptyState.style.display = rows.length === 0 ? '' : 'none';
+
+        if (totalPages <= 1) { paginationWrap.style.display = 'none'; return; }
+        paginationWrap.style.display = '';
+
+        var html = '';
+        html += currentPage > 0
+            ? '<button class="ng-page-button ng-page-button--wide" data-page="' + (currentPage - 1) + '">Prev</button>'
+            : '<span class="ng-page-button ng-page-button--wide is-disabled">Prev</span>';
+        for (var i = 0; i < totalPages; i++) {
+            html += '<button class="ng-page-button' + (i === currentPage ? ' is-current' : '') + '" data-page="' + i + '">'
+                + String(i + 1).padStart(2, '0') + '</button>';
+        }
+        html += currentPage < totalPages - 1
+            ? '<button class="ng-page-button ng-page-button--wide" data-page="' + (currentPage + 1) + '">Next</button>'
+            : '<span class="ng-page-button ng-page-button--wide is-disabled">Next</span>';
+        pageNumbers.innerHTML = html;
+
+        pageNumbers.querySelectorAll('[data-page]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                currentPage = parseInt(btn.dataset.page);
+                renderPage();
+            });
+        });
+    }
+
+    renderPage();
+});
+</script>
 </th:block>
 </html>
