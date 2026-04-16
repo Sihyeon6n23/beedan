@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ROOT', 'MEMBER CREATE', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('ACCOUNT', 'REGISTERATION', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -14,13 +14,15 @@
 <th:block th:fragment="content">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    <div class="flex flex-col w-full max-w-4xl mx-auto">
-        <header class="mb-12">
-            <p class="text-primary uppercase font-black text-[10px] tracking-[0.2em] mb-2">System Management</p>
-            <h1 class="font-headline font-black text-5xl md:text-6xl tracking-tighter uppercase leading-none">Admin
-                Registration</h1>
+    <div class="flex flex-col w-full max-w-5xl mx-auto px-6">
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">ACCOUNT</span>
+            <h1 class="mypage-security-page__title">관리자 등록</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
             <p th:if="${errorMessage}" th:text="${errorMessage}" class="text-error text-sm font-bold mt-4"></p>
-        </header>
+        </section>
         <form th:action="@{/root/member/create}" th:object="${memberCreateFormDto}" method="POST"
               class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
 

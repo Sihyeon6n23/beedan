@@ -31,7 +31,6 @@ public class SecurityConfiguration {
                         .ignoringRequestMatchers("/api/tracking/**")
                 )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다. + 추적 API는 sendBeacon 사용 (커스텀 헤더 불가)
                 .authorizeHttpRequests(authorize -> authorize
-
                         // 1) 공개 경로
                         .requestMatchers(
                                 "/",
@@ -45,13 +44,13 @@ public class SecurityConfiguration {
                                 "/notice/detail/**",
                                 "/api/tracking/**",
                                 "/api/stock/list",
-                                "/files/**"
+                                "/files/**",
+                                "/auth/passwd/change"
                         ).permitAll()
 
                         // 2) 로그인은 필요하지만 공개 API로 열면 안 되는 예외 경로
                         .requestMatchers(
                                 "/auth/kakao/**",
-                                "/auth/passwd/change",
                                 "/api/auth/disconnectSns"
                         ).authenticated()
 
@@ -78,7 +77,12 @@ public class SecurityConfiguration {
                                 "/notice/write/**", "/notice/edit/**"
                         ).hasAnyRole("ADMIN", "ROOT")
 
-                        // 6) USER 전용
+                        // 6) USER + ADMIN + ROOT 공용
+                        .requestMatchers(
+                                "/api/cart/**", "/cart/**"
+                        ).hasAnyRole("USER", "ADMIN", "ROOT")
+
+                        // 7) USER 전용
                         .requestMatchers(
                                 "/quote/**",
                                 "/api/payment/**", "/payment/**",
@@ -87,7 +91,6 @@ public class SecurityConfiguration {
                                 "/api/notification/**", "/notification/**",
                                 "/api/receiver/**", "/receiver/**",
                                 "/api/images/**",
-                                "/api/cart/**", "/cart/**",
                                 "/api/wishlist/**", "/wishlist/**",
                                 "/api/stock/myitem/**", "/myitem/**",
                                 "/api/require/**", "/require/**",
@@ -95,14 +98,14 @@ public class SecurityConfiguration {
                                 "/api/chat/**", "/api/chatbot/**"
                         ).hasRole("USER")
 
-                        // 7) 로그인 사용자 공통
+                        // 8) 로그인 사용자 공통
                         .requestMatchers(
                                 "/mypage/**",
                                 "/ws", "/ws/**",
                                 "/api/quote/**"
                         ).authenticated()
 
-                        // 8) 그 외 전부 인증 필요
+                        // 9) 그 외 전부 인증 필요
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
@@ -114,6 +117,8 @@ public class SecurityConfiguration {
                 .logout(logout -> logout
                         .logoutUrl("/auth/signout")
                         .logoutSuccessUrl("/auth/signin")
+                        .deleteCookies("JSESSIONID") // 쿠키 삭제 추가
+                        .invalidateHttpSession(true)
                         .permitAll()
                 )
                 .sessionManagement(session -> session
@@ -141,7 +146,9 @@ public class SecurityConfiguration {
                                 .oidcUserService(customOAuth2UserService)
                         )
                         .failureHandler((request, response, exception) -> {
-                            response.sendRedirect("/auth/signin?error=" + exception.getMessage());
+                            request.getSession().setAttribute("errorMessage",
+                                    new SignInErrorMessageDto("소셜로그인", "잠시 후 다시 시도해주세요."));
+                            response.sendRedirect("/auth/signin");
                         })
                 )
                 .exceptionHandling(ex -> ex              // ← 여기 추가
@@ -151,6 +158,9 @@ public class SecurityConfiguration {
                         })
                 );
         return http.build();
+
+
+
 
     }
 

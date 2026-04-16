@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -21,7 +20,7 @@ public class ChatRoomCloseScheduler {
 
     // 1분마다 깨어나지만, 실제 실행 여부는 아래 설정값으로 다시 판단
     @Scheduled(fixedDelay = 60000)
-    public void closeInactiveChatRooms() throws IOException {
+    public void closeInactiveChatRooms() {
         // 현재 채팅 자동 종료 스케줄 설정 조회
         SchedulerSettingDto schedulerSetting = schedulerService.getSchedulerSetting();
 

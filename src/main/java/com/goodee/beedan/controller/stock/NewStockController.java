@@ -144,6 +144,8 @@ public class NewStockController {
                         + "/" + saved.getFileUuid() + "." + saved.getFileExt();
                 stockService.saveImgUrl(lastId, imgUrl);
             }
+        } else {
+            stockService.saveImgUrl(lastId, "/files/nostockimage/no-image.svg");
         }
 
         redirectAttributes.addFlashAttribute("activeTab", "manual");

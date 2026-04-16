@@ -116,13 +116,13 @@
 
     <!-- 기간 선택 -->
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:28px; flex-wrap:wrap;">
-        <a th:href="@{/root/dashboard(year=${month - 1 > 0 ? year : year - 1}, month=${month - 1 > 0 ? month - 1 : 12})}"
+        <a th:href="@{/root/main(year=${month - 1 > 0 ? year : year - 1}, month=${month - 1 > 0 ? month - 1 : 12})}"
            style="padding:6px 14px; font-size:12px; font-weight:700; background:#f5f0e8; color:#78716c; border:none; text-decoration:none; border-radius:6px;">&lt; 이전</a>
         <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #f0ece3; padding:8px 16px; border-radius:8px;">
             <span class="material-symbols-outlined" style="font-size:18px; color:#c4b799;">calendar_today</span>
             <span style="font-size:14px; font-weight:700; color:#1a1c1c;" th:text="${periodLabel}"></span>
         </div>
-        <a th:href="@{/root/dashboard(year=${month + 1 <= 12 ? year : year + 1}, month=${month + 1 <= 12 ? month + 1 : 1})}"
+        <a th:href="@{/root/main(year=${month + 1 <= 12 ? year : year + 1}, month=${month + 1 <= 12 ? month + 1 : 1})}"
            style="padding:6px 14px; font-size:12px; font-weight:700; background:#f5f0e8; color:#78716c; border:none; text-decoration:none; border-radius:6px;">다음 &gt;</a>
         <div style="display:flex; align-items:center; gap:4px; margin-left:12px;">
             <select id="dashYear" style="padding:6px 8px; font-size:12px; font-weight:700; border:1px solid #f0ece3; border-radius:6px;">
@@ -131,7 +131,7 @@
             <select id="dashMonth" style="padding:6px 8px; font-size:12px; font-weight:700; border:1px solid #f0ece3; border-radius:6px;">
                 <option th:each="mi : ${#numbers.sequence(1, 12)}" th:value="${mi}" th:text="${mi + '월'}" th:selected="${mi == month}"></option>
             </select>
-            <button onclick="location.href='/root/dashboard?year='+document.getElementById('dashYear').value+'&amp;month='+document.getElementById('dashMonth').value;"
+            <button onclick="location.href='/root/main?year='+document.getElementById('dashYear').value+'&amp;month='+document.getElementById('dashMonth').value;"
                     style="padding:6px 14px; font-size:12px; font-weight:800; background:#ffd700; color:#705d00; border:none; cursor:pointer; border-radius:6px;">이동</button>
         </div>
     </div>

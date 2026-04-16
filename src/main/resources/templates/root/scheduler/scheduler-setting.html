@@ -13,11 +13,16 @@
 </th:block>
 
 <th:block th:fragment="content">
-    <div class="flex-grow mx-auto px-6 py-12 max-w-5xl">
-        <div class="mb-12 flex items-baseline gap-4">
-            <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase">스케쥴러 설정</h1>
-            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Scheduler Settings)</span>
-        </div>
+    <main class="mypage-security-page bg-background">
+        <div class="max-w-5xl mx-auto">
+
+            <section class="mypage-security-page__intro">
+                <span class="mypage-security-page__kicker">SCHEDULER</span>
+                <h1 class="mypage-security-page__title">스케쥴러 설정</h1>
+                <div class="mypage-security-page__rule">
+                    <span></span>
+                </div>
+            </section>
 
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
 
@@ -66,7 +71,6 @@
                     <!-- 마지막 크롤링 시간 -->
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 크롤링 시간</label>
-                        <input type="hidden" name="lastCrawlingRunTime" th:if="${setting.lastCrawlingRunTime != null}" th:value="${setting.lastCrawlingRunTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastCrawlingRunTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastCrawlingRunTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -120,7 +124,6 @@
                     <!-- 마지막 갱신 시간 -->
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 환율 갱신 시간</label>
-                        <input type="hidden" name="lastExchangeRateRunTime" th:if="${setting.lastExchangeRateRunTime != null}" th:value="${setting.lastExchangeRateRunTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastExchangeRateRunTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastExchangeRateRunTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -170,7 +173,6 @@
 
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 재산정 시간</label>
-                        <input type="hidden" name="lastGradeResolveRunTime" th:if="${setting.lastGradeResolveRunTime != null}" th:value="${setting.lastGradeResolveRunTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastGradeResolveRunTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastGradeResolveRunTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -226,7 +228,6 @@
                     <!-- 마지막 실행 시각 -->
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 자동 종료 실행 시각</label>
-                        <input type="hidden" name="lastChatAutoCloseRunTime" th:if="${setting.lastChatAutoCloseRunTime != null}" th:value="${setting.lastChatAutoCloseRunTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastChatAutoCloseRunTime != null ? #temporals.format(#temporals.createDateTime(setting.lastChatAutoCloseRunTime), 'yyyy년 MM월 dd일 HH:mm') : '실행 기록 없음'}"
                                class="w-full bg-zinc-100 border-none p-3 text-sm text-zinc-500 cursor-not-allowed">
@@ -256,7 +257,6 @@
 
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 갱신 시간</label>
-                        <input type="hidden" name="lastPopularStockUpdateTime" th:if="${setting.lastPopularStockUpdateTime != null}" th:value="${setting.lastPopularStockUpdateTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastPopularStockUpdateTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastPopularStockUpdateTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -300,7 +300,6 @@
 
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 갱신 시간</label>
-                        <input type="hidden" name="lastNewStockUpdateTime" th:if="${setting.lastNewStockUpdateTime != null}" th:value="${setting.lastNewStockUpdateTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastNewStockUpdateTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastNewStockUpdateTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -360,7 +359,6 @@
                     <!-- 마지막 갱신 시간 -->
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 통관 갱신 시간</label>
-                        <input type="hidden" name="lastUnipassRunTime" th:if="${setting.lastUnipassRunTime != null}" th:value="${setting.lastUnipassRunTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastUnipassRunTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastUnipassRunTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -417,7 +415,6 @@
                     <!-- 마지막 동기화 시간 -->
                     <div class="space-y-1">
                         <label class="block text-xs font-bold text-zinc-500 uppercase">마지막 배송 동기화 시간</label>
-                        <input type="hidden" name="lastShipmentSyncRunTime" th:if="${setting.lastShipmentSyncRunTime != null}" th:value="${setting.lastShipmentSyncRunTime}" />
                         <input type="text" readonly
                                th:value="${setting.lastShipmentSyncRunTime != null
                                    ? #temporals.format(#temporals.createDateTime(setting.lastShipmentSyncRunTime), 'yyyy년 MM월 dd일 HH:mm')
@@ -443,6 +440,7 @@
 
         </div>
     </div>
+    </main>
 
     <script th:inline="javascript">
         function refreshDisplay(type) {
@@ -480,36 +478,7 @@
                 });
             });
 
-            // 2. 파일 확장자 필드 검증 (name 값 카멜케이스 수정)
-            const fileInput = policyForm.querySelector('input[name="fileUploadAllowList"]');
-            if (fileInput) {
-                fileInput.addEventListener('input', function() {
-                    const regex = /[^a-zA-Z0-9,\s]/g;
-                    if (regex.test(this.value)) {
-                        this.value = this.value.replace(regex, '');
-                    }
-                });
-
-                fileInput.addEventListener('blur', function() {
-                    this.value = this.value.split(',')
-                        .map(ext => ext.trim())
-                        .filter(ext => ext !== '')
-                        .join(', ');
-                });
-            }
-
-            // 3. 저장 전 최종 확인 (name 값 카멜케이스 수정)
-            policyForm.addEventListener('submit', function(e) {
-                if (fileInput && fileInput.value.trim() === '') {
-                    const isEnabledRadio = policyForm.querySelector('input[name="isFileUploadAllowListEnabled"]:checked');
-                    if (isEnabledRadio && isEnabledRadio.value === 'true') {
-                        alert('화이트리스트 기능을 사용하려면 최소 하나 이상의 확장자를 입력해야 합니다.');
-                        e.preventDefault();
-                    }
-                }
-            });
-
-            // 4. ON/OFF 상태에 따른 입력창 제어 함수
+            // 2. ON/OFF 상태에 따른 입력창 제어 함수
             function updateInputStatus(section) {
               const radioOn = section.querySelector('input[type="radio"][value="true"]');
               const editableFields = section.querySelectorAll(
