@@ -2,15 +2,11 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('Board', 'Board Management', ~{::sidebar})},
+          null,
           ~{::content}
       )}">
 
 <title th:fragment="title">BEEDAN | 공지사항 목록</title>
-
-<th:block th:fragment="sidebar">
-    <div th:replace="~{/board/board-sidebar :: sidebar('notice','notice-list')}"></div>
-</th:block>
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/notice.css}">
