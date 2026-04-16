@@ -16,7 +16,7 @@
     <main class="w-full max-w-[480px]">
 
       <div class="mb-12 flex flex-col items-center">
-        <span class="font-headline text-[10px] tracking-[0.3em] text-primary font-bold mb-4 uppercase">Identity Access</span>
+        <span class="font-headline text-[10px] tracking-[0.3em] text-primary font-bold mb-4 uppercase">로그인</span>
         <h1 class="font-headline text-5xl font-black tracking-tighter text-on-surface">BEEDAN</h1>
       </div>
 
@@ -27,7 +27,7 @@
           <div class="space-y-2">
             <label class="block font-headline text-[10px] font-medium tracking-widest uppercase text-secondary"
                    for="username">
-              Login Identifier
+              아이디
             </label>
             <div class="relative">
               <input type="text" id="username" name="username"
@@ -40,7 +40,7 @@
             <div class="flex justify-between items-end">
               <label class="block font-headline text-[10px] font-medium tracking-widest uppercase text-secondary"
                      for="password">
-                Password
+                비밀번호
               </label>
             </div>
             <div class="relative">
@@ -67,7 +67,7 @@
           </div>
           <div class="pt-4 space-y-6">
             <button type="submit" class="btn-primary w-full py-5 text-xs">
-              Authorize Entry
+              로그인
             </button>
 
             <div class="flex flex-col gap-4 pt-4">
@@ -85,7 +85,7 @@
         <div class="mt-10">
           <div class="relative flex items-center mb-4 mt-4">
             <div class="flex-grow border-t border-secondary/20"></div>
-            <span class="flex-none mx-4 text-[9px] font-bold tracking-[0.3em] text-secondary/50 uppercase">Social Access</span>
+            <span class="flex-none mx-4 text-[9px] font-bold tracking-[0.3em] text-secondary/50 uppercase">간편 로그인</span>
             <div class="flex-grow border-t border-secondary/20"></div>
           </div>
 
@@ -95,7 +95,7 @@
               <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 3C6.477 3 2 6.48 2 10.791c0 2.758 1.817 5.18 4.545 6.44l-1.16 4.254c-.052.193.064.394.258.446a.35.35 0 0 0 .216-.01l5.06-3.366C11.31 18.51 11.65 18.524 12 18.524c5.523 0 10-3.48 10-7.733S17.523 3 12 3z"/>
               </svg>
-              <span class="text-[11px] font-bold tracking-wider uppercase">Login with Kakao</span>
+              <span class="text-[11px] font-bold tracking-wider uppercase">카카오로 시작하기</span>
             </a>
           </div>
         </div>
@@ -116,57 +116,57 @@
               <div class="w-14 h-14 bg-primary/10 flex items-center justify-center mb-4">
                 <span class="material-symbols-outlined text-3xl text-primary">person_search</span>
               </div>
-              <h3 class="font-headline font-black text-xl tracking-tight text-on-surface uppercase">Identity Recovery</h3>
-              <p class="text-[10px] text-secondary mt-2 tracking-widest uppercase">계정 정보 찾기</p>
+              <h3 class="font-headline font-black text-xl tracking-tight text-on-surface">계정 찾기</h3>
+              <p class="text-[10px] text-secondary mt-2 tracking-widest">등록된 정보로 계정을 찾을 수 있습니다</p>
             </div>
 
             <div class="flex mb-8 bg-surface-container-high p-1 border border-outline-variant/30">
               <button type="button" onclick="switchTab('findId')" id="tab-findId"
                       class="flex-1 py-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all bg-surface-container-lowest text-primary shadow-sm">
-                Find ID
+                아이디 찾기
               </button>
               <button type="button" onclick="switchTab('findPw')" id="tab-findPw"
                       class="flex-1 py-3 text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-secondary hover:text-primary">
-                Find PW
+                비밀번호 찾기
               </button>
             </div>
 
             <div id="form-findId" class="space-y-5">
               <div class="space-y-2">
-                <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/80">Name Identifier</label>
+                <label class="block text-[9px] font-bold tracking-widest text-secondary/80">이름</label>
                 <input type="text" id="findIdName" class="w-full bg-surface-container-high border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary text-sm py-3 px-4 outline-none transition-all" placeholder="이름 입력">
               </div>
               <div class="space-y-2">
-                <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/80">Email Address</label>
+                <label class="block text-[9px] font-bold tracking-widest text-secondary/80">이메일</label>
                 <input type="email" id="findIdEmail" class="w-full bg-surface-container-high border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary text-sm py-3 px-4 outline-none transition-all" placeholder="이메일 입력">
               </div>
 
               <div id="idResult" class="hidden p-4 bg-primary/5 border border-primary/20 text-center my-2">
-                <p class="text-[9px] text-secondary tracking-widest uppercase mb-1">Found Identifier</p>
+                <p class="text-[9px] text-secondary tracking-widest mb-1">찾은 아이디</p>
                 <p class="text-sm font-black text-primary tracking-widest" id="foundIdText"></p>
               </div>
 
               <button type="button" onclick="handleFindId()" class="w-full py-4 mt-2 bg-primary text-[#191919] font-headline font-black text-[11px] tracking-[0.2em] uppercase hover:bg-primary/90 transition-all shadow-md active:translate-y-[1px]">
-                Retrieve ID
+                아이디 찾기
               </button>
             </div>
 
             <div id="form-findPw" class="hidden space-y-5">
               <div class="space-y-2">
-                <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/80">Login Identifier</label>
+                <label class="block text-[9px] font-bold tracking-widest text-secondary/80">아이디</label>
                 <input type="text" id="findPwId" class="w-full bg-surface-container-high border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary text-sm py-3 px-4 outline-none transition-all" placeholder="아이디 입력">
               </div>
               <div class="space-y-2">
-                <label class="block text-[9px] font-bold tracking-widest uppercase text-secondary/80">Registered Email</label>
+                <label class="block text-[9px] font-bold tracking-widest text-secondary/80">이메일</label>
                 <input type="email" id="findPwEmail" class="w-full bg-surface-container-high border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary text-sm py-3 px-4 outline-none transition-all" placeholder="이메일 입력">
               </div>
 
               <div id="pwResult" class="hidden p-4 bg-primary/5 border border-primary/20 text-center my-2">
-                <p class="text-[10px] text-primary font-black tracking-widest uppercase">Verification Link Sent</p>
+                <p class="text-[10px] text-primary font-black tracking-widest">재설정 링크가 발송되었습니다</p>
               </div>
 
               <button type="button" onclick="handleFindPw()" class="w-full py-4 mt-2 bg-primary text-[#191919] font-headline font-black text-[11px] tracking-[0.2em] uppercase hover:bg-primary/90 transition-all shadow-md active:translate-y-[1px]">
-                Reset via Email
+                비밀번호 재설정
               </button>
             </div>
           </div>
