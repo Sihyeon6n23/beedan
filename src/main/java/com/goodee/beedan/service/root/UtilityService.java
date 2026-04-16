@@ -44,5 +44,6 @@ public class UtilityService {
 
     public void saveUtilitySetting(UtilitySettingDto utilitySettingDto) {
         redisTemplate.opsForValue().set(REDIS_KEY, utilitySettingDto);
+        log.info("유틸리티 설정 Redis에 저장 완료.");
     }
 }
