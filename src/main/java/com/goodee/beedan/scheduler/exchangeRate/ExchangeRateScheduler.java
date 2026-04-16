@@ -39,7 +39,7 @@ public class ExchangeRateScheduler {
 
         // interval 기반 다음 실행 시점 계산
         long hoursElapsed = Duration.between(startDt, now).toHours();
-        long intervalHours = Long.parseLong(setting.getExchangeRateInterval());
+        long intervalHours =Long.parseLong(setting.getExchangeRateInterval());
         LocalDateTime nextRun = startDt.plusHours((hoursElapsed / intervalHours) * intervalHours);
 
         if (now.isBefore(nextRun)) return;
