@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml"
       th:replace="~{layout/layout :: layout(
           ~{::title},
           ~{fragments/sidebar :: frame('ADMIN', 'MEMBER EDIT', ~{::sidebar})},
@@ -11,7 +11,13 @@
 <body>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{admin/admin-sidebar :: sidebar('member', 'member-list')}"></div>
+    <div sec:authorize="hasRole('ROOT')"
+         th:replace="~{root/root-sidebar :: sidebar('memberList', 'member-list')}">
+    </div>
+
+    <div sec:authorize="hasRole('ADMIN') and !hasRole('ROOT')"
+         th:replace="~{admin/admin-sidebar :: sidebar('member', 'member-list')}">
+    </div>
 </th:block>
 
 <th:block th:fragment="content">
