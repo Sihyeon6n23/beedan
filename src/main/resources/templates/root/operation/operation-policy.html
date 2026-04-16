@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('Operation', 'policy', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('OPERATION', 'policy', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -14,13 +14,15 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/root/operation-policy.css}">
-    <div class="flex-grow mx-auto px-6 max-w-6xl" style="padding-top:1.5rem;">
+    <div class="flex-grow mx-auto px-6 pt-8 max-w-6xl">
 
-        <!-- Page Header -->
-        <div class="mb-12 flex items-baseline gap-4">
-            <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase">운영 정책 설정</h1>
-            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Operation Policy Settings)</span>
-        </div>
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">OPERATION</span>
+            <h1 class="mypage-security-page__title">운영 정책 설정</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
 
         <div class="space-y-10">
 

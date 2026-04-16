@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | NEW REQUIREMENT</title>
+<title th:fragment="title">BEEDAN | 상품 요청 작성</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('stock','stock-require')}"></div>
@@ -87,17 +87,6 @@
                 </div>
             </div>
 
-            <!-- 첨부파일 -->
-            <div class="req-field">
-                <label class="req-field__label">첨부파일</label>
-                <div class="req-upload__zone" id="upload-zone">
-                    <span class="material-symbols-outlined">cloud_upload</span>
-                    <p>클릭하거나 파일을 드래그하세요</p>
-                </div>
-                <input type="file" id="fileInput" name="files" multiple style="display:none">
-                <div id="file-list"></div>
-            </div>
-
             <!-- 버튼 -->
             <div class="req-write__actions">
                 <button type="button" id="btn-draft" class="req-btn req-btn--draft">임시 저장</button>
@@ -130,63 +119,6 @@
             license_key: 'gpl'
         });
 
-        // --- File Upload ---
-        var uploadZone = document.getElementById('upload-zone');
-        var fileInput = document.getElementById('fileInput');
-        var fileList = document.getElementById('file-list');
-        var selectedFiles = [];
-
-        uploadZone.addEventListener('click', function() {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', function() {
-            addFiles(this.files);
-            this.value = '';
-        });
-
-        uploadZone.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('is-dragover');
-        });
-
-        uploadZone.addEventListener('dragleave', function() {
-            this.classList.remove('is-dragover');
-        });
-
-        uploadZone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('is-dragover');
-            addFiles(e.dataTransfer.files);
-        });
-
-        function addFiles(files) {
-            for (var i = 0; i < files.length; i++) {
-                selectedFiles.push(files[i]);
-            }
-            renderFileList();
-        }
-
-        function removeFile(index) {
-            selectedFiles.splice(index, 1);
-            renderFileList();
-        }
-
-        function renderFileList() {
-            fileList.innerHTML = selectedFiles.map(function(file, i) {
-                var size = (file.size / 1024).toFixed(1) + ' KB';
-                return '<div class="req-upload__item">' +
-                    '<span class="req-upload__item-name">' +
-                        '<span class="material-symbols-outlined">description</span>' +
-                        file.name + ' <small style="color:var(--color-outline);margin-left:0.4rem;">(' + size + ')</small>' +
-                    '</span>' +
-                    '<button type="button" class="req-upload__item-remove" onclick="window.__removeFile(' + i + ')">&times;</button>' +
-                '</div>';
-            }).join('');
-        }
-
-        window.__removeFile = removeFile;
-
         // --- 순서대로 필드 검증 ---
         function validateForm() {
             document.querySelectorAll('.field-error').forEach(function(el) { el.textContent = ''; });
@@ -216,10 +148,6 @@
             tinymce.triggerSave();
             var form = document.getElementById('req-form');
             var formData = new FormData(form);
-            formData.delete('files');
-            for (var i = 0; i < selectedFiles.length; i++) {
-                formData.append('files', selectedFiles[i]);
-            }
 
             var headers = {};
             if (csrfToken) headers[csrfHeader] = csrfToken;
@@ -242,16 +170,6 @@
 
             tinymce.triggerSave();
 
-            var formData = new FormData(this);
-            formData.delete('files');
-            for (var i = 0; i < selectedFiles.length; i++) {
-                formData.append('files', selectedFiles[i]);
-            }
-
-            var headers = {};
-            if (csrfToken) headers[csrfHeader] = csrfToken;
-
-            // TODO: 백엔드 API 연동 시 URL 변경
             this.submit();
         });
     })();

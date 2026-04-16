@@ -31,7 +31,7 @@ public class StockDisplayService {
             log.info("캐시에 인기 상품 데이터 x");
             refreshPopularStocks();
         }
-        log.info("캐시에 데이터 존재");
+        log.info("전시할 상품 데이터 캐시에 존재");
     }
 
     public void refreshNewStocks() {

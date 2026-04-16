@@ -13,15 +13,15 @@ public class SchedulerSettingDto {
 
     // 1.2 크롤링 시작 일시 (기준 일자)
     @JsonProperty("auto_crawling_start_dt")
-    private String autoCrawlingStartDt;
+    private String autoCrawlingStartDt = "2026-04-01T00:00";
 
     // 1.3 크롤링 주기 설정
     @JsonProperty("auto_crawling_interval")
-    private String autoCrawlingInterval;
+    private String autoCrawlingInterval = "24";
 
     // 1.4 마지막 크롤링 일시
     @JsonProperty("last_crawling_run_time")
-    private String lastCrawlingRunTime;
+    private String lastCrawlingRunTime = "2026-04-01T00:00";
 
 
     // 2. 환율
@@ -64,7 +64,7 @@ public class SchedulerSettingDto {
     private String newStockUpdateInterval = "48";
 
     @JsonProperty("last_new_stock_update_time")
-    private String lastNewStockUpdateTime;
+    private String lastNewStockUpdateTime = "2026-04-01T00:00";
 
 
     // 5. 전시용 전월 인기 상품 업데이트 설정 (매월 N일)
@@ -72,7 +72,7 @@ public class SchedulerSettingDto {
     private String popularStockUpdateDay = "1";
 
     @JsonProperty("last_popular_stock_update_time")
-    private String lastPopularStockUpdateTime;
+    private String lastPopularStockUpdateTime = "2026-04-01T00:00";
 
 
     // 6. 채팅방 자동 종료 설정

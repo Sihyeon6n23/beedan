@@ -24,10 +24,10 @@ public class SecurityService {
             try {
                 ClassPathResource resource = new ClassPathResource("security-policy.json");
                 initial = objectMapper.readValue(resource.getInputStream(), SecurityPolicyDto.class);
-                log.info("보안 정책을 JSON 파일에서 Redis로 초기 로딩했습니다.");
+                log.info("보안 정책을 JSON 파일에서 Redis로 초기 로딩.");
             } catch (Exception e) {
                 initial = new SecurityPolicyDto();
-                log.info("보안 정책을 기본값으로 Redis에 초기화했습니다.");
+                log.info("보안 정책을 기본값으로 Redis에 초기화.");
             }
             redisTemplate.opsForValue().set(REDIS_KEY, initial);
         }
@@ -47,6 +47,6 @@ public class SecurityService {
 
     public void saveSecurityPolicyDto(SecurityPolicyDto secPolDto) {
         redisTemplate.opsForValue().set(REDIS_KEY, secPolDto);
-        log.info("보안 정책이 성공적으로 저장되었습니다.");
+        log.info("보안 정책이 Redis에 저장.");
     }
 }

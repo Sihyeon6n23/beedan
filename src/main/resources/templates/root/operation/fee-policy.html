@@ -22,12 +22,13 @@
         </a>
 
         <!-- Page Header -->
-        <div class="mb-12 flex items-baseline gap-4">
-            <span class="w-5 h-5 rounded-full inline-block"
-                  th:classappend="${grade.bgpGr == 'VIP'} ? 'bg-amber-400' : (${grade.bgpGr == 'PREMIUM'} ? 'bg-gray-400' : 'bg-zinc-300')"></span>
-            <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase" th:text="${grade.bgpGr}"></h1>
-            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Fee Policy)</span>
-        </div>
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">FEE POLICY</span>
+            <h1 class="mypage-security-page__title" th:text="${grade.bgpGr}"></h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
 
         <!-- 등급 기본 정보 -->
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8 mb-10">

@@ -24,10 +24,10 @@ public class SchedulerService {
             try {
                 ClassPathResource resource = new ClassPathResource("scheduler-setting.json");
                 initial = objectMapper.readValue(resource.getInputStream(), SchedulerSettingDto.class);
-                log.info("스케줄러 설정을 JSON 파일에서 Redis로 초기 로딩했습니다.");
+                log.info("스케줄러 설정을 JSON 파일에서 Redis로 초기 로딩.");
             } catch (Exception e) {
                 initial = new SchedulerSettingDto();
-                log.info("스케줄러 설정을 기본값으로 Redis에 초기화했습니다.");
+                log.info("스케줄러 설정을 기본값으로 Redis에 초기화.");
             }
             redisTemplate.opsForValue().set(REDIS_KEY, initial);
         }
@@ -43,5 +43,6 @@ public class SchedulerService {
 
     public synchronized void saveSchedulerSetting(SchedulerSettingDto schedulerSettingDto) {
         redisTemplate.opsForValue().set(REDIS_KEY, schedulerSettingDto);
+        log.info("스케쥴러 설정 Redis에 저장 완료.");
     }
 }
