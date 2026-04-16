@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 관리자 협상 상세</title>
+<title th:fragment="title" th:text="'BEEDAN | ' + ${negotiation.ngNm}">BEEDAN | 협상 상세</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('quote', 'negotiation-list')}"></div>

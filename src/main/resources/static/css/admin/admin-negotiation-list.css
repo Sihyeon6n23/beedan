@@ -92,8 +92,9 @@ main > div {
 }
 
 .ang-search-wrapper {
-    flex: 1;
-    min-width: 280px;
+    flex: 0 1 300px;
+    min-width: 200px;
+    margin-left: auto;
     display: flex;
     align-items: center;
     background-color: var(--ang-bg-input);
