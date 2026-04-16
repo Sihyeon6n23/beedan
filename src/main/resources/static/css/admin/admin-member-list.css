@@ -388,13 +388,12 @@ main > div {
 .tracking-timeline { margin-top: 15px; border-left: 2px solid #e2e2e2; padding-left: 15px; }
 .timeline-item { margin-bottom: 10px; display: flex; flex-direction: column; }
 .timeline-item.active { border-left: 2px solid #ffd700; margin-left: -17px; padding-left: 15px; }
-.shipping-address {margin-top: 20px;}
+.shipping-address {margin-top: 8px;}
 .address-content {
     display: flex;
     align-items: center;
     gap: 6px;
 }
-.shipping-address
 
 .icon-yellow { color: #ffd700; font-size: 16px; vertical-align: middle; }
 
@@ -515,11 +514,9 @@ main > div {
 .order-summary strong { color: #18181b; font-size: 14px;}
 .order-summary span { color: #a1a1aa; font-size: 10px; font-weight: bold; text-transform: uppercase; }
 .order-amount { font-weight: bold; font-size: 14px; color: #18181b; }
-.order-address {  color: #71717a; font-size: 13px}
+.order-address {  color: #71717a; font-size: 13px text-align: center; }
 
 /* 정렬 및 뱃지 */
-.text-right { text-align: right; }
-.text-center { text-align: center; }
 .badge-status { padding: 6px 16px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: inline-block; }
 .badge-red { background-color: #ffdad6; color: #93000a; border-color: #ba1a1a; }
 .badge-yellow { background-color: rgba(255,215,0,0.2); color: #705d00; border-color: #705d00; }
