@@ -133,29 +133,31 @@
                     </div>
                 </div>
             </div>
-
-            <footer class="admin-chat-shell admin-chat-shell--pagination" th:if="${!orders.isEmpty() and orders.totalPages > 0}">
-                <div class="admin-chat-pagination"
-                     th:with="currentPage=${orders.number}, totalPages=${orders.totalPages}, startPage=${(currentPage / 5) * 5}, endPage=${(startPage + 4 < totalPages) ? startPage + 4 : totalPages - 1}">
-
-                    <a th:if="${orders.hasPrevious()}"
-                       class="admin-chat-page-button admin-chat-page-button--wide"
-                       th:href="@{/order/list(page=${orders.number - 1})}">Prev</a>
-                    <span th:unless="${orders.hasPrevious()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
-
-                    <th:block th:if="${totalPages > 0}">
-                        <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}" class="admin-chat-page-button"
-                           th:classappend="${pageNumber == orders.number} ? ' is-current' : ''"
-                           th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
-                           th:href="@{/order/list(page=${pageNumber})}">01</a>
-                    </th:block>
-
-                    <a th:if="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide"
-                       th:href="@{/order/list(page=${orders.number + 1})}">Next</a>
-                    <span th:unless="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
-                </div>
-            </footer>
         </section>
+
+
+        <footer class="admin-chat-shell admin-chat-shell--pagination" th:if="${!orders.isEmpty() and orders.totalPages > 0}">
+            <div class="admin-chat-pagination"
+                 th:with="currentPage=${orders.number}, totalPages=${orders.totalPages}, startPage=${(currentPage / 5) * 5}, endPage=${(startPage + 4 < totalPages) ? startPage + 4 : totalPages - 1}">
+
+                <a th:if="${orders.hasPrevious()}"
+                   class="admin-chat-page-button admin-chat-page-button--wide"
+                   th:href="@{/order/list(page=${orders.number - 1})}">Prev</a>
+                <span th:unless="${orders.hasPrevious()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
+
+                <th:block th:if="${totalPages > 0}">
+                    <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}" class="admin-chat-page-button"
+                       th:classappend="${pageNumber == orders.number} ? ' is-current' : ''"
+                       th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
+                       th:href="@{/order/list(page=${pageNumber})}">01</a>
+                </th:block>
+
+                <a th:if="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide"
+                   th:href="@{/order/list(page=${orders.number + 1})}">Next</a>
+                <span th:unless="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
+            </div>
+        </footer>
+
     </section>
 </th:block>
 </html>

@@ -23,4 +23,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         return findByIdWithShipments(ordId).orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다. ID: " + ordId));
     }
 
+
 }
