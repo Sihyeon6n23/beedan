@@ -51,6 +51,13 @@
             <span>회원 관리</span>
         </a>
 
+        <a th:href="@{/root/member/approve}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'memberApprove'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>사업자 승인</span>
+        </a>
+
         <a th:href="@{/root/member/create}"
            class="sidebar-menu__link"
            th:classappend="${activeMain == 'memberCreate'} ? ' sidebar-menu__link--current' : ''">
