@@ -22,35 +22,39 @@ main > div {
 
 /* Container */
 .admin-ng-container {
-    width: 1120px !important;
-    min-width: 1024px !important;
-    margin-left: 0 !important;
-    padding: 1.5rem 0 0 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1280px;
+    min-width: 0;
+    padding: 2rem clamp(1rem, 2vw, 2rem) 2rem;
 }
 
 /* Header */
 .ang-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 2rem;
+    flex-direction: column;
+    padding-bottom: 0.15rem;
 }
 
 .ang-kicker {
     display: block;
-    color: var(--ang-gold-dark);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.15rem;
+    color: var(--color-primary, var(--ang-gold-dark));
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
 }
 
 .ang-title {
-    font-family: 'Manrope', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 300;
-    letter-spacing: -0.1rem;
+    font-family: var(--font-headline, 'Manrope', sans-serif);
+    font-size: clamp(2.3rem, 5vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: var(--tracking-tighter, -0.04em);
+    line-height: 0.95;
     color: var(--ang-text-main);
     margin: 0.25rem 0;
 }
@@ -59,7 +63,23 @@ main > div {
     color: var(--ang-text-desc);
     font-size: 0.875rem;
     line-height: 1.6;
-    margin: 0;
+    margin: 0.5rem 0 0;
+}
+
+/* 사이드바 rule: inner-top 2rem + header-top 1.9rem + h3 ~1.2rem + p ~0.7rem + rule-margin 2.9rem
+   콘텐츠 rule: container-top 2rem + kicker ~0.7rem + 0.5rem + title ~3rem → margin-top으로 맞춤 */
+.ang-header__rule {
+    margin-top: 2.4rem;
+    width: 100%;
+    height: 2px;
+    background: rgba(196, 183, 153, 0.75);
+}
+
+.ang-header__rule span {
+    display: block;
+    width: 6.1rem;
+    height: 100%;
+    background: #e7c84b;
 }
 
 /* Toolbar */

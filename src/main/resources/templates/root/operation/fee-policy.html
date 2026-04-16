@@ -13,7 +13,7 @@
 </th:block>
 
 <th:block th:fragment="content">
-    <div class="flex-grow mx-auto px-6 py-12 max-w-5xl">
+    <div class="flex-grow mx-auto px-6 py-10 max-w-6xl">
 
         <!-- 뒤로가기 -->
         <a th:href="@{/root/operation}" class="inline-flex items-center gap-1 text-sm text-outline hover:text-primary transition-colors mb-8">
@@ -22,12 +22,13 @@
         </a>
 
         <!-- Page Header -->
-        <div class="mb-12 flex items-baseline gap-4">
-            <span class="w-5 h-5 rounded-full inline-block"
-                  th:classappend="${grade.bgpGr == 'VIP'} ? 'bg-amber-400' : (${grade.bgpGr == 'PREMIUM'} ? 'bg-gray-400' : 'bg-zinc-300')"></span>
-            <h1 class="text-5xl font-black tracking-tighter text-on-surface uppercase" th:text="${grade.bgpGr}"></h1>
-            <span class="text-sm font-medium text-primary tracking-widest uppercase">(Fee Policy)</span>
-        </div>
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">FEE POLICY</span>
+            <h1 class="mypage-security-page__title" th:text="${grade.bgpGr}"></h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
 
         <!-- 등급 기본 정보 -->
         <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8 mb-10">
@@ -129,7 +130,7 @@
 
     <!-- 모달 -->
     <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container" style="outline: 2px solid #ffd700; outline-offset: -2px;">
+        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container" style="outline: 2px solid var(--color-primary, #ffd700); outline-offset: -2px;">
             <div class="flex items-center justify-between p-6 border-b border-surface-container">
                 <h3 id="modalTitle" class="text-lg font-bold tracking-tight uppercase">수수료 추가</h3>
                 <button type="button" onclick="closeModal()" class="p-1 hover:bg-surface-container-high rounded transition-colors">

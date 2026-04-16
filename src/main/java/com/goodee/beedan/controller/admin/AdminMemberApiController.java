@@ -32,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -145,14 +144,14 @@ public class AdminMemberApiController {
     @PostMapping("/shipment/sync-unipass")
     public ResponseEntity<String> syncUnipassManually(@AuthenticationPrincipal MemberUserDetails userDetails) {
         if(userDetails == null) throw new MemberNotFoundException();
-        
+
         unipassScheduler.runUnipassTracking();
 
         try {
             SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
             setting.setLastUnipassRunTime(LocalDateTime.now().toString());
             schedulerService.saveSchedulerSetting(setting);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("통관 수동 동기화 설정 저장 실패: {}", e.getMessage());
         }
 
@@ -163,13 +162,9 @@ public class AdminMemberApiController {
     public ResponseEntity<String> syncShipmentManually() {
         shipmentScheduler.syncShipmentStatus();
 
-        try {
-            SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
-            setting.setLastShipmentSyncRunTime(LocalDateTime.now().toString());
-            schedulerService.saveSchedulerSetting(setting);
-        } catch (IOException e) {
-            log.error("배송 상태 수동 동기화 설정 저장 실패: {}", e.getMessage());
-        }
+        SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
+        setting.setLastShipmentSyncRunTime(LocalDateTime.now().toString());
+        schedulerService.saveSchedulerSetting(setting);
 
         return ResponseEntity.ok("배송 상태 수동 동기화가 완료되었습니다.");
     }

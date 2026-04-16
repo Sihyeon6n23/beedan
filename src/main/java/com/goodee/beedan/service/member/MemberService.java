@@ -241,7 +241,7 @@ public class MemberService {
         Token tokenEntity = tokenRepository.findByTkVl(token).orElseThrow(() -> new EntityNotFoundException("존재하지 않는 토큰입니다."));
 
         if (tokenEntity.isExpired()) {
-            tokenEntity.useToken(); // 기간이 지났을 경우 만료처리.
+            tokenEntity.useToken();
             throw new IllegalIdentifierException("토큰이 이미 사용되었거나, 기간이 만료된 토큰입니다.");
         }
 

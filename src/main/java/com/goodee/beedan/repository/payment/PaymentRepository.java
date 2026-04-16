@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    Optional<Payment> findByQuId(Long quId);
+    Optional<Payment> findFirstByQuIdOrderByPyIdDesc(Long quId);
 
     Optional<Payment> findByPyPgNm(String pyPgNm);
 

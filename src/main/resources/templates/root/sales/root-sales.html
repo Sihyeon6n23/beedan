@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('Sales', 'Revenue', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('SALES', 'Revenue', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -14,22 +14,24 @@
 
 <th:block th:fragment="content">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <div style="max-width:1200px; margin:0 auto; padding:48px 24px;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
 
-        <!-- Page Header -->
-        <div style="margin-bottom:40px; display:flex; justify-content:space-between; align-items:flex-end;">
-            <div>
-                <h1 style="font-family:'Manrope',sans-serif; font-size:40px; font-weight:900; letter-spacing:-0.06em; color:#1a1c1c; text-transform:uppercase;">매출 관리</h1>
-                <span style="font-size:13px; font-weight:600; color:#c4b799; letter-spacing:0.15em; text-transform:uppercase;">Revenue Management</span>
+        <section class="mypage-security-page__intro">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <span class="mypage-security-page__kicker">SALES</span>
+                <a th:href="@{/root/sales/pdf(year=${year}, month=${month})}" target="_blank"
+                   style="display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#fff; border:1px solid #e7e5e4; color:#1a1c1c; font-size:12px; font-weight:700; text-decoration:none; letter-spacing:0.05em;">
+                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    PDF 다운로드
+                </a>
             </div>
-            <a th:href="@{/root/sales/pdf(year=${year}, month=${month})}" target="_blank"
-               style="display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#fff; border:1px solid #e7e5e4; color:#1a1c1c; font-size:12px; font-weight:700; text-decoration:none; letter-spacing:0.05em;">
-                <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                PDF 다운로드
-            </a>
-        </div>
+            <h1 class="mypage-security-page__title">매출 관리</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
 
         <!-- 기간 선택 -->
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:32px; flex-wrap:wrap;">

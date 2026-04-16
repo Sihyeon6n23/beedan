@@ -4,8 +4,8 @@
           ? ~{layout/layout :: layout(
               ~{::title},
               ~{fragments/sidebar :: frame(
-                  'COMMUNICATIONS',
-                  'Inquiry Management',
+                  'INQUIRY MANAGEMENT',
+                  'Inquiry List',
                   ~{admin/admin-sidebar :: sidebar('inquiry', 'inquiry-list')}
               )},
               ~{::content}
@@ -13,8 +13,8 @@
           : ~{layout/layout :: layout(
               ~{::title},
               ~{fragments/sidebar :: frame(
-                  'MY PAGE',
-                  'Inquiry Management',
+                  'INQUIRY MANAGEMENT',
+                  'Inquiry List',
                   ~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'inquiry-list')}
               )},
               ~{::content}
@@ -163,6 +163,7 @@
 
         <section class="inquiry-shell inquiry-shell--list">
             <div class="inquiry-list-head" aria-hidden="true">
+                <div>번호</div>
                 <div>문의 제목</div>
                 <div>첨부</div>
                 <div>상태</div>
@@ -171,11 +172,16 @@
             </div>
 
             <div class="inquiry-list-body" th:classappend="${#lists.isEmpty(boardPage.content)} ? ' inquiry-list-body--empty' : ''">
-                <a th:each="board : ${boardPage.content}"
+                <a th:each="board, iterStat : ${boardPage.content}"
                    th:if="${isAdmin}"
                    th:href="@{/admin/inquiry/detail(id=${board.brdId}, returnUrl=${currentListUrl})}"
                    class="inquiry-row"
                    th:classappend="${board.brdInqStt != null and board.brdInqStt.name() == 'RECEIVED'} ? ' inquiry-row--featured' : ''">
+                    <div class="inquiry-row__no"
+                         th:text="${boardPage.totalElements - (boardPage.number * boardPage.size) - iterStat.index}">
+                        1
+                    </div>
+
                     <div class="inquiry-row__primary">
                         <div class="inquiry-row__text">
                             <h2 th:text="${board.brdTtl}">문의 제목</h2>
@@ -212,11 +218,16 @@
                     </div>
                 </a>
 
-                <a th:each="board : ${boardPage.content}"
+                <a th:each="board, iterStat : ${boardPage.content}"
                    th:unless="${isAdmin}"
                    th:href="@{/inquiry/detail(id=${board.brdId}, returnUrl=${currentListUrl})}"
                    class="inquiry-row"
                    th:classappend="${board.brdInqStt != null and board.brdInqStt.name() == 'RECEIVED'} ? ' inquiry-row--featured' : ''">
+                    <div class="inquiry-row__no"
+                         th:text="${boardPage.totalElements - (boardPage.number * boardPage.size) - iterStat.index}">
+                        1
+                    </div>
+
                     <div class="inquiry-row__primary">
                         <div class="inquiry-row__text">
                             <h2 th:text="${board.brdTtl}">문의 제목</h2>

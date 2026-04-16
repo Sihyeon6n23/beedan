@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ADMIN', 'Quote Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('QUOTATION', 'Quotation List', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -21,7 +21,9 @@
             <div class="aq-header__title">
                 <span class="aq-kicker">Quote Management</span>
                 <h1 class="aq-title">견적 목록</h1>
-                <p class="aq-desc">모든 회원의 견적 요청을 조회하고 관리합니다.</p>
+            </div>
+            <div class="aq-header__rule">
+                <span></span>
             </div>
         </header>
 

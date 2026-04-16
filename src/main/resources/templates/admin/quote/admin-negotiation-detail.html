@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ADMIN', 'Negotiation Detail', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('NEGOTIATION', 'Negotiation Detail', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -19,18 +19,18 @@
 
         <!-- Header -->
         <header class="and-header">
-            <div class="and-header__top">
-                <a href="/admin/negotiation/list" class="and-back-link">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    협상 목록
-                </a>
+            <div class="and-header__title">
+                <span class="and-kicker">Negotiation Detail</span>
+                <h1 class="and-title">협상 상세</h1>
+            </div>
+            <div class="and-header__rule">
+                <span></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:1.25rem;">
+                <p class="and-ng-id" th:text="'#' + ${negotiation.ngNm}" style="margin:0;">#NG</p>
                 <span class="and-badge"
                       th:classappend="${negotiation.ongoing} ? ' and-badge--ongoing' : ' and-badge--closed'"
                       th:text="${negotiation.ongoing} ? '진행중' : '종료'">상태</span>
-            </div>
-            <div class="and-header__title">
-                <h1 class="and-title">협상 상세</h1>
-                <p class="and-ng-id" th:text="'#' + ${negotiation.ngNm}">#NG</p>
             </div>
         </header>
 

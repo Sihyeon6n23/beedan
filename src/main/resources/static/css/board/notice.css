@@ -12,7 +12,8 @@
 }
 
 .inquiry-list-page { max-width: 1220px; }
-.inquiry-detail-page, .inquiry-write-page { max-width: 1080px; }
+.inquiry-detail-page, .inquiry-write-page {
+  max-width: 1080px;}
 
 .inquiry-shell {
   background: var(--color-surface-container-lowest);

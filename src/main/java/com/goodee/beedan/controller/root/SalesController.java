@@ -5,6 +5,7 @@ import com.goodee.beedan.dto.root.sales.*;
 import com.goodee.beedan.service.pdf.SalesPdfService;
 import com.goodee.beedan.service.root.SalesService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class SalesController {
@@ -52,42 +54,41 @@ public class SalesController {
                         + " ~ "
                         + ym.atEndOfMonth().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")));
 
-        // KPI
         SalesKpiResponse kpi = salesService.getKpi(from, to);
         model.addAttribute("kpi", kpi);
 
-        // 수수료 요약
         Map<String, BigDecimal> commSummary = salesService.getCommissionSummary(from, to);
         model.addAttribute("commSummary", commSummary);
 
-        // 수수료 매출 내역
         List<CommissionRow> commRows = salesService.getCommissionRows(from, to);
         model.addAttribute("commRows", commRows);
 
-        // 수수료 합계 계산
         BigDecimal commItemTotal = commRows.stream()
                 .map(CommissionRow::getItemAmount)
+                .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal commServiceTotal = commRows.stream()
                 .map(CommissionRow::getServiceFee)
+                .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal commShippingTotal = commRows.stream()
                 .map(CommissionRow::getShippingFee)
+                .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal commFeeTotal = commRows.stream()
                 .map(CommissionRow::getTotalFee)
+                .filter(java.util.Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         model.addAttribute("commItemTotal", commItemTotal);
         model.addAttribute("commServiceTotal", commServiceTotal);
         model.addAttribute("commShippingTotal", commShippingTotal);
         model.addAttribute("commFeeTotal", commFeeTotal);
 
-        // 등급별 분포
         List<GradeDistribution> gradeDist = salesService.getGradeDistribution(from, to);
         model.addAttribute("gradeDist", gradeDist);
 
-        // 월별 추이 (최근 6개월)
         model.addAttribute("monthlyTrend", salesService.getMonthlyTrend(y, m));
+        try { log.info("[Sales] 7. 모든 데이터 로드 완료"); }catch(Exception e){}
 
         return "/root/sales/root-sales";
     }

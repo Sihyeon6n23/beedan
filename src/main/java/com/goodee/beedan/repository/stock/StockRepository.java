@@ -39,6 +39,9 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
 
     List<Stock> findByBrId(Long brId);
 
+    @Query("SELECT s.stCd FROM Stock s WHERE s.brId = :brId ORDER BY s.stCd DESC LIMIT 1")
+    java.util.Optional<String> findTopStCdByBrIdOrderByStCdDesc(@Param("brId") Long brId);
+
     default Stock getByIdOrThrow(Long stId) {
         return findById(stId).orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다. ID: " + stId));
     }

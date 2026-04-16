@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -24,14 +23,25 @@ public class SchedulerController {
     private final StockDisplayService stockDisplayService;
 
     @GetMapping("/root/scheduler")
-    public String getScheduler(Model model) throws IOException {
+    public String getScheduler(Model model)  {
         model.addAttribute("setting", schedulerService.getSchedulerSetting());
 
         return "/root/scheduler/scheduler-setting";
     }
 
     @PostMapping("/root/scheduler/save")
-    public String postScheduler(@ModelAttribute SchedulerSettingDto schedulerSettingDto) throws IOException {
+    public String postScheduler(@ModelAttribute SchedulerSettingDto schedulerSettingDto)  {
+
+        // 폼에서 넘어오지 않는 lastRunTime 필드들은 현재 캐시의 최신 값으로 세팅
+        SchedulerSettingDto current = schedulerService.getSchedulerSetting();
+        schedulerSettingDto.setLastCrawlingRunTime(current.getLastCrawlingRunTime());
+        schedulerSettingDto.setLastExchangeRateRunTime(current.getLastExchangeRateRunTime());
+        schedulerSettingDto.setLastGradeResolveRunTime(current.getLastGradeResolveRunTime());
+        schedulerSettingDto.setLastChatAutoCloseRunTime(current.getLastChatAutoCloseRunTime());
+        schedulerSettingDto.setLastPopularStockUpdateTime(current.getLastPopularStockUpdateTime());
+        schedulerSettingDto.setLastNewStockUpdateTime(current.getLastNewStockUpdateTime());
+        schedulerSettingDto.setLastUnipassRunTime(current.getLastUnipassRunTime());
+        schedulerSettingDto.setLastShipmentSyncRunTime(current.getLastShipmentSyncRunTime());
 
         schedulerService.saveSchedulerSetting(schedulerSettingDto); // 파일에 저장
 
@@ -40,7 +50,7 @@ public class SchedulerController {
 
     @PostMapping("/root/scheduler/refresh/popular")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> refreshPopularStocks() throws IOException {
+    public ResponseEntity<Map<String, String>> refreshPopularStocks()  {
         stockDisplayService.refreshPopularStocks();
 
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
@@ -52,7 +62,7 @@ public class SchedulerController {
 
     @PostMapping("/root/scheduler/refresh/new")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> refreshNewStocks() throws IOException {
+    public ResponseEntity<Map<String, String>> refreshNewStocks()  {
         stockDisplayService.refreshNewStocks();
 
         SchedulerSettingDto setting = schedulerService.getSchedulerSetting();

@@ -46,7 +46,7 @@ public class SalesService {
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
         for (QuoteBase qb : paidQuotes) {
-            Payment payment = paymentRepository.findByQuId(qb.getQuId()).orElse(null);
+            Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(qb.getQuId()).orElse(null);
             if (payment != null && payment.getPyTtAm() != null) {
                 totalRevenue = totalRevenue.add(payment.getPyTtAm());
             }
@@ -178,7 +178,7 @@ public class SalesService {
         }
 
         for (QuoteBase qb : approvedQuotes) {
-            Payment payment = paymentRepository.findByQuId(qb.getQuId()).orElse(null);
+            Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(qb.getQuId()).orElse(null);
             if (payment == null) continue;
 
             String grade = resolveGradeByNego(qb.getNgId());
@@ -225,7 +225,7 @@ public class SalesService {
                 .limit(limit)
                 .map(qb -> {
                     // PAID면 Payment에서, 아니면 0
-                    Payment payment = paymentRepository.findByQuId(qb.getQuId()).orElse(null);
+                    Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(qb.getQuId()).orElse(null);
                     BigDecimal amount = (payment != null) ? nullToZero(payment.getPyTtAm()) : BigDecimal.ZERO;
 
                     Long customerId = null;

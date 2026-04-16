@@ -9,22 +9,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.io.IOException;
-
 @Controller
 @RequiredArgsConstructor
 public class SecurityController {
     private final SecurityService securityService;
 
     @GetMapping("/root/security")
-    public String getSecurity(Model model) throws IOException {
+    public String getSecurity(Model model)  {
         model.addAttribute("policy", securityService.getSecPolDto());
 
         return "/root/security/security-policy";
     }
 
     @PostMapping("/root/security/save")
-    public String postSecurity(@ModelAttribute SecurityPolicyDto secPolDto) throws IOException {
+    public String postSecurity(@ModelAttribute SecurityPolicyDto secPolDto)  {
 
         securityService.saveSecurityPolicyDto(secPolDto); // 파일에 저장
 

@@ -21,7 +21,6 @@ public class InquiryBoardDetailDto {
     private String brdCon;
     private InquiryStatus brdInqStt;
     private LocalDateTime brdCreDt;
-    private Boolean edited;
     private String memBizTtl;
     private String memNm;
     private String brdCanRe;

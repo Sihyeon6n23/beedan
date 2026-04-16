@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title th:fragment="title">BEEDAN | MY ITEMS</title>
+    <title th:fragment="title">BEEDAN | 내 상품</title>
 
 </head>
 
@@ -103,19 +103,16 @@
 
     <!-- Main Content -->
     <div class="flex-1 min-w-0 min-h-screen">
-        <!-- Breadcrumbs & Title -->
-        <nav class="mb-4">
-            <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
-                <li>Home</li>
-                <li class="text-neutral-300">/</li>
-                <li>Mypage</li>
-                <li class="text-neutral-300">/</li>
-                <li class="text-on-primary-container">MY ITEMS</li>
-            </ol>
-        </nav>
+        <!-- Title -->
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">MY ITEMS</span>
+            <h1 class="mypage-security-page__title">내 상품</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
 
-        <div class="flex justify-between items-end mb-12">
-            <h1 class="text-6xl font-headline font-black tracking-tighter">내 상품</h1>
+        <div class="flex justify-end items-end mb-12">
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-8 border-b border-outline-variant pb-2">
                     <span class="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">Search</span>

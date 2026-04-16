@@ -164,7 +164,7 @@ public class QuotePdfService {
         List<QuoteDetail> details = quoteDetailService.findAllByQuote(quId);
         List<QuoteShipFee> shipFees = quoteShipFeeService.findAllByQuote(quId);
         Negotiation negotiation = negotiationService.findById(quoteBase.getNgId());
-        Payment payment = paymentRepository.findByQuId(quId).orElse(null);
+        Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(quId).orElse(null);
         Member member = negotiation.getMemId() != null
                 ? memberRepository.findById(negotiation.getMemId()).orElse(null) : null;
 
