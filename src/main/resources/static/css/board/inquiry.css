@@ -234,22 +234,23 @@
   padding-bottom: 0.15rem;
 }
 
-  .inquiry-list-head,
+.inquiry-list-head,
   .inquiry-row {
     display: grid;
-    /* 제목 / 첨부 / 상태 / 회사 / 등록일 */
+    /* 번호 / 제목 / 첨부 / 상태 / 회사 / 등록일 */
     grid-template-columns:
-      minmax(0, 4.45fr)
-      minmax(44px, 0.42fr)
-      minmax(92px, 0.82fr)
-      minmax(148px, 1.1fr)
-      minmax(92px, 0.78fr);
+      minmax(52px, 0.52fr)
+      minmax(0, 4.1fr)
+      minmax(44px, 0.4fr)
+      minmax(92px, 0.8fr)
+      minmax(148px, 1.05fr)
+      minmax(92px, 0.76fr);
     gap: 0.65rem;
     align-items: center;
   }
 
 .inquiry-list-head {
-  padding: 1rem 1.75rem;
+  padding: 1rem 1.75rem 1rem calc(1.75rem + 4px);
   background: #f4f1e8;
   color: #7a7a7a;
   font-size: 11px;
@@ -259,16 +260,13 @@
   text-transform: uppercase;
 }
 
-.inquiry-list-head > div:nth-child(2),
+.inquiry-list-head > div:nth-child(1),
   .inquiry-list-head > div:nth-child(3),
   .inquiry-list-head > div:nth-child(4),
-  .inquiry-list-head > div:nth-child(5) {
+  .inquiry-list-head > div:nth-child(5),
+  .inquiry-list-head > div:nth-child(6) {
     text-align: center;
   }
-
-.inquiry-list-head > div:first-child {
-  padding-left: calc(12px + 0.85rem);
-}
 
 .inquiry-list-body {
   display: flex;
@@ -308,12 +306,11 @@
 }
 
 .inquiry-row__primary {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding-left: calc(12px + 0.85rem);
-  min-width: 0;
-}
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+  }
 
 .inquiry-row__text {
   min-width: 0;
@@ -349,7 +346,8 @@
   color: var(--color-secondary);
 }
 
-.inquiry-row__file,
+.inquiry-row__no,
+  .inquiry-row__file,
   .inquiry-row__status,
   .inquiry-row__company,
   .inquiry-row__time {
@@ -358,6 +356,13 @@
     justify-content: center;
     text-align: center;
   }
+
+  .inquiry-row__no {
+      color: var(--color-secondary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
 
 .inquiry-row__company {
   color: #1a1c1c;

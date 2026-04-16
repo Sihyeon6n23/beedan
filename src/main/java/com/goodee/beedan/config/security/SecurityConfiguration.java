@@ -44,13 +44,13 @@ public class SecurityConfiguration {
                                 "/notice/detail/**",
                                 "/api/tracking/**",
                                 "/api/stock/list",
-                                "/files/**"
+                                "/files/**",
+                                "/auth/passwd/change"
                         ).permitAll()
 
                         // 2) 로그인은 필요하지만 공개 API로 열면 안 되는 예외 경로
                         .requestMatchers(
                                 "/auth/kakao/**",
-                                "/auth/passwd/change",
                                 "/api/auth/disconnectSns"
                         ).authenticated()
 
@@ -77,7 +77,13 @@ public class SecurityConfiguration {
                                 "/notice/write/**", "/notice/edit/**"
                         ).hasAnyRole("ADMIN", "ROOT")
 
-                        // 6) USER 전용
+                        // 6) USER + ADMIN + ROOT 공용
+                        .requestMatchers(
+                                "/api/cart/**", "/cart/**",
+                                "/quote/request"
+                        ).hasAnyRole("USER", "ADMIN", "ROOT")
+
+                        // 7) USER 전용
                         .requestMatchers(
                                 "/quote/**",
                                 "/api/payment/**", "/payment/**",
@@ -86,7 +92,6 @@ public class SecurityConfiguration {
                                 "/api/notification/**", "/notification/**",
                                 "/api/receiver/**", "/receiver/**",
                                 "/api/images/**",
-                                "/api/cart/**", "/cart/**",
                                 "/api/wishlist/**", "/wishlist/**",
                                 "/api/stock/myitem/**", "/myitem/**",
                                 "/api/require/**", "/require/**",
@@ -94,14 +99,14 @@ public class SecurityConfiguration {
                                 "/api/chat/**", "/api/chatbot/**"
                         ).hasRole("USER")
 
-                        // 7) 로그인 사용자 공통
+                        // 8) 로그인 사용자 공통
                         .requestMatchers(
                                 "/mypage/**",
                                 "/ws", "/ws/**",
                                 "/api/quote/**"
                         ).authenticated()
 
-                        // 8) 그 외 전부 인증 필요
+                        // 9) 그 외 전부 인증 필요
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login

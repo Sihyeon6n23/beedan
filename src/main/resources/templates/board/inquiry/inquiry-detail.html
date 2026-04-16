@@ -4,8 +4,8 @@
           ? ~{layout/layout :: layout(
               ~{::title},
               ~{fragments/sidebar :: frame(
-                  'COMMUNICATIONS',
-                  'Inquiry Management',
+                  'INQUIRY MANAGEMENT',
+                  'Inquiry Detail',
                   ~{admin/admin-sidebar :: sidebar('inquiry', 'inquiry-list')}
               )},
               ~{::content}
@@ -13,8 +13,8 @@
           : ~{layout/layout :: layout(
               ~{::title},
               ~{fragments/sidebar :: frame(
-                  'MY PAGE',
-                  'Inquiry Management',
+                  'INQUIRY MANAGEMENT',
+                  'Inquiry Detail',
                   ~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'inquiry-list')}
               )},
               ~{::content}
@@ -71,7 +71,6 @@
                         <span th:text="${inquiryBoardDetail.memBizTtl}">(주)회사명</span>
                         <span th:text="${inquiryBoardDetail.memNm}">홍길동</span>
                         <span th:text="${#temporals.format(inquiryBoardDetail.brdCreDt, 'yyyy.MM.dd')}">2026.04.05</span>
-                        <span th:if="${inquiryBoardDetail.edited}">(수정됨)</span>
                     </div>
                 </div>
 
