@@ -45,10 +45,10 @@ window.InquiryUploader = (() => {
             this.uploadZone.addEventListener('click', () => this.fileInput.click());
             this.fileInput.addEventListener('click', (e) => e.stopPropagation());
 
-            // 2. 드래그 앤 드롭
+            // 2. 드래그 앤 드롭 (수정됨)
             this.uploadZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                this.uploadZone.classList.add('bg-zinc-50', 'border-primary'); // 드래그 시 효과
+                this.uploadZone.classList.add('bg-zinc-50', 'border-primary');
             });
             this.uploadZone.addEventListener('dragleave', () => {
                 this.uploadZone.classList.remove('bg-zinc-50', 'border-primary');
@@ -56,28 +56,47 @@ window.InquiryUploader = (() => {
             this.uploadZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 this.uploadZone.classList.remove('bg-zinc-50', 'border-primary');
+                // ✅ 화살표 함수를 사용하여 this.addFiles가 Uploader 객체의 메서드임을 보장
                 this.addFiles(e.dataTransfer.files);
             });
 
-            // 3. 파일 선택 이벤트
+            // 3. 파일 선택 이벤트 (수정됨)
             this.fileInput.addEventListener('change', (e) => {
+                // ✅ 화살표 함수를 사용하여 this 바인딩 해결
                 this.addFiles(e.target.files);
-                this.fileInput.value = '';
+                this.fileInput.value = ''; // 같은 파일 재선택 가능하도록 초기화
             });
 
-            // 4. 기존 파일 삭제 이벤트 (답변 수정 시)
+            // 4. 기존 파일 삭제/복구 이벤트 (이전 수정본 유지)
             this.fileListContainer.querySelectorAll('.inquiry-upload__item.existing').forEach(item => {
                 const removeBtn = item.querySelector('.inquiry-upload__remove, [data-remove-file]');
                 const deleteInput = item.querySelector('.delete-input');
 
                 if (removeBtn && deleteInput) {
                     removeBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        const isDeleting = !item.classList.contains('to-delete');
-                        item.classList.toggle('to-delete', isDeleting);
-                        item.style.opacity = isDeleting ? '0.3' : '1';
-                        deleteInput.name = isDeleting ? 'deleteUuids' : '';
-                        deleteInput.value = isDeleting ? (deleteInput.dataset.uuid || '') : '';
+
+                        const isCurrentlyDeleted = item.classList.contains('to-delete');
+
+                        if (isCurrentlyDeleted) {
+                            const currentTotal = this.selectedFiles.length + this._getExistingCount();
+                            if (currentTotal >= this.maxCount) {
+                                if (typeof showGuideModal === 'function') {
+                                    showGuideModal(`파일은 최대 ${this.maxCount}개까지 첨부할 수 있습니다.\n복구하려면 먼저 다른 파일을 삭제해주세요.`, null, 'LIMIT EXCEEDED', 'warning');
+                                } else {
+                                    alert(`최대 ${this.maxCount}개까지 첨부할 수 있습니다.`);
+                                }
+                                return;
+                            }
+                        }
+
+                        const willBeDeleting = !isCurrentlyDeleted;
+                        item.classList.toggle('to-delete', willBeDeleting);
+                        item.style.opacity = willBeDeleting ? '0.3' : '1';
+                        deleteInput.name = willBeDeleting ? 'deleteUuids' : '';
+                        deleteInput.value = willBeDeleting ? (deleteInput.dataset.uuid || '') : '';
+
                         this.updateCount();
                     });
                 }
@@ -89,15 +108,24 @@ window.InquiryUploader = (() => {
         addFiles(files) {
             if (!files?.length) return;
 
-            const currentTotal = this.selectedFiles.length + this._getExistingCount();
-            const remaining = this.maxCount - currentTotal;
+            const incomingFiles = Array.from(files);
+            const currentTotal = this.getActiveFileCount();
 
-            if (remaining <= 0) {
-                window.alert(`최대 ${this.maxCount}개까지 첨부할 수 있습니다.`);
+            if (currentTotal + incomingFiles.length > this.maxCount) {
+                if (typeof showGuideModal === 'function') {
+                    showGuideModal(
+                        `최대 ${this.maxCount}개까지 첨부할 수 있습니다.\n(현재 ${currentTotal}개 / 추가 시도 ${incomingFiles.length}개)`,
+                        null,
+                        'LIMIT EXCEEDED',
+                        'warning'
+                    );
+                } else {
+                    alert(`최대 ${this.maxCount}개까지 첨부할 수 있습니다.`);
+                }
                 return;
             }
 
-            Array.from(files).slice(0, remaining).forEach(file => {
+            incomingFiles.forEach(file => {
                 const isDuplicate = this.selectedFiles.some(s =>
                     s.name === file.name && s.size === file.size && s.lastModified === file.lastModified
                 );
@@ -166,6 +194,23 @@ window.InquiryUploader = (() => {
                     formData.append('deleteUuids', input.value);
                 }
             });
+        }
+        getActiveFileCount() {
+            return this.selectedFiles.length + this._getExistingCount();
+        }
+
+        // [추가] 파일 개수 유효성 검사 실행 (모달 노출까지 포함)
+        validateFileCount() {
+            const currentCount = this.getActiveFileCount();
+            if (currentCount > this.maxCount) {
+                if (typeof showGuideModal === 'function') {
+                    showGuideModal(`파일은 최대 ${this.maxCount}개까지만 업로드 가능합니다.`, null, 'LIMIT EXCEEDED', 'warning');
+                } else {
+                    alert(`최대 ${this.maxCount}개까지만 업로드 가능합니다.`);
+                }
+                return false;
+            }
+            return true;
         }
     }
 
