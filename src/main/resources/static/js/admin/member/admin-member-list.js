@@ -138,9 +138,9 @@ function renderMemberList(members, isRoot) {
 
 function getStatusInfo(status) {
     const map = {
-        'ACTIVE':   { className: 'admin-chat-badge--open',    text: '활성' },
+        'ACTIVE':   { className: 'admin-chat-badge--approved',    text: '활성' },
         'INACTIVE': { className: 'admin-chat-badge--ongoing', text: '비활성' },
-        'LOCK':     { className: 'admin-chat-badge--locked',  text: '잠금' }
+        'LOCK':     { className: 'admin-chat-badge--open',  text: '잠금' }
     };
     return map[status] || { className: '', text: '기타' };
 }

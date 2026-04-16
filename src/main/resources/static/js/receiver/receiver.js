@@ -224,8 +224,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
 
                     <div class="action-btns">
-                        <button type="button" class="btn-edit" data-id="${receiver.rcId}">수정하기</button>
-                        <button type="button" class="btn-delete" data-id="${receiver.rcId}">삭제하기</button>
+                        <button type="button" class="btn-edit admin-chat-badge--open" data-id="${receiver.rcId}">수정하기</button>
+                        <button type="button" class="btn-delete " data-id="${receiver.rcId}">삭제하기</button>
                     </div>
                 </div>`;
             });

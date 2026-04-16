@@ -98,10 +98,10 @@ public class SchedulerSettingDto {
     private Boolean isUnipassEnabled = false;
 
     @JsonProperty("unipass_start_dt")
-    private String unipassStartDt;
+    private String unipassStartDt = "2026-04-01T00:00";
 
     @JsonProperty("unipass_interval")
-    private String unipassInterval;
+    private String unipassInterval = "24";
 
     @JsonProperty("last_unipass_run_time")
     private String lastUnipassRunTime;
@@ -112,10 +112,10 @@ public class SchedulerSettingDto {
     private Boolean isShipmentSyncEnabled = false;
 
     @JsonProperty("shipment_sync_start_dt")
-    private String shipmentSyncStartDt;
+    private String shipmentSyncStartDt = "2026-04-01T00:00";
 
     @JsonProperty("shipment_sync_interval")
-    private String shipmentSyncInterval;
+    private String shipmentSyncInterval = "24";
 
     @JsonProperty("last_shipment_sync_run_time")
     private String lastShipmentSyncRunTime;
