@@ -173,8 +173,6 @@ public class InquiryBoardService {
                 .brdCon(inquiryBoard.getBrdCon())
                 .brdInqStt(inquiryBoard.getBrdInqStt())
                 .brdCreDt(inquiryBoard.getBrdCreDt())
-                .edited(inquiryBoard.getBrdUpdDt() != null
-                        && !inquiryBoard.getBrdUpdDt().equals(inquiryBoard.getBrdCreDt()))
                 .memBizTtl(member.getMemBizTtl())
                 .memNm(member.getMemNm())
                 .brdCanRe(inquiryBoard.getBrdCanRe())

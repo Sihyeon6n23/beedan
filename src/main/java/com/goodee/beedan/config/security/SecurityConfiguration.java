@@ -79,7 +79,8 @@ public class SecurityConfiguration {
 
                         // 6) USER + ADMIN + ROOT 공용
                         .requestMatchers(
-                                "/api/cart/**", "/cart/**"
+                                "/api/cart/**", "/cart/**",
+                                "/quote/request"
                         ).hasAnyRole("USER", "ADMIN", "ROOT")
 
                         // 7) USER 전용
