@@ -31,4 +31,8 @@ public interface PageViewRepository extends JpaRepository<PageView, Long> {
     // 상품별 조회수 + 상품명 JOIN (N+1 제거)
     @Query("SELECT pv.pvRefId, COUNT(pv), s.stNm, s.stPurCnt FROM PageView pv JOIN Stock s ON pv.pvRefId = s.stId WHERE pv.pvPage = 'STOCK_DETAIL' AND pv.pvCreDt BETWEEN :from AND :to GROUP BY pv.pvRefId, s.stNm, s.stPurCnt ORDER BY COUNT(pv) DESC")
     List<Object[]> countStockViewsWithName(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    // 기간 내 상품별 장바구니 담기 이벤트 수 (ADD_TO_CART)
+    @Query("SELECT pv.pvRefId, COUNT(pv) FROM PageView pv WHERE pv.pvPage = 'ADD_TO_CART' AND pv.pvCreDt BETWEEN :from AND :to GROUP BY pv.pvRefId")
+    List<Object[]> countCartAddsGrouped(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

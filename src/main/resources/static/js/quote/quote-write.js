@@ -946,6 +946,15 @@ document.addEventListener('DOMContentLoaded', function () {
         updateShipTypeUI();
         renderAddrCards();
         fetchShippingFee();
+
+        // 어드민: 주소 변경 잠금, 산간 체크만 허용
+        if (document.getElementById('js-is-admin')) {
+            var modal = document.getElementById('modal-shipping');
+            modal.querySelectorAll('.ship-receiver-select, .ship-new-name, .ship-new-phone, .ship-new-addr, .ship-new-addr-detail, .ship-new-addr-btn, .ship-qty-input, .ship-addr-remove, .ship-addr-memo')
+                 .forEach(function (el) { el.disabled = true; el.style.opacity = '0.45'; el.style.pointerEvents = 'none'; });
+            modal.querySelectorAll('.ship-type-btn, .ship-addr-add-btn')
+                 .forEach(function (el) { el.disabled = true; el.style.opacity = '0.45'; el.style.pointerEvents = 'none'; });
+        }
     };
 
     window.closeShippingModal = function () {

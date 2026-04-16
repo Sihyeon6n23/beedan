@@ -35,7 +35,7 @@ public class TrackingApiController {
             PageView pv = pageViewRepository.save(PageView.builder().page(page).refId(refId).memId(memId).build());
             return ResponseEntity.ok(Map.of("pvId", pv.getPvId()));
         } catch (Exception e) {
-            log.debug("PageView 기록 실패: {}", e.getMessage());
+            log.warn("PageView 기록 실패: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of("pvId", 0));
         }
     }
@@ -57,7 +57,7 @@ public class TrackingApiController {
         } catch (NumberFormatException e) {
             log.debug("Dwell 파싱 오류: {}", e.getMessage());
         } catch (Exception e) {
-            log.warn("Dwell 기록 실패: {}", e.getMessage());
+            log.warn("Dwell 기록 실패: {}", e.getMessage(), e);
         }
         return ResponseEntity.ok().build();
     }

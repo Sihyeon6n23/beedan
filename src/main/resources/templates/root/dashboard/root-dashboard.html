@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ROOT', 'Dashboard', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('Dashboard', 'Root Dashboard', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -15,7 +15,7 @@
 <th:block th:fragment="content">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
-    .dash { max-width:1280px; margin:0 auto; padding:40px 20px; font-family:'Inter','Noto Sans KR',sans-serif; }
+    .dash { width:100%; max-width:100%; padding:40px 24px; font-family:'Inter','Noto Sans KR',sans-serif; box-sizing:border-box; }
     .dash-header { margin-bottom:36px; }
     .dash-header h1 { font-family:'Manrope',sans-serif; font-size:32px; font-weight:900; color:#1a1c1c; letter-spacing:-0.04em; margin:0 0 4px; }
     .dash-header p { font-size:13px; color:#a8a29e; margin:0; }
@@ -83,12 +83,34 @@
     .session-bar-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,#ffd700,#f59e0b); display:flex; align-items:center; justify-content:flex-end; padding-right:8px; }
     .session-bar-val { font-size:10px; font-weight:800; color:#705d00; }
     .session-bar-pct { width:40px; font-size:11px; font-weight:800; color:#1a1c1c; text-align:right; flex-shrink:0; }
+
+    /* KPI 카드 최소 폭 확보 — 너무 좁아지면 2열로 */
+    @media (max-width:1200px) {
+        .kpi-strip { grid-template-columns:repeat(2,1fr); }
+    }
+
+    /* 사이드바 + 콘텐츠 중간 화면 */
+    @media (max-width:1024px) {
+        .dash-grid-2 { grid-template-columns:1fr; }
+        .funnel-row { flex-wrap:wrap; gap:16px; }
+        .funnel-arrow { flex:0 0 100%; justify-content:center; transform:rotate(90deg); padding:4px 0; }
+    }
+
+    /* 모바일 */
+    @media (max-width:640px) {
+        .dash { padding:20px 12px; }
+        .dash-header h1 { font-size:22px; }
+        .kpi-strip { grid-template-columns:1fr; }
+        .funnel-num { font-size:22px; }
+        .rank-table { font-size:11px; }
+        .rank-table th, .rank-table td { padding:6px; }
+    }
 </style>
 
 <div class="dash">
 
     <div class="dash-header">
-        <h1>Analytics Dashboard</h1>
+        <h1>어플리케이션 통계 대시보드</h1>
         <p>사용자 행동 분석 · 집계 기준 데이터</p>
     </div>
 
