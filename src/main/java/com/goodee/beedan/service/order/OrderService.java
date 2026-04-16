@@ -130,16 +130,19 @@ public class OrderService {
     }
 
     @Transactional
-    public void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
-        if (webhookRequest.getShHblNo() != null && shipmentRepository.existsByShHblNo(webhookRequest.getShHblNo())) {
-            updateShipmentFromWebhook(webhookRequest); // 국내 운송장 번호가 있다면 바로
-            return;
+    public void processWebhook(WebhookShipmentRequest webhookRequest) {
+        if (webhookRequest.getShTraNo() == null || webhookRequest.getShTraNo().isEmpty()) {
+            createOrderFromWebhook(webhookRequest);
+        } else {
+            updateShipmentFromWebhook(webhookRequest);
         }
+    }
 
+    private void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
         QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
         Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
-        Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(()-> new UsernameNotFoundException("일치하는 회원이 없습니다."));
-        Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(()->new IllegalArgumentException("결제 정보가 없습니다"));
+        Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(() -> new UsernameNotFoundException("일치하는 회원이 없습니다."));
+        Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(() -> new IllegalArgumentException("결제 정보가 없습니다"));
         List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByQuId(quoteBase.getQuId());
 
         if (quoteDetails.isEmpty()) throw new IllegalStateException("견적 상세 상품이 없습니다.");
@@ -154,29 +157,26 @@ public class OrderService {
                 .build();
         orderRepository.save(order);
 
+        // 2. 배송지별 그룹화
         Map<String, List<QuoteDetail>> groupedByAddress = quoteDetails.stream()
                 .collect(Collectors.groupingBy(d -> d.getQuDtRcNm() + "_" + d.getQuDtRcAdr()));
 
-        // Shipment 및 관련 아이템 생성
+        // 3. 목적지별 Shipment 및 관련 아이템 생성
         for (Map.Entry<String, List<QuoteDetail>> entry : groupedByAddress.entrySet()) {
             List<QuoteDetail> groupItems = entry.getValue();
             QuoteDetail addressInfo = groupItems.getFirst();
 
-            // 목적지별 Shipment 생성
             Shipment shipment = Shipment.builder()
                     .order(order)
                     .shRcvNm(addressInfo.getQuDtRcNm())
                     .shAdr(addressInfo.getQuDtRcAdr())
                     .shAdrDt(addressInfo.getQuDtRcAdrDt())
                     .shStt(ShipmentStatus.PREPARING)
-                    .shCarCd(webhookRequest.getShCarNo())
-                    .shTraNo(webhookRequest.getShTraNo())
                     .shHblNo(webhookRequest.getShHblNo())
                     .shCanYn(false)
                     .build();
             shipmentRepository.save(shipment);
 
-            // 주문 상품, 배송 물품
             for (QuoteDetail detail : groupItems) {
                 Stock stock = stockRepository.getByIdOrThrow(detail.getStId());
                 String thumbKey = "display:thumbnail:" + UUID.randomUUID().toString();
@@ -201,9 +201,7 @@ public class OrderService {
                 shipmentItemRepository.save(shipmentItem);
             }
         }
-
         shipmentService.syncOrderStatus(order);
-
         notificationService.createNotification(member.getMemId(), NotificationType.SHIPMENT_START, order.getOrdBaseId());
     }
 
@@ -218,38 +216,33 @@ public class OrderService {
         Set<Order> ordersToNotify = new HashSet<>();
 
         for (Shipment shipment : shipments) {
-            // 이미 배달 완료된 건이라면 덮어쓰지 않고 통과 (중복 알림 방지)
             if (shipment.getShStt() == ShipmentStatus.DELIVERED) continue;
 
-            if (shipment.getShStt() != ShipmentStatus.DELIVERING) {
-                // 1. 송장 정보 입력
-                if (webhookRequest.getShCarNo() != null) shipment.setShCarCd(webhookRequest.getShCarNo());
-                if (webhookRequest.getShTraNo() != null) shipment.setShTraNo(webhookRequest.getShTraNo());
+            // 1. 국내 송장 정보 업데이트
+            if (webhookRequest.getShCarNo() != null) shipment.setShCarCd(webhookRequest.getShCarNo());
+            if (webhookRequest.getShTraNo() != null) shipment.setShTraNo(webhookRequest.getShTraNo());
 
-                // 2. 실시간 배송 상태 확인 (API 호출)
-                boolean isAlreadyDelivered = false;
-                try {
-                    TrackingResponseDto trackingInfo = trackingService.getTrackingInfo(shipment.getShId());
-                    String status = trackingInfo.getStatusText();
+            // 2. 실시간 배송 상태 확인 (API 호출)
+            boolean isAlreadyDelivered = false;
+            try {
+                TrackingResponseDto trackingInfo = trackingService.getTrackingInfo(shipment.getShId());
+                String status = trackingInfo.getStatusText();
 
-                    // 추적 결과에 '완료'나 '배달'이 포함되어 있으면 완료로 간주
-                    if (status != null && (status.contains("완료"))) {
-                        isAlreadyDelivered = true;
-                    }
-                } catch (Exception e) {
-                    log.warn("웹훅 수신 중 실시간 배송조회 실패. ShId: {}", shipment.getShId());
+                if (status != null && status.contains("완료")) {
+                    isAlreadyDelivered = true;
                 }
+            } catch (Exception e) {
+                log.warn("웹훅 수신 중 실시간 배송조회 실패. ShId: {}", shipment.getShId());
+            }
 
-                // 3. 상태 업데이트 분기
-                if (isAlreadyDelivered) {
-                    shipment.setShStt(ShipmentStatus.DELIVERED);
-                } else {
-                    shipment.setShStt(ShipmentStatus.DELIVERING);
-                }
+            if (isAlreadyDelivered) {
+                shipment.setShStt(ShipmentStatus.DELIVERED);
+            } else {
+                shipment.setShStt(ShipmentStatus.DELIVERING);
+            }
 
-                if (shipment.getOrder() != null) {
-                    ordersToNotify.add(shipment.getOrder());
-                }
+            if (shipment.getOrder() != null) {
+                ordersToNotify.add(shipment.getOrder());
             }
         }
 
