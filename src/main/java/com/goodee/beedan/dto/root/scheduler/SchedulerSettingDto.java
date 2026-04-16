@@ -35,7 +35,7 @@ public class SchedulerSettingDto {
 
     // 2.3 환율 갱신 주기 (시간 단위)
     @JsonProperty("exchange_rate_interval")
-    private String exchangeRateInterval;
+    private String exchangeRateInterval = "24";
 
     // 2.4 마지막 환율 갱신 일시
     @JsonProperty("last_exchange_rate_run_time")
@@ -50,7 +50,7 @@ public class SchedulerSettingDto {
     private String gradeResolveStartDt;
 
     @JsonProperty("grade_resolve_interval")
-    private String gradeResolveInterval;
+    private String gradeResolveInterval = "24";
 
     @JsonProperty("last_grade_resolve_run_time")
     private String lastGradeResolveRunTime;
