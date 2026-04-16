@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ADMIN', 'Negotiation Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('NEGOTIATION', 'Negotiation List', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -21,7 +21,9 @@
             <div class="ang-header__title">
                 <span class="ang-kicker">Negotiation Management</span>
                 <h1 class="ang-title">협상 목록</h1>
-                <p class="ang-desc">모든 회원의 협상 현황을 조회하고 관리합니다.</p>
+            </div>
+            <div class="ang-header__rule">
+                <span></span>
             </div>
         </header>
 

@@ -28,6 +28,7 @@ public class DashboardService {
     private static final double PERCENTAGE_DIVISOR = 10.0;
     private static final int POPULAR_PRODUCT_MIN_VIEWS = 10;
     private static final String PAGE_STOCK_DETAIL = "STOCK_DETAIL";
+    private static final String PAGE_ADD_TO_CART = "ADD_TO_CART";
 
     private final PageViewRepository pageViewRepository;
     private final CartRepository cartRepository;
@@ -44,7 +45,7 @@ public class DashboardService {
      */
     public Map<String, Object> getFunnel(LocalDateTime from, LocalDateTime to) {
         long views = pageViewRepository.countByPvPageAndPvCreDtBetween(PAGE_STOCK_DETAIL, from, to);
-        long carts = cartRepository.count();
+        long carts = pageViewRepository.countByPvPageAndPvCreDtBetween(PAGE_ADD_TO_CART, from, to);
 
         // 상태별 건수 1쿼리로 (퍼널 + 견적현황 공용)
         Map<QuoteStatus, Long> statusMap = new EnumMap<>(QuoteStatus.class);
@@ -80,9 +81,10 @@ public class DashboardService {
     public List<Map<String, Object>> getPopularProducts(LocalDateTime from, LocalDateTime to, int limit) {
         // 상품별 조회수 + 상품명 + 구매수 JOIN (1 쿼리)
         List<Object[]> hitCounts = pageViewRepository.countStockViewsWithName(from, to);
-        // 상품별 카트 수 (1 쿼리)
+        // 상품별 카트 담기 이벤트 수 (ADD_TO_CART 페이지뷰 기반, 기간 필터)
         Map<Long, Long> cartMap = new HashMap<>();
-        cartRepository.countByStockGrouped().forEach(row -> cartMap.put((Long) row[0], (Long) row[1]));
+        pageViewRepository.countCartAddsGrouped(from, to)
+                .forEach(row -> cartMap.put((Long) row[0], (Long) row[1]));
 
         List<Map<String, Object>> result = new ArrayList<>();
         int rank = 0;

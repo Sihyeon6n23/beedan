@@ -296,7 +296,7 @@ public class PaymentController {
         }
 
         // 결제 정보 조회
-        Payment payment = paymentRepository.findByQuId(quId).orElse(null);
+        Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(quId).orElse(null);
 
         model.addAttribute("activeStep", 5);
         model.addAttribute("quoteBase", quoteBase);

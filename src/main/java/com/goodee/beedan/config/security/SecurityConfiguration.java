@@ -28,7 +28,8 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/webhook/**")
-                )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다.
+                        .ignoringRequestMatchers("/api/tracking/**")
+                )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다. + 추적 API는 sendBeacon 사용 (커스텀 헤더 불가)
                 .authorizeHttpRequests(authorize -> authorize
                         // 1) 공개 경로
                         .requestMatchers(
