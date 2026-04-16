@@ -1,8 +1,10 @@
 package com.goodee.beedan.service.order;
 
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.dto.order.WebhookShipmentRequest;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
@@ -11,6 +13,8 @@ import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.*;
 import com.goodee.beedan.repository.stock.StockRepository;
+import com.goodee.beedan.service.notification.NotificationService;
+import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +43,10 @@ public class OrderService {
     private final StockRepository stockRepository;
 
     private final ThumbnailRedisService thumbnailRedisService;
+    private final NotificationService notificationService;
+    private final ShipmentService shipmentService;
+    private final TrackingService trackingService;
+
     private static final String THUMB_URL = "/api/images/thumb/";
 
     public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
@@ -122,11 +130,19 @@ public class OrderService {
     }
 
     @Transactional
-    public void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
+    public void processWebhook(WebhookShipmentRequest webhookRequest) {
+        if (webhookRequest.getShTraNo() == null || webhookRequest.getShTraNo().isEmpty()) {
+            createOrderFromWebhook(webhookRequest);
+        } else {
+            updateShipmentFromWebhook(webhookRequest);
+        }
+    }
+
+    private void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
         QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
         Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
-        Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(()-> new UsernameNotFoundException("일치하는 회원이 없습니다."));
-        Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(quoteBase.getQuId()).orElseThrow(()->new IllegalArgumentException("결제 정보가 없습니다"));
+        Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(() -> new UsernameNotFoundException("일치하는 회원이 없습니다."));
+        Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(() -> new IllegalArgumentException("결제 정보가 없습니다"));
         List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByQuId(quoteBase.getQuId());
 
         if (quoteDetails.isEmpty()) throw new IllegalStateException("견적 상세 상품이 없습니다.");
@@ -137,33 +153,30 @@ public class OrderService {
                 .ordBaseStt(OrderStatus.PREPARING)
                 .ordBaseRcvNm(firstItem.getQuDtRcNm())
                 .ordBaseTtAm(payment.getPyTtAm())
-                .ordBaseNo(quoteBase.getQuCd())
+                .ordBaseNo(String.format("%06d", (int) (Math.random() * 1000000)))
                 .build();
         orderRepository.save(order);
 
+        // 2. 배송지별 그룹화
         Map<String, List<QuoteDetail>> groupedByAddress = quoteDetails.stream()
                 .collect(Collectors.groupingBy(d -> d.getQuDtRcNm() + "_" + d.getQuDtRcAdr()));
 
-        // Shipment 및 관련 아이템 생성
+        // 3. 목적지별 Shipment 및 관련 아이템 생성
         for (Map.Entry<String, List<QuoteDetail>> entry : groupedByAddress.entrySet()) {
             List<QuoteDetail> groupItems = entry.getValue();
             QuoteDetail addressInfo = groupItems.getFirst();
 
-            // 목적지별 Shipment 생성
             Shipment shipment = Shipment.builder()
                     .order(order)
                     .shRcvNm(addressInfo.getQuDtRcNm())
                     .shAdr(addressInfo.getQuDtRcAdr())
                     .shAdrDt(addressInfo.getQuDtRcAdrDt())
                     .shStt(ShipmentStatus.PREPARING)
-                    .shCarCd(webhookRequest.getShCarNo())
-                    .shTraNo(webhookRequest.getShTraNo())
                     .shHblNo(webhookRequest.getShHblNo())
                     .shCanYn(false)
                     .build();
             shipmentRepository.save(shipment);
 
-            // 주문 상품, 배송 물품
             for (QuoteDetail detail : groupItems) {
                 Stock stock = stockRepository.getByIdOrThrow(detail.getStId());
                 String thumbKey = "display:thumbnail:" + UUID.randomUUID().toString();
@@ -188,7 +201,63 @@ public class OrderService {
                 shipmentItemRepository.save(shipmentItem);
             }
         }
+        shipmentService.syncOrderStatus(order);
+        notificationService.createNotification(member.getMemId(), NotificationType.SHIPMENT_START, order.getOrdBaseId());
+    }
 
+    private void updateShipmentFromWebhook(WebhookShipmentRequest webhookRequest) {
+        List<Shipment> shipments = shipmentRepository.findAllByShHblNo(webhookRequest.getShHblNo());
+
+        if (shipments.isEmpty()) {
+            log.warn("업데이트 대상 Shipment를 찾을 수 없습니다. HBL: {}", webhookRequest.getShHblNo());
+            return;
+        }
+
+        Set<Order> ordersToNotify = new HashSet<>();
+
+        for (Shipment shipment : shipments) {
+            if (shipment.getShStt() == ShipmentStatus.DELIVERED) continue;
+
+            // 1. 국내 송장 정보 업데이트
+            if (webhookRequest.getShCarNo() != null) shipment.setShCarCd(webhookRequest.getShCarNo());
+            if (webhookRequest.getShTraNo() != null) shipment.setShTraNo(webhookRequest.getShTraNo());
+
+            // 2. 실시간 배송 상태 확인 (API 호출)
+            boolean isAlreadyDelivered = false;
+            try {
+                TrackingResponseDto trackingInfo = trackingService.getTrackingInfo(shipment.getShId());
+                String status = trackingInfo.getStatusText();
+
+                if (status != null && status.contains("완료")) {
+                    isAlreadyDelivered = true;
+                }
+            } catch (Exception e) {
+                log.warn("웹훅 수신 중 실시간 배송조회 실패. ShId: {}", shipment.getShId());
+            }
+
+            if (isAlreadyDelivered) {
+                shipment.setShStt(ShipmentStatus.DELIVERED);
+            } else {
+                shipment.setShStt(ShipmentStatus.DELIVERING);
+            }
+
+            if (shipment.getOrder() != null) {
+                ordersToNotify.add(shipment.getOrder());
+            }
+        }
+
+        ordersToNotify.forEach(order -> {
+            Long memId = order.getMember().getMemId();
+            Long ordBaseId = order.getOrdBaseId();
+
+            shipmentService.syncOrderStatus(order);
+
+            if (order.getOrdBaseStt() == OrderStatus.DELIVERED) {
+                notificationService.createNotification(memId, NotificationType.DELIVERING_END, ordBaseId);
+            } else {
+                notificationService.createNotification(memId, NotificationType.DELIVERING_START, ordBaseId);
+            }
+        });
     }
 
     public OrderDto mapToOrderDto(Order order) {

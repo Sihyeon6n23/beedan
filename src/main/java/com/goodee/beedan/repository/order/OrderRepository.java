@@ -17,8 +17,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.shipments WHERE o.ordBaseId = :ordId")
     Optional<Order> findByIdWithShipments(@Param("ordId") Long ordId);
 
-    Page<Order> findAll(Pageable pageable);
-
     List<Order> findTop3ByMember_MemIdOrderByOrdBaseCreDtDesc(Long memId);
 
     default Order getByIdOrThrow(Long ordId) {

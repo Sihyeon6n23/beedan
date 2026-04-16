@@ -49,8 +49,15 @@ public class TrackingService {
         String carrierId = shipment.getShCarCd();
         String trackingNumber = shipment.getShTraNo();
 
-        if (trackingNumber.startsWith("TEST-")) return generateMockTrackingResponse(shipment);
+        // 송장번호가 아직 없을 때 (통관 중이거나 2차 웹훅 전) 방어 로직
+        if (trackingNumber == null || carrierId == null) {
+            TrackingResponseDto response = createEmptyResponse(carrierId, trackingNumber, "국내 배송 준비 중");
+            response.setCustomsDetails(customsDetails); // 조회된 해외 통관 내역만 담아서 리턴
+            return response;
+        }
 
+        // 이제 trackingNumber가 null이 아님이 보장
+        if (trackingNumber.startsWith("TEST-")) return generateMockTrackingResponse(shipment);
 
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://apis.tracker.delivery/graphql";
@@ -65,6 +72,7 @@ public class TrackingService {
                 "events(last: 10) { edges { node { time status { name } description } } } " +
                 "} }";
 
+        // null 체크를 통과했으므로 Map.of()에서 에러가 날 일 없음
         Map<String, Object> variables = Map.of("carrierId", carrierId, "trackingNumber", trackingNumber);
         Map<String, Object> requestBody = Map.of("query", query, "variables", variables);
 
@@ -75,11 +83,14 @@ public class TrackingService {
             return parseGraphQLResponse(response.getBody(), carrierId, trackingNumber, shipment, customsDetails);
         } catch (Exception e) {
             log.error("API 통신 실패: {}", e.getMessage());
-            TrackingResponseDto errorResponse = createEmptyResponse(carrierId, trackingNumber, "조회 오류");   // 에러 발생 시에도 통관 정보는 보여줄 수 있도록 처리
+
+            // 에러 발생 시 세팅한 응답 객체를 제대로 리턴
+            TrackingResponseDto errorResponse = createEmptyResponse(carrierId, trackingNumber, "조회 오류");
             errorResponse.setCustomsDetails(customsDetails);
-            return createEmptyResponse(carrierId, trackingNumber, "조회 오류 (서버 통신 실패)");
+            return errorResponse;
         }
     }
+
 
     private TrackingResponseDto parseGraphQLResponse(String json,
                                                      String carrierId,

@@ -148,21 +148,4 @@ public class QuoteNotificationService {
         }
     }
 
-    /**
-     * 배송 상태 변경 시 (emailOnShipment)
-     */
-    public void notifyOnShipment(QuoteBase quoteBase) {
-        try {
-            Long memId = getCustomerMemId(quoteBase.getNgId());
-            if (memId != null) {
-                notificationService.createInAppNotification(memId, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
-            }
-            if (isChecked(quoteBase.getQuId(), KEY_EMAIL_ON_SHIPMENT)) {
-                String email = getCustomerEmail(quoteBase.getNgId());
-                if (email != null) mailService.sendMail(email, NotificationType.SHIPMENT_UPDATE, quoteBase.getQuId());
-            }
-        } catch (Exception e) {
-            log.warn("배송 상태 알림 실패: {}", e.getMessage());
-        }
-    }
 }

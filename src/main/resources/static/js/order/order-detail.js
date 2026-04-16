@@ -48,7 +48,7 @@ function loadShipmentDetail(data) {
             <div class="info-item info-item--status">
                 <span class="label">현재 상태</span>
                 <div class="value">
-                    <span style="font-size: 14px; color: #d9534f; font-weight: bold;">${data.statusText || '-'}</span>
+                    <span style="font-size: 14px; font-weight: bold;">${data.statusText || '-'}</span>
                 </div>
             </div>
         </div>
@@ -59,8 +59,8 @@ function loadShipmentDetail(data) {
     if (data.customsDetails && data.customsDetails.length > 0) {
         html += `
             <div style="margin-bottom: 20px;">
-                <details style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden;" ${customsAccordionOpen}>
-                    <summary style="padding: 12px 15px; cursor: pointer; font-weight: bold; color: #0056b3; outline: none; display: flex; justify-content: space-between; align-items: center;">
+                <details style="background: #f8f9fa; border: 1px solid #e9ecef; overflow: hidden;" ${customsAccordionOpen}>
+                    <summary style="padding: 12px 15px; cursor: pointer; font-weight: bold; outline: none; display: flex; justify-content: space-between; align-items: center;">
                         <span>해외 통관 상세 내역 (${data.customsDetails.length}건)</span>
                         <span style="font-size: 12px;">▼</span>
                     </summary>
@@ -86,14 +86,17 @@ function loadShipmentDetail(data) {
         html += '<h4 style="font-size: 15px; margin-bottom: 15px; color: #333; padding-left: 5px;">국내 배송 현황</h4>';
         html += '<ul class="tracking-timeline-list" style="padding-left: 20px; list-style: none; margin: 0;">';
 
-        data.details.forEach((item, index) => {
+        const reversedDetails = data.details.slice().reverse();
+
+        reversedDetails.forEach((item, index) => {
             const isFirst = index === 0;
-            const dotColor = isFirst ? '#d9534f' : '#ccc';
             const timeStr = item.time ? item.time.replace('T', ' ').substring(0, 16) : '';
 
             html += `
                 <li style="margin-bottom: 20px; position: relative; padding-left: 20px; border-left: 2px solid #eee;">
-                    <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px; background: ${dotColor}; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px ${dotColor};"></div>
+                    <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px;
+                                background: ${isFirst ? '#d9534f' : '#ccc'}; border-radius: 50%;
+                                border: 2px solid #fff; box-shadow: 0 0 0 1px ${isFirst ? '#d9534f' : '#ccc'};"></div>
                     <div style="font-size: 12px; color: #999;">${timeStr}</div>
                     <div style="margin-top: 4px;">
                         <strong style="font-size: 14px; color: ${isFirst ? '#333' : '#666'};">${item.status}</strong>

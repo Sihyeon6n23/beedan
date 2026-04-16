@@ -27,6 +27,8 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
     List<Shipment> findByOrder(Order order);
 
+    List<Shipment> findAllByShHblNo(String shHblNo);  // 2차 웹훅에 사용
+
     default Shipment getByIdOrThrow(Long shId) {
         return findById(shId).orElseThrow(() -> new EntityNotFoundException("배송 내역을 찾을 수 없습니다. ID: " + shId));
     }

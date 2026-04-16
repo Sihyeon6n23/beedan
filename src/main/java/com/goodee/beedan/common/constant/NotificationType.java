@@ -11,7 +11,6 @@ public enum NotificationType {
     QUOTATION_REVIEW("견적 확인", "큐레이터가 견적 요청서를 확인하였습니다.", Path.QUOTE_DETAIL),
     QUOTATION_REPLY("견적 회신", "견적서가 회신되었습니다.", Path.QUOTE_DETAIL),
     PAYMENT_COMPLETE("결제 완료", "결제가 정상적으로 완료되었습니다.", Path.QUOTE_DETAIL),
-    SHIPMENT_UPDATE("배송 상태 변경", "배송 상태가 변경되었습니다.", Path.ORDER_DETAIL),
 
     INQUIRY_ANSWER_CREATE("문의 답변 등록", "문의에 대한 답변이 등록되었습니다.", Path.INQUIRY_DETAIL),
     INQUIRY_ANSWER_UPDATE("문의 답변 수정", "문의 답변 내용이 수정되었습니다.", Path.INQUIRY_DETAIL ),
@@ -20,6 +19,7 @@ public enum NotificationType {
     ORDER_CHANGE("주문 변경", "요청하신 주문의 상태가 변경 되었습니다.", Path.ORDER_DETAIL),
     ORDER_CANCEL("주문 취소", "요청하신 주문이 취소 처리되었습니다.", Path.ORDER_DETAIL),
 
+    SHIPMENT_START("통관 시작", "통관이 시작 되었습니다.", Path.ORDER_DETAIL),
     DELIVERING_START("배송 시작", "국내 배송이 시작되었습니다.", Path.ORDER_DETAIL),
     DELIVERING_END("배송 완료", "상품 배송이 완료되었습니다.", Path.ORDER_DETAIL),
 

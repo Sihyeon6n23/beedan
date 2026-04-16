@@ -2,7 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('Receiver', 'Receiver Info Management', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('ACCOUNT', 'Receiver Management', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -103,8 +103,10 @@
 
     <section class="admin-chat-page admin-chat-list-page receiver-management-list">
         <header class="admin-chat-shell admin-chat-shell--header">
-            <div class="admin-chat-shell__heading"><span class="admin-chat-kicker">Receiver Info</span>
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Receiver Management</span>
                 <h2 class="admin-chat-title">배송지 관리</h2>
+
                 <div class="admin-chat-shell__rule">
                     <span></span>
                 </div>
