@@ -74,7 +74,7 @@
 
                 <div class="inquiry-write-form__actions">
                     <a class="inquiry-outline-button" th:href="@{/notice/list}">취소</a>
-                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary"
+                    <button type="button" class="inquiry-outline-button inquiry-outline-button--primary"
                             th:text="${boardRequestDto.brdId == null ? '등록' : '수정 완료'}">확인</button>
                 </div>
             </form>
@@ -88,6 +88,10 @@
             const form = document.getElementById('inquiry-write-form');
 
             // 이제 fileUpload.js가 확실히 로드되었으므로 모듈을 정상적으로 찾을 수 있습니다!
+            if (window.InquiryUploader) {
+                window.InquiryUploader.init();
+            }
+
             if (window.InquiryUploader) {
                 window.InquiryUploader.init();
             }
@@ -110,23 +114,46 @@
                     promotion: false,
                     license_key: 'gpl'
                 });
+            }
+            const submitBtn = form.querySelector('.inquiry-outline-button--primary');
 
-                form.addEventListener('submit', (e) => {
+            if (submitBtn) {
+                submitBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // 일단 전송 중단
+
+                    // 1. 데이터 동기화
                     tinymce.triggerSave();
 
-                    // 전송 직전 파일 데이터 폼에 동기화
-                    if (window.InquiryUploader) {
-                        const uploadRoot = form.querySelector('[data-inquiry-upload]');
-                        window.InquiryUploader.get(uploadRoot)?.syncToInput();
+                    const title = document.getElementById("brdTtl");
+                    if (!title.value || title.value.trim() === '') {
+                        showGuideModal('공지 제목을 입력해 주세요.', () => {
+                            title.focus();
+                        }, 'REQUIRED', 'edit_note');
+                        return;
                     }
 
                     const content = tinymce.get('brdCon').getContent({ format: 'text' });
                     if (!content || content.trim() === '') {
-                        alert('내용을 입력해주세요.');
-                        e.preventDefault();
+                        showGuideModal('공지 내용을 입력해 주세요.', () => {
+                            tinymce.get('brdCon').focus();
+                        }, 'REQUIRED', 'edit_note');
+                        return;
                     }
+
+                    let uploader = null;
+                    if (window.InquiryUploader) {
+                        const uploadRoot = form.querySelector('[data-inquiry-upload]');
+                        uploader = window.InquiryUploader.get(uploadRoot);
+                        if (uploader) uploader.syncToInput();
+                    }
+
+                    if (uploader && !uploader.validateFileCount()) {
+                        return;
+                    }
+                    form.submit();
                 });
             }
+
         });
     </script>
 </th:block>
