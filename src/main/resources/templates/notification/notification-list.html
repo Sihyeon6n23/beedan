@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('알림 목록', 'notifications', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('notification', 'notification list', ~{::sidebar})},
           ~{::content}
       )}">
 
@@ -49,7 +49,7 @@
     <section class="admin-chat-page admin-chat-list-page order-management-list">
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
-                <span class="admin-chat-kicker">Notification History</span>
+                <span class="admin-chat-kicker">Notification List</span>
                 <h2 class="admin-chat-title">알림 목록</h2>
 
                 <div class="admin-chat-shell__rule">

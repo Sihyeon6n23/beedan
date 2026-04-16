@@ -2,11 +2,11 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('ORDER', 'ORDER MANAGEMENT', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('ORDER', 'Order Management', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Order History</title>
+<title th:fragment="title">BEEDAN | 주문 이력 </title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('order', 'order-list')}"></div>
@@ -78,7 +78,7 @@
     <section class="admin-chat-page admin-chat-list-page order-management-list">
         <header class="admin-chat-shell admin-chat-shell--header">
             <div class="admin-chat-shell__heading">
-                <span class="admin-chat-kicker">ORDER HISTORY</span>
+                <span class="admin-chat-kicker">ORDER MANAGEMENT</span>
                 <h2 class="admin-chat-title">주문 관리</h2>
 
                 <div class="admin-chat-shell__rule">

@@ -1,8 +1,10 @@
 package com.goodee.beedan.service.order;
 
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.common.constant.ShipmentStatus;
 import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.dto.order.TrackingResponseDto;
 import com.goodee.beedan.dto.order.WebhookShipmentRequest;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
@@ -11,6 +13,8 @@ import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
 import com.goodee.beedan.repository.quote.*;
 import com.goodee.beedan.repository.stock.StockRepository;
+import com.goodee.beedan.service.notification.NotificationService;
+import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +43,10 @@ public class OrderService {
     private final StockRepository stockRepository;
 
     private final ThumbnailRedisService thumbnailRedisService;
+    private final NotificationService notificationService;
+    private final ShipmentService shipmentService;
+    private final TrackingService trackingService;
+
     private static final String THUMB_URL = "/api/images/thumb/";
 
     public Page<OrderDto> getOrderList(Long memId, Pageable pageable){
@@ -123,6 +131,11 @@ public class OrderService {
 
     @Transactional
     public void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
+        if (webhookRequest.getShHblNo() != null && shipmentRepository.existsByShHblNo(webhookRequest.getShHblNo())) {
+            updateShipmentFromWebhook(webhookRequest); // 국내 운송장 번호가 있다면 바로
+            return;
+        }
+
         QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
         Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
         Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(()-> new UsernameNotFoundException("일치하는 회원이 없습니다."));
@@ -189,6 +202,69 @@ public class OrderService {
             }
         }
 
+        shipmentService.syncOrderStatus(order);
+
+        notificationService.createNotification(member.getMemId(), NotificationType.SHIPMENT_START, order.getOrdBaseId());
+    }
+
+    private void updateShipmentFromWebhook(WebhookShipmentRequest webhookRequest) {
+        List<Shipment> shipments = shipmentRepository.findAllByShHblNo(webhookRequest.getShHblNo());
+
+        if (shipments.isEmpty()) {
+            log.warn("업데이트 대상 Shipment를 찾을 수 없습니다. HBL: {}", webhookRequest.getShHblNo());
+            return;
+        }
+
+        Set<Order> ordersToNotify = new HashSet<>();
+
+        for (Shipment shipment : shipments) {
+            // 이미 배달 완료된 건이라면 덮어쓰지 않고 통과 (중복 알림 방지)
+            if (shipment.getShStt() == ShipmentStatus.DELIVERED) continue;
+
+            if (shipment.getShStt() != ShipmentStatus.DELIVERING) {
+                // 1. 송장 정보 입력
+                if (webhookRequest.getShCarNo() != null) shipment.setShCarCd(webhookRequest.getShCarNo());
+                if (webhookRequest.getShTraNo() != null) shipment.setShTraNo(webhookRequest.getShTraNo());
+
+                // 2. 실시간 배송 상태 확인 (API 호출)
+                boolean isAlreadyDelivered = false;
+                try {
+                    TrackingResponseDto trackingInfo = trackingService.getTrackingInfo(shipment.getShId());
+                    String status = trackingInfo.getStatusText();
+
+                    // 추적 결과에 '완료'나 '배달'이 포함되어 있으면 완료로 간주
+                    if (status != null && (status.contains("완료"))) {
+                        isAlreadyDelivered = true;
+                    }
+                } catch (Exception e) {
+                    log.warn("웹훅 수신 중 실시간 배송조회 실패. ShId: {}", shipment.getShId());
+                }
+
+                // 3. 상태 업데이트 분기
+                if (isAlreadyDelivered) {
+                    shipment.setShStt(ShipmentStatus.DELIVERED);
+                } else {
+                    shipment.setShStt(ShipmentStatus.DELIVERING);
+                }
+
+                if (shipment.getOrder() != null) {
+                    ordersToNotify.add(shipment.getOrder());
+                }
+            }
+        }
+
+        ordersToNotify.forEach(order -> {
+            Long memId = order.getMember().getMemId();
+            Long ordBaseId = order.getOrdBaseId();
+
+            shipmentService.syncOrderStatus(order);
+
+            if (order.getOrdBaseStt() == OrderStatus.DELIVERED) {
+                notificationService.createNotification(memId, NotificationType.DELIVERING_END, ordBaseId);
+            } else {
+                notificationService.createNotification(memId, NotificationType.DELIVERING_START, ordBaseId);
+            }
+        });
     }
 
     public OrderDto mapToOrderDto(Order order) {

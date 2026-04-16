@@ -162,7 +162,8 @@ public class SecurityConfiguration {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers(
-                "/h2-console/**"
+                "/h2-console/**",
+                "/api/webhook/**"
         );
     }
 

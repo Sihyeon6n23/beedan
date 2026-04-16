@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
-
       th:replace="~{layout/layout :: layout(
           ~{::title},
-          ~{fragments/sidebar :: frame('주문 상세', 'order', ~{::sidebar})},
+          ~{fragments/sidebar :: frame('ORDER', 'Order Detail', ~{::sidebar})},
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Order Details</title>
+<title th:fragment="title">BEEDAN | 주문 상세</title>
 
 <th:block th:fragment="sidebar">
-    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Order', 'Order-Detail')}"></div>
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('order', 'order-detail')}"></div>
 </th:block>
 
 <th:block th:fragment="content">
