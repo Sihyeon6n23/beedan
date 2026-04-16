@@ -71,7 +71,7 @@ function loadMemberList(page) {
 
     const params = new URLSearchParams({
         page: page,
-        size: 10,
+        size: 4,
         status: status
     });
 
@@ -149,19 +149,42 @@ function renderPagination(pageData) {
     const area = document.getElementById('paginationArea');
     if (!area) return;
 
-    if (pageData.totalPages <= 0) { area.innerHTML = ''; return; }
-
-    let html = '<div class="admin-chat-pagination">';
-    html += `<button class="admin-chat-page-button ${pageData.last ? 'is-disabled' : ''}"  onclick="${pageData.last ? '' : 'loadMemberList(' + (pageData.number + 1) + ')'}">Next</button>`;
-
-    const startPage = Math.floor(pageData.number / 5) * 5;
-    const endPage = Math.min(startPage + 4, pageData.totalPages - 1);
-
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<button class="admin-chat-page-button ${i === pageData.number ? 'is-current' : ''}" onclick="loadMemberList(${i})">${(i + 1).toString().padStart(2, '0')}</button>`;
+    // 데이터가 없거나 페이지가 1개 미만일 때 처리
+    if (!pageData || pageData.totalPages <= 0) {
+        area.innerHTML = '';
+        return;
     }
 
-    html += `<button class="admin-chat-page-button ${pageData.last ? 'is-disabled' : ''}" onclick="${pageData.last ? '' : 'loadMemberList(' + (pageData.number + 1) + ')'}">Next</button>`;
+    const currentPage = pageData.number;
+    const totalPages = pageData.totalPages;
+
+    // 5개 단위로 페이지 그룹 계산
+    const startPage = Math.floor(currentPage / 5) * 5;
+    const endPage = Math.min(startPage + 4, totalPages - 1);
+
+    let html = '<div class="admin-chat-pagination">';
+
+    // --- [Prev 버튼] ---
+    if (pageData.first || totalPages <= 1) {
+        html += `<button class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</button>`;
+    } else {
+        html += `<button class="admin-chat-page-button admin-chat-page-button--wide" onclick="loadMemberList(${currentPage - 1})">Prev</button>`;
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const isCurrent = i === currentPage;
+        const pageLabel = i + 1;
+        html += `<button class="admin-chat-page-button ${isCurrent ? 'is-current' : ''}"
+                 onclick="${isCurrent ? '' : 'loadMemberList(' + i + ')'}">${pageLabel}</button>`;
+    }
+
+    // --- [Next 버튼] ---
+    if (pageData.last || totalPages <= 1) {
+        html += `<button class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</button>`;
+    } else {
+        html += `<button class="admin-chat-page-button admin-chat-page-button--wide" onclick="loadMemberList(${currentPage + 1})">Next</button>`;
+    }
+
     html += '</div>';
     area.innerHTML = html;
 }
@@ -421,13 +444,13 @@ async function viewFullOrderList(memId, page = 0) {
                 <table class="fragment-table">
                     <thead>
                         <tr>
-                            <th>주문번호</th>
+                            <th style="text-align: center;">주문번호</th>
                             <th>주문일자</th>
                             <th>주문품목</th>
-                            <th>수령자</th>
+                            <th style="text-align: center;">수령자</th>
                             <th class="text-center">총금액</th>
                             <th class="text-center">상태</th>
-                            <th class="text-center">관리</th>
+                            <th style="text-align: center;">관리</th>
                         </tr>
                     </thead>
                     <tbody id="orderListBody">
@@ -467,7 +490,7 @@ async function viewFullOrderList(memId, page = 0) {
                         <strong>${order.ordSummaryNm || '상품 정보 없음'}</strong><br>
                     </td>
 
-                    <td class="order-address">
+                    <td class="order-address" style="text-align: center;">
                         <p>${order.ordBaseRcvNm}</p>
                     </td>
 
@@ -568,7 +591,7 @@ async function viewFullShipmentList(memId, page = 0) {
                     <thead>
                         <tr>
                             <th>택배사/송장번호</th>
-                            <th>배송 시작일자</th>
+                            <th style="text-align: center;">배송 시작일자</th>
                             <th>수령인/배송물품</th>
                             <th>배송지</th>
                             <th class="text-center">상태</th>
@@ -624,9 +647,10 @@ async function viewFullShipmentList(memId, page = 0) {
             return `
                 <tr>
                     <td class="shipment-id">${displayName}-${displayNo}</td>
-                    <td class="shipment-date">${dateStr}</td>
 
-                    <td class="shipment-summary">
+                    <td class="shipment-date" style="text-align: center !important;">${dateStr}</td>
+
+                    <td class="shipment-summary" style="padding-left: 20px;">
                         <strong>${shipment.shRcvNm || '수령인 없음'}</strong><br>
                         <span>${itemSummary}</span>
                     </td>
@@ -640,8 +664,8 @@ async function viewFullShipmentList(memId, page = 0) {
                         <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                     </td>
 
-                    <td>
-                        <button class="btn-edit" onclick="shipmentDetail('${shipment.shId}', '${memId}', ${data.number})">상세보기</button>
+                    <td style="padding-left: 30px;">
+                        <button class="btn-edit" style="margin-left: 8px;" onclick="shipmentDetail('${shipment.shId}', '${memId}', ${data.number})">상세보기</button>
                     </td>
                 </tr>
             `;
@@ -891,7 +915,7 @@ async function viewFullInquiryIList(memId, page = 0) {
                     <thead>
                         <tr>
                             <th>문의 제목</th>
-                            <th>상태</th>
+                            <th style="text-align: center;">상태</th>
                             <th>회사 상호명</th>
                             <th>등록일</th>
                             <th class="text-center">관리</th>

@@ -170,13 +170,6 @@
             background-color: #555;
         }
 
-        .btn-back-to-list {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            color: inherit;
-        }
 
   /* 이미지를 감싸는 바깥 컨테이너 */
 .admin-chat-row__images-container {
@@ -197,9 +190,7 @@
 .order-thumb-img {
     width: 100px;
     height: 100px;
-    border-radius: 5px;
     object-fit: cover;
-    border: 1px solid #eee;
     transition: transform 0.2s;
 }
 
@@ -287,4 +278,17 @@
     font-size: 16px;
     color: #d9534f;
     display: inline-block;
+}
+
+#order-detail-body .admin-chat-row {
+      width: 100%;
+      padding: 1px 28px;
+      border-left: 4px solid transparent;
+      border-bottom: 1px solid #efefef;
+      background: var(--color-surface-container-lowest);
+      color: inherit;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
 }

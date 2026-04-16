@@ -25,22 +25,24 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByMemNmAndMemEml(String MemNm, String MemEml);
     Optional<Member> findByMemLgnIdAndMemEml(String MemLgnId, String MemEml);
 
-    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER'")
+    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt != 'WITHDRAWN'")
     Page<Member> findAllUsers(Pageable pageable);
 
     @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status")
     Page<Member> findUsersByStatus(String status, Pageable pageable);
 
-    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND " +
-           "(LOWER(m.memNm) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(m.memBizTtl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    @Query("SELECT m FROM Member m " + "WHERE m.memAut = 'USER' " + "AND m.memStt != 'WITHDRAWN' AND " +
+            "(LOWER(m.memNm) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(m.memBizTtl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Member> findUsersByKeyword(String keyword, Pageable pageable);
 
-    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' AND m.memStt = :status AND " +
-           "(LOWER(m.memNm) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(m.memBizTtl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")    Page<Member> findUsersByStatusAndKeyword(String status, String keyword, Pageable pageable);
+    @Query("SELECT m FROM Member m WHERE m.memAut = 'USER' " + "AND m.memStt = :status AND " +
+            "m.memStt != 'WITHDRAWN' AND " +
+            "(LOWER(m.memNm) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(m.memBizTtl) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(m.memCeoNm) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Member> findUsersByStatusAndKeyword(String status, String keyword, Pageable pageable);
 
     List<Member> findByMemIdIn(Collection<Long> memIds);
 

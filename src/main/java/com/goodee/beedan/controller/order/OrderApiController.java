@@ -26,8 +26,9 @@ public class OrderApiController {
     @GetMapping("/list")
     public ResponseEntity<Page<OrderDto>> getOrders(
             @AuthenticationPrincipal MemberUserDetails userDetails,
-            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable){
-        Page<OrderDto> orderList = orderService.getOrderList(userDetails.getMemberId(), pageable);
+            @RequestParam(value = "status", defaultValue = "ALL") String status,
+            @PageableDefault(size = 6, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable){
+        Page<OrderDto> orderList = orderService.getOrderList(userDetails.getMemberId(), status, pageable);
 
         return ResponseEntity.ok(orderList);
     }

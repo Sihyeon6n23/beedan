@@ -55,7 +55,7 @@ public class AdminMemberApiController {
     public ResponseEntity<MemberListResponse> getMemberList(
             @RequestParam(required = false, defaultValue = "ALL") String status,
             @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 4, sort = "memCreDt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal MemberUserDetails userDetails) {
         if(userDetails == null) throw new MemberNotFoundException();
 

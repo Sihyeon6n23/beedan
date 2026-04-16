@@ -18,7 +18,7 @@
         .order-management-list .admin-chat-list-head,
         .order-management-list .admin-chat-row {
             display: grid !important;
-            grid-template-columns: minmax(40px, 0.6fr) minmax(200px, 2.0fr) minmax(180px, 1.0fr) minmax(40px, 0.7fr) minmax(30px, 0.3fr) !important;
+            grid-template-columns: minmax(29px, 0.4fr) minmax(200px, 2.7fr) minmax(180px, 1.0fr) minmax(40px, 0.4fr) minmax(40px, 0.4fr) !important;
             gap: 1rem;
             align-items: center;
         }
@@ -52,18 +52,16 @@
             background-color: #1a1c1c;
             color: #ffffff;
             border: none;
-            padding: 4px 8px;
-            font-size: 0.55rem;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
             text-decoration: none !important;
+
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 45px;
-            height: 27px;
-            transition: all 0.2s ease;
+            padding: 0.42rem 0.7rem;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
         }
         .order-management-list .btn-edit:hover { background-color: #333; }
 
@@ -87,77 +85,36 @@
             </div>
         </header>
 
-        <section class="admin-chat-shell admin-chat-shell--list">
-            <div class="admin-chat-list-head" aria-hidden="true">
-                <div>주문번호</div>
-                <div style="text-align: left;">상품정보</div>
-                <div>결제 금액</div>
-                <div style="text-align: center;">상태</div>
-                <div style="text-align: center;">관리</div>
-            </div>
-
-            <div class="admin-chat-list-body">
-                <div th:if="${orders.isEmpty()}" style="text-align: center; padding: 20px;">
-                    <p>주문 이력이 없습니다</p>
-                </div>
-
-                <div th:unless="${orders.isEmpty()}" th:each="order : ${orders}" class="admin-chat-row">
-
-                    <div class="admin-chat-row__primary">
-                        <div class="admin-chat-row__text">
-                            <h2 style="margin-left: 15px" th:text="${order.ordBaseNo}">주문번호</h2>
-                        </div>
-                    </div>
-
-                    <div class="admin-chat-row__text" style="margin-left: 30px;">
-                        <img th:if="${order.ordThumbUrl != null}" th:src="${order.ordThumbUrl}" alt="상품 썸네일" class="order-thumb-img" style="border-radius: 5px;">
-                        <div th:if="${order.ordThumbUrl == null}" class="order-thumb-none">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <p th:text="${order.ordSummaryNm}">상품 정보</p>
-                    </div>
-
-                    <div class="admin-chat-row__amount">
-                        <strong th:text="${order.ordBaseTtAm != null ? #numbers.formatInteger(order.ordBaseTtAm, 1, 'COMMA') : 0} + '원'">금액</strong>
-                    </div>
-
-                    <div class="admin-chat-row__status">
-            <span class="admin-chat-badge"
-                  th:classappend="${order.ordBaseStt?.name() == 'PREPARING' ? 'admin-chat-badge--open' : (order.ordBaseStt?.name() == 'DELIVERING' || order.ordBaseStt?.name() == 'DELIVERED' ? 'admin-chat-badge--ongoing' : 'admin-chat-badge--closed')}"
-                  th:text="${order.ordBaseStt?.name() == 'PREPARING' ? '상품준비' : (order.ordBaseStt?.name() == 'DELIVERING' ? '배송중' : (order.ordBaseStt?.name() == 'DELIVERED' ? '배송완료' : '주문취소'))}">상태
-            </span>
-                    </div>
-
-                    <div class="action-btns">
-                        <a class="btn-edit" th:href="@{/order/detail(id=${order.ordBaseId})}">상세보기</a>
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="주문 목록 필터">
+            <div class="admin-chat-toolbar flex justify-between items-center">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                        <a class="admin-chat-filter" href="#" data-status="PREPARING">상품준비</a>
+                        <a class="admin-chat-filter" href="#" data-status="DELIVERING">배송중</a>
+                        <a class="admin-chat-filter" href="#" data-status="DELIVERED">배송완료</a>
                     </div>
                 </div>
             </div>
         </section>
 
-
-        <footer class="admin-chat-shell admin-chat-shell--pagination" th:if="${!orders.isEmpty() and orders.totalPages > 0}">
-            <div class="admin-chat-pagination"
-                 th:with="currentPage=${orders.number}, totalPages=${orders.totalPages}, startPage=${(currentPage / 5) * 5}, endPage=${(startPage + 4 < totalPages) ? startPage + 4 : totalPages - 1}">
-
-                <a th:if="${orders.hasPrevious()}"
-                   class="admin-chat-page-button admin-chat-page-button--wide"
-                   th:href="@{/order/list(page=${orders.number - 1})}">Prev</a>
-                <span th:unless="${orders.hasPrevious()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
-
-                <th:block th:if="${totalPages > 0}">
-                    <a th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}" class="admin-chat-page-button"
-                       th:classappend="${pageNumber == orders.number} ? ' is-current' : ''"
-                       th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
-                       th:href="@{/order/list(page=${pageNumber})}">01</a>
-                </th:block>
-
-                <a th:if="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide"
-                   th:href="@{/order/list(page=${orders.number + 1})}">Next</a>
-                <span th:unless="${orders.hasNext()}" class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>주문번호</div>
+                <div style="text-align: left; margin-left:45px; !important;">상품정보</div>
+                <div>결제 금액</div>
+                <div style="text-align: center;">상태</div>
+                <div style="text-align: center;">관리</div>
             </div>
-        </footer>
+
+            <div id="order-list-body" class="admin-chat-list-body">
+                <div style="text-align: center; padding: 20px;">로딩 중...</div>
+            </div>
+        </section>
+
+        <footer id="order-pagination" class="admin-chat-shell admin-chat-shell--pagination"></footer>
 
     </section>
+    <script th:src="@{/js/order/order-list.js}"></script>
 </th:block>
 </html>
