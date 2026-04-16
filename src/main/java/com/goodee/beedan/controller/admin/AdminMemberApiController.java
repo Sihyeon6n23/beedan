@@ -151,7 +151,7 @@ public class AdminMemberApiController {
             SchedulerSettingDto setting = schedulerService.getSchedulerSetting();
             setting.setLastUnipassRunTime(LocalDateTime.now().toString());
             schedulerService.saveSchedulerSetting(setting);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("통관 수동 동기화 설정 저장 실패: {}", e.getMessage());
         }
 
