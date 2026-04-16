@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <th:block th:fragment="sidebar(activeMain, activeSub)">
     <div class="sidebar-scope">
-        <a th:href="@{/root/dashboard}"
+        <a th:href="@{/root/main}"
            class="sidebar-menu__link"
            th:classappend="${activeMain == 'dashboard'} ? ' sidebar-menu__link--current' : ''">
             <span class="material-symbols-outlined sidebar-menu__icon">dashboard</span>

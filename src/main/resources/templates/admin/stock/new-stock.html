@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | New Stock</title>
+<title th:fragment="title">BEEDAN | 상품 등록</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-new')}"></div>
@@ -20,19 +20,18 @@
 <section class="admin-crawling-page" th:data-active-tab="${activeTab != null ? activeTab : 'external'}">
 
     <!-- 헤더 -->
-    <header class="admin-chat-shell admin-chat-shell--header">
-        <div class="admin-chat-shell__heading">
-            <span class="admin-chat-kicker">Stock Registration</span>
-            <h2 class="admin-chat-title">상품 등록</h2>
+    <header class="inquiry-shell inquiry-shell--header">
+        <div class="inquiry-shell__heading">
+            <span class="inquiry-kicker">Stock Registration</span>
+            <h2 class="inquiry-title">상품 등록</h2>
         </div>
-        <div class="admin-chat-shell__rule">
-            <span></span>
-        </div>
-        <div class="admin-crawling-tabs" style="margin-top:1rem;">
-            <button class="admin-crawling-tab" data-tab="external">외부 상품 등록</button>
-            <button class="admin-crawling-tab" data-tab="manual">자체 상품 등록</button>
-        </div>
+        <div class="inquiry-shell__rule"><span></span></div>
     </header>
+
+    <div class="admin-crawling-tabs" style="margin-top:0; margin-bottom:1.5rem;">
+        <button class="admin-crawling-tab" data-tab="external">외부 상품 등록</button>
+        <button class="admin-crawling-tab" data-tab="manual">자체 상품 등록</button>
+    </div>
 
     <!-- 알림 메시지 -->
     <div th:if="${message}" class="admin-crawling-alert admin-crawling-alert--success" th:text="${message}"></div>
@@ -181,28 +180,35 @@
 
                 <div class="admin-crawling-row">
                     <div class="admin-crawling-field">
-                        <label class="admin-crawling-label">상품 코드</label>
-                        <input type="text" name="stCd" placeholder="ST-001"
+                        <label class="admin-crawling-label">브랜드명 <span>(먼저 입력)</span></label>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" name="brNm" id="manual-brNm" list="brand-list-manual" placeholder="Kapital"
+                                   class="admin-crawling-input" style="flex:1;"/>
+                            <button type="button" id="btn-gen-code"
+                                    class="admin-crawling-btn admin-crawling-btn--primary"
+                                    style="white-space:nowrap; flex-shrink:0;">
+                                설정
+                            </button>
+                        </div>
+                        <datalist id="brand-list-manual">
+                            <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
+                        </datalist>
+                        <span class="field-error" data-for="brNm"></span>
+                    </div>
+                    <div class="admin-crawling-field">
+                        <label class="admin-crawling-label">상품 코드 <span>(자동 생성)</span></label>
+                        <input type="text" name="stCd" id="manual-stCd" placeholder="브랜드 설정 시 자동 입력"
                                class="admin-crawling-input"/>
                         <span class="field-error" data-for="stCd"></span>
                     </div>
+                </div>
+
+                <div class="admin-crawling-row">
                     <div class="admin-crawling-field" style="flex: 2;">
                         <label class="admin-crawling-label">상품명</label>
                         <input type="text" name="stNm" placeholder="상품명을 입력하세요"
                                class="admin-crawling-input"/>
                         <span class="field-error" data-for="stNm"></span>
-                    </div>
-                </div>
-
-                <div class="admin-crawling-row">
-                    <div class="admin-crawling-field">
-                        <label class="admin-crawling-label">브랜드명 <span>(없으면 새로 추가)</span></label>
-                        <input type="text" name="brNm" list="brand-list-manual" placeholder="Kapital"
-                               class="admin-crawling-input"/>
-                        <datalist id="brand-list-manual">
-                            <option th:each="brand : ${brands}" th:value="${brand.brNm}"></option>
-                        </datalist>
-                        <span class="field-error" data-for="brNm"></span>
                     </div>
                     <div class="admin-crawling-field">
                         <label class="admin-crawling-label">카테고리 <span>(선택 또는 직접 입력)</span></label>
@@ -767,6 +773,26 @@
             // 크롤링 모드
             saveSelectorAndRun(this);
         }
+    });
+
+    // 브랜드 설정 → 다음 상품코드 자동 생성
+    document.getElementById('btn-gen-code')?.addEventListener('click', function() {
+        const brNm = document.getElementById('manual-brNm').value.trim();
+        if (!brNm) { alert('브랜드명을 먼저 입력하세요.'); return; }
+        this.disabled = true;
+        this.textContent = '조회중…';
+        fetch('/api/newstock/next-code?brNm=' + encodeURIComponent(brNm), {
+            headers: { [csrfHeader]: csrfToken }
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('manual-stCd').value = data.stCd;
+        })
+        .catch(() => alert('상품코드 조회에 실패했습니다.'))
+        .finally(() => {
+            this.disabled = false;
+            this.textContent = '설정';
+        });
     });
 </script>
 </th:block>

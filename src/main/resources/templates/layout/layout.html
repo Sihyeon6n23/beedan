@@ -24,7 +24,7 @@
         <aside th:replace="${sidebar}"></aside>
     </div>
 
-    <div class="app-layout__content" th:classappend="${sidebar} ? '' : 'mx-auto'">
+    <div class="app-layout__content" th:classappend="${sidebar} ? '' : 'w-full flex-1 max-w-[1220px] mx-auto'">
         <main th:replace="${content}"></main>
     </div>
 

@@ -4,7 +4,7 @@
       th:replace="~{layout/layout :: layout(
           ~{::title},
           ~{fragments/sidebar :: frame(
-              ${isAdmin != null and isAdmin ? 'ADMIN' : 'TRADE MANAGEMENT'},
+              ${isAdmin != null and isAdmin ? 'Admin Quote Write' : 'Quote Write'},
               'Quote Write',
               ~{::sidebar})},
           ~{::content}
@@ -188,9 +188,7 @@
                                 <button type="button" class="shipping-btn"
                                         th:data-island="${defaultReceiver != null and defaultReceiver.rcIamYn != null ? defaultReceiver.rcIamYn : false}"
                                         th:data-rc-id="${item.savedRcId != null ? item.savedRcId : (defaultReceiver != null ? defaultReceiver.rcId : '')}"
-                                        th:disabled="${isAdmin != null and isAdmin}"
-                                        th:onclick="${isAdmin != null and isAdmin} ? '' : 'openShippingModal(this)'"
-                                        th:classappend="${isAdmin != null and isAdmin} ? ' shipping-btn--disabled' : ''">
+                                        onclick="openShippingModal(this)">
                                     <span class="shipping-addr" th:text="${defaultReceiver != null ? defaultReceiver.rcAdr : '배송지를 선택하세요'}">배송지를 선택하세요</span>
                                     <span class="shipping-meta"
                                           th:text="${item.savedShipCards != null && item.savedShipCards.size() > 1

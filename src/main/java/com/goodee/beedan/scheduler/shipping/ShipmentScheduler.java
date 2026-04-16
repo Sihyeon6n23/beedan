@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,12 +51,8 @@ public class ShipmentScheduler {
         syncShipmentStatus();
 
         setting.setLastShipmentSyncRunTime(now.toString());
-        try {
-            schedulerService.saveSchedulerSetting(setting);
-            log.info("배송 상태 동기화 스케줄러 실행 완료");
-        } catch (IOException e) {
-            log.error("배송 상태 동기화 스케줄러 설정 저장 실패: {}", e.getMessage());
-        }
+        schedulerService.saveSchedulerSetting(setting);
+        log.info("배송 상태 동기화 스케줄러 실행 완료");
     }
 
     public void syncShipmentStatus() {

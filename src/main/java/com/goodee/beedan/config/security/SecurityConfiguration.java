@@ -28,9 +28,9 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/webhook/**")
-                )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다.
+                        .ignoringRequestMatchers("/api/tracking/**")
+                )   // Payment Success 후 외부 팀과 JSON 통신 용 webhook 통과 코드입니다. + 추적 API는 sendBeacon 사용 (커스텀 헤더 불가)
                 .authorizeHttpRequests(authorize -> authorize
-
                         // 1) 공개 경로
                         .requestMatchers(
                                 "/",
@@ -118,6 +118,8 @@ public class SecurityConfiguration {
                 .logout(logout -> logout
                         .logoutUrl("/auth/signout")
                         .logoutSuccessUrl("/auth/signin")
+                        .deleteCookies("JSESSIONID") // 쿠키 삭제 추가
+                        .invalidateHttpSession(true)
                         .permitAll()
                 )
                 .sessionManagement(session -> session
@@ -145,7 +147,9 @@ public class SecurityConfiguration {
                                 .oidcUserService(customOAuth2UserService)
                         )
                         .failureHandler((request, response, exception) -> {
-                            response.sendRedirect("/auth/signin?error=" + exception.getMessage());
+                            request.getSession().setAttribute("errorMessage",
+                                    new SignInErrorMessageDto("소셜로그인", "잠시 후 다시 시도해주세요."));
+                            response.sendRedirect("/auth/signin");
                         })
                 )
                 .exceptionHandling(ex -> ex              // ← 여기 추가
@@ -155,6 +159,9 @@ public class SecurityConfiguration {
                         })
                 );
         return http.build();
+
+
+
 
     }
 

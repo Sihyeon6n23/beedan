@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -27,7 +26,7 @@ public class UtilityController {
     }
 
     @PostMapping("/save")
-    public String saveUtility(@ModelAttribute UtilitySettingDto utilitySettingDto) throws IOException {
+    public String saveUtility(@ModelAttribute UtilitySettingDto utilitySettingDto)  {
         utilityService.saveUtilitySetting(utilitySettingDto);
 
         return "redirect:/root/utility";

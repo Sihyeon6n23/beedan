@@ -17,7 +17,7 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping("/root/dashboard")
+    @GetMapping("/root/main")
     public String dashboard(
             @org.springframework.web.bind.annotation.RequestParam(required = false) Integer year,
             @org.springframework.web.bind.annotation.RequestParam(required = false) Integer month,

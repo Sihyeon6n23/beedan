@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Stock management</title>
+<title th:fragment="title">BEEDAN | 상품 관리</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-list')}"></div>
@@ -142,8 +142,22 @@
                     </select>
                 </div>
                 <div class="form-group full-width">
-                    <label>이미지 URL</label>
-                    <input type="text" id="modal-stImgUrl">
+                    <label>상품 이미지</label>
+                    <div style="display:flex; gap:1rem; align-items:flex-start;">
+                        <div id="modal-img-preview" style="width:80px; height:80px; border:1px solid #e7e5e4; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; background:#faf8f5;">
+                            <span class="material-symbols-outlined" style="color:#a8a29e;">image_not_supported</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="text" id="modal-stImgUrl" style="flex:1;" readonly>
+                                <label style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 14px; background:#1a1c1c; color:#ffd700; font-size:11px; font-weight:700; white-space:nowrap;">
+                                    <span class="material-symbols-outlined" style="font-size:14px;">upload</span> 업로드
+                                    <input type="file" id="modal-img-file" accept="image/*" style="display:none;">
+                                </label>
+                            </div>
+                            <span id="modal-img-status" style="font-size:11px; color:#a8a29e;"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -206,8 +220,13 @@
     }
 
     // ===== 초기 로드 (pageshow: bfcache 복원 시에도 input 값 반영) =====
-    window.addEventListener('pageshow', function() {
-        restoreListState();
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            restoreListState();
+        } else {
+            sessionStorage.removeItem('stockListState');
+            currentPage = 0;
+        }
         loadStockList(currentPage);
     });
     loadBrandsAndCategories();
@@ -455,6 +474,14 @@
         document.getElementById('modal-stCur').value = stock.stCur || '$';
         document.getElementById('modal-stImgUrl').value = stock.stImgUrl || '';
         document.getElementById('modal-stReqMemId').value = stock.stReqMemId || '';
+        document.getElementById('modal-img-status').textContent = '';
+        document.getElementById('modal-img-file').value = '';
+        const preview = document.getElementById('modal-img-preview');
+        if (stock.stImgUrl) {
+            preview.innerHTML = '<img src="' + stock.stImgUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+        } else {
+            preview.innerHTML = '<span class="material-symbols-outlined" style="color:#a8a29e;">image_not_supported</span>';
+        }
 
         setModalToggle('modal-stReqYn', stock.stReqYn);
         updateReqMemIdState(stock.stReqYn);
@@ -608,6 +635,36 @@
         });
         input.addEventListener('blur', function() {
             if (this.value === '') this.value = savedValue;
+        });
+    });
+
+    // ===== 이미지 업로드 =====
+    document.getElementById('modal-img-file').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        if (!currentStId) { alert('상품을 먼저 선택하세요.'); return; }
+
+        const status = document.getElementById('modal-img-status');
+        status.textContent = '업로드 중…';
+        status.style.color = '#a8a29e';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        axios.post('/api/admin/stock/' + currentStId + '/image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        .then(function(res) {
+            const imgUrl = res.data.imgUrl;
+            document.getElementById('modal-stImgUrl').value = imgUrl;
+            document.getElementById('modal-img-preview').innerHTML =
+                '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+            status.textContent = '업로드 완료';
+            status.style.color = '#059669';
+        })
+        .catch(function() {
+            status.textContent = '업로드 실패';
+            status.style.color = '#dc2626';
         });
     });
 

@@ -258,6 +258,30 @@ public class StockService {
                 .map(stock -> mapToStockListDto(stock, wishedIds));
     }
 
+    // 다음 상품코드 생성 (브랜드명 앞 3글자 대문자 + 5자리 순번)
+    public String generateNextStCd(String brNm) {
+        String prefix = brNm.replaceAll("[^a-zA-Z]", "").toUpperCase();
+        prefix = prefix.length() >= 3 ? prefix.substring(0, 3) : String.format("%-3s", prefix).replace(' ', 'X');
+
+        Brand brand = brandRepository.findByBrNm(brNm).orElse(null);
+        if (brand == null) {
+            return prefix + "00001";
+        }
+
+        String lastCd = stockRepository.findTopStCdByBrIdOrderByStCdDesc(brand.getBrId()).orElse(null);
+        if (lastCd == null || lastCd.length() < prefix.length()) {
+            return prefix + "00001";
+        }
+
+        String numPart = lastCd.substring(prefix.length());
+        try {
+            int next = Integer.parseInt(numPart) + 1;
+            return prefix + String.format("%05d", next);
+        } catch (NumberFormatException e) {
+            return prefix + "00001";
+        }
+    }
+
     // 상품 이미지 URL 저장 (업로드 후 URL 저장용)
     public void saveImgUrl(Long lastId, String imgUrl) {
         Stock stock = stockRepository.findById(lastId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));

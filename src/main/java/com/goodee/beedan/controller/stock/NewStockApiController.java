@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/newstock")
@@ -18,10 +19,17 @@ import java.util.List;
 public class NewStockApiController {
 
     private final CrawlingService crawlingService;
+    private final StockService stockService;
 
     @PostMapping("/autoyn/{urlId}")
     public ResponseEntity<Void> autoMode(@PathVariable Long urlId) {
         crawlingService.autoYnChange(urlId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/next-code")
+    public ResponseEntity<Map<String, String>> nextCode(@RequestParam String brNm) {
+        String nextCd = stockService.generateNextStCd(brNm);
+        return ResponseEntity.ok(Map.of("stCd", nextCd));
     }
 }

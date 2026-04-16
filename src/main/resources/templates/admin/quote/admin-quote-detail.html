@@ -3,8 +3,8 @@
       th:replace="~{layout/layout :: layout(
           ~{::title},
           ~{fragments/sidebar :: frame(
-              ${isAdmin != null and isAdmin ? 'ADMIN' : 'MEMBER'},
-              'Quote Detail',
+              ${isAdmin != null and isAdmin ? 'QUOTATION' : 'QUOTATION'},
+              'Quotation Detail',
               ~{::sidebar})},
           ~{::content}
       )}">

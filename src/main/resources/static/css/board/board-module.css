@@ -71,35 +71,41 @@
     min-width: 3rem;
     height: 3rem;
     padding: 0 0.9rem;
-    border: 1px solid #ece7da;
-    background: #fffdfa;
-    color: #7a7a7a;
+    border: 1px solid var(--color-surface-container-highest);
+    background: var(--color-surface-container-lowest);
+    color: var(--color-secondary);
     font-size: 11px;
     font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
+/* 호버 시: 문의 페이지 필터 호버 색상과 동일하게 변경 */
 .module-page-btn:hover:not(.is-disabled) {
-    background: #fcfbf8;
+    background: #fffdfa;
     color: #1a1c1c;
-    border-color: #d7d2c6;
+    border-color: rgba(112, 93, 0, 0.18);
 }
 
+/* 와이드 버튼: 조금 더 짙은 노란 계열 배경 */
 .module-page-btn--wide {
     min-width: 4.5rem;
-    background: #f7f5ef;
+    background: var(--color-surface-container-low);
 }
 
+/* 현재 페이지: 문의 페이지 활성(is-active) 색상과 동일하게 변경 */
 .module-page-btn.is-current {
     border-color: #d7d2c6;
-    background: #ead7bb; /* primary-container color */
+    background: var(--color-primary-container);
     color: #4d4538;
 }
 
+/* 비활성화 상태: 불투명도 유지 및 회색톤 제거 */
 .module-page-btn.is-disabled {
     cursor: default;
-    opacity: 0.4;
+    opacity: 0.55;
     pointer-events: none;
 }
 
