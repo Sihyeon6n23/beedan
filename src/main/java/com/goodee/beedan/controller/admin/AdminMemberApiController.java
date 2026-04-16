@@ -144,7 +144,7 @@ public class AdminMemberApiController {
     @PostMapping("/shipment/sync-unipass")
     public ResponseEntity<String> syncUnipassManually(@AuthenticationPrincipal MemberUserDetails userDetails) {
         if(userDetails == null) throw new MemberNotFoundException();
-        
+
         unipassScheduler.runUnipassTracking();
 
         try {

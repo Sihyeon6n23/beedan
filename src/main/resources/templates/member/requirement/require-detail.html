@@ -12,7 +12,7 @@
               ~{::content}
           )}">
 
-<title th:fragment="title">BEEDAN | REQUIREMENT DETAIL</title>
+<title th:fragment="title" th:text="'BEEDAN | ' + ${require.reqTtl}">BEEDAN | DETAIL</title>
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
