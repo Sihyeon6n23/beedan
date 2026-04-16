@@ -1,9 +1,132 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
+
+    if (orderId) {
+        fetchOrderDetail(orderId);
+    } else {
+        document.getElementById('order-detail-body').innerHTML = '<div style="text-align:center; padding:30px;">잘못된 접근입니다. 주문 ID가 없습니다.</div>';
+    }
+});
+
+// 1. 주문 상세 데이터 가져오기
+async function fetchOrderDetail(orderId) {
+    try {
+        const response = await fetch(`/api/orders/${orderId}`);
+        if (!response.ok) throw new Error("상세 데이터를 불러오는데 실패했습니다.");
+        
+        const orderData = await response.json();
+        renderOrderDetail(orderData);
+        
+        // 중요: DOM이 모두 그려진 후 Swiper 초기화
+        initSwipers(); 
+    } catch (error) {
+        console.error(error);
+        document.getElementById('order-detail-body').innerHTML = '<div style="text-align:center; padding:30px; color:red;">데이터를 가져오지 못했습니다.</div>';
+    }
+}
+
+// 2. 화면 렌더링 로직
+function renderOrderDetail(order) {
+    const listBody = document.getElementById('order-detail-body');
+    const pageInfo = document.getElementById('page-info');
+    const pageNumbers = document.getElementById('page-numbers');
+
+    const shipments = order.shipmentResponses || [];
+
+    if (pageNumbers) {
+        pageNumbers.innerHTML = shipments.length > 0 ?
+            `<span class="admin-chat-page-button is-current">1</span>` : '';
+    }
+
+
+    if (!order.shipmentResponses || order.shipmentResponses.length === 0) {
+        listBody.innerHTML = `
+            <div class="admin-chat-row">
+                <span style="display: block; width: 100%; text-align: center; padding: 20px;">배송지 정보가 없습니다.</span>
+            </div>`;
+        return;
+    }
+
+    const html = order.shipmentResponses.map(ship => {
+        let statusText = '주문취소';
+        let badgeClass = 'admin-chat-badge--closed';
+
+        if (!ship.shCanYn) {
+            if (ship.shStt === 'PREPARING') {
+                statusText = '배송준비';
+                badgeClass = 'admin-chat-badge--open';
+            } else if (ship.shStt === 'DELIVERING') {
+                statusText = '배송중';
+                badgeClass = 'admin-chat-badge--ongoing';
+            } else if (ship.shStt === 'SHIPPING') {
+                statusText = '통관진행';
+                badgeClass = 'admin-chat-badge--ongoing';
+            } else if (ship.shStt === 'DELIVERED') {
+                statusText = '배송완료';
+                badgeClass = 'admin-chat-badge--ongoing';
+            }
+        }
+
+        // Swiper 슬라이드 생성
+        const swiperSlides = ship.shipmentItems.map(item => `
+            <div class="swiper-slide" style="display: flex; align-items: center; justify-content: center;">
+                <img src="${item.ordItmThumbUrl}" alt="${item.ordItmNm}" class="order-thumb-img" title="${item.ordItmNm}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+        `).join('');
+
+        const itemTexts = ship.shipmentItems.map(item => `
+            <p style="text-align: left;">${item.ordItmNm} (${item.shQn}개)</p>
+        `).join('');
+
+        // 버튼 비활성화 여부 및 취소 버튼 렌더링 처리
+        const isDetailDisabled = order.ordBaseStt === 'CANCELED' ? 'disabled' : '';
+        const cancelBtnHtml = order.ordBaseStt === 'PREPARING' 
+            ? `<button class="btn-edit" onclick="cancelOrder(${order.ordBaseId})" type="button">주문 취소</button>` 
+            : '';
+
+        return `
+            <div class="admin-chat-row">
+                <div class="admin-chat-row__text">
+                    <h2>${ship.shRcvNm}</h2>
+                    <p>${ship.shAdr}</p>
+                    <p>${ship.shAdrDt}</p>
+                </div>
+
+                <div class="swiper mySwiper">
+                    <div class="swiper-wrapper">
+                        ${swiperSlides}
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+
+                <div class="admin-chat-row__text">
+                    ${itemTexts}
+                </div>
+
+                <div class="admin-chat-row__status">
+                    <span class="admin-chat-badge ${badgeClass}">${statusText}</span>
+                </div>
+
+                <div class="action-btns">
+                    <button type="button" class="btn-detail" ${isDetailDisabled} onclick="openShipmentModal(${ship.shId})">
+                        배송 현황
+                    </button>
+                    ${cancelBtnHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    listBody.innerHTML = html;
+}
+
 function openShipmentModal(shId) {
     const modalOverlay = document.querySelector('#orderTrackingModal');
     const modalBody = modalOverlay.querySelector('.modal-body');
 
     modalOverlay.style.display = 'flex';
-
     modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
 
     fetch(`/api/shipments/${shId}/track`)
@@ -24,8 +147,8 @@ function openShipmentModal(shId) {
 function loadShipmentDetail(data) {
     if (!data) return '<div style="padding:20px; text-align:center;">데이터를 불러올 수 없습니다.</div>';
 
-    const hasDomesticDetails = data.details && data.details.length > 0;    // 국내 배송 데이터 존재 여부 확인
-    const customsAccordionOpen = hasDomesticDetails ? '' : 'open';  // 국내 배송이 없으면 통관 내역을 열어둠(open), 있으면 닫아둠
+    const hasDomesticDetails = data.details && data.details.length > 0;
+    const customsAccordionOpen = hasDomesticDetails ? '' : 'open';
 
     let html = `
         <div class="tracking-info-summary">
@@ -55,7 +178,6 @@ function loadShipmentDetail(data) {
         <div class="tracking-timeline" style="margin-top: 20px;">
     `;
 
-    // 1. 해외 통관 내역
     if (data.customsDetails && data.customsDetails.length > 0) {
         html += `
             <div style="margin-bottom: 20px;">
@@ -66,7 +188,6 @@ function loadShipmentDetail(data) {
                     </summary>
                     <div style="padding: 0 15px 15px 15px; border-top: 1px dashed #dee2e6; margin-top: 5px;">
         `;
-
         data.customsDetails.forEach((c, index) => {
             const isLast = index === data.customsDetails.length - 1;
             html += `
@@ -77,26 +198,20 @@ function loadShipmentDetail(data) {
                 </div>
             `;
         });
-
         html += `</div></details></div>`;
     }
 
-    // 2. 국내 배송 내역
     if (hasDomesticDetails) {
         html += '<h4 style="font-size: 15px; margin-bottom: 15px; color: #333; padding-left: 5px;">국내 배송 현황</h4>';
         html += '<ul class="tracking-timeline-list" style="padding-left: 20px; list-style: none; margin: 0;">';
-
+        
         const reversedDetails = data.details.slice().reverse();
-
         reversedDetails.forEach((item, index) => {
             const isFirst = index === 0;
             const timeStr = item.time ? item.time.replace('T', ' ').substring(0, 16) : '';
-
             html += `
                 <li style="margin-bottom: 20px; position: relative; padding-left: 20px; border-left: 2px solid #eee;">
-                    <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px;
-                                background: ${isFirst ? '#d9534f' : '#ccc'}; border-radius: 50%;
-                                border: 2px solid #fff; box-shadow: 0 0 0 1px ${isFirst ? '#d9534f' : '#ccc'};"></div>
+                    <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px; background: ${isFirst ? '#d9534f' : '#ccc'}; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px ${isFirst ? '#d9534f' : '#ccc'};"></div>
                     <div style="font-size: 12px; color: #999;">${timeStr}</div>
                     <div style="margin-top: 4px;">
                         <strong style="font-size: 14px; color: ${isFirst ? '#333' : '#666'};">${item.status}</strong>
@@ -112,7 +227,6 @@ function loadShipmentDetail(data) {
             </div>
          `;
     }
-
     html += '</div>';
     return html;
 }
@@ -129,15 +243,15 @@ function cancelOrder(ordId) {
             [csrfHeader]: csrfToken
         }
     })
-        .then(response => {
-            if (!response.ok) throw new Error('주문 취소에 실패했습니다.');
-            alert("주문이 취소되었습니다.");
-            location.reload();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("주문 취소 중 오류가 발생했습니다. 다시 시도해주세요.");
-        });
+    .then(response => {
+        if (!response.ok) throw new Error('주문 취소에 실패했습니다.');
+        alert("주문이 취소되었습니다.");
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("주문 취소 중 오류가 발생했습니다. 다시 시도해주세요.");
+    });
 }
 
 function closeModal() {
@@ -147,16 +261,12 @@ function closeModal() {
     }
 }
 
-// Swiper 초기화 함수
 function initSwipers() {
     const swipers = document.querySelectorAll('.mySwiper');
-
     swipers.forEach((swiperElement) => {
         const slideCount = swiperElement.querySelectorAll('.swiper-slide').length;
-
         new Swiper(swiperElement, {
             loop: slideCount > 1,
-
             navigation: {
                 nextEl: swiperElement.querySelector('.swiper-button-next'),
                 prevEl: swiperElement.querySelector('.swiper-button-prev'),
@@ -165,12 +275,7 @@ function initSwipers() {
                 el: swiperElement.querySelector('.swiper-pagination'),
                 clickable: true,
             },
-            watchOverflow: true, // 슬라이드가 1개일 때는 Swiper 기능 비활성화
+            watchOverflow: true,
         });
     });
 }
-
-// 페이지 로드 시 Swiper 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    initSwipers();
-});

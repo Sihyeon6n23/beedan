@@ -279,3 +279,16 @@
     color: #d9534f;
     display: inline-block;
 }
+
+#order-detail-body .admin-chat-row {
+      width: 100%;
+      padding: 1px 28px;
+      border-left: 4px solid transparent;
+      border-bottom: 1px solid #efefef;
+      background: var(--color-surface-container-lowest);
+      color: inherit;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+}

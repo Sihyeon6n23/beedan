@@ -120,7 +120,7 @@ class OrderServiceTests {
         given(orderRepository.findByMember_MemIdOrderByOrdBaseCreDtDesc(memId, pageable)).willReturn(orderPage);
 
         // when
-        Page<OrderDto> result = orderService.getOrderList(memId, pageable);
+        Page<OrderDto> result = orderService.getOrderList(memId, "PREPARING", pageable);
 
         // then
         assertNotNull(result);
@@ -138,7 +138,7 @@ class OrderServiceTests {
         given(memberRepository.existsById(memId)).willReturn(false);
 
         // when
-        Page<OrderDto> result = orderService.getOrderList(memId, pageable);
+        Page<OrderDto> result = orderService.getOrderList(memId, "PREPARING", pageable);
 
         // then
         assertNull(result);
