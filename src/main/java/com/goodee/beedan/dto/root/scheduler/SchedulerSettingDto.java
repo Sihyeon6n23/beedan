@@ -82,7 +82,7 @@ public class SchedulerSettingDto {
 
     // 6.2 시작 시각
     @JsonProperty("chat_auto_close_start_dt")
-    private String chatAutoCloseStartDt;
+    private String chatAutoCloseStartDt = "2026-04-01T00:00";
 
     // 6.3 채팅방 자동 종료 주기(3일)
     @JsonProperty("chat_auto_close_interval")

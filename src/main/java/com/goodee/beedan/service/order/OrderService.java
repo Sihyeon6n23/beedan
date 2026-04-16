@@ -142,7 +142,7 @@ public class OrderService {
         QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
         Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
         Member member = memberRepository.findById(negotiation.getMemId()).orElseThrow(() -> new UsernameNotFoundException("일치하는 회원이 없습니다."));
-        Payment payment = paymentRepository.findByQuId(quoteBase.getQuId()).orElseThrow(() -> new IllegalArgumentException("결제 정보가 없습니다"));
+        Payment payment = paymentRepository.findFirstByQuIdOrderByPyIdDesc(quoteBase.getQuId()).orElseThrow(() -> new IllegalArgumentException("결제 정보가 없습니다"));
         List<QuoteDetail> quoteDetails = quoteDetailRepository.findAllByQuId(quoteBase.getQuId());
 
         if (quoteDetails.isEmpty()) throw new IllegalStateException("견적 상세 상품이 없습니다.");
