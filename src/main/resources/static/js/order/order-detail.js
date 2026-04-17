@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ====== 렌더링 =========
 async function fetchOrderDetail(orderId) {
     try {
         const response = await fetch(`/api/orders/${orderId}`);
@@ -37,7 +38,6 @@ async function fetchOrderDetail(orderId) {
     }
 }
 
-// 데이터를 PAGE_SIZE만큼 잘라서 화면에 렌더링
 function renderPagedShipments(page) {
     const listBody = document.getElementById('order-detail-body');
     if (!listBody) return;
@@ -134,47 +134,7 @@ function renderPagination(currentPage) {
     pagination.innerHTML = html;
 }
 
-function getStatusInfo(ship) {
-    if (ship.shCanYn) return { statusText: '주문취소', badgeClass: 'admin-chat-badge--closed' };
-
-    const stt = ship.shStt;
-    if (stt === 'PREPARING') return { statusText: '배송준비', badgeClass: 'admin-chat-badge--open' };
-    if (stt === 'DELIVERING' || stt === 'SHIPPING') return { statusText: '배송중', badgeClass: 'admin-chat-badge--ongoing' };
-    if (stt === 'DELIVERED') return { statusText: '배송완료', badgeClass: 'admin-chat-badge--ongoing' };
-
-    return { statusText: '주문취소', badgeClass: 'admin-chat-badge--closed' };
-}
-
-function generateSwiperHtml(ship) {
-    if (!ship.shipmentItems) return '';
-    return ship.shipmentItems.map(item => `
-        <div class="swiper-slide" style="display: flex; align-items: center; justify-content: center;">
-            <img src="${item.ordItmThumbUrl}" alt="${item.ordItmNm}" class="order-thumb-img"
-                 title="${item.ordItmNm}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-        </div>
-    `).join('');
-}
-
-function openShipmentModal(shId) {
-    const modalOverlay = document.querySelector('#orderTrackingModal');
-    const modalBody = modalOverlay.querySelector('.modal-body');
-
-    modalOverlay.style.display = 'flex';
-    modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
-
-    fetch(`/api/shipments/${shId}/track`)
-        .then(response => {
-            if (!response.ok) throw new Error('데이터 로드 실패');
-            return response.json();
-        })
-        .then(data => {
-            modalBody.innerHTML = loadShipmentDetail(data); // 기존 loadShipmentDetail 함수 사용
-        })
-        .catch(error => {
-            modalBody.innerHTML = '<div style="text-align:center; padding:30px; color:red;">정보를 가져오지 못했습니다.</div>';
-        });
-}
-
+// ====== 주문 취소 =======
 function cancelOrder(ordId) {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
@@ -193,6 +153,119 @@ function cancelOrder(ordId) {
     .catch(error => alert("오류가 발생했습니다."));
 }
 
+// ====== 배송 현황 =======
+function openShipmentModal(shId) {
+    const modalOverlay = document.querySelector('#orderTrackingModal');
+    const modalBody = modalOverlay.querySelector('.modal-body');
+
+    modalOverlay.style.display = 'flex';
+    modalBody.innerHTML = '<div style="text-align:center; padding:30px;">배송 정보를 불러오는 중입니다...</div>';
+
+    fetch(`/api/shipments/${shId}/track`)
+        .then(response => {
+            if (!response.ok) throw new Error('데이터 로드 실패');
+            return response.json();
+        })
+        .then(data => {
+            modalBody.innerHTML = loadShipmentDetail(data);
+        })
+        .catch(error => {
+            modalBody.innerHTML = '<div style="text-align:center; padding:30px; color:red;">정보를 가져오지 못했습니다.</div>';
+        });
+}
+
+function loadShipmentDetail(data) {
+    if (!data) return '<div style="padding:20px; text-align:center;">데이터 없음</div>';
+
+    const hasDomestic = data.details && data.details.length > 0;
+    const customsOpen = hasDomestic ? '' : 'open';
+
+    let html = `
+        <div class="tracking-info-summary">
+            <div class="info-item"><span class="label">택배사</span><div class="value">${data.carrierName || '-'}</div></div>
+            <div class="info-item"><span class="label">수령인</span><div class="value">${data.shRcvNm || '-'}</div></div>
+            <div class="info-item info-item--address"><span class="label">배송지</span><div class="value">${data.shAdr || '-'}</div></div>
+            <div class="info-item"><span class="label">송장번호</span><div class="value">${data.trackingNumber || '정보 없음'}</div></div>
+            <div class="info-item info-item--status"><span class="label">현재 상태</span><div class="value"><strong>${data.statusText || '-'}</strong></div></div>
+        </div>
+        <div class="tracking-timeline" style="margin-top: 20px;">
+    `;
+
+    // 1. 해외 통관 내역 포맷팅 적용
+    if (data.customsDetails && data.customsDetails.length > 0) {
+        html += `<details ${customsOpen} style="margin-bottom:20px; background:#f8f9fa; border:1px solid #eee; border-radius:4px;">
+                    <summary style="padding:10px; cursor:pointer; font-weight:bold;">해외 통관 내역 (${data.customsDetails.length}건)</summary>
+                    <div style="padding:10px;">`;
+        data.customsDetails.forEach(c => {
+            html += `<div style="padding:8px 0; border-bottom:1px solid #f1f1f1;">
+                        <small style="color:#888; font-size: 12px;">${formatTrackingDate(c.time)}</small>
+                            <div style="margin-top:2px;">${c.status}</div>
+                        <small style="color:#666;">${c.description}</small>
+                     </div>`;
+        });
+        html += `</div></details>`;
+    }
+
+    // 2. 국내 배송 현황 포맷팅 적용
+    if (hasDomestic) {
+        html += '<h4 style="margin:15px 0 12px; font-size:16px;">국내 배송 현황</h4><ul style="padding-left:25px; border-left:2px solid #eee; list-style:none; margin:0;">';
+
+        data.details.slice().reverse().forEach((item, idx) => {
+            const isFirst = idx === 0;
+            // T가 포함된 표준 형식이면 그대로 쓰고, 생숫자면 formatTrackingDate 사용
+            const displayTime = item.time?.includes('T')
+                                ? item.time.replace('T', ' ').substring(0, 16)
+                                : formatTrackingDate(item.time);
+
+            html += `<li style="margin-bottom:20px; position:relative;">
+                        <span style="position:absolute; left:-31px; top:5px; width:10px; height:10px; border-radius:50%; background:${isFirst ? '#d9534f' : '#ccc'}; box-shadow:${isFirst ? '0 0 0 3px rgba(217,83,79,0.2)' : 'none'};"></span>
+                        <small style="color:#888; font-size: 12px;">${displayTime}</small>
+                        <div style="margin-top:2px;"><strong>${item.status}</strong></div>
+                        <p style="margin:2px 0 0; font-size:13px; color:#777;">${item.description || ''}</p>
+                     </li>`;
+        });
+        html += '</ul>';
+    } else {
+        html += '<div style="text-align:center; padding:30px; background:#fafafa; border-radius:4px; color:#999;">아직 국내 배송 정보가 없습니다.</div>';
+    }
+
+    return html + '</div>';
+}
+
+// ====== 공통 영역 ======
+function getStatusInfo(ship) {
+    if (ship.shCanYn) return { statusText: '주문취소', badgeClass: 'admin-chat-badge--closed' };
+
+    const stt = ship.shStt;
+    if (stt === 'PREPARING') return { statusText: '배송준비', badgeClass: 'admin-chat-badge--open' };
+    if (stt === 'DELIVERING' || stt === 'SHIPPING') return { statusText: '배송중', badgeClass: 'admin-chat-badge--ongoing' };
+    if (stt === 'DELIVERED') return { statusText: '배송완료', badgeClass: 'admin-chat-badge--ongoing' };
+
+    return { statusText: '주문취소', badgeClass: 'admin-chat-badge--closed' };
+}
+
+function formatTrackingDate(dateStr) {
+    if (!dateStr || dateStr.length < 12) return dateStr || '-';
+
+    const y = dateStr.substring(0, 4);
+    const m = dateStr.substring(4, 6);
+    const d = dateStr.substring(6, 8);
+    const hh = dateStr.substring(8, 10);
+    const mm = dateStr.substring(10, 12);
+
+    return `${y}-${m}-${d} ${hh}:${mm}`;
+}
+
+function generateSwiperHtml(ship) {
+    if (!ship.shipmentItems) return '';
+    return ship.shipmentItems.map(item => `
+        <div class="swiper-slide" style="display: flex; align-items: center; justify-content: center;">
+            <img src="${item.ordItmThumbUrl}" alt="${item.ordItmNm}" class="order-thumb-img"
+                 title="${item.ordItmNm}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+    `).join('');
+}
+
 function closeModal() {
     const modal = document.querySelector('#orderTrackingModal');
     if (modal) modal.style.display = 'none';
@@ -208,49 +281,4 @@ function initSwipers() {
             watchOverflow: true,
         });
     });
-}
-
-function loadShipmentDetail(data) {
-    if (!data) return '<div style="padding:20px; text-align:center;">데이터 없음</div>';
-    const hasDomestic = data.details && data.details.length > 0;
-    const customsOpen = hasDomestic ? '' : 'open';
-
-    let html = `
-        <div class="tracking-info-summary">
-            <div class="info-item"><span class="label">택배사</span><div class="value">${data.carrierName || '-'}</div></div>
-            <div class="info-item"><span class="label">수령인</span><div class="value">${data.shRcvNm || '-'}</div></div>
-            <div class="info-item info-item--address"><span class="label">배송지</span><div class="value">${data.shAdr || '-'}</div></div>
-            <div class="info-item"><span class="label">송장번호</span><div class="value">${data.trackingNumber || '정보 없음'}</div></div>
-            <div class="info-item info-item--status"><span class="label">현재 상태</span><div class="value"><strong>${data.statusText || '-'}</strong></div></div>
-        </div>
-        <div class="tracking-timeline" style="margin-top: 20px;">
-    `;
-
-    if (data.customsDetails && data.customsDetails.length > 0) {
-        html += `<details ${customsOpen} style="margin-bottom:20px; background:#f8f9fa; border:1px solid #eee;">
-                    <summary style="padding:10px; cursor:pointer; font-weight:bold;">해외 통관 내역 (${data.customsDetails.length}건)</summary>
-                    <div style="padding:10px;">`;
-        data.customsDetails.forEach(c => {
-            html += `<div style="padding:5px 0; border-bottom:1px solid #f1f1f1;">
-                        <small style="color:#999;">${c.time}</small><div>${c.status}</div><small>${c.description}</small>
-                     </div>`;
-        });
-        html += `</div></details>`;
-    }
-
-    if (hasDomestic) {
-        html += '<h4 style="margin:15px 0 10px;">국내 배송 현황</h4><ul style="padding-left:20px; border-left:2px solid #eee; list-style:none;">';
-        data.details.slice().reverse().forEach((item, idx) => {
-            const isFirst = idx === 0;
-            html += `<li style="margin-bottom:15px; position:relative;">
-                        <span style="position:absolute; left:-26px; top:5px; width:10px; height:10px; border-radius:50%; background:${isFirst ? '#d9534f' : '#ccc'};"></span>
-                        <small style="color:#999;">${item.time?.replace('T',' ')}</small>
-                        <div><strong>${item.status}</strong></div><p style="margin:0; font-size:13px; color:#777;">${item.description || ''}</p>
-                     </li>`;
-        });
-        html += '</ul>';
-    } else {
-        html += '<div style="text-align:center; padding:20px; background:#fafafa;">아직 국내 배송 정보가 없습니다.</div>';
-    }
-    return html + '</div>';
 }
