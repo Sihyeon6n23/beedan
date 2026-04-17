@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.member;
 
+import com.goodee.beedan.entity.Member;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,6 +18,14 @@ public class MemberApproveDto {
     private String filePath;
     private String fileUuid;
 
+    public MemberApproveDto(Long memId, String memNm, String bizNo, String filePath, String fileUuid, LocalDateTime reqDate) {
+        this.memId = memId;
+        this.memNm = memNm;
+        this.memBizNo = bizNo;
+        this.filePath = filePath;
+        this.fileUuid = fileUuid;
+        this.memCreDt = reqDate;
+    }
     // 사업자 번호 포맷팅 (3-2-5 자리)
     public String getFormattedBizNo() {
         if (memBizNo != null && memBizNo.length() == 10) {

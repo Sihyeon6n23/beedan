@@ -57,6 +57,36 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             @Param("bizStt") String bizStt,
             @Param("memStt") String memStt
     );
+
+    @Query(value = "SELECT new com.goodee.beedan.dto.member.MemberApproveDto(" +
+            "m.memId, m.memNm, m.memBizNo, f.filePat, f.fileUuid, m.memCreDt) " +
+            "FROM Member m " +
+            "LEFT JOIN FileUpload f ON m.memId = f.brdRefNo AND f.brdRefTy = 'SIGNUP' AND f.fileDelYn = false " +
+            "WHERE m.memBizStt = :bizStt " +
+            "AND m.memStt != :memStt " +
+            "AND (" +
+            "(:keyword IS NULL OR :keyword = '') OR " +
+            "(:searchType = 'all' AND (m.memNm LIKE CONCAT('%', :keyword, '%') OR m.memBizNo LIKE CONCAT('%', :keyword, '%'))) OR " +
+            "(:searchType = 'name' AND m.memNm LIKE CONCAT('%', :keyword, '%')) OR " +
+            "(:searchType = 'bizNo' AND m.memBizNo LIKE CONCAT('%', :keyword, '%'))" +
+            ")",
+            countQuery = "SELECT count(m) FROM Member m " +
+                    "WHERE m.memBizStt = :bizStt " +
+                    "AND m.memStt != :memStt " +
+                    "AND (" +
+                    "(:keyword IS NULL OR :keyword = '') OR " +
+                    "(:searchType = 'all' AND (m.memNm LIKE CONCAT('%', :keyword, '%') OR m.memBizNo LIKE CONCAT('%', :keyword, '%'))) OR " +
+                    "(:searchType = 'name' AND m.memNm LIKE CONCAT('%', :keyword, '%')) OR " +
+                    "(:searchType = 'bizNo' AND m.memBizNo LIKE CONCAT('%', :keyword, '%'))" +
+                    ")")
+    Page<MemberApproveDto> findBizPendingMembersWithSearch(
+            @Param("bizStt") String bizStt,
+            @Param("memStt") String memStt,
+            @Param("searchType") String searchType,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
   
     long countByMemCreDtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 

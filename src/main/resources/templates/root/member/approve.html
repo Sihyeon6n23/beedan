@@ -27,8 +27,9 @@
       align-items: center;
     }
     .file-icon { cursor: pointer; color: #555; font-size: 1.2rem; }
-    .btn-approve { background-color: #28a745; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; border-radius: 2px; }
-    .btn-deny { background-color: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; border-radius: 2px; }
+    /* 버튼 색상 커스텀: 승인(골드), 거절(다크그레이) */
+    .btn-approve { background-color: #ffd700; color: #705d00; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; border-radius: 2px; }
+    .btn-deny { background-color: #5f5e5e; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; border-radius: 2px; }
     .action-btns { display: flex; gap: 5px; justify-content: center; }
   </style>
 
@@ -39,6 +40,8 @@
         <h2 class="admin-chat-title">가입 승인 대기 목록</h2>
         <div class="admin-chat-shell__rule"><span></span></div>
       </div>
+
+      <div th:replace="~{fragments/board/board-module :: searchBar(${boardUri}, ${searchDto}, ${searchTypes})}"></div>
     </header>
 
     <section class="admin-chat-shell admin-chat-shell--list">
@@ -67,10 +70,13 @@
             <button class="btn-deny" th:onclick="|processMember(${m.memId}, 'deny')|">거절</button>
           </div>
         </div>
+
         <div th:if="${#lists.isEmpty(members)}" style="padding: 50px; text-align: center; color: #999;">
           승인 대기 중인 회원이 없습니다.
         </div>
       </div>
+
+      <div th:replace="~{fragments/board/board-module :: pagination(${response}, '/root/admin/approve', ${searchDto})}"></div>
     </section>
   </section>
 

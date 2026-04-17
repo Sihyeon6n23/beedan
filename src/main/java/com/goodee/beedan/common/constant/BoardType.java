@@ -16,7 +16,10 @@ public enum BoardType {
     INQUIRY_ANSWER("문의답변", false, true, true),
 
     // 4. 자유게시판: 모두 미사용
-    FREE("자유게시판", false, false, false);
+    FREE("자유게시판", false, false, false),
+
+    // 5. 사업자승인메뉴: 모두 미사용
+    APPROVE("사업자인증", false, false, false);
 
     private final String description;
     private final boolean useFixed;  // 고정글 기능 활성화 여부
