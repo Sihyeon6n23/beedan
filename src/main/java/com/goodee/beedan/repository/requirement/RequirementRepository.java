@@ -23,5 +23,12 @@ public interface RequirementRepository extends JpaRepository<Requirement, Long>,
 
     Page<Requirement> findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(Long memId, String submitted, boolean b, Pageable pageable);
 
+    // keyword 검색용
+    Page<Requirement> findByReqDelYnFalseAndReqSttAndReqTtlContaining(String reqStt, String keyword, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndReqSttAndReqRepYnAndReqTtlContaining(String reqStt, boolean repYn, String keyword, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndMemIdAndReqTtlContaining(Long memId, String keyword, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndMemIdAndReqSttAndReqTtlContaining(Long memId, String reqStt, String keyword, Pageable pageable);
+    Page<Requirement> findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYnAndReqTtlContaining(Long memId, String reqStt, boolean repYn, String keyword, Pageable pageable);
+
     Requirement findByReqId(Long reqId);
 }

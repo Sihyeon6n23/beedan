@@ -136,14 +136,8 @@
 
     <!-- Main Content -->
     <div class="flex-1 min-w-0 min-h-screen">
-        <!-- Breadcrumbs & Title -->
-        <nav class="mb-4">
-            <ol class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
-                <li>Home</li>
-                <li class="text-neutral-300">/</li>
-                <li class="text-on-primary-container" th:text="${mode == 'wishlist' ? 'Wishlist' : 'Stock'}">Stock</li>
-            </ol>
-        </nav>
+
+        <div class="mb-12"></div>
 
         <div class="flex justify-between items-end mb-12">
             <h1 class="text-6xl font-headline font-black tracking-tighter" th:text="${mode == 'wishlist' ? 'WISHLIST' : 'STOCK'}">STOCK</h1>

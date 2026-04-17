@@ -36,6 +36,16 @@
                         <a class="admin-chat-filter" href="#" data-status="ANSWERED">답변 완료</a>
                     </div>
                 </div>
+                <div class="admin-chat-toolbar__actions">
+                    <div class="admin-chat-search-form">
+                        <input id="require-keyword"
+                               class="admin-chat-search-form__input"
+                               type="text"
+                               placeholder="요청 제목 검색"
+                               onkeydown="if(event.key==='Enter'){loadRequirePage(0);}">
+                        <button type="button" class="admin-chat-search-form__submit" onclick="loadRequirePage(0);">검색</button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -82,9 +92,13 @@
 
         function loadList(page) {
             currentPage = page;
+            var keyword = document.getElementById('require-keyword').value.trim();
             let params = 'page=' + page;
             if (currentStatus !== 'ALL') {
                 params += '&status=' + currentStatus;
+            }
+            if (keyword) {
+                params += '&keyword=' + encodeURIComponent(keyword);
             }
 
             axios.get(apiUrl + '?' + params)

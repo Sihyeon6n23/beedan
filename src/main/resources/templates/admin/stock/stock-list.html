@@ -272,17 +272,17 @@
 
     window.batchChangeCategory = function() {
         const catNm = document.getElementById('batch-category-select').value;
-        if (!catNm) { alert('카테고리를 선택하세요.'); return; }
+        if (!catNm) { showGuideModal('카테고리를 선택하세요.', null, 'NOTICE', 'info'); return; }
         const stIds = Array.from(document.querySelectorAll('.stock-check:checked')).map(cb => Number(cb.value));
         if (stIds.length === 0) return;
-        if (!confirm(stIds.length + '개 상품의 카테고리를 "' + catNm + '"(으)로 변경하시겠습니까?')) return;
-
-        axios.patch('/api/admin/stock/batch-category', { stIds, catNm })
-            .then(() => {
-                document.getElementById('check-all').checked = false;
-                loadStockList(currentPage);
-            })
-            .catch(() => alert('카테고리 변경 실패'));
+        showConfirmModal(stIds.length + '개 상품의 카테고리를 "' + catNm + '"(으)로 변경하시겠습니까?', function() {
+            axios.patch('/api/admin/stock/batch-category', { stIds, catNm })
+                .then(() => {
+                    document.getElementById('check-all').checked = false;
+                    loadStockList(currentPage);
+                })
+                .catch(() => showGuideModal('카테고리 변경 실패', null, 'ERROR', 'error'));
+        });
     };
 
     // ===== 상품 목록 로드 =====
@@ -403,7 +403,7 @@
                 btn.classList.toggle('is-off', isOn);
                 btn.textContent = isOn ? 'OFF' : 'ON';
             })
-            .catch(err => alert('노출 변경 실패'));
+            .catch(err => showGuideModal('노출 변경 실패', null, 'ERROR', 'error'));
     };
 
     // ===== 토글: 사용 =====
@@ -415,48 +415,49 @@
                 btn.classList.toggle('is-off', isOn);
                 btn.textContent = isOn ? 'OFF' : 'ON';
             })
-            .catch(err => alert('사용 변경 실패'));
+            .catch(err => showGuideModal('사용 변경 실패', null, 'ERROR', 'error'));
     };
 
     // ===== 전체 토글: 노출 =====
     window.toggleAllExp = function(value) {
-        if (!confirm('현재 페이지 전체 상품의 노출을 ' + (value ? 'ON' : 'OFF') + '으로 변경하시겠습니까?')) return;
-        // 먼저 최신 데이터를 다시 로드한 후 상태가 다른 것만 토글
-        const keyword = document.getElementById('search-keyword').value.trim();
-        const startDate = document.getElementById('search-start-date').value;
-        const endDate = document.getElementById('search-end-date').value;
-        let params = 'page=' + currentPage;
-        if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
-        if (startDate) params += '&startDate=' + startDate;
-        if (endDate) params += '&endDate=' + endDate;
+        showConfirmModal('현재 페이지 전체 상품의 노출을 ' + (value ? 'ON' : 'OFF') + '으로 변경하시겠습니까?', function() {
+            const keyword = document.getElementById('search-keyword').value.trim();
+            const startDate = document.getElementById('search-start-date').value;
+            const endDate = document.getElementById('search-end-date').value;
+            let params = 'page=' + currentPage;
+            if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
+            if (startDate) params += '&startDate=' + startDate;
+            if (endDate) params += '&endDate=' + endDate;
 
-        axios.get('/api/admin/stock/list?' + params).then(res => {
-            const freshData = res.data.content;
-            const targets = freshData.filter(s => s.stExpYn !== value);
-            if (targets.length === 0) { alert('변경할 항목이 없습니다.'); return; }
-            return Promise.all(targets.map(s => axios.patch('/api/admin/stock/' + s.stId + '/toggle-exp')));
-        }).then(() => loadStockList(currentPage))
-          .catch(err => alert('일괄 변경 실패'));
+            axios.get('/api/admin/stock/list?' + params).then(res => {
+                const freshData = res.data.content;
+                const targets = freshData.filter(s => s.stExpYn !== value);
+                if (targets.length === 0) { showGuideModal('변경할 항목이 없습니다.', null, 'NOTICE', 'info'); return; }
+                return Promise.all(targets.map(s => axios.patch('/api/admin/stock/' + s.stId + '/toggle-exp')));
+            }).then(() => loadStockList(currentPage))
+              .catch(err => showGuideModal('일괄 변경 실패', null, 'ERROR', 'error'));
+        });
     };
 
     // ===== 전체 토글: 사용 =====
     window.toggleAllUse = function(value) {
-        if (!confirm('현재 페이지 전체 상품의 사용을 ' + (value ? 'ON' : 'OFF') + '으로 변경하시겠습니까?')) return;
-        const keyword = document.getElementById('search-keyword').value.trim();
-        const startDate = document.getElementById('search-start-date').value;
-        const endDate = document.getElementById('search-end-date').value;
-        let params = 'page=' + currentPage;
-        if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
-        if (startDate) params += '&startDate=' + startDate;
-        if (endDate) params += '&endDate=' + endDate;
+        showConfirmModal('현재 페이지 전체 상품의 사용을 ' + (value ? 'ON' : 'OFF') + '으로 변경하시겠습니까?', function() {
+            const keyword = document.getElementById('search-keyword').value.trim();
+            const startDate = document.getElementById('search-start-date').value;
+            const endDate = document.getElementById('search-end-date').value;
+            let params = 'page=' + currentPage;
+            if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
+            if (startDate) params += '&startDate=' + startDate;
+            if (endDate) params += '&endDate=' + endDate;
 
-        axios.get('/api/admin/stock/list?' + params).then(res => {
-            const freshData = res.data.content;
-            const targets = freshData.filter(s => s.stUseYn !== value);
-            if (targets.length === 0) { alert('변경할 항목이 없습니다.'); return; }
-            return Promise.all(targets.map(s => axios.patch('/api/admin/stock/' + s.stId + '/toggle-use')));
-        }).then(() => loadStockList(currentPage))
-          .catch(err => alert('일괄 변경 실패'));
+            axios.get('/api/admin/stock/list?' + params).then(res => {
+                const freshData = res.data.content;
+                const targets = freshData.filter(s => s.stUseYn !== value);
+                if (targets.length === 0) { showGuideModal('변경할 항목이 없습니다.', null, 'NOTICE', 'info'); return; }
+                return Promise.all(targets.map(s => axios.patch('/api/admin/stock/' + s.stId + '/toggle-use')));
+            }).then(() => loadStockList(currentPage))
+              .catch(err => showGuideModal('일괄 변경 실패', null, 'ERROR', 'error'));
+        });
     };
 
     // ===== 모달 열기 =====
@@ -590,24 +591,24 @@
             })
             .catch(err => {
                 console.error('저장 실패:', err);
-                alert('저장에 실패했습니다.');
+                showGuideModal('저장에 실패했습니다.', null, 'ERROR', 'error');
             });
     };
 
     // ===== 삭제 =====
     window.deleteStock = function() {
         if (!currentStId) return;
-        if (!confirm('정말 삭제하시겠습니까?')) return;
-
-        axios.delete('/api/admin/stock/' + currentStId)
-            .then(() => {
-                closeEditModal();
-                loadStockList(currentPage);
-            })
-            .catch(err => {
-                console.error('삭제 실패:', err);
-                alert('삭제에 실패했습니다.');
-            });
+        showConfirmModal('정말 삭제하시겠습니까?', function() {
+            axios.delete('/api/admin/stock/' + currentStId)
+                .then(() => {
+                    closeEditModal();
+                    loadStockList(currentPage);
+                })
+                .catch(err => {
+                    console.error('삭제 실패:', err);
+                    showGuideModal('삭제에 실패했습니다.', null, 'ERROR', 'error');
+                });
+        }, 'DELETE', 'delete');
     };
 
     // ===== 검색 =====
@@ -642,7 +643,7 @@
     document.getElementById('modal-img-file').addEventListener('change', function() {
         const file = this.files[0];
         if (!file) return;
-        if (!currentStId) { alert('상품을 먼저 선택하세요.'); return; }
+        if (!currentStId) { showGuideModal('상품을 먼저 선택하세요.', null, 'NOTICE', 'info'); return; }
 
         const status = document.getElementById('modal-img-status');
         status.textContent = '업로드 중…';
@@ -678,5 +679,6 @@
 })();
 </script>
 
+<th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
 </th:block>
 </html>

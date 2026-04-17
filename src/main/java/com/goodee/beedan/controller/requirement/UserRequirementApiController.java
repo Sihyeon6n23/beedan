@@ -25,10 +25,11 @@ public class UserRequirementApiController {
     public Page<RequirementListDto> list(
             @AuthenticationPrincipal MemberUserDetails user,
             @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC,"reqId"));
         Long memId = user.getMemberId();
-        return requirementService.findAllForUser(memId, status, pageable);
+        return requirementService.findAllForUser(memId, status, keyword, pageable);
     }
 
     // 임시저장 비동기

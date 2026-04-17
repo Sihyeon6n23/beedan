@@ -32,18 +32,25 @@ public class RequirementService {
 
 
     // 제출 완료된, 삭제되지 않은 요청서 전부 조회 (관리자용)
-    public Page<RequirementListDto> findAllForAdmin(String status, Pageable pageable) {
+    public Page<RequirementListDto> findAllForAdmin(String status, String keyword, Pageable pageable) {
         Page<Requirement> pages;
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
 
         switch (status) {
             case "SUBMITTED":
-                pages = requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYn("SUBMITTED", false, pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYnAndReqTtlContaining("SUBMITTED", false, keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYn("SUBMITTED", false, pageable);
                 break;
             case "ANSWERED":
-                pages = requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYn("SUBMITTED", true, pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYnAndReqTtlContaining("SUBMITTED", true, keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndReqSttAndReqRepYn("SUBMITTED", true, pageable);
                 break;
             default:
-                pages = requirementRepository.findByReqDelYnFalseAndReqStt("SUBMITTED", pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndReqSttAndReqTtlContaining("SUBMITTED", keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndReqStt("SUBMITTED", pageable);
                 break;
         }
 
@@ -51,22 +58,30 @@ public class RequirementService {
     }
 
     // 사용자 전용 요청 목록 조회
-    public Page<RequirementListDto> findAllForUser(Long memId, String status, Pageable pageable) {
+    public Page<RequirementListDto> findAllForUser(Long memId, String status, String keyword, Pageable pageable) {
         Page<Requirement> pages;
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
 
         switch (status) {
             case "DRAFT":
-                pages = requirementRepository.findByReqDelYnFalseAndMemIdAndReqStt(memId, "DRAFT", pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqTtlContaining(memId, "DRAFT", keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndMemIdAndReqStt(memId, "DRAFT", pageable);
                 break;
-
             case "SUBMITTED":
-                pages = requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(memId, "SUBMITTED", false, pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYnAndReqTtlContaining(memId, "SUBMITTED", false, keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(memId, "SUBMITTED", false, pageable);
                 break;
             case "ANSWERED":
-                pages = requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(memId, "SUBMITTED", true, pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYnAndReqTtlContaining(memId, "SUBMITTED", true, keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndMemIdAndReqSttAndReqRepYn(memId, "SUBMITTED", true, pageable);
                 break;
             default:
-                pages = requirementRepository.findByReqDelYnFalseAndMemId(memId, pageable);
+                pages = hasKeyword
+                        ? requirementRepository.findByReqDelYnFalseAndMemIdAndReqTtlContaining(memId, keyword, pageable)
+                        : requirementRepository.findByReqDelYnFalseAndMemId(memId, pageable);
                 break;
         }
 

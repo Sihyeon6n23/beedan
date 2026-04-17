@@ -66,6 +66,7 @@ public class AdminStockService {
     public boolean toggleExpYn(Long stId) {
         Stock stock = stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
         stock.setStExpYn(!stock.isStExpYn());
+        stock.setStUseYn(stock.isStExpYn() || stock.isStUseYn());
         stockRepository.save(stock);
         return stock.isStExpYn(); // 바뀐 값 프론트로 전달
     }

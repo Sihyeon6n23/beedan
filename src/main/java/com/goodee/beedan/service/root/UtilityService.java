@@ -20,15 +20,22 @@ public class UtilityService {
 
     @PostConstruct
     public void init() {
+        try {
+            redisTemplate.getConnectionFactory().getConnection().ping();
+        } catch (Exception e) {
+            log.warn("Redis 연결 실패로 유틸리티 설정 초기화를 건너뜁니다: {}", e.getMessage());
+            return;
+        }
+
         if (redisTemplate.opsForValue().get(REDIS_KEY) == null) {
             UtilitySettingDto initial;
             try {
                 ClassPathResource resource = new ClassPathResource("utility-setting.json");
                 initial = objectMapper.readValue(resource.getInputStream(), UtilitySettingDto.class);
-                log.info("유틸리티 설정을 JSON 파일에서 Redis로 초기 로딩했습니다.");
+                log.info("유틸리티 설정을 JSON 파일에서 Redis로 초기 로딩.");
             } catch (Exception e) {
                 initial = new UtilitySettingDto();
-                log.info("유틸리티 설정을 기본값으로 Redis에 초기화했습니다.");
+                log.info("유틸리티 설정을 기본값으로 Redis에 초기화.");
             }
             redisTemplate.opsForValue().set(REDIS_KEY, initial);
         }

@@ -23,9 +23,10 @@ public class AdminRequirementApiController {
     @GetMapping("/list")
     public Page<RequirementListDto> list(
             @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC,"reqId"));
-        return requirementService.findAllForAdmin(status, pageable);
+        return requirementService.findAllForAdmin(status, keyword, pageable);
     }
 
     // 답변 작성

@@ -18,7 +18,7 @@
 /* 탭 */
 .admin-crawling-tabs {
   display: flex;
-  gap: 0;
+  gap: 0.5rem;
   margin-top: 1.25rem;
   border-bottom: 2px solid var(--color-surface-container-highest);
 }
@@ -26,24 +26,26 @@
 .admin-crawling-tab {
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   margin-bottom: -2px;
-  padding: 0.625rem 1.25rem;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  border-radius: 4px 4px 0 0;
 }
 
 .admin-crawling-tab:hover {
   color: var(--color-on-surface);
+  background: rgba(255, 215, 0, 0.06);
 }
 
 .admin-crawling-tab.is-active {
-  color: #ffd700;
+  color: #1a1c1c;
+  background: rgba(255, 215, 0, 0.1);
   border-bottom-color: #ffd700;
 }
 

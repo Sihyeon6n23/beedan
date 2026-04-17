@@ -223,15 +223,15 @@
         <div class="lg:w-[400px] flex-shrink-0">
             <div class="bg-surface-container-lowest p-10 relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
-                <h2 class="font-headline font-extrabold text-2xl tracking-tighter uppercase mb-10">Order Summary</h2>
+                <h2 class="font-headline font-extrabold text-2xl tracking-tighter uppercase mb-10">주문 요약</h2>
                 <div class="space-y-6">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold tracking-widest uppercase text-secondary">Items</span>
-                        <span class="font-bold" th:text="${itemList.size()} + ' items'"></span>
+                        <span class="text-xs font-bold tracking-widest uppercase text-secondary">상품 수</span>
+                        <span class="font-bold" th:text="${itemList.size()} + ' 개'"></span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold tracking-widest uppercase text-secondary">Logistics</span>
-                        <span class="text-xs font-medium italic">Calculated at Quote</span>
+                        <span class="text-xs font-bold tracking-widest uppercase text-secondary">결제 금액</span>
+                        <span class="text-xs font-medium italic">견적에서 진행 예정</span>
                     </div>
                 </div>
                 <div class="mt-12 space-y-4">
@@ -368,7 +368,7 @@
             })
             .catch(err => {
                 console.error('삭제 실패:', err);
-                alert('삭제에 실패했습니다.');
+                showGuideModal('삭제에 실패했습니다.', null, 'ERROR', 'error');
                 modal.classList.add('hidden');
             });
     });
@@ -401,10 +401,10 @@
         if (updates.length === 0) return;
 
         axios.patch('/api/cart/update', updates)
-            .then(() => alert('수량이 변경되었습니다.'))
+            .then(() => showGuideModal('수량이 변경되었습니다.'))
             .catch(err => {
                 console.error('수량 변경 실패:', err);
-                alert('수량 변경에 실패했습니다.');
+                showGuideModal('수량 변경에 실패했습니다.', null, 'ERROR', 'error');
             });
     });
 
@@ -425,7 +425,7 @@
             }
         });
         if (items.length === 0) {
-            alert('견적 요청할 상품을 선택해주세요.');
+            showGuideModal('견적 요청할 상품을 선택해주세요.', null, 'NOTICE', 'info');
             return;
         }
 
@@ -446,7 +446,7 @@
         })
         .catch(err => {
             console.error('견적 요청 실패:', err);
-            alert('견적 요청에 실패했습니다.');
+            showGuideModal('견적 요청에 실패했습니다.', null, 'ERROR', 'error');
             quoteRequesting = false;
             btn.disabled = false;
             btn.innerHTML = 'REQUEST QUOTE <span class="material-symbols-outlined text-xl">arrow_forward</span>';
@@ -457,5 +457,6 @@
 })();
 </script>
 
+<th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
 </body>
 </html>

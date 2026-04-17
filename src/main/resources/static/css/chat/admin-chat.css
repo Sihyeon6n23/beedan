@@ -177,8 +177,8 @@
 }
 
 .admin-chat-search-form__submit {
-  background: var(--color-surface-container-highest);
-  color: var(--color-on-background);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
 }
 
 .admin-chat-action-link {
