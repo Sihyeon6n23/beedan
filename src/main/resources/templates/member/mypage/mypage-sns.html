@@ -22,9 +22,6 @@
                 <div class="mypage-sns-page__rule">
                     <span></span>
                 </div>
-                <p class="font-body text-secondary max-w-sm text-sm mt-4 opacity-80">
-                    간편한 로그인을 위해 SNS 계정 연동 정보를 관리하십시오.
-                </p>
             </section>
 
             <div class="mypage-sns-page__layout grid grid-cols-12 gap-12 pb-20">
@@ -33,7 +30,7 @@
                     <div class="bg-surface-container-lowest p-10 border-l-[6px] border-primary shadow-chat-shell">
 
                         <div class="space-y-4">
-                            <div class="bg-surface-container-low border border-stone-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group gap-4">
+                            <div class="bg-surface-container-low border border-stone-100 p-6 flex flex-row items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group gap-4">
                                 <div class="flex items-center space-x-6">
                                     <div class="w-12 h-12 bg-[#FEE500] flex items-center justify-center sharp-edge flex-shrink-0">
                                         <span class="material-symbols-outlined text-[#3C1E1E]" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
@@ -41,8 +38,8 @@
                                     <div>
                                         <h3 class="font-headline font-bold text-lg tracking-tight text-on-surface">Kakao</h3>
                                         <div class="flex items-center mt-1">
-                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2"></span>
-                                            <span th:text="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? '연결됨' : '연결 안 됨'"
+                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2">&nbsp;</span>
+                                            <span th:text="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? '연동완료' : '미연동'"
                                                   th:classappend="${snsIntegrateResponse?.snsTp == 'KAKAO'} ? 'text-green-700' : 'text-neutral-500'"
                                                   class="text-[10px] font-black uppercase tracking-widest"></span>
                                         </div>
@@ -51,14 +48,14 @@
                                 <div th:replace="~{::snsButton('KAKAO')}"></div>
                             </div>
 
-                            <div class="bg-surface-container-low border border-stone-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group gap-4">
+                            <div class="bg-surface-container-low border border-stone-100 p-6 flex flex-row items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group gap-4">
                                 <div class="flex items-center space-x-6">
                                     <div class="w-12 h-12 bg-[#03C75A] flex items-center justify-center sharp-edge flex-shrink-0 text-white font-black text-xl font-headline">N</div>
                                     <div>
                                         <h3 class="font-headline font-bold text-lg tracking-tight text-on-surface">Naver</h3>
                                         <div class="flex items-center mt-1">
-                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'NAVER'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2"></span>
-                                            <span th:text="${snsIntegrateResponse?.snsTp == 'NAVER'} ? '연결됨' : '연결 안 됨'"
+                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'NAVER'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2">&nbsp;</span>
+                                            <span th:text="${snsIntegrateResponse?.snsTp == 'NAVER'} ? '연동완료' : '미연동'"
                                                   th:classappend="${snsIntegrateResponse?.snsTp == 'NAVER'} ? 'text-green-700' : 'text-neutral-500'"
                                                   class="text-[10px] font-black uppercase tracking-widest"></span>
                                         </div>
@@ -67,7 +64,7 @@
                                 <div th:replace="~{::snsButton('NAVER')}"></div>
                             </div>
 
-                            <div class="bg-surface-container-low border border-stone-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group gap-4">
+                            <div class="bg-surface-container-low border border-stone-100 p-6 flex flex-row items-center justify-between sharp-edge transition-all hover:bg-white hover:translate-x-1 group gap-4">
                                 <div class="flex items-center space-x-6">
                                     <div class="w-12 h-12 border border-neutral-100 bg-white flex items-center justify-center sharp-edge flex-shrink-0">
                                         <span class="material-symbols-outlined text-[#EA4335]">language</span>
@@ -75,8 +72,8 @@
                                     <div>
                                         <h3 class="font-headline font-bold text-lg tracking-tight text-on-surface">Google</h3>
                                         <div class="flex items-center mt-1">
-                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2"></span>
-                                            <span th:text="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? '연결됨' : '연결 안 됨'"
+                                            <span th:classappend="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? 'bg-green-500 animate-pulse' : 'bg-neutral-300'" class="w-2 h-2 rounded-full mr-2">&nbsp;</span>
+                                            <span th:text="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? '연동완료' : '미연동'"
                                                   th:classappend="${snsIntegrateResponse?.snsTp == 'GOOGLE'} ? 'text-green-700' : 'text-neutral-500'"
                                                   class="text-[10px] font-black uppercase tracking-widest"></span>
                                         </div>
@@ -124,10 +121,10 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
-
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script th:inline="javascript">
         // 메타 태그에서 토큰 정보 읽기
@@ -162,25 +159,25 @@
     </script>
 </th:block>
 
-<th:block th:fragment="snsButton(providerName)">
+<div th:fragment="snsButton(providerName)">
     <button th:if="${snsIntegrateResponse?.connected == true && snsIntegrateResponse?.snsTp == providerName}"
             type="button"
             onclick="disconnectSns()"
-            class="bg-on-surface text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 sharp-edge hover:opacity-90 transition-all w-full sm:w-auto text-center">
-        연결해제
+            class="bg-on-surface text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 sharp-edge hover:opacity-90 transition-all shrink-0 text-center">
+        연동해제
     </button>
 
     <a th:if="${snsIntegrateResponse?.connected != true}"
        th:href="@{|/auth/${#strings.toLowerCase(providerName)}/link|}"
-       class="bg-primary-container text-on-primary-container font-black text-xs uppercase tracking-widest px-8 py-3 sharp-edge hover:bg-primary-container/80 transition-all shadow-sm w-full sm:w-auto text-center inline-block">
-        연결하기
+       class="bg-primary-container text-on-primary-container font-black text-xs uppercase tracking-widest px-8 py-3 sharp-edge hover:bg-primary-container/80 transition-all shadow-sm shrink-0 text-center inline-block">
+        연동하기
     </a>
 
     <button th:if="${snsIntegrateResponse?.connected == true && snsIntegrateResponse?.snsTp != providerName}"
             type="button"
             onclick="alert('이미 다른 SNS 계정이 연동되어 있습니다. 기존 연동을 해제한 후 다시 시도해주세요.')"
-            class="bg-surface-container-highest text-neutral-400 text-[10px] font-black uppercase tracking-widest px-6 py-3 sharp-edge cursor-not-allowed opacity-50 w-full sm:w-auto text-center">
+            class="bg-surface-container-highest text-neutral-400 text-[10px] font-black uppercase tracking-widest px-6 py-3 sharp-edge cursor-not-allowed opacity-50 shrink-0 text-center">
         이용불가
     </button>
-</th:block>
+</div>
 </html>
