@@ -176,7 +176,7 @@ public class NewStockController {
     // 셀렉터 수정
     @PostMapping("/selector/{id}")
     public String updateSelector(@PathVariable Long id,
-                                 @Valid SelectorForm dto,
+                                 SelectorForm dto,
                                  RedirectAttributes redirectAttributes) {
         try {
             crawlingService.updateSelector(id, dto);

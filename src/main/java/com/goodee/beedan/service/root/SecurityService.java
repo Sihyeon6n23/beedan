@@ -19,6 +19,13 @@ public class SecurityService {
 
     @PostConstruct
     public void init() {
+        try {
+            redisTemplate.getConnectionFactory().getConnection().ping();
+        } catch (Exception e) {
+            log.warn("Redis 연결 실패로 보안 정책 초기화를 건너뜁니다: {}", e.getMessage());
+            return;
+        }
+
         if (redisTemplate.opsForValue().get(REDIS_KEY) == null) {
             SecurityPolicyDto initial;
             try {

@@ -94,7 +94,7 @@ public class CrawlingService {
 
     public List<CrawlingUrl> findAllUrls() {
 
-        return crawlingUrlRepository.findByUrlDelYnFalse();
+        return crawlingUrlRepository.findByUrlDelYnFalseOrderByUrlIdDesc();
     }
 
     @Transactional
@@ -195,7 +195,9 @@ public class CrawlingService {
         Map<String, String> aiCategoryMap = Map.of();
         if (aiMode && !rawList.isEmpty()) {
             List<String> categoryNames = categoryRepository.findAll()
-                    .stream().map(Category::getCatNm).toList();
+                    .stream().map(Category::getCatNm)
+                    .filter(nm -> !"ETC".equals(nm))
+                    .toList(); // AI 자동 분류 카테고리는 제외
             List<String> productNames = rawList.stream().map(RawProduct::name).toList();
             aiCategoryMap = aiCategoryService.categorize(productNames, categoryNames);
         }

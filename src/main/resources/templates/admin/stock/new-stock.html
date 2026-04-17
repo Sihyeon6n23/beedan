@@ -33,9 +33,17 @@
         <button class="admin-crawling-tab" data-tab="manual">자체 상품 등록</button>
     </div>
 
-    <!-- 알림 메시지 -->
-    <div th:if="${message}" class="admin-crawling-alert admin-crawling-alert--success" th:text="${message}"></div>
-    <div th:if="${error}" class="admin-crawling-alert admin-crawling-alert--error" th:text="${error}"></div>
+    <!-- 알림 모달 (flash message) -->
+    <script th:if="${message}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            showGuideModal(/*[[${message}]]*/ '');
+        });
+    </script>
+    <script th:if="${error}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            showGuideModal(/*[[${error}]]*/ '', null, 'ERROR', 'error');
+        });
+    </script>
 
     <!-- ===== 외부 상품 등록 탭 ===== -->
     <div id="tab-external" class="admin-crawling-tab-panel">
@@ -416,26 +424,25 @@
 
     // 전체 크롤링
     function crawlAll() {
-        if (!confirm('자동 크롤링 대상 URL 전체를 크롤링합니다. 진행할까요?')) return;
+        showConfirmModal('자동 크롤링 대상 URL 전체를 크롤링합니다. 진행할까요?', function() {
+            const btn = document.getElementById('crawlAllBtn');
+            btn.disabled = true;
+            btn.textContent = '크롤링 중...';
 
-        const btn = document.getElementById('crawlAllBtn');
-        btn.disabled = true;
-        btn.textContent = '크롤링 중...';
-
-        fetch('/admin/newstock/run-all', {
-            method: 'POST',
-            headers: { [csrfHeader]: csrfToken }
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert('전체 크롤링 완료! 신규 ' + data.newCount + '건');
-            location.reload();
-        })
-        .catch(err => {
-            alert('크롤링 실패');
-            console.error(err);
-            btn.disabled = false;
-            btn.textContent = '전체 크롤링';
+            fetch('/admin/newstock/run-all', {
+                method: 'POST',
+                headers: { [csrfHeader]: csrfToken }
+            })
+            .then(res => res.json())
+            .then(data => {
+                showGuideModal('전체 크롤링 완료! 신규 ' + data.newCount + '건', function() { location.reload(); });
+            })
+            .catch(err => {
+                showGuideModal('크롤링 실패', null, 'ERROR', 'error');
+                console.error(err);
+                btn.disabled = false;
+                btn.textContent = '전체 크롤링';
+            });
         });
     }
 
@@ -457,21 +464,22 @@
             btn.style.color = newVal ? '#1a1c1c' : '';
             btn.style.borderColor = newVal ? '#ffd700' : '';
         })
-        .catch(() => alert('변경 실패'));
+        .catch(() => showGuideModal('변경 실패', null, 'ERROR', 'error'));
     }
 
     // 모달 내 삭제
     let editUrlId = null;
 
     function deleteUrlFromModal(type) {
-        if (!confirm('이 크롤링 URL을 삭제하시겠습니까?')) return;
-        fetch('/admin/newstock/delete/' + editUrlId, {
-            method: 'POST',
-            headers: { [csrfHeader]: csrfToken }
-        })
-        .then(r => { if (!r.ok) throw new Error(); })
-        .then(() => location.reload())
-        .catch(() => alert('삭제 실패'));
+        showConfirmModal('이 크롤링 URL을 삭제하시겠습니까?', function() {
+            fetch('/admin/newstock/delete/' + editUrlId, {
+                method: 'POST',
+                headers: { [csrfHeader]: csrfToken }
+            })
+            .then(r => { if (!r.ok) throw new Error(); })
+            .then(() => location.reload())
+            .catch(() => showGuideModal('삭제 실패', null, 'ERROR', 'error'));
+        }, 'DELETE', 'delete');
     }
 
     // 셀렉터 수정 모달 (crawlModal 재활용, action을 /selector/{id}로)
@@ -619,6 +627,11 @@
     // 셀렉터 저장 후 크롤링 실행
     function saveSelectorAndRun(formEl) {
         const id = currentCrawlId;
+        const currency = formEl.querySelector('[name="currency"]');
+        if (currency && !currency.value.trim()) {
+            showGuideModal('통화 기호를 선택하세요.', function() { currency.focus(); }, 'NOTICE', 'info');
+            return;
+        }
         const formData = new FormData(formEl);
 
         // 로딩 표시
@@ -648,7 +661,7 @@
         })
         .catch(() => {
             if (loadingEl) loadingEl.classList.remove('is-active');
-            alert('셀렉터 저장 실패');
+            showGuideModal('셀렉터 저장 실패', null, 'ERROR', 'error');
         });
     }
 
@@ -692,10 +705,17 @@
     // Jsoup(HTML) 모달 검증
     function validateCrawlForm(form) {
         form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+        const isEdit = document.getElementById('crawlModal').dataset.mode === 'edit';
 
-        const fields = [
+        const fields = isEdit ? [
             { name: 'brNm',    forKey: 'crawl-brNm',    msg: '브랜드명을 입력하세요.' },
             { name: 'catNm',   forKey: 'crawl-catNm',   msg: '카테고리를 입력하세요.' },
+            { name: 'selItem', forKey: 'selItem',        msg: '상품 컨테이너 selector를 입력하세요.' },
+            { name: 'selNm',   forKey: 'selNm',          msg: '상품명 selector를 입력하세요.' },
+            { name: 'selPr',   forKey: 'selPr',          msg: '가격 selector를 입력하세요.' },
+            { name: 'selImg',  forKey: 'selImg',         msg: '이미지 selector를 입력하세요.' },
+            { name: 'currency', forKey: 'crawl-currency', msg: '통화 기호를 입력하세요.' },
+        ] : [
             { name: 'selItem', forKey: 'selItem',        msg: '상품 컨테이너 selector를 입력하세요.' },
             { name: 'selNm',   forKey: 'selNm',          msg: '상품명 selector를 입력하세요.' },
             { name: 'selPr',   forKey: 'selPr',          msg: '가격 selector를 입력하세요.' },
@@ -716,10 +736,13 @@
     // Shopify 모달 검증
     function validateShopifyForm(form) {
         form.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+        const isEdit = document.getElementById('shopifyModal').dataset.mode === 'edit';
 
-        const fields = [
+        const fields = isEdit ? [
             { name: 'brNm',     forKey: 'shopify-brNm',     msg: '브랜드명을 입력하세요.' },
             { name: 'catNm',    forKey: 'shopify-catNm',     msg: '카테고리를 입력하세요.' },
+            { name: 'currency', forKey: 'shopify-currency',  msg: '통화 기호를 입력하세요.' },
+        ] : [
             { name: 'currency', forKey: 'shopify-currency',  msg: '통화 기호를 입력하세요.' },
         ];
 
@@ -767,7 +790,7 @@
             })
             .then(r => { if (!r.ok && r.status !== 302) throw new Error(); })
             .then(() => location.reload())
-            .catch(() => alert('저장 실패'));
+            .catch(() => showGuideModal('저장 실패', null, 'ERROR', 'error'));
         } else {
             if (!validateShopifyForm(this)) return;
             // 크롤링 모드
@@ -778,7 +801,7 @@
     // 브랜드 설정 → 다음 상품코드 자동 생성
     document.getElementById('btn-gen-code')?.addEventListener('click', function() {
         const brNm = document.getElementById('manual-brNm').value.trim();
-        if (!brNm) { alert('브랜드명을 먼저 입력하세요.'); return; }
+        if (!brNm) { showGuideModal('브랜드명을 먼저 입력하세요.', null, 'NOTICE', 'info'); return; }
         this.disabled = true;
         this.textContent = '조회중…';
         fetch('/api/newstock/next-code?brNm=' + encodeURIComponent(brNm), {
@@ -788,12 +811,14 @@
         .then(data => {
             document.getElementById('manual-stCd').value = data.stCd;
         })
-        .catch(() => alert('상품코드 조회에 실패했습니다.'))
+        .catch(() => showGuideModal('상품코드 조회에 실패했습니다.', null, 'ERROR', 'error'))
         .finally(() => {
             this.disabled = false;
             this.textContent = '설정';
         });
     });
+
 </script>
+<th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
 </th:block>
 </html>

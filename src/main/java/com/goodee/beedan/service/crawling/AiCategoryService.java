@@ -26,26 +26,41 @@ public class AiCategoryService {
      * 상품명 목록을 카테고리 목록 중 하나로 자동 분류
      * @return Map<상품명, 카테고리명>
      */
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_DELAY_MS = 3000;
+
     public Map<String, String> categorize(List<String> productNames, List<String> categoryNames) {
-        try {
-            String prompt = buildPrompt(productNames, categoryNames);
+        String prompt = buildPrompt(productNames, categoryNames);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-            Map<String, Object> body = Map.of(
-                    "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
-            );
+        Map<String, Object> body = Map.of(
+                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
+        );
 
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-            String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
-            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
 
-            return parseResponse(response.getBody(), productNames, categoryNames);
-        } catch (Exception e) {
-            log.error("AI 분류 API 호출 실패: {}", e.getMessage());
-            return Map.of();
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+                return parseResponse(response.getBody(), productNames, categoryNames);
+            } catch (Exception e) {
+                log.warn("AI 분류 API 호출 실패 ({}회/{}) : {}", attempt, MAX_RETRIES, e.getMessage());
+                if (attempt < MAX_RETRIES) {
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS * attempt);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
         }
+
+        log.error("AI 분류 API {}회 재시도 후 최종 실패", MAX_RETRIES);
+        return Map.of();
     }
 
     private String buildPrompt(List<String> productNames, List<String> categoryNames) {
