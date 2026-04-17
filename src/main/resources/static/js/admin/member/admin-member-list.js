@@ -481,41 +481,42 @@ async function viewFullOrderList(memId, page = 0) {
             const amount = order.ordBaseTtAm ? order.ordBaseTtAm.toLocaleString('ko-KR') : '0';
             const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.substring(0, 10).replaceAll('-', '.') : '-';
 
+            const isCanceled = order.ordBaseStt === 'CANCELED';
+
             return `
                 <tr>
                     <td class="order-id" style="text-align: center;">${order.ordBaseNo}</td>
                     <td class="order-date">${dateStr}</td>
-
                     <td class="order-summary">
                         <strong>${order.ordSummaryNm || '상품 정보 없음'}</strong><br>
                     </td>
-
                     <td class="order-address" style="text-align: center;">
                         <p>${order.ordBaseRcvNm}</p>
                     </td>
-
-                    <td class="order-amount text-right">${amount}원</td>
-
+                    <td class="order-amount text-right" style="text-align: right;">${amount}원</td>
                     <td class="order-status text-center">
                         <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                     </td>
-
                     <td class="action-cell">
                         <div class="admin-action-wrapper">
-                            <select id="status-select-${order.ordBaseId}" class="status-update-select">
-                                <option value="" disabled selected>상태 변경</option>
+                            <select id="status-select-${order.ordBaseId}"
+                                    class="status-update-select"
+                                    ${isCanceled ? 'disabled' : ''}>
+                                <option value="" disabled selected>${isCanceled ? '변경 불가' : '상태 변경'}</option>
                                 <option value="PREPARING">상품준비</option>
                                 <option value="DELIVERING">배송중</option>
                                 <option value="DELIVERED">배송완료</option>
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate('${order.ordBaseId}')" title="변경상태저장">
+                            <button class="btn-icon-sm"
+                                    onclick="submitOrderStatusUpdate('${order.ordBaseId}', ${page})"
+                                    title="변경상태저장"
+                                    ${isCanceled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
                     </td>
-
                 </tr>
             `;
         }).join('');
@@ -555,8 +556,43 @@ async function viewFullOrderList(memId, page = 0) {
     }
 }
 
-// =============================== 전체 배송 목록 조회 =================================
+// =============================== 주문 상태 수정 영역 =================================
 
+async function submitOrderStatusUpdate(orderId, currentPage) {
+    const selectElement = document.getElementById(`status-select-${orderId}`);
+    const newStatus = selectElement.value;
+    const memberId = document.getElementById('memberDetailModal').dataset.currentMemberId;
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/api/admin/member/order/${memberId}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({
+                ordBaseId: orderId,
+                ordBaseStt: newStatus
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('상태 업데이트에 실패했습니다.');
+        }
+
+        alert('주문 상태가 성공적으로 변경되었습니다.');
+
+        viewFullOrderList(memberId, currentPage);
+
+    } catch (error) {
+        console.error('Update Error:', error);
+        alert(error.message);
+    }
+}
+
+// =============================== 배송 목록 조회 =================================
 function getShipmentBadgeTheme(status) {
     switch(status) {
         case 'PREPARING':
@@ -572,6 +608,7 @@ function getShipmentBadgeTheme(status) {
     }
 }
 
+// 전체 배송 목록 조회
 async function viewFullShipmentList(memId, page = 0) {
     const contentArea = document.getElementById('modalContentArea');
 
@@ -590,12 +627,12 @@ async function viewFullShipmentList(memId, page = 0) {
                 <table class="fragment-table">
                     <thead>
                         <tr>
-                            <th>택배사/송장번호</th>
-                            <th style="text-align: center;">배송 시작일자</th>
-                            <th>수령인/배송물품</th>
+                            <th style="text-align: center;">운송장번호</th>
                             <th>배송지</th>
+                            <th style="text-align: center;">수령자</th>
+                            <th>등록일</th>
                             <th class="text-center">상태</th>
-                            <th class="text-center">관리</th>
+                            <th style="text-align: center;">관리</th>
                         </tr>
                     </thead>
                     <tbody id="shipmentListBody">
@@ -624,48 +661,35 @@ async function viewFullShipmentList(memId, page = 0) {
         const rowsHtml = data.content.map(shipment => {
             const sttInfo = getShipmentBadgeTheme(shipment.shStt);
             const dateStr = shipment.shCreDt ? shipment.shCreDt.substring(0, 10).replaceAll('-', '.') : '-';
-            let itemSummary = '상품 정보 없음';
-            const courierMap = {
-                "kr.cjlogistics": "CJ대한통운",
-                "kr.epost": "우체국택배",
-                "kr.hanjin": "한진택배",
-                "kr.lotteglogis": "롯데택배",
-                "kr.logen": "로젠택배",
-                "kr.cvsnet": "GS25 편의점택배",
-                "kr.cupost": "CU 편의점택배"
-            };
-            let displayName = courierMap[shipment.shCarCd] || "택배사 미정";
-            let displayNo = shipment.shTraNo || "";
+            const traNo = shipment.shTraNo || '운송장 미등록';
+            const address = shipment.shAdr || '주소 정보 없음';
+            const addressDetail = shipment.shAdrDt || '-';
+            const rcvNm = shipment.shRcvNm || '수령자 없음';
 
-            if (shipment.items && shipment.items.length > 0) {
-                const firstItemName = shipment.items[0].ordItmNm;
-                itemSummary = shipment.items.length > 1
-                    ? `${firstItemName} 외 ${shipment.items.length - 1}건`
-                    : firstItemName;
-            }
+            const isShipmentCanceled = (shipment.shCanYn === true || shipment.shCanYn === 'Y');
 
             return `
                 <tr>
-                    <td class="shipment-id">${displayName}-${displayNo}</td>
-
-                    <td class="shipment-date" style="text-align: center !important;">${dateStr}</td>
-
-                    <td class="shipment-summary" style="padding-left: 20px;">
-                        <strong>${shipment.shRcvNm || '수령인 없음'}</strong><br>
-                        <span>${itemSummary}</span>
+                    <td style="text-align: center;"><strong>${traNo}</strong></td>
+                    <td class="order-address">
+                        <p>${address}</p>
+                        <p>${addressDetail}
                     </td>
 
-                    <td class="shipment-summary">
-                        <strong>${shipment.shAdr || '-'}</strong><br>
-                        <strong>${shipment.shAdrDt || '-'}</strong>
-                    </td>
+                    <td style="text-align: center;">${rcvNm}</td>
 
+                    <td class="order-date">${dateStr}</td>
                     <td class="order-status text-center">
                         <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                     </td>
-
-                    <td style="padding-left: 30px;">
-                        <button class="btn-edit" style="margin-left: 8px;" onclick="shipmentDetail('${shipment.shId}', '${memId}', ${data.number})">상세보기</button>
+                    <td class="action-cell">
+                        <div class="admin-action-wrapper" style="justify-content: center;">
+                            <button class="btn-detail"
+                                    onclick="shipmentDetail('${shipment.shId}', '${memId}', ${page})"
+                                    ${isShipmentCanceled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                ${isShipmentCanceled ? '배송 취소됨' : '배송 현황'}
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -679,20 +703,18 @@ async function viewFullShipmentList(memId, page = 0) {
         let paginationHtml = `<span class="showing-text">Showing ${startItem}-${endItem} of ${data.totalElements} shipments</span>`;
         paginationHtml += `<div class="fragment-pagination">`;
 
-        // Prev
         if(data.first) {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
         } else {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
+            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number - 1})">
+                <span class="material-symbols-outlined">chevron_left</span></button>`;
         }
 
-        // Pages
         for (let i = 0; i < data.totalPages; i++) {
             const activeClass = (i === data.number) ? 'active' : '';
             paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullShipmentList('${memId}', ${i})">${i + 1}</button>`;
         }
 
-        // Next
         if(data.last) {
             paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
         } else {
@@ -703,49 +725,12 @@ async function viewFullShipmentList(memId, page = 0) {
         paginationArea.innerHTML = paginationHtml;
 
     } catch (error) {
-        console.error("배송 데이터 로드 에러:", error);
+        console.error("데이터 로드 에러:", error);
         document.getElementById('shipmentListBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: red; padding: 30px;">데이터 로드에 실패했습니다.</td></tr>`;
     }
 }
 
-// =============================== 주문 상태 수정 영역 =================================
-
-async function submitOrderStatusUpdate(orderId) {
-    const selectElement = document.getElementById(`status-select-${orderId}`);
-    const newStatus = selectElement.value;
-    const memberId = document.getElementById('memberDetailModal').dataset.currentMemberId;
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-    try {
-        const response = await fetch(`/api/admin/member/order/${memberId}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                [csrfHeader]: csrfToken
-            },
-            body: JSON.stringify({
-                ordBaseId: orderId,
-                ordBaseStt: newStatus
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('상태 업데이트에 실패했습니다.');
-        }
-
-        alert('주문 상태가 성공적으로 변경되었습니다.');
-
-        viewFullOrderList(memberId, 0);
-
-    } catch (error) {
-        console.error('Update Error:', error);
-        alert(error.message);
-    }
-}
-
-// =========================== 배송 현황 조회 ==============================
-
+// 배송 상세 현황
 async function shipmentDetail(shId, memId, page) {
     const contentArea = document.getElementById('modalContentArea');
 
@@ -758,7 +743,8 @@ async function shipmentDetail(shId, memId, page) {
 
                 <div class="title-row" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="fragment-title" style="margin: 0;">TRACKING Details</h2>
-                    <button onclick="advanceDemoStatus('${shId}', '${memId}', ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
+                    <button id="demoNextBtn" onclick="advanceDemoStatus('${shId}', '${memId}', ${page})"
+                            style="display:none; background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
                         다음 배송 단계
                     </button>
                 </div>
@@ -779,43 +765,60 @@ async function shipmentDetail(shId, memId, page) {
         if (!response.ok) throw new Error("서버와 통신 중 문제가 발생했습니다.");
 
         const data = await response.json();
+        const nextBtn = document.getElementById('demoNextBtn');
+
+        // [핵심 수정] 운송장 번호에 'TEST'가 포함되어 있는지 확인
+        const isTestShipment = data.trackingNumber && data.trackingNumber.includes('TEST');
+
+        if (nextBtn) {
+            if (isTestShipment) {
+                nextBtn.style.display = 'block'; // TEST 포함 시 노출
+
+                // 추가 로직: 만약 취소된 건(shCanYn)이라면 버튼은 보이되 비활성화
+                if (data.shCanYn === 'Y' || data.isCanceled) {
+                    nextBtn.disabled = true;
+                    nextBtn.style.backgroundColor = '#ccc';
+                    nextBtn.innerText = '취소된 배송';
+                    nextBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                nextBtn.style.display = 'none'; // TEST 미포함 시 숨김
+            }
+        }
 
         document.getElementById('trackingSummary').innerHTML = `
             <div class="summary-info" style="display:flex; justify-content:space-between; width:100%;">
-
                 <div style="flex:1;">
                     <span style="font-size:12px; color:#888;">택배사</span>
-                    <div style="font-weight:bold; font-size:16px;">${data.carrierName}</div>
+                    <div style="font-weight:bold; font-size:16px;">${data.carrierName || '-'}</div>
                 </div>
                 <div style="flex:1;">
                     <span style="font-size:12px; color:#888;">송장번호</span>
-                    <div style="font-weight:bold; font-size:16px; color:#0056b3;">${data.trackingNumber}</div>
+                    <div style="font-weight:bold; font-size:16px; color:#0056b3;">${data.trackingNumber || '-'}</div>
                 </div>
                 <div style="flex:1; text-align:right;">
                     <span style="font-size:12px; color:#888;">현재 상태</span>
-                    <div style="font-weight:bold; font-size:16px; color:#d9534f;">${data.statusText}</div>
+                    <div style="font-weight:bold; font-size:16px; color:#d9534f;">${data.statusText || '확인 중'}</div>
                 </div>
             </div>
         `;
 
+        // ... 이하 타임라인 렌더링 로직(이전과 동일) ...
         const timelineArea = document.getElementById('trackingTimeline');
-
         let html = '<ul class="tracking-timeline-list">';
 
-        // 1. 통관 내역이 있다면 '하나의 스텝'으로 묶어서 아코디언으로 출력
         if (data.customsDetails && data.customsDetails.length > 0) {
             html += `
                 <li class="timeline-step">
-                    <div class="step-time">통관 단계</div>
+                    <div class="step-time">해외 통관</div>
                     <div class="step-content">
                         <details style="background: #f8f9fa; padding: 10px; border-radius: 6px; cursor: pointer;">
                             <summary style="font-weight: bold; color: #0056b3; outline: none;">
-                                해외 통관 상세 내역 보기 (${data.customsDetails.length}건)
+                                UNI-PASS 통관 상세 내역 보기 (${data.customsDetails.length}건)
                             </summary>
                             <div style="margin-top: 10px; font-size: 13px; color: #555;">
             `;
 
-            // 통관 세부 내역 반복
             data.customsDetails.forEach(c => {
                 html += `
                     <div style="margin-bottom: 8px; border-left: 2px solid #ddd; padding-left: 10px;">
@@ -833,12 +836,10 @@ async function shipmentDetail(shId, memId, page) {
             `;
         }
 
-        // 2. 국내 배송 내역 출력
         if (data.details && data.details.length > 0) {
             data.details.forEach((item, index) => {
                 const isLast = (index === data.details.length - 1);
                 const activeClass = isLast ? 'active' : '';
-
                 html += `
                     <li class="timeline-step ${activeClass}">
                         <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
@@ -853,7 +854,7 @@ async function shipmentDetail(shId, memId, page) {
         if ((!data.details || data.details.length === 0) && (!data.customsDetails || data.customsDetails.length === 0)) {
             timelineArea.innerHTML = `
                 <div style="text-align:center; padding: 40px; color:#888; background:#f8f9fa; border-radius:8px;">
-                    <p>조회된 배송 정보가 없습니다.</p>
+                    <p>조회된 통관/배송 정보가 없습니다.</p>
                 </div>
             `;
             return;
@@ -868,30 +869,33 @@ async function shipmentDetail(shId, memId, page) {
     }
 }
 
+// 시연용 강제 상태 업데이트
 async function advanceDemoStatus(shId, memId, page) {
-        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        if(!confirm("배송 상태를 다음 단계로 이동시킬까요?")) return;
+    if(!confirm("배송 상태를 다음 단계로 이동시킬까요? (물류 데모 시연용)")) return;
 
-        try {
-            const response = await fetch(`/api/admin/member/shipment/${shId}/demo-progress`, {
-                method: 'POST',
-                headers: {
-                   'Content-Type': 'application/json',
-                   [csrfHeader]: csrfToken
-                }
-            });
-
-            if (response.ok) {
-                alert("상태가 업데이트 되었습니다.");
-                shipmentDetail(shId, memId, page);
-            } else {
-                alert("상태 업데이트 실패");
+    try {
+        const response = await fetch(`/api/admin/member/shipment/${shId}/demo-progress`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
             }
-        } catch (error) {
-            console.error("통신 오류:", error);
+        });
+
+        if (response.ok) {
+            alert("상태가 성공적으로 업데이트 되었습니다.");
+            // 상태 업데이트 후, 다시 타임라인 화면을 새로고침하여 바뀐 상태 반영
+            shipmentDetail(shId, memId, page);
+        } else {
+            alert("상태 업데이트 실패: 처리 중 문제가 발생했습니다.");
         }
+    } catch (error) {
+        console.error("통신 오류:", error);
+        alert("네트워크 오류가 발생했습니다.");
+    }
 }
 
 // =========================== 문의 전체 목록 조회 ==============================

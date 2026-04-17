@@ -97,7 +97,7 @@ public class AdminMemberApiController {
         Long ordId = Long.valueOf(orderData.get("ordBaseId").toString());
         OrderStatus ordStt = OrderStatus.valueOf(orderData.get("ordBaseStt").toString());
 
-        orderService.updateOrderStatus(ordId, ordStt);
+        orderService.updateOrderStatusByAdmin(ordId, ordStt);
 
         Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);

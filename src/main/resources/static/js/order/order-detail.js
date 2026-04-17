@@ -60,6 +60,8 @@ function renderPagedShipments(page) {
             ? `<button class="btn-edit" onclick="cancelOrder(${currentOrderId})" type="button">주문 취소</button>`
             : '';
 
+        const isShipmentCanceled = (ship.shCanYn === true);
+
         return `
             <div class="admin-chat-row">
                 <div class="admin-chat-row__text">
@@ -85,8 +87,9 @@ function renderPagedShipments(page) {
                 </div>
 
                 <div class="action-btns">
-                    <button type="button" class="btn-detail" onclick="openShipmentModal(${ship.shId})">
-                        배송 현황
+                    <button type="button" class="btn-detail" onclick="openShipmentModal(${ship.shId})"
+                        ${isShipmentCanceled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                        ${isShipmentCanceled ? '주문 취소됨' : '배송 현황'}
                     </button>
                     ${cancelBtnHtml}
                 </div>
