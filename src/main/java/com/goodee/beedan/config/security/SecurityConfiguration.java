@@ -118,19 +118,21 @@ public class SecurityConfiguration {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/auth/signout")
-                        .logoutSuccessUrl("/auth/signin")
                         .deleteCookies("JSESSIONID") // 쿠키 삭제 추가
                         .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.sendRedirect("/auth/signin");
+                        })
                         .permitAll()
                 )
                 .sessionManagement(session -> session
-                        // 1. 세션 타임아웃(유효하지 않은 세션) 처리 (Root level)
+                        .sessionFixation().changeSessionId()
                         .invalidSessionStrategy((request, response) -> {
                             request.getSession().setAttribute("errorMessage",
                                     new SignInErrorMessageDto("세션만료", "세션이 만료되었습니다. 재로그인 해주시기 바랍니다."));
                             response.sendRedirect("/auth/signin");
                         })
-                        // 2. 동시 로그인 제어 (Child level)
                         .sessionConcurrency(concurrency -> concurrency
                                 .maximumSessions(-1)
                                 .sessionRegistry(sessionRegistry)
