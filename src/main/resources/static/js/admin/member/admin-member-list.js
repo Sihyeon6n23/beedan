@@ -481,41 +481,42 @@ async function viewFullOrderList(memId, page = 0) {
             const amount = order.ordBaseTtAm ? order.ordBaseTtAm.toLocaleString('ko-KR') : '0';
             const dateStr = order.ordBaseCreDt ? order.ordBaseCreDt.substring(0, 10).replaceAll('-', '.') : '-';
 
+            const isCanceled = order.ordBaseStt === 'CANCELED';
+
             return `
                 <tr>
                     <td class="order-id" style="text-align: center;">${order.ordBaseNo}</td>
                     <td class="order-date">${dateStr}</td>
-
                     <td class="order-summary">
                         <strong>${order.ordSummaryNm || '상품 정보 없음'}</strong><br>
                     </td>
-
                     <td class="order-address" style="text-align: center;">
                         <p>${order.ordBaseRcvNm}</p>
                     </td>
-
-                    <td class="order-amount text-right">${amount}원</td>
-
+                    <td class="order-amount text-right" style="text-align: right;">${amount}원</td>
                     <td class="order-status text-center">
                         <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
                     </td>
-
                     <td class="action-cell">
                         <div class="admin-action-wrapper">
-                            <select id="status-select-${order.ordBaseId}" class="status-update-select">
-                                <option value="" disabled selected>상태 변경</option>
+                            <select id="status-select-${order.ordBaseId}"
+                                    class="status-update-select"
+                                    ${isCanceled ? 'disabled' : ''}>
+                                <option value="" disabled selected>${isCanceled ? '변경 불가' : '상태 변경'}</option>
                                 <option value="PREPARING">상품준비</option>
                                 <option value="DELIVERING">배송중</option>
                                 <option value="DELIVERED">배송완료</option>
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate('${order.ordBaseId}')" title="변경상태저장">
+                            <button class="btn-icon-sm"
+                                    onclick="submitOrderStatusUpdate('${order.ordBaseId}', ${page})"
+                                    title="변경상태저장"
+                                    ${isCanceled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
                     </td>
-
                 </tr>
             `;
         }).join('');
@@ -555,162 +556,9 @@ async function viewFullOrderList(memId, page = 0) {
     }
 }
 
-// =============================== 전체 배송 목록 조회 =================================
-
-function getShipmentBadgeTheme(status) {
-    switch(status) {
-        case 'PREPARING':
-            return { text: '배송준비', badgeClass: 'badge-gray' };
-        case 'DELIVERING':
-            return { text: '배송중', badgeClass: 'badge-yellow' };
-        case 'SHIPPING':
-            return { text: '통관진행', badgeClass: 'badge-yellow' };
-        case 'DELIVERED':
-            return { text: '배송완료', badgeClass: 'badge-green' };
-        default:
-            return { text: status || '미확인상태', badgeClass: 'badge-gray' };
-    }
-}
-
-async function viewFullShipmentList(memId, page = 0) {
-    const contentArea = document.getElementById('modalContentArea');
-
-    contentArea.innerHTML = `
-        <div class="order-history-fragment">
-            <div class="fragment-top">
-                <button class="btn-go-back" onclick="restoreDashboard()">
-                    <span class="material-symbols-outlined">arrow_back</span> 이전으로
-                </button>
-                <div class="title-row">
-                    <h2 class="fragment-title">SHIPPING History</h2>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="fragment-table">
-                    <thead>
-                        <tr>
-                            <th>택배사/송장번호</th>
-                            <th style="text-align: center;">배송 시작일자</th>
-                            <th>수령인/배송물품</th>
-                            <th>배송지</th>
-                            <th class="text-center">상태</th>
-                            <th class="text-center">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="shipmentListBody">
-                        <tr><td colspan="5" style="text-align: center; padding: 30px;">데이터를 불러오는 중...</td></tr>
-                    </tbody>
-                </table>
-                <div class="table-footer-row" id="shipmentPaginationArea"></div>
-            </div>
-        </div>
-    `;
-
-    try {
-        const url = `/api/admin/member/shipment/${memId}?page=${page}`;
-        const response = await fetch(url);
-        const data = await response.json();
-
-        const listBody = document.getElementById('shipmentListBody');
-        const paginationArea = document.getElementById('shipmentPaginationArea');
-
-        if (!data.content || data.content.length === 0) {
-            listBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px;">배송 내역이 없습니다.</td></tr>`;
-            paginationArea.innerHTML = '';
-            return;
-        }
-
-        const rowsHtml = data.content.map(shipment => {
-            const sttInfo = getShipmentBadgeTheme(shipment.shStt);
-            const dateStr = shipment.shCreDt ? shipment.shCreDt.substring(0, 10).replaceAll('-', '.') : '-';
-            let itemSummary = '상품 정보 없음';
-            const courierMap = {
-                "kr.cjlogistics": "CJ대한통운",
-                "kr.epost": "우체국택배",
-                "kr.hanjin": "한진택배",
-                "kr.lotteglogis": "롯데택배",
-                "kr.logen": "로젠택배",
-                "kr.cvsnet": "GS25 편의점택배",
-                "kr.cupost": "CU 편의점택배"
-            };
-            let displayName = courierMap[shipment.shCarCd] || "택배사 미정";
-            let displayNo = shipment.shTraNo || "";
-
-            if (shipment.items && shipment.items.length > 0) {
-                const firstItemName = shipment.items[0].ordItmNm;
-                itemSummary = shipment.items.length > 1
-                    ? `${firstItemName} 외 ${shipment.items.length - 1}건`
-                    : firstItemName;
-            }
-
-            return `
-                <tr>
-                    <td class="shipment-id">${displayName}-${displayNo}</td>
-
-                    <td class="shipment-date" style="text-align: center !important;">${dateStr}</td>
-
-                    <td class="shipment-summary" style="padding-left: 20px;">
-                        <strong>${shipment.shRcvNm || '수령인 없음'}</strong><br>
-                        <span>${itemSummary}</span>
-                    </td>
-
-                    <td class="shipment-summary">
-                        <strong>${shipment.shAdr || '-'}</strong><br>
-                        <strong>${shipment.shAdrDt || '-'}</strong>
-                    </td>
-
-                    <td class="order-status text-center">
-                        <span class="badge-status ${sttInfo.badgeClass}">${sttInfo.text}</span>
-                    </td>
-
-                    <td style="padding-left: 30px;">
-                        <button class="btn-edit" style="margin-left: 8px;" onclick="shipmentDetail('${shipment.shId}', '${memId}', ${data.number})">상세보기</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-        listBody.innerHTML = rowsHtml;
-
-        const startItem = (data.number * data.size) + 1;
-        const endItem = Math.min(startItem + data.size - 1, data.totalElements);
-
-        let paginationHtml = `<span class="showing-text">Showing ${startItem}-${endItem} of ${data.totalElements} shipments</span>`;
-        paginationHtml += `<div class="fragment-pagination">`;
-
-        // Prev
-        if(data.first) {
-            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_left</span></button>`;
-        } else {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number - 1})"><span class="material-symbols-outlined">chevron_left</span></button>`;
-        }
-
-        // Pages
-        for (let i = 0; i < data.totalPages; i++) {
-            const activeClass = (i === data.number) ? 'active' : '';
-            paginationHtml += `<button class="page-num ${activeClass}" onclick="viewFullShipmentList('${memId}', ${i})">${i + 1}</button>`;
-        }
-
-        // Next
-        if(data.last) {
-            paginationHtml += `<button class="page-arrow" disabled><span class="material-symbols-outlined" style="color:#ccc;">chevron_right</span></button>`;
-        } else {
-            paginationHtml += `<button class="page-arrow" onclick="viewFullShipmentList('${memId}', ${data.number + 1})"><span class="material-symbols-outlined">chevron_right</span></button>`;
-        }
-
-        paginationHtml += `</div>`;
-        paginationArea.innerHTML = paginationHtml;
-
-    } catch (error) {
-        console.error("배송 데이터 로드 에러:", error);
-        document.getElementById('shipmentListBody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: red; padding: 30px;">데이터 로드에 실패했습니다.</td></tr>`;
-    }
-}
-
 // =============================== 주문 상태 수정 영역 =================================
 
-async function submitOrderStatusUpdate(orderId) {
+async function submitOrderStatusUpdate(orderId, currentPage) {
     const selectElement = document.getElementById(`status-select-${orderId}`);
     const newStatus = selectElement.value;
     const memberId = document.getElementById('memberDetailModal').dataset.currentMemberId;
@@ -736,7 +584,7 @@ async function submitOrderStatusUpdate(orderId) {
 
         alert('주문 상태가 성공적으로 변경되었습니다.');
 
-        viewFullOrderList(memberId, 0);
+        viewFullOrderList(memberId, currentPage);
 
     } catch (error) {
         console.error('Update Error:', error);
@@ -744,154 +592,32 @@ async function submitOrderStatusUpdate(orderId) {
     }
 }
 
-// =========================== 배송 현황 조회 ==============================
+// =============================== 전체 배송 목록 조회 =================================
 
-async function shipmentDetail(shId, memId, page) {
-    const contentArea = document.getElementById('modalContentArea');
-
-    contentArea.innerHTML = `
-        <div class="order-history-fragment">
-            <div class="fragment-top">
-                <button class="btn-go-back" onclick="viewFullShipmentList('${memId}', ${page})">
-                    <span class="material-symbols-outlined">arrow_back</span> 목록으로 돌아가기
-                </button>
-
-                <div class="title-row" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 class="fragment-title" style="margin: 0;">TRACKING Details</h2>
-                    <button onclick="advanceDemoStatus('${shId}', '${memId}', ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
-                        다음 배송 단계
-                    </button>
-                </div>
-            </div>
-
-            <div class="tracking-content-wrapper">
-                <div id="trackingSummary" class="tracking-summary-card">
-                    <p style="text-align:center; color:#666;">배송 데이터를 불러오는 중입니다...</p>
-                </div>
-
-                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;"></div>
-            </div>
-        </div>
-    `;
-
-    try {
-        const response = await fetch(`/api/admin/member/shipment/${shId}/track`);
-        if (!response.ok) throw new Error("서버와 통신 중 문제가 발생했습니다.");
-
-        const data = await response.json();
-
-        document.getElementById('trackingSummary').innerHTML = `
-            <div class="summary-info" style="display:flex; justify-content:space-between; width:100%;">
-
-                <div style="flex:1;">
-                    <span style="font-size:12px; color:#888;">택배사</span>
-                    <div style="font-weight:bold; font-size:16px;">${data.carrierName}</div>
-                </div>
-                <div style="flex:1;">
-                    <span style="font-size:12px; color:#888;">송장번호</span>
-                    <div style="font-weight:bold; font-size:16px; color:#0056b3;">${data.trackingNumber}</div>
-                </div>
-                <div style="flex:1; text-align:right;">
-                    <span style="font-size:12px; color:#888;">현재 상태</span>
-                    <div style="font-weight:bold; font-size:16px; color:#d9534f;">${data.statusText}</div>
-                </div>
-            </div>
-        `;
-
-        const timelineArea = document.getElementById('trackingTimeline');
-
-        let html = '<ul class="tracking-timeline-list">';
-
-        // 1. 통관 내역이 있다면 '하나의 스텝'으로 묶어서 아코디언으로 출력
-        if (data.customsDetails && data.customsDetails.length > 0) {
-            html += `
-                <li class="timeline-step">
-                    <div class="step-time">통관 단계</div>
-                    <div class="step-content">
-                        <details style="background: #f8f9fa; padding: 10px; border-radius: 6px; cursor: pointer;">
-                            <summary style="font-weight: bold; color: #0056b3; outline: none;">
-                                해외 통관 상세 내역 보기 (${data.customsDetails.length}건)
-                            </summary>
-                            <div style="margin-top: 10px; font-size: 13px; color: #555;">
-            `;
-
-            // 통관 세부 내역 반복
-            data.customsDetails.forEach(c => {
-                html += `
-                    <div style="margin-bottom: 8px; border-left: 2px solid #ddd; padding-left: 10px;">
-                        <span style="display:block; font-size:11px; color:#888;">${c.time}</span>
-                        <strong>${c.status}</strong> - ${c.description}
-                    </div>
-                `;
-            });
-
-            html += `
-                            </div>
-                        </details>
-                    </div>
-                </li>
-            `;
-        }
-
-        // 2. 국내 배송 내역 출력
-        if (data.details && data.details.length > 0) {
-            data.details.forEach((item, index) => {
-                const isLast = (index === data.details.length - 1);
-                const activeClass = isLast ? 'active' : '';
-
-                html += `
-                    <li class="timeline-step ${activeClass}">
-                        <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
-                        <div class="step-content">
-                            <strong>${item.status}</strong>
-                            <p>${item.description}</p>
-                        </div>
-                    </li>`;
-            });
-        }
-
-        if ((!data.details || data.details.length === 0) && (!data.customsDetails || data.customsDetails.length === 0)) {
-            timelineArea.innerHTML = `
-                <div style="text-align:center; padding: 40px; color:#888; background:#f8f9fa; border-radius:8px;">
-                    <p>조회된 배송 정보가 없습니다.</p>
-                </div>
-            `;
-            return;
-        }
-
-        html += '</ul>';
-        timelineArea.innerHTML = html;
-
-    } catch (error) {
-        document.getElementById('trackingSummary').innerHTML = `<p style="color:red; text-align:center;">오류: ${error.message}</p>`;
-        document.getElementById('trackingTimeline').innerHTML = '';
+function getShipmentBadgeTheme(status) {
+    switch(status) {
+        case 'PREPARING':
+            return { text: '배송준비', badgeClass: 'badge-gray' };
+        case 'DELIVERING':
+            return { text: '배송중', badgeClass: 'badge-yellow' };
+        case 'SHIPPING':
+            return { text: '통관진행', badgeClass: 'badge-yellow' };
+        case 'DELIVERED':
+            return { text: '배송완료', badgeClass: 'badge-green' };
+        default:
+            return { text: status || '미확인상태', badgeClass: 'badge-gray' };
     }
 }
 
+async function viewFullShipmentList(memId, page = 0) {
+}
+
+// =========================== 배송 현황 조회 ==============================
+
+async function shipmentDetail(shId, memId, page) {
+}
+
 async function advanceDemoStatus(shId, memId, page) {
-        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-        if(!confirm("배송 상태를 다음 단계로 이동시킬까요?")) return;
-
-        try {
-            const response = await fetch(`/api/admin/member/shipment/${shId}/demo-progress`, {
-                method: 'POST',
-                headers: {
-                   'Content-Type': 'application/json',
-                   [csrfHeader]: csrfToken
-                }
-            });
-
-            if (response.ok) {
-                alert("상태가 업데이트 되었습니다.");
-                shipmentDetail(shId, memId, page);
-            } else {
-                alert("상태 업데이트 실패");
-            }
-        } catch (error) {
-            console.error("통신 오류:", error);
-        }
 }
 
 // =========================== 문의 전체 목록 조회 ==============================

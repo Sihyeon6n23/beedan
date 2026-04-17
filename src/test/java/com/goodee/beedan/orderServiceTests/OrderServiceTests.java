@@ -219,7 +219,7 @@ class OrderServiceTests {
 
     @Test
     @DisplayName("주문 상태 변경 성공")
-    void updateOrderStatus_Success() {
+    void updateOrderStatus_ByAdmin_Success() {
         // given
         Long ordId = 1L;
         OrderStatus newStatus = OrderStatus.DELIVERING;
@@ -227,7 +227,7 @@ class OrderServiceTests {
         given(orderRepository.getByIdOrThrow(ordId)).willReturn(order);
 
         // when
-        orderService.updateOrderStatus(ordId, newStatus);
+        orderService.updateOrderStatusByAdmin(ordId, newStatus);
 
         // then
         assertEquals(OrderStatus.DELIVERING, order.getOrdBaseStt());
@@ -235,7 +235,7 @@ class OrderServiceTests {
 
     @Test
     @DisplayName("주문 상태 변경 실패 - 취소된 주문")
-    void updateOrderStatus_Fail_CanceledOrder() {
+    void updateOrderStatus_Fail_CanceledOrderByAdmin() {
         // given
         Long ordId = 1L;
         order.setOrdBaseStt(OrderStatus.CANCELED);
@@ -245,7 +245,7 @@ class OrderServiceTests {
 
         // when & then
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-            () -> orderService.updateOrderStatus(ordId, newStatus));
+            () -> orderService.updateOrderStatusByAdmin(ordId, newStatus));
         assertEquals("취소된 주문의 상태는 변경할 수 없습니다.", exception.getMessage());
     }
 

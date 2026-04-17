@@ -91,14 +91,38 @@ public class OrderService {
     }
 
     @Transactional
-    public void updateOrderStatus(Long ordId, OrderStatus newStatus) {
+    public void updateOrderStatusByAdmin(Long ordId, OrderStatus newStatus) {
         Order order = orderRepository.getByIdOrThrow(ordId);
 
         if (order.getOrdBaseStt() == newStatus) return; // 같은 상태 선택시 상태 변경 방지
-
         if (order.getOrdBaseStt() == OrderStatus.CANCELED) throw new IllegalStateException("취소된 주문의 상태는 변경할 수 없습니다.");
 
         order.setOrdBaseStt(newStatus);
+
+        order.getShipments().forEach(sh -> sh.setShCanYn(true));
+    }
+
+    @Transactional
+    public void cancelOrder(Long ordId, Long memId) {
+        memberRepository.getByIdOrThrow(memId);
+        Order order = orderRepository.getByIdOrThrow(ordId);
+
+        if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
+        }
+
+        order.setOrdBaseStt(OrderStatus.CANCELED);
+
+        order.getShipments().forEach(sh -> sh.setShCanYn(true));
+    }
+
+    @Transactional
+    public void processWebhook(WebhookShipmentRequest webhookRequest) {
+        if (webhookRequest.getShTraNo() == null || webhookRequest.getShTraNo().isEmpty()) {
+            createOrderFromWebhook(webhookRequest);
+        } else {
+            updateShipmentFromWebhook(webhookRequest);
+        }
     }
 
     @Transactional
@@ -116,28 +140,7 @@ public class OrderService {
         }
     }
 
-    @Transactional
-    public void cancelOrder(Long ordId, Long memId) {
-        memberRepository.getByIdOrThrow(memId);
-        Order order = orderRepository.getByIdOrThrow(ordId);
-
-        if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {
-            throw new IllegalStateException("이미 배송이 시작되어 취소할 수 없습니다.");
-        }
-
-        order.setOrdBaseStt(OrderStatus.CANCELED);
-        order.getShipments().forEach(sh -> sh.setShCanYn(true));
-    }
-
-    @Transactional
-    public void processWebhook(WebhookShipmentRequest webhookRequest) {
-        if (webhookRequest.getShTraNo() == null || webhookRequest.getShTraNo().isEmpty()) {
-            createOrderFromWebhook(webhookRequest);
-        } else {
-            updateShipmentFromWebhook(webhookRequest);
-        }
-    }
-
+    // ====== webhook 영역 ======
     private void createOrderFromWebhook(WebhookShipmentRequest webhookRequest) {
         QuoteBase quoteBase = quoteBaseRepository.findById(webhookRequest.getQuId()).orElseThrow(() -> new IllegalStateException("견적 정보가 없습니다."));
         Negotiation negotiation = negotiationRepository.findByNgId(quoteBase.getNgId());
