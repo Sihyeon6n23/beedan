@@ -731,9 +731,27 @@ async function viewFullShipmentList(memId, page = 0) {
 }
 
 // 배송 상세 현황
+function formatTrackingDate(dateStr) {
+    if (!dateStr || dateStr.length < 12) return dateStr || '-';
+
+    // 이미 ISO 형식(하이픈 포함)이라면 T만 공백으로 치환
+    if (dateStr.includes('-')) {
+        return dateStr.replace('T', ' ').substring(0, 16);
+    }
+
+    const y = dateStr.substring(0, 4);
+    const m = dateStr.substring(4, 6);
+    const d = dateStr.substring(6, 8);
+    const hh = dateStr.substring(8, 10);
+    const mm = dateStr.substring(10, 12);
+
+    return `${y}-${m}-${d} ${hh}:${mm}`;
+}
+
 async function shipmentDetail(shId, memId, page) {
     const contentArea = document.getElementById('modalContentArea');
 
+    // 1. 관리자용 상단 헤더 렌더링 (목록 버튼, 다음 단계 버튼 유지)
     contentArea.innerHTML = `
         <div class="order-history-fragment">
             <div class="fragment-top">
@@ -750,12 +768,8 @@ async function shipmentDetail(shId, memId, page) {
                 </div>
             </div>
 
-            <div class="tracking-content-wrapper">
-                <div id="trackingSummary" class="tracking-summary-card">
-                    <p style="text-align:center; color:#666;">배송 데이터를 불러오는 중입니다...</p>
-                </div>
-
-                <div id="trackingTimeline" class="tracking-timeline-container" style="padding: 20px;"></div>
+            <div id="adminTrackingContent" class="tracking-content-wrapper">
+                <div style="text-align:center; padding:30px; color:#666;">배송 데이터를 불러오는 중입니다...</div>
             </div>
         </div>
     `;
@@ -766,15 +780,14 @@ async function shipmentDetail(shId, memId, page) {
 
         const data = await response.json();
         const nextBtn = document.getElementById('demoNextBtn');
+        const trackingContent = document.getElementById('adminTrackingContent');
 
-        // [핵심 수정] 운송장 번호에 'TEST'가 포함되어 있는지 확인
+        // [핵심 수정] 운송장 번호에 'TEST'가 포함되어 있는지 확인 (관리자 전용 기능)
         const isTestShipment = data.trackingNumber && data.trackingNumber.includes('TEST');
 
         if (nextBtn) {
             if (isTestShipment) {
-                nextBtn.style.display = 'block'; // TEST 포함 시 노출
-
-                // 추가 로직: 만약 취소된 건(shCanYn)이라면 버튼은 보이되 비활성화
+                nextBtn.style.display = 'block';
                 if (data.shCanYn === 'Y' || data.isCanceled) {
                     nextBtn.disabled = true;
                     nextBtn.style.backgroundColor = '#ccc';
@@ -782,90 +795,72 @@ async function shipmentDetail(shId, memId, page) {
                     nextBtn.style.cursor = 'not-allowed';
                 }
             } else {
-                nextBtn.style.display = 'none'; // TEST 미포함 시 숨김
+                nextBtn.style.display = 'none';
             }
         }
 
-        document.getElementById('trackingSummary').innerHTML = `
-            <div class="summary-info" style="display:flex; justify-content:space-between; width:100%;">
-                <div style="flex:1;">
-                    <span style="font-size:12px; color:#888;">택배사</span>
-                    <div style="font-weight:bold; font-size:16px;">${data.carrierName || '-'}</div>
-                </div>
-                <div style="flex:1;">
-                    <span style="font-size:12px; color:#888;">송장번호</span>
-                    <div style="font-weight:bold; font-size:16px; color:#0056b3;">${data.trackingNumber || '-'}</div>
-                </div>
-                <div style="flex:1; text-align:right;">
-                    <span style="font-size:12px; color:#888;">현재 상태</span>
-                    <div style="font-weight:bold; font-size:16px; color:#d9534f;">${data.statusText || '확인 중'}</div>
-                </div>
+        // --- 여기서부터 회원 쪽 디자인 양식 적용 ---
+        const hasDomestic = data.details && data.details.length > 0;
+        const customsOpen = hasDomestic ? '' : 'open';
+
+        let html = `
+            <div class="tracking-info-summary">
+                <div class="info-item"><span class="label">택배사</span><div class="value">${data.carrierName || '-'}</div></div>
+                <div class="info-item"><span class="label">수령인</span><div class="value">${data.shRcvNm || '-'}</div></div>
+                <div class="info-item info-item--address"><span class="label">배송지</span><div class="value">${data.shAdr || '-'}</div></div>
+                <div class="info-item"><span class="label">송장번호</span><div class="value">${data.trackingNumber || '정보 없음'}</div></div>
+                <div class="info-item info-item--status"><span class="label">현재 상태</span><div class="value"><strong>${data.statusText || '-'}</strong></div></div>
             </div>
+            <div class="tracking-timeline" style="margin-top: 20px;">
         `;
 
-        // ... 이하 타임라인 렌더링 로직(이전과 동일) ...
-        const timelineArea = document.getElementById('trackingTimeline');
-        let html = '<ul class="tracking-timeline-list">';
-
+        // 해외 통관 내역 포맷팅 적용
         if (data.customsDetails && data.customsDetails.length > 0) {
-            html += `
-                <li class="timeline-step">
-                    <div class="step-time">해외 통관</div>
-                    <div class="step-content">
-                        <details style="background: #f8f9fa; padding: 10px; border-radius: 6px; cursor: pointer;">
-                            <summary style="font-weight: bold; color: #0056b3; outline: none;">
-                                통관 상세 내역 보기 (${data.customsDetails.length}건)
-                            </summary>
-                            <div style="margin-top: 10px; font-size: 13px; color: #555;">
-            `;
-
+            html += `<details ${customsOpen} style="margin-bottom:20px; background:#f8f9fa; border:1px solid #eee; border-radius:4px;">
+                        <summary style="padding:10px; cursor:pointer; font-weight:bold;">해외 통관 내역 (${data.customsDetails.length}건)</summary>
+                        <div style="padding:10px;">`;
             data.customsDetails.forEach(c => {
-                html += `
-                    <div style="margin-bottom: 8px; border-left: 2px solid #ddd; padding-left: 10px;">
-                        <span style="display:block; font-size:11px; color:#888;">${c.time}</span>
-                        <strong>${c.status}</strong> - ${c.description}
-                    </div>
-                `;
+                html += `<div style="padding:8px 0; border-bottom:1px solid #f1f1f1;">
+                            <small style="color:#888; font-size: 12px;">${formatTrackingDate(c.time)}</small>
+                                <div style="margin-top:2px;">${c.status}</div>
+                            <small style="color:#666;">${c.description}</small>
+                         </div>`;
             });
-
-            html += `
-                            </div>
-                        </details>
-                    </div>
-                </li>
-            `;
+            html += `</div></details>`;
         }
 
-        if (data.details && data.details.length > 0) {
-            data.details.forEach((item, index) => {
-                const isLast = (index === data.details.length - 1);
-                const activeClass = isLast ? 'active' : '';
-                html += `
-                    <li class="timeline-step ${activeClass}">
-                        <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
-                        <div class="step-content">
-                            <strong>${item.status}</strong>
-                            <p>${item.description}</p>
-                        </div>
-                    </li>`;
+        // 국내 배송 현황 포맷팅 적용
+        if (hasDomestic) {
+            html += '<h4 style="margin:15px 0 12px; font-size:16px;">국내 배송 현황</h4><ul style="padding-left:25px; border-left:2px solid #eee; list-style:none; margin:0;">';
+
+            data.details.slice().reverse().forEach((item, idx) => {
+                const isFirst = idx === 0;
+                // 포맷팅 통합 적용
+                const displayTime = formatTrackingDate(item.time);
+
+                html += `<li style="margin-bottom:20px; position:relative;">
+                            <span style="position:absolute; left:-31px; top:5px; width:10px; height:10px; border-radius:50%; background:${isFirst ? '#d9534f' : '#ccc'}; box-shadow:${isFirst ? '0 0 0 3px rgba(217,83,79,0.2)' : 'none'};"></span>
+                            <small style="color:#888; font-size: 12px;">${displayTime}</small>
+                            <div style="margin-top:2px;"><strong>${item.status}</strong></div>
+                            <p style="margin:2px 0 0; font-size:13px; color:#777;">${item.description || ''}</p>
+                         </li>`;
             });
+            html += '</ul>';
+        } else {
+            html += '<div style="text-align:center; padding:30px; background:#fafafa; border-radius:4px; color:#999;">아직 국내 배송 정보가 없습니다.</div>';
         }
 
-        if ((!data.details || data.details.length === 0) && (!data.customsDetails || data.customsDetails.length === 0)) {
-            timelineArea.innerHTML = `
-                <div style="text-align:center; padding: 40px; color:#888; background:#f8f9fa; border-radius:8px;">
-                    <p>조회된 통관/배송 정보가 없습니다.</p>
-                </div>
-            `;
-            return;
-        }
+        html += '</div>';
 
-        html += '</ul>';
-        timelineArea.innerHTML = html;
+        // 구성된 HTML을 렌더링 영역에 삽입
+        trackingContent.innerHTML = html;
 
     } catch (error) {
-        document.getElementById('trackingSummary').innerHTML = `<p style="color:red; text-align:center;">오류: ${error.message}</p>`;
-        document.getElementById('trackingTimeline').innerHTML = '';
+        document.getElementById('adminTrackingContent').innerHTML = `
+            <div style="color:red; text-align:center; padding: 30px;">
+                오류: ${error.message}
+            </div>
+        `;
     }
 }
 

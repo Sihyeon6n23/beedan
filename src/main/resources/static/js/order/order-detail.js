@@ -219,7 +219,7 @@ function loadShipmentDetail(data) {
 
             html += `<li style="margin-bottom:20px; position:relative;">
                         <span style="position:absolute; left:-31px; top:5px; width:10px; height:10px; border-radius:50%; background:${isFirst ? '#d9534f' : '#ccc'}; box-shadow:${isFirst ? '0 0 0 3px rgba(217,83,79,0.2)' : 'none'};"></span>
-                        <small style="color:#888; font-family:monospace;">${displayTime}</small>
+                        <small style="color:#888; font-size: 12px;">${displayTime}</small>
                         <div style="margin-top:2px;"><strong>${item.status}</strong></div>
                         <p style="margin:2px 0 0; font-size:13px; color:#777;">${item.description || ''}</p>
                      </li>`;
