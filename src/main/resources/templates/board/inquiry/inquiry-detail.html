@@ -20,7 +20,7 @@
               ~{::content}
           )}">
 
-<title th:fragment="title">BEEDAN | 문의 상세</title>
+<title th:fragment="title" th:text="'BEEDAN | ' + ${inquiryBoardDetail.brdTtl}">BEEDAN | 문의 상세</title>
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
