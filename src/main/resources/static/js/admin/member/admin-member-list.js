@@ -814,7 +814,7 @@ async function shipmentDetail(shId, memId, page) {
                     <div class="step-content">
                         <details style="background: #f8f9fa; padding: 10px; border-radius: 6px; cursor: pointer;">
                             <summary style="font-weight: bold; color: #0056b3; outline: none;">
-                                UNI-PASS 통관 상세 내역 보기 (${data.customsDetails.length}건)
+                                통관 상세 내역 보기 (${data.customsDetails.length}건)
                             </summary>
                             <div style="margin-top: 10px; font-size: 13px; color: #555;">
             `;

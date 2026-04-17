@@ -1,0 +1,84 @@
+        .receiver-management-list .admin-chat-list-head,
+        .receiver-management-list .admin-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(120px, 1.2fr) minmax(200px, 2fr) minmax(180px, 1.3fr) minmax(90px, 0.9fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .receiver-management-list .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .receiver-management-list .admin-chat-row__amount {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            padding-right: 10px;
+        }
+
+        .admin-chat-filter.is-active {
+          background: var(--color-primary-container);
+          border-color: var(--color-primary-container);
+          color: var(--color-on-primary-container);
+          box-shadow: 0 6px 14px rgba(26, 28, 28, 0.08);
+        }
+
+    #btnSaveReceiver {
+    color: var(--color-on-primary-container);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--color-primary-container);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    }
+
+    #btnCancel {
+    color: var(--color-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--color-surface-container-highest);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    }
+
+    .btn-edit{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.42rem 0.7rem;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: var(--color-primary-container);
+      color: var(--color-on-primary-container);
+    }
+
+    .btn-delete{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.42rem 0.7rem;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: #1a1c1c;
+      var(--color-on-background);
+      color: #ffffff;
+    }
