@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 관리자 채팅방</title>
+<title th:fragment="title" th:text="'BEEDAN | ' + ${chatRoomDetail.memBizTtl}">BEEDAN | 관리자 채팅방</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
