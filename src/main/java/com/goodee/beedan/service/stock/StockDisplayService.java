@@ -23,6 +23,13 @@ public class StockDisplayService {
     // redis에 데이터 없으면 최초 삽입
     @PostConstruct
     public void init() {
+        try {
+            redisTemplate.getConnectionFactory().getConnection().ping();
+        } catch (Exception e) {
+            log.warn("Redis 연결 실패로 전시 상품 초기화를 건너뜁니다: {}", e.getMessage());
+            return;
+        }
+
         if(!redisTemplate.hasKey(KEY_NEW_STOCKS)) {
             log.info("캐시에 신규 상품 데이터 x");
             refreshNewStocks();
