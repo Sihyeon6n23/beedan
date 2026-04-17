@@ -3,7 +3,8 @@ package com.goodee.beedan.service.member;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.MemberStatus;
-import com.goodee.beedan.dto.admin.MemberListDto;
+import com.goodee.beedan.dto.board.notice.PageResponseDto;
+import com.goodee.beedan.dto.board.notice.SearchDto;
 import com.goodee.beedan.dto.file.RefDto;
 import com.goodee.beedan.dto.mail.PasswordResetMailRequest;
 import com.goodee.beedan.dto.member.*;
@@ -22,7 +23,9 @@ import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -281,16 +285,54 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public List<MemberApproveDto> findBizPendingMembersWithFiles() {
+    public PageResponseDto<MemberApproveDto> getPendingMemberList(SearchDto searchDto) {
         try {
-            List<MemberApproveDto> result = memberRepository.findBizPendingMembersWithFiles(
-                    MemberBizStatus.REQUEST.toString(),
-                    MemberStatus.WITHDRAWN.toString()
+            // [LOG 1] 컨트롤러에서 넘어온 SearchDto 파라미터 확인
+            log.info("=== [가입 승인 목록 조회 시작] ===");
+            log.info("SearchDto - page: {}, size: {}, type: {}, keyword: {}",
+                    searchDto.getPage(), searchDto.getSize(), searchDto.getSearchType(), searchDto.getKeyword());
+
+            // 1. Pageable 생성
+            Pageable pageable = PageRequest.of(
+                    searchDto.getPage(),
+                    searchDto.getSize(),
+                    Sort.by(Sort.Direction.DESC, "memCreDt") // 엔티티 필드명 기준 정렬
             );
-            return result;
+            log.info("[LOG 2] Pageable 생성 완료: {}", pageable);
+
+            // 2. 상태값 설정
+            String bizStt = MemberBizStatus.REQUEST.toString();
+            String memStt = MemberStatus.INACTIVE.toString();
+            log.info("[LOG 3] 파라미터 바인딩 준비 완료 - bizStt: {}, memStt: {}", bizStt, memStt);
+
+            // 3. JPQL 쿼리 호출 (DB에서 바로 DTO Page로 반환됨)
+            Page<MemberApproveDto> dtoPage = memberRepository.findBizPendingMembersWithSearch(
+                    bizStt,
+                    memStt,
+                    searchDto.getSearchType(),
+                    searchDto.getKeyword(),
+                    pageable
+            );
+
+            // [LOG 4] DB 조회가 무사히 끝났는지 확인
+            log.info("[LOG 4] DB 조회 성공! 검색된 총 데이터 수: {}", dtoPage.getTotalElements());
+
+            // 4. 작성해주신 공통 DTO를 사용하여 반환
+            PageResponseDto<MemberApproveDto> responseDto = new PageResponseDto<>(dtoPage, 10);
+            log.info("=== [가입 승인 목록 조회 정상 종료] ===");
+
+            return responseDto;
+
         } catch (Exception e) {
-            log.error("여기서 터졌네요! 에러 원인: ", e); // 에러의 정체를 밝혀줍니다.
-            throw e;
+            // ✨ 에러가 발생한 원인을 강제로 콘솔에 빨간 글씨로 도배합니다.
+            log.error("=====================================================");
+            log.error("🚨 getPendingMemberList 메서드 내부에서 심각한 에러 발생! 🚨");
+            log.error("에러 메시지: {}", e.getMessage());
+            log.error("=====================================================");
+            e.printStackTrace(); // 스택 트레이스 강제 출력
+
+            // 에러를 다시 던져서 컨트롤러가 알 수 있게 합니다.
+            throw new RuntimeException("회원 승인 목록 조회 중 오류 발생", e);
         }
     }
 
