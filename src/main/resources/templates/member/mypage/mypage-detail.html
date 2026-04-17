@@ -103,7 +103,7 @@
         <div class="col-span-12 lg:col-span-4">
           <div class="mypage-profile-page__sidebar-stack space-y-6">
 
-            <div class="bg-primary p-8 text-white flex flex-col justify-center gap-6 relative overflow-hidden shadow-sm">
+            <div class="bg-primary p-8 text-white justify-center relative overflow-hidden shadow-sm h-[200px]">
               <th:block th:if="${buyer != null}">
                 <div class="border-l-2 border-primary-container pl-4 relative z-10">
                   <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Current Grade</p>
@@ -123,10 +123,10 @@
               </th:block>
 
               <th:block th:unless="${buyer != null}">
-                <div class="flex flex-col items-center justify-center text-center gap-2 opacity-60 z-10 relative py-8">
+                <div class="items-center justify-center text-center gap-2 opacity-60 z-10 relative py-8 h-[200px]">
                   <span class="material-symbols-outlined text-4xl">admin_panel_settings</span>
                   <p class="text-xs font-bold uppercase tracking-widest"
-                     th:text="${member.memAut == 'ADMIN' or member.memAut == 'ROOT' ? 'Admin Account' : 'Pending Approval'}">
+                     th:text="${#strings.trim(member.memAut) == 'ADMIN' or #strings.trim(member.memAut) == 'ROOT' ? 'Admin Account' : 'Pending Approval'}">
                     Admin Account
                   </p>
                 </div>
@@ -134,7 +134,7 @@
               <div class="absolute right-0 bottom-0 w-40 h-40 bg-white/10 -mb-10 -mr-10 rounded-full blur-2xl z-0"></div>
             </div>
 
-            <div class="mypage-profile-page__side-card--fill bg-surface-container-low p-8 relative overflow-hidden border border-outline-variant/30">
+            <div class="bg-surface-container-low p-8 relative overflow-hidden border border-outline-variant/30 h-[250px]">
               <div class="relative z-10">
                 <h3 class="font-headline text-lg font-black uppercase tracking-tight text-on-surface mb-4">Account Danger Zone</h3>
                 <p class="text-sm text-secondary leading-relaxed mb-6">
@@ -145,7 +145,6 @@
                   회원 탈퇴
                 </button>
               </div>
-              <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-error opacity-5 select-none">person_off</span>
             </div>
           </div>
         </div>
@@ -193,7 +192,7 @@
       </div>
     </div>
   </div>
-
+  <div th:replace="~{fragments/modal/guidemodal :: guideModal}"></div>
   <div th:if="${buyer != null}" id="benefitsModal" class="hidden fixed inset-0 z-9999 items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300">
     <div class="bg-surface-container-lowest w-full max-w-6xl max-h-[90vh] overflow-y-auto p-10 relative shadow-2xl border border-stone-200">
       <button type="button" onclick="closeBenefitsModal()" class="absolute top-6 right-6 text-zinc-400 hover:text-primary transition-colors">
@@ -267,16 +266,41 @@
     };
 
     window.openWithdrawalModal = function() {
-      const modal = document.getElementById('withdrawalModal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-      }
+      // 1. 기존 모달에 있던 상세 안내 내용을 HTML 스트링으로 구성
+      const withdrawalContent = `
+    <div class="text-left">
+      <p class="mb-4">정말 <span style="font-weight: bold; color: #c4b799;">BEEDAN</span> 서비스를 떠나시겠습니까?<br>탈퇴 시 모든 데이터는 즉시 삭제됩니다.</p>
+
+      <ul style="background: #f9f8f6; padding: 15px; border-left: 4px solid #ff5252; font-size: 11px; color: #78716c; margin-bottom: 20px; list-style: none;">
+        <li style="margin-bottom: 5px;">• 모든 거래 기록 및 프로필이 영구 삭제됩니다.</li>
+        <li>• 보유 중인 등급 혜택 및 쿠폰이 소멸됩니다.</li>
+      </ul>
+
+      <p style="font-size: 10px; font-weight: 900; color: #ff5252; text-transform: uppercase; letter-spacing: 0.1em;">
+        This action cannot be undone.
+      </p>
+    </div>
+  `;
+
+      // 2. 공통 confirm-modal 호출
+      // showConfirmModal(message, onConfirm, title, icon)
+      showConfirmModal(
+              withdrawalContent, // 위에서 만든 HTML 내용
+              function() {
+                // '확인' 클릭 시 실제 탈퇴 로직 실행
+                proceedWithdrawal();
+              },
+              "Account Withdrawal", // 타이틀
+              "report"              // 아이콘 (기존에 쓰신 report 아이콘)
+      );
+
+      // 3. HTML을 메시지 영역에 삽입하기 위해 (필요시)
+      // showConfirmModal 내부에서 textContent 대신 innerHTML을 사용하도록 가이드가 필요할 수 있습니다.
+      document.getElementById('confirm-modal-message').innerHTML = withdrawalContent;
     };
 
     window.closeWithdrawalModal = function() {
-      const modal = document.getElementById('withdrawalModal');
+      const modal = document.getElementById('confirm-modal');
       if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
@@ -288,26 +312,52 @@
       const token = document.querySelector('meta[name="_csrf"]')?.content;
       const header = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-      try {
-        const response = await fetch('/mypage/withdrawal', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [header]: token
-          }
-        });
+      // 1. 먼저 정말 탈퇴할지 확인 모달을 띄웁니다.
+      showConfirmModal(
+              "정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+              async function() {
+                try {
+                  const response = await fetch('/mypage/withdrawal', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      [header]: token
+                    }
+                  });
 
-        if (response.ok) {
-          alert("회원 탈퇴가 정상적으로 처리되었습니다.");
-          window.location.href = "/auth/signin";
-        } else {
-          const errorMsg = await response.text();
-          alert("탈퇴 처리 중 오류가 발생했습니다: " + errorMsg);
-        }
-      } catch (error) {
-        console.error("Withdrawal Error:", error);
-        alert("서버와 통신할 수 없습니다.");
-      }
+                  if (response.ok) {
+                    // 2. 성공 시 안내 모달 호출
+                    showGuideModal(
+                            "회원 탈퇴가 정상적으로 처리되었습니다.",
+                            function() {
+                              window.location.href = "/auth/signin"; // 확인 버튼 누르면 이동
+                            },
+                            "WITHDRAWAL COMPLETE",
+                            "check_circle"
+                    );
+                  } else {
+                    // 3. 실패 시 에러 메시지 모달
+                    const errorMsg = await response.text();
+                    showGuideModal(
+                            "탈퇴 처리 중 오류가 발생했습니다: " + errorMsg,
+                            null,
+                            "ERROR",
+                            "error"
+                    );
+                  }
+                } catch (error) {
+                  console.error("Withdrawal Error:", error);
+                  showGuideModal(
+                          "서버와 통신할 수 없습니다.",
+                          null,
+                          "NETWORK ERROR",
+                          "wifi_off"
+                  );
+                }
+              },
+              "ACCOUNT WITHDRAWAL", // 타이틀
+              "warning"             // 아이콘
+      );
     };
 
     window.onclick = function(event) {
