@@ -666,7 +666,6 @@ async function viewFullShipmentList(memId, page = 0) {
             const addressDetail = shipment.shAdrDt || '-';
             const rcvNm = shipment.shRcvNm || '수령자 없음';
 
-            // [핵심 로직] 취소 여부 확인
             const isShipmentCanceled = (shipment.shCanYn === true || shipment.shCanYn === 'Y');
 
             return `
@@ -744,7 +743,8 @@ async function shipmentDetail(shId, memId, page) {
 
                 <div class="title-row" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="fragment-title" style="margin: 0;">TRACKING Details</h2>
-                    <button id="demoNextBtn" onclick="advanceDemoStatus('${shId}', '${memId}', ${page})" style="background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
+                    <button id="demoNextBtn" onclick="advanceDemoStatus('${shId}', '${memId}', ${page})"
+                            style="display:none; background-color:#ff4757; color:white; border:none; padding:8px 12px; border-radius:4px; cursor:pointer;">
                         다음 배송 단계
                     </button>
                 </div>
@@ -765,15 +765,24 @@ async function shipmentDetail(shId, memId, page) {
         if (!response.ok) throw new Error("서버와 통신 중 문제가 발생했습니다.");
 
         const data = await response.json();
+        const nextBtn = document.getElementById('demoNextBtn');
 
-        // [방어 로직] 혹시라도 상세페이지 진입에 성공했는데 취소된 건이라면 데모 버튼 비활성화
-        if (data.shCanYn === 'Y' || data.isCanceled) {
-            const nextBtn = document.getElementById('demoNextBtn');
-            if(nextBtn) {
-                nextBtn.disabled = true;
-                nextBtn.style.backgroundColor = '#ccc';
-                nextBtn.innerText = '취소된 배송';
-                nextBtn.style.cursor = 'not-allowed';
+        // [핵심 수정] 운송장 번호에 'TEST'가 포함되어 있는지 확인
+        const isTestShipment = data.trackingNumber && data.trackingNumber.includes('TEST');
+
+        if (nextBtn) {
+            if (isTestShipment) {
+                nextBtn.style.display = 'block'; // TEST 포함 시 노출
+
+                // 추가 로직: 만약 취소된 건(shCanYn)이라면 버튼은 보이되 비활성화
+                if (data.shCanYn === 'Y' || data.isCanceled) {
+                    nextBtn.disabled = true;
+                    nextBtn.style.backgroundColor = '#ccc';
+                    nextBtn.innerText = '취소된 배송';
+                    nextBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                nextBtn.style.display = 'none'; // TEST 미포함 시 숨김
             }
         }
 
@@ -794,10 +803,10 @@ async function shipmentDetail(shId, memId, page) {
             </div>
         `;
 
+        // ... 이하 타임라인 렌더링 로직(이전과 동일) ...
         const timelineArea = document.getElementById('trackingTimeline');
         let html = '<ul class="tracking-timeline-list">';
 
-        // 1. 통관 내역이 있다면 '하나의 스텝'으로 묶어서 아코디언으로 출력
         if (data.customsDetails && data.customsDetails.length > 0) {
             html += `
                 <li class="timeline-step">
@@ -827,12 +836,10 @@ async function shipmentDetail(shId, memId, page) {
             `;
         }
 
-        // 2. 국내 배송 내역 타임라인
         if (data.details && data.details.length > 0) {
             data.details.forEach((item, index) => {
                 const isLast = (index === data.details.length - 1);
                 const activeClass = isLast ? 'active' : '';
-
                 html += `
                     <li class="timeline-step ${activeClass}">
                         <div class="step-time">${item.time.replace('T', ' ').substring(0, 16)}</div>
@@ -844,7 +851,6 @@ async function shipmentDetail(shId, memId, page) {
             });
         }
 
-        // 3. 내역이 아무것도 없을 때 처리
         if ((!data.details || data.details.length === 0) && (!data.customsDetails || data.customsDetails.length === 0)) {
             timelineArea.innerHTML = `
                 <div style="text-align:center; padding: 40px; color:#888; background:#f8f9fa; border-radius:8px;">
