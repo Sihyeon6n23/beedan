@@ -1969,6 +1969,16 @@
     .rounded-sm { border-radius: 0.125rem; }
     .rounded-full { border-radius: 9999px; }
     .z-10 { z-index: 10; }
+    .mr-2 {
+      margin-right: 2px;
+    }
+    .top-6 {
+      top: 1.5rem; /* 24px */
+    }
+
+    .right-6 {
+      right: 1.5rem; /* 24px */
+    }
     .shadow-\[0_20px_40px_rgba\(0\,0\,0\,0\.1\)\] {
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     }

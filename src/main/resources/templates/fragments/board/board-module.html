@@ -36,9 +36,11 @@
 
 <footer th:fragment="pagination(pageObj, actionUrl, searchDto)" class="module-pagination-shell">
     <div class="module-pagination">
-        <a th:if="${pageObj.totalPages > 0 and pageObj.hasPrevious()}"
-           class="module-page-btn module-page-btn--wide"
-           th:href="@{${actionUrl}(searchType=${searchDto.searchType}, keyword=${searchDto.keyword}, page=${pageObj.page - 1}, size=${searchDto.size}, brdInqStt=${searchDto.brdInqStt}, myAnsweredOnly=${searchDto.myAnsweredOnly})}">Prev</a>
+        <a class="module-page-btn module-page-btn--wide"
+           th:classappend="${!pageObj.hasPrevious()} ? 'is-disabled opacity-50 cursor-not-allowed pointer-events-none'"
+           th:href="${pageObj.hasPrevious()} ? @{${actionUrl}(searchType=${searchDto.searchType}, keyword=${searchDto.keyword}, page=${pageObj.page - 1}, size=${searchDto.size}, brdInqStt=${searchDto.brdInqStt}, myAnsweredOnly=${searchDto.myAnsweredOnly})} : 'javascript:void(0)'">
+            Prev
+        </a>
 
         <th:block th:if="${pageObj.totalPages > 0}" th:each="pageNumber : ${#numbers.sequence(pageObj.startPage, pageObj.endPage)}">
             <a class="module-page-btn"

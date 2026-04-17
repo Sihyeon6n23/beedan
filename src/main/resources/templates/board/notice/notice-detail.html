@@ -6,7 +6,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | 공지사항 상세</title>
+<title th:fragment="title" th:text="'BEEDAN | ' + ${notice.brdTtl}">공지사항 상세</title>
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/board/notice.css}">
