@@ -156,5 +156,13 @@
 
         });
     </script>
+
+    <script th:if="${noticeSuccess}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var msg = /*[[${noticeSuccessMessage}]]*/ '';
+            var target = /*[[${noticeSuccessRedirect}]]*/ '';
+            showGuideModal(msg, function() { window.location.href = target; }, 'COMPLETE', 'check_circle');
+        });
+    </script>
 </th:block>
 </html>

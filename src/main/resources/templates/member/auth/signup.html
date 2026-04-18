@@ -242,6 +242,17 @@
   <script th:src="@{/js/auth/phone-certification.js}"></script>
   <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
   <script th:src="@{/js/file/fileUpload.js}"></script>
+
+  <script th:if="${signupSuccess}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      showGuideModal(
+        '회원가입이 정상적으로 완료되었습니다!',
+        function() { window.location.href = '/auth/signin'; },
+        'SIGNUP COMPLETE',
+        'check_circle'
+      );
+    });
+  </script>
   <script th:inline="javascript">
     const csrfToken = document.querySelector('meta[name="_csrf"]').content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;

@@ -30,9 +30,25 @@
 
           <div class="bg-surface-container-lowest p-10 border-l-[6px] border-primary shadow-chat-shell relative overflow-hidden">
             <div class="relative z-10">
-              <div class="inline-flex items-center gap-2 bg-primary-container px-3 py-1 mb-6">
+              <div th:if="${member.memBizStt == 'APPROVAL_MANUAL' or member.memBizStt == 'APPROVAL_AUTO'}"
+                   class="inline-flex items-center gap-2 bg-primary-container px-3 py-1 mb-6">
                 <span class="material-symbols-outlined text-xs text-on-primary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
                 <span class="text-[10px] font-black uppercase tracking-widest text-on-primary-container">Verified B2B Member</span>
+              </div>
+              <div th:if="${member.memBizStt == 'REQUEST'}"
+                   class="inline-flex items-center gap-2 bg-tertiary-container px-3 py-1 mb-6">
+                <span class="material-symbols-outlined text-xs text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">hourglass_top</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-on-tertiary-container">Pending Approval</span>
+              </div>
+              <div th:if="${member.memBizStt == 'REJECT'}"
+                   class="inline-flex items-center gap-2 bg-error-container px-3 py-1 mb-6">
+                <span class="material-symbols-outlined text-xs text-on-error-container" style="font-variation-settings: 'FILL' 1;">block</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-on-error-container">Application Rejected</span>
+              </div>
+              <div th:if="${member.memBizStt == null and (#strings.trim(member.memAut) == 'ADMIN' or #strings.trim(member.memAut) == 'ROOT')}"
+                   class="inline-flex items-center gap-2 bg-surface-container-high px-3 py-1 mb-6">
+                <span class="material-symbols-outlined text-xs text-on-surface" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-on-surface">Admin Account</span>
               </div>
               <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface mb-2 tracking-tight" th:text="${member.memNm}">Alexander Sterling</h2>
             </div>
@@ -101,7 +117,7 @@
           <div class="mypage-profile-page__sidebar-stack space-y-6">
 
             <div class="bg-primary p-8 text-white justify-center relative overflow-hidden shadow-sm h-[200px]">
-              <th:block th:if="${buyer != null}">
+              <th:block th:if="${buyer != null and (member.memBizStt == 'APPROVAL_MANUAL' or member.memBizStt == 'APPROVAL_AUTO')}">
                 <div class="border-l-2 border-primary-container pl-4 relative z-10">
                   <p class="text-[10px] font-bold uppercase tracking-widest opacity-70">Current Grade</p>
                   <p class="font-headline text-3xl font-black tracking-tighter" th:text="${buyer.bgpGr}">VIP</p>
@@ -119,13 +135,31 @@
                 </button>
               </th:block>
 
-              <th:block th:unless="${buyer != null}">
+              <th:block th:if="${buyer == null and (#strings.trim(member.memAut) == 'ADMIN' or #strings.trim(member.memAut) == 'ROOT')}">
                 <div class="items-center justify-center text-center gap-2 opacity-60 z-10 relative py-8 h-[200px]">
                   <span class="material-symbols-outlined text-4xl">admin_panel_settings</span>
-                  <p class="text-xs font-bold uppercase tracking-widest"
-                     th:text="${#strings.trim(member.memAut) == 'ADMIN' or #strings.trim(member.memAut) == 'ROOT' ? 'Admin Account' : 'Pending Approval'}">
-                    Admin Account
-                  </p>
+                  <p class="text-xs font-bold uppercase tracking-widest">Admin Account</p>
+                </div>
+              </th:block>
+
+              <th:block th:if="${buyer == null and member.memBizStt == 'REQUEST' and #strings.trim(member.memAut) != 'ADMIN' and #strings.trim(member.memAut) != 'ROOT'}">
+                <div class="items-center justify-center text-center gap-2 opacity-60 z-10 relative py-8 h-[200px]">
+                  <span class="material-symbols-outlined text-4xl">hourglass_top</span>
+                  <p class="text-xs font-bold uppercase tracking-widest">Pending Approval</p>
+                </div>
+              </th:block>
+
+              <th:block th:if="${buyer == null and member.memBizStt == 'REJECT' and #strings.trim(member.memAut) != 'ADMIN' and #strings.trim(member.memAut) != 'ROOT'}">
+                <div class="items-center justify-center text-center gap-2 opacity-60 z-10 relative py-8 h-[200px]">
+                  <span class="material-symbols-outlined text-4xl">block</span>
+                  <p class="text-xs font-bold uppercase tracking-widest">Application Rejected</p>
+                </div>
+              </th:block>
+
+              <th:block th:if="${buyer == null and member.memBizStt == null and #strings.trim(member.memAut) != 'ADMIN' and #strings.trim(member.memAut) != 'ROOT'}">
+                <div class="items-center justify-center text-center gap-2 opacity-60 z-10 relative py-8 h-[200px]">
+                  <span class="material-symbols-outlined text-4xl">badge</span>
+                  <p class="text-xs font-bold uppercase tracking-widest">Business Info Required</p>
                 </div>
               </th:block>
               <div class="absolute right-0 bottom-0 w-40 h-40 bg-white/10 -mb-10 -mr-10 rounded-full blur-2xl z-0"></div>
