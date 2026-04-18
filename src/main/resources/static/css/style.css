@@ -1667,7 +1667,6 @@
   .bd-input:focus {
     border-color: var(--color-primary);
     background: var(--color-white);
-    box-shadow: 4px 4px 0px var(--color-primary-container);
   }
   section {
     transition: all 0.3s ease;
@@ -1701,11 +1700,6 @@
   .bd-input {
     border: 1px solid var(--color-outline-variant);
     background: transparent;
-  }
-  .bd-input:focus {
-    border-color: var(--color-primary);
-    background: var(--color-white);
-    box-shadow: 4px 4px 0px var(--color-primary-container);
   }
 }
 @layer components {

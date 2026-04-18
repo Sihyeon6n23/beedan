@@ -3,9 +3,11 @@ package com.goodee.beedan.service.member;
 import com.goodee.beedan.common.constant.MemberAuthority;
 import com.goodee.beedan.common.constant.MemberBizStatus;
 import com.goodee.beedan.common.constant.MemberStatus;
+import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.dto.board.notice.PageResponseDto;
 import com.goodee.beedan.dto.board.notice.SearchDto;
 import com.goodee.beedan.dto.file.RefDto;
+import com.goodee.beedan.dto.mail.BizValidationRejectMailRequest;
 import com.goodee.beedan.dto.mail.PasswordResetMailRequest;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
@@ -16,6 +18,7 @@ import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.token.TokenRepository;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.mail.MailNotificationService;
+import com.goodee.beedan.service.notification.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +57,7 @@ public class MemberService {
     private final TokenRepository tokenRepository;
     private final MailNotificationService mailNotificationService;
     private final FileService fileService;
+    private final NotificationService notificationService;
 
     @Value("${site.url}")
     private String siteUrl;
@@ -168,6 +172,7 @@ public class MemberService {
     public void approveAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
         member.bizApprove();
+        notificationService.createNotification(member.getMemId(), NotificationType.BIZ_REJECT, null);
     }
 
 
@@ -178,6 +183,13 @@ public class MemberService {
     public void rejectAccount(Long memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new UsernameNotFoundException("계정을 찾을 수 없습니다."));
         member.bizReject();
+
+        BizValidationRejectMailRequest mailRequest = new BizValidationRejectMailRequest(
+                member.getMemEml()
+        );
+
+        notificationService.createNotification(member.getMemId(), NotificationType.BIZ_REJECT, null);
+        mailNotificationService.sendNotification(mailRequest);
     }
 
     public void resetPassword(String token, PasswordResetDto resetDto) {
