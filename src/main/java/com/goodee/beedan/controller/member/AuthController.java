@@ -1,25 +1,21 @@
 package com.goodee.beedan.controller.member;
 
-import com.goodee.beedan.common.constant.MemberAuthority;
-import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.common.constant.SnsType;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.member.sns.SnsIntegrateRequest;
 import com.goodee.beedan.entity.Member;
-import com.goodee.beedan.service.auth.TokenService;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
+import com.goodee.beedan.service.root.SecurityService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,10 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
-import java.net.http.HttpRequest;
 import java.security.Principal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +42,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final SnsIntegrateService snsIntegrateService;
     private final FileService fileService;
+    private final SecurityService securityService;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;

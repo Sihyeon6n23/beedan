@@ -207,6 +207,8 @@
     </div>
 </section>
 
+<th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+
 <!-- Carousel Script -->
 <script>
 function carouselMove(id, dir) {
@@ -217,6 +219,47 @@ function carouselMove(id, dir) {
     const target = track.scrollLeft + page * dir;
     track.scrollTo({ left: target, behavior: 'smooth' });
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const LOGIN_TRIGGER = "[[${showPwChangeModal}]]";
+    const EXPIRE_DAY = "[[${DAY}]]";
+
+    if (LOGIN_TRIGGER === "true") {
+        showCustomConfirmModal(
+            "비밀번호를 변경한 지" + EXPIRE_DAY + "일이 지났습니다.\n지금 안전한 비밀번호로 변경하시겠습니까?",
+            {
+                title: "보안 정책 알림",
+                icon: "lock_reset",
+                okText: "지금 변경하기",
+                cancelText: "다음에 변경하기",
+                onConfirm: function() {
+                    // 확인 시 실행 로직 (예: 비밀번호 변경 페이지 이동)
+                    location.href = "/mypage/changepw";
+                },
+                onCancel: function() {
+                    // CSRF 토큰 정보 가져오기 (Spring Security 사용 시 필수)
+                    const token = document.querySelector('meta[name="_csrf"]')?.content;
+                    const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+                    fetch('/api/auth/postpone-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [header]: token // 헤더에 CSRF 토큰 포함
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log("비밀번호 변경 유예 처리가 완료되었습니다.");
+                            } else {
+                                console.error("유예 처리 중 오류 발생");
+                            }
+                        })
+                        .catch(error => console.error("네트워크 에러:", error));
+                }
+            }
+        );
+    }
+});
 </script>
 
 

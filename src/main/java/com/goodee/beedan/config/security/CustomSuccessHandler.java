@@ -60,12 +60,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             memberService.resetLoginStatus(username);
         }
 
-        // 비밀번호 변경 정책 ON -> 비밀번호 변경시기 확인.?.....변경날짜 컬럼 DB에 추가완료
         if (policy.getIsPasswordExpiryEnabled()) {
-            HttpSession session = request.getSession();
-            // session에 올리고 메인화면 갔을때 해당 세션객체가 있으면
-            // 비밀번호 변경유도 창 띄워주기.
-            session.setAttribute("passwordExpiration", true);
+            request.getSession().setAttribute("LOGIN_TRIGGER", true);
         }
 
         // 세션 로그에 회원 ID 기록

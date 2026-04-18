@@ -185,4 +185,19 @@ public class AuthRestController {
         boolean isValid = memberService.checkCurrentPassword(userDetails.getUsername(), inputPassword);
         return ResponseEntity.ok(isValid);
     }
+
+    @PostMapping("/postpone-password")
+    public ResponseEntity<?> postponePassword(Principal principal) {
+        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        String email = principal.getName();
+        Member member = memberService.getMemberByUsername(principal.getName());
+
+        if (!memberService.isPasswordExpired(member)) {
+            return ResponseEntity.badRequest().body("변경 대상이 아닙니다.");
+        }
+        memberService.updatePasswordPostponeDate(member);
+
+        return ResponseEntity.ok().build();
+    }
 }
