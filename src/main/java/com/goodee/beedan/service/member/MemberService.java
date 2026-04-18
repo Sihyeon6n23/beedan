@@ -356,4 +356,10 @@ public class MemberService {
     public boolean isDuplicatedPhoneNumber(String phoneNumber) {
         return memberRepository.existsByMemMbPhn(phoneNumber);
     }
+
+    public boolean checkCurrentPassword(String username, String inputPassword) {
+        Member member = memberRepository.findByMemLgnId(username)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        return passwordEncoder.matches(inputPassword, member.getMemLgnPw());
+    }
 }

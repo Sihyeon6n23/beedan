@@ -203,7 +203,7 @@
             // [3] 이메일 중복 확인 로직 (최적화 버전)
             const duplicateEmailBtn = document.getElementById("duplicate_email");
             // Thymeleaf th:field는 보통 id와 name을 필드명(memEml)으로 변경하므로 둘 다 대응
-            const emailInput = document.getElementById("memEml") || document.querySelector('input[name="email"]');
+            const emailInput = document.getElementById("memEml");
             const emailAvailableMsg = document.getElementById("emailAvailable");
 
             if (duplicateEmailBtn && emailInput) {
@@ -273,9 +273,9 @@
 
         });
 
-        const originalEmail = document.getElementById('memEml').value  || document.querySelector('input[name="email"]').value;
+        const originalEmail = document.getElementById('memEml').value;
         const saveButton = document.getElementById('save');
-        const emailInput = document.getElementById("memEml") || document.querySelector('input[name="email"]');
+        const emailInput = document.getElementById("memEml");
         const myForm = document.getElementById('modifyForm');
 
         // 클릭 이벤트 리스너 등록

@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -173,5 +175,14 @@ public class AuthRestController {
                 .map(maskedId -> ResponseEntity.ok(Map.of("loginId", maskedId)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("message", "일치하는 회원 정보가 없습니다.")));
+    }
+
+    @PostMapping("/check-password")
+    public ResponseEntity<Boolean> checkPassword(@RequestBody Map<String, String> payload,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
+        String inputPassword = payload.get("currentPassword");
+        // 서비스 레이어에서 passwordEncoder.matches()를 사용해 검증
+        boolean isValid = memberService.checkCurrentPassword(userDetails.getUsername(), inputPassword);
+        return ResponseEntity.ok(isValid);
     }
 }
