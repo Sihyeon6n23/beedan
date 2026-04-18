@@ -16,19 +16,19 @@ import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.MypageService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
@@ -132,29 +132,30 @@ public class MypageController {
     @PostMapping("/changepw")
     public String postChangePw(@Valid @ModelAttribute("passwordForm") PasswordChangeDto request,
                                BindingResult bindingResult,
-                               Principal principal,
-                               RedirectAttributes redirectAttributes) {
+                               @AuthenticationPrincipal UserDetails userDetails,
+                               RedirectAttributes redirectAttributes,
+                               HttpSession session) {
         if (bindingResult.hasErrors()) {
             return "member/mypage/mypage-changepw";
         }
 
-        if (!mypageService.matchPassword(principal.getName(), request.getCurrentPassword())) {
+        if (!mypageService.matchPassword(userDetails.getUsername(), request.getCurrentPassword())) {
             bindingResult.rejectValue("currentPassword", "curPasswordIncorrect", "현재 비밀번호가 일치하지 않습니다.");
             return "member/mypage/mypage-changepw";
         }
-
         if (!request.isPasswordConfirm()) {
                 bindingResult.rejectValue("confirmPassword", "conPasswordIncorrect", "확인 비밀번호가 일치하지 않습니다.");
             return "member/mypage/mypage-changepw";
         }
 
         try {
-            mypageService.changPassword(principal.getName(), request);
-            redirectAttributes.addAttribute("message", "비밀번호가 성공적으로 변경되었습니다.");
+            mypageService.changPassword(userDetails.getUsername(), request);
+            redirectAttributes.addFlashAttribute("status", "success");
+            redirectAttributes.addFlashAttribute("message", "비밀번호가 성공적으로 변경되었습니다.");
         } catch (Exception e) {
-            redirectAttributes.addAttribute("message", "비밀번호 변경 중 오류가 발생했습니다.");
+            redirectAttributes.addFlashAttribute("status", "error");
+            redirectAttributes.addFlashAttribute("message", "비밀번호 변경 중 오류가 발생했습니다.");
         }
-
         return "redirect:/mypage/detail";
     }
 
@@ -213,13 +214,15 @@ public class MypageController {
             mypageService.updateMember(principal.getName(), request);
 
             // 6. 성공 시 상세 페이지로 리다이렉트
+            redirectAttributes.addFlashAttribute("status", "success");
             redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 변경되었습니다.");
             return "redirect:/mypage/detail";
 
         } catch (Exception e) {
             // 기타 서버 에러 발생 시
+            redirectAttributes.addFlashAttribute("status", "error");
             redirectAttributes.addFlashAttribute("error", "정보 수정 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:/mypage/modify";
+            return "redirect:/mypage/detail";
         }
     }
 
@@ -237,5 +240,10 @@ public class MypageController {
     public String postWithdrawal(Principal principal) {
         mypageService.withdraw(principal.getName());
         return "redirect:/auth/signin";
+    }
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        // 공백 문자열을 null로 변환해주는 에디터 등록
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 }

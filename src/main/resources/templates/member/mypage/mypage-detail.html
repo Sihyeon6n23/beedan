@@ -271,6 +271,7 @@
       </div>
     </div>
   </div>
+  <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
 
   <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}"
           type="text/javascript"
@@ -445,6 +446,30 @@
 
       setTimeout(() => clearInterval(checkKakao), 3000);
     })();
+    document.addEventListener('DOMContentLoaded', function() {
+      const status = "[[${status}]]";
+      const message = "[[${message}]]";
+
+      // 1. 단순 성공 케이스 (예: 비밀번호 변경 후 리다이렉트)
+      if (status === 'success') {
+        showGuideModal(
+                message,
+                null,
+                'SUCCESS',
+                'check_circle'
+        );
+      }
+
+      // 2. 오류 케이스 (예: 권한 부족 등)
+      if (status === 'error') {
+        showGuideModal(
+                '오류가 발생했습니다.',
+                null,
+                'ERROR',
+                'error'
+        );
+      }
+    });
   </script>
 </th:block>
 

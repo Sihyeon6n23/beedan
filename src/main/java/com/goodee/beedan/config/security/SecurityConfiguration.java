@@ -51,7 +51,8 @@ public class SecurityConfiguration {
                         // 2) 로그인은 필요하지만 공개 API로 열면 안 되는 예외 경로
                         .requestMatchers(
                                 "/auth/kakao/**",
-                                "/api/auth/disconnectSns"
+                                "/api/auth/disconnectSns",
+                                "/api/auth/check-password"
                         ).authenticated()
 
                         // 3) 인증/로그인 관련
@@ -127,7 +128,6 @@ public class SecurityConfiguration {
                         .permitAll()
                 )
                 .sessionManagement(session -> session
-                        .sessionFixation().changeSessionId()
                         .invalidSessionStrategy((request, response) -> {
                             request.getSession().setAttribute("errorMessage",
                                     new SignInErrorMessageDto("세션만료", "세션이 만료되었습니다. 재로그인 해주시기 바랍니다."));
