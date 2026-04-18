@@ -32,21 +32,6 @@
                     <span class="material-symbols-outlined">admin_panel_settings</span>
                 </a>
             </div>
-            <div class="button">
-                <th:block sec:authorize="isAnonymous()">
-                    <div class="flex items-center gap-4">
-                        <a th:href="@{/auth/signup}" class="text-xs font-bold no-underline text-stone-900">SIGNUP</a>
-                        <a th:href="@{/auth/signin}" class="text-xs font-bold no-underline text-stone-900">LOGIN</a>
-                    </div>
-                </th:block>
-                <th:block>
-                    <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="text-xs font-bold no-underline text-stone-900">LOGOUT</button>
-                    </form>
-                </th:block>
-            </div>
-
             <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer">
                 <span class="material-symbols-outlined">notifications</span>
 
@@ -70,6 +55,21 @@
                 <a th:href="@{/cart}" class="flex items-center">
                     <span class="material-symbols-outlined leading-none">shopping_cart</span>
                 </a>
+            </div>
+
+            <div class="button">
+                <th:block sec:authorize="isAnonymous()">
+                    <div class="flex items-center gap-4">
+                        <a th:href="@{/auth/signup}" class="text-xs font-bold no-underline text-stone-900">SIGNUP</a>
+                        <a th:href="@{/auth/signin}" class="text-xs font-bold no-underline text-stone-900">LOGIN</a>
+                    </div>
+                </th:block>
+                <th:block>
+                    <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="text-xs font-bold no-underline text-stone-900">LOGOUT</button>
+                    </form>
+                </th:block>
             </div>
         </div>
 

@@ -170,7 +170,8 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        return "redirect:/auth/signin";
+        model.addAttribute("signupSuccess", true);
+        return "/member/auth/signup";
     }
 
     @GetMapping("/signin")

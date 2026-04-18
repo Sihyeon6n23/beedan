@@ -1,6 +1,12 @@
 /* ==========================================================================
    1. 기본 레이아웃 및 쉘 (Shell)
    ========================================================================== */
+.app-layout__content:has(.inquiry-page) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
 .inquiry-page {
   display: flex;
   flex-direction: column;
@@ -12,7 +18,8 @@
 }
 
 .inquiry-list-page { max-width: 1220px; }
-.inquiry-detail-page, .inquiry-write-page {
+.inquiry-detail-page { max-width: 1144px; }
+.inquiry-write-page {
   max-width: 1080px;}
 
 .inquiry-shell {
