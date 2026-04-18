@@ -66,25 +66,21 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "AND m.memStt != :memStt " +
             "AND (" +
             "(:keyword IS NULL OR :keyword = '') OR " +
-            "(:searchType = 'all' AND (m.memNm LIKE CONCAT('%', :keyword, '%') OR m.memBizNo LIKE CONCAT('%', :keyword, '%'))) OR " +
-            "(:searchType = 'name' AND m.memNm LIKE CONCAT('%', :keyword, '%')) OR " +
-            "(:searchType = 'bizNo' AND m.memBizNo LIKE CONCAT('%', :keyword, '%'))" +
+            "(:searchType = 'userName' AND m.memNm LIKE CONCAT('%', :keyword, '%'))" +
             ")",
             countQuery = "SELECT count(m) FROM Member m " +
                     "WHERE m.memBizStt = :bizStt " +
                     "AND m.memStt != :memStt " +
                     "AND (" +
                     "(:keyword IS NULL OR :keyword = '') OR " +
-                    "(:searchType = 'all' AND (m.memNm LIKE CONCAT('%', :keyword, '%') OR m.memBizNo LIKE CONCAT('%', :keyword, '%'))) OR " +
-                    "(:searchType = 'name' AND m.memNm LIKE CONCAT('%', :keyword, '%')) OR " +
-                    "(:searchType = 'bizNo' AND m.memBizNo LIKE CONCAT('%', :keyword, '%'))" +
+                    "(:searchType = 'userName' AND m.memNm LIKE CONCAT('%', :keyword, '%'))" +
                     ")")
     Page<MemberApproveDto> findBizPendingMembersWithSearch(
             @Param("bizStt") String bizStt,
             @Param("memStt") String memStt,
             @Param("searchType") String searchType,
             @Param("keyword") String keyword,
-            Pageable pageable
+                Pageable pageable
     );
 
   
