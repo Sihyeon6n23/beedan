@@ -52,7 +52,8 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/auth/kakao/**",
                                 "/api/auth/disconnectSns",
-                                "/api/auth/check-password"
+                                "/api/auth/check-password",
+                                "/api/member/postpone-password"
                         ).authenticated()
 
                         // 3) 인증/로그인 관련

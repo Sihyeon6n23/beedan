@@ -19,6 +19,7 @@ import com.goodee.beedan.repository.token.TokenRepository;
 import com.goodee.beedan.service.file.FileService;
 import com.goodee.beedan.service.mail.MailNotificationService;
 import com.goodee.beedan.service.notification.NotificationService;
+import com.goodee.beedan.service.root.SecurityService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,7 @@ public class MemberService {
     private final MailNotificationService mailNotificationService;
     private final FileService fileService;
     private final NotificationService notificationService;
+    private final SecurityService securityService;
 
     @Value("${site.url}")
     private String siteUrl;
@@ -361,5 +363,24 @@ public class MemberService {
         Member member = memberRepository.findByMemLgnId(username)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         return passwordEncoder.matches(inputPassword, member.getMemLgnPw());
+    }
+
+    public boolean isPasswordExpired(Member member) {
+        LocalDateTime lastUpdateDt = member.getMemUpdPwDt();
+
+        if (lastUpdateDt == null) {
+            member.setMemUpdPwDt(LocalDateTime.now());
+            return true;
+        }
+        SecurityPolicyDto policy = securityService.getSecPolDto();
+        Long expireDay = policy.getPasswordExpiryDays();
+        LocalDateTime expiryDate = lastUpdateDt.plusDays(expireDay);
+
+        return expiryDate.isBefore(LocalDateTime.now());
+    }
+
+    public void updatePasswordPostponeDate(Member member) {
+        member.setMemUpdPwDt(LocalDateTime.now());
+        memberRepository.save(member);
     }
 }

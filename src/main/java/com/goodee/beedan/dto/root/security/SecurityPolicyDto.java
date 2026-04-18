@@ -1,5 +1,6 @@
 package com.goodee.beedan.dto.root.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SecurityPolicyDto {
 
     // 1. 로그인 및 계정 잠금
@@ -39,13 +41,6 @@ public class SecurityPolicyDto {
     // 4. 중복(다중) 로그인 방지
     @JsonProperty("is_concurrent_login_prevented")
     private Boolean isConcurrentLoginPrevented = false;
-
-    // 5. 로그 보관 기간
-    @JsonProperty("is_audit_log_enabled")
-    private Boolean isAuditLogEnabled = false;
-
-    @JsonProperty("log_retention_days")
-    private Long logRetentionDays = 0L;
 
     // 6. 비밀번호 변경 주기
     @JsonProperty("is_password_expiry_enabled")
