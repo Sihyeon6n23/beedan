@@ -45,7 +45,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// 1. 개발 시 CSS/HTML 수정 시 서버 재시작 없이 바로 반영 (강력 추천)
-	// developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 	implementation 'org.jsoup:jsoup:1.17.2'
 	implementation 'com.microsoft.playwright:playwright:1.49.0'

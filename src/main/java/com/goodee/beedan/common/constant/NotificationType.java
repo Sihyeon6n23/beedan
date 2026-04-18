@@ -27,7 +27,9 @@ public enum NotificationType {
     REQUIREMENT_REJECT("상품 요청 반려", "상품 요청이 반려되었습니다.", Path.REQUIRE_DETAIL),
     REQUIREMENT_CHANGE("상품 요청 변경", "상품 요청 답변이 수정되었습니다.", Path.REQUIRE_DETAIL),
 
-    PASSWORD_RESET("비밀번호 재설정 안내", "비밀번호 초기화를 위한 인증 번호가 발급되었습니다.", "/auth/passwd/change?token_id=%s");
+    PASSWORD_RESET("비밀번호 재설정 안내", "비밀번호 초기화를 위한 인증 번호가 발급되었습니다.", "/auth/passwd/change?token_id=%s"),
+    BIZ_REJECT("사업자 인증 반려 안내", "사업자 인증이 반려되었습니다. 메일로 재요청해주시기 바랍니다.", "/mypage/detail"),
+    BIZ_APPROVE("사업자 인증 승인 안내", "사업자 인증이 승인되었습니다.", "/mypage/detail");
 
     private final String defaultTitle;
     private final String message;

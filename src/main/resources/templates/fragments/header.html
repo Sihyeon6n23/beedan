@@ -42,7 +42,7 @@
                 <th:block>
                     <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="text-xs font-bold no-underline text-stone-900">LOGOUT</button>
+                        <button type="submit" class="text-xs font-bold no-underline text-stone-900 cursor-pointer">LOGOUT</button>
                     </form>
                 </th:block>
             </div>

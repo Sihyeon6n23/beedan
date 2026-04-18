@@ -17,6 +17,8 @@
 <th:block th:fragment="content">
   <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
   <link rel="stylesheet" th:href="@{/css/admin/admin-member-list.css}">
+  <link rel="stylesheet" th:href="@{/css/board/board-module.css}">
+  <link rel="stylesheet" th:href="@{/css/board/notice.css}">
   <style>
     /* 승인 페이지 전용 그리드 비율 설정 */
     .admin-chat-list-head,
@@ -40,9 +42,15 @@
         <h2 class="admin-chat-title">가입 승인 대기 목록</h2>
         <div class="admin-chat-shell__rule"><span></span></div>
       </div>
-
-      <div th:replace="~{fragments/board/board-module :: searchBar(${boardUri}, ${searchDto}, ${searchTypes})}"></div>
     </header>
+
+    <section class="inquiry-shell inquiry-shell--toolbar">
+      <div class="inquiry-toolbar">
+        <div class="inquiry-toolbar__actions" style="margin-left: auto; display: flex; gap: 0.75rem; align-items: center;">
+          <div th:replace="~{fragments/board/board-module :: searchBar(${boardUri}, ${searchDto}, ${searchTypes})}"></div>
+        </div>
+      </div>
+    </section>
 
     <section class="admin-chat-shell admin-chat-shell--list">
       <div class="admin-chat-list-head" aria-hidden="true">
@@ -76,7 +84,7 @@
         </div>
       </div>
 
-      <div th:replace="~{fragments/board/board-module :: pagination(${response}, '/root/admin/approve', ${searchDto})}"></div>
+      <div th:replace="~{fragments/board/board-module :: pagination(${response}, '/root/member/approve', ${searchDto})}"></div>
     </section>
   </section>
 
