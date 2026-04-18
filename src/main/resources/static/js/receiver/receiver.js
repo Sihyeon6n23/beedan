@@ -83,21 +83,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function saveReceiver() {
-        const rcId = document.getElementById('rcId').value;
-        const data = {
-            rcNm: document.getElementById('rcNm').value,
-            rcPhn: document.getElementById('rcPhn').value,
-            rcAdr: document.getElementById('baseAddress').value,
-            rcAdrDt: document.getElementById('detailAddress').value,
-        };
+    const rcId = document.getElementById('rcId').value;
+    const rcNm = document.getElementById('rcNm').value.trim();
+    const rcPhn = document.getElementById('rcPhn').value.trim();
+    const rcAdr = document.getElementById('baseAddress').value.trim();
+    const rcAdrDt = document.getElementById('detailAddress').value.trim();
 
-        if (!data.rcNm || !data.rcAdr) {
-            alert("이름과 주소는 필수 입력 사항입니다.");
-            return;
-        }
+    if (!rcNm || !rcAdr) {
+        alert("이름과 주소는 필수 입력 사항입니다.");
+        return;
+    }
 
-        const method = rcId ? 'PATCH' : 'POST';
-        const url = rcId ? `/api/receiver/${rcId}` : '/api/receiver';
+    const isDuplicate = allReceivers.some(receiver => {
+        if (rcId && String(receiver.rcId) === String(rcId)) return false;
+
+        return (
+            receiver.rcNm === rcNm &&
+            receiver.rcPhn === rcPhn &&
+            receiver.rcAdr === rcAdr &&
+            (receiver.rcAdrDt || '') === rcAdrDt
+        );
+    });
+
+    if (isDuplicate) {
+        alert("이미 동일한 정보로 등록된 배송지가 존재합니다.");
+        return;
+    }
+
+    const data = { rcNm, rcPhn, rcAdr, rcAdrDt };
+    const method = rcId ? 'PATCH' : 'POST';
+    const url = rcId ? `/api/receiver/${rcId}` : '/api/receiver';
 
         fetch(url, getFetchOptions(method, data))
         .then(res => {
@@ -120,8 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return res.json();
         })
         .then(newList => {
-            allReceivers = newList; // 최신 목록으로 갱신
-            // 삭제 후 현재 페이지가 데이터가 없는 상태라면 이전 페이지로 이동 처리
+            allReceivers = newList;
             const maxPage = Math.ceil(allReceivers.length / itemsPerPage) - 1;
             const targetPage = currentPage > maxPage ? Math.max(0, maxPage) : currentPage;
             displayPage(targetPage);

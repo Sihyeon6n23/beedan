@@ -81,12 +81,3 @@ dependencies {
 	// Source: https://mvnrepository.com/artifact/net.coobird/thumbnailator
 	implementation("net.coobird:thumbnailator:0.4.21")
 }
-
-tasks.named('test') {
-	useJUnitPlatform()
-
-	// 테스트 실패해도 빌드를 멈추지 않고 계속 진행 (리포트 생성을 위해)
-	ignoreFailures = true
-
-	finalizedBy jacocoTestReport
-}
