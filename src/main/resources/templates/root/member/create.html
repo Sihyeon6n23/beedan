@@ -5,7 +5,7 @@
           ~{::content}
       )}">
 
-<title th:fragment="title">BEEDAN | Admin Registration</title>
+<title th:fragment="title">BEEDAN | 계정 생성</title>
 
 <th:block th:fragment="sidebar">
     <div th:replace="~{root/root-sidebar :: sidebar('memberCreate', '')}"></div>
@@ -15,7 +15,7 @@
     <div th:replace="~{fragments/modal/guidemodal :: guideModal}"></div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    <div class="flex flex-col w-full max-w-5xl mx-auto px-6">
+    <div class="flex flex-col w-full max-w-5xl mx-auto px-6 mb-16">
         <section class="mypage-security-page__intro">
             <span class="mypage-security-page__kicker">ACCOUNT</span>
             <h1 class="mypage-security-page__title">관리자 등록</h1>

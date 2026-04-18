@@ -169,49 +169,50 @@ public class MypageController {
     }
 
     @PostMapping("/modify")
-    public String modifyProfileUpdate(@Valid @ModelAttribute UpdateMemberRequest request,
-                                      BindingResult bindingResult, // ❗️반드시 @ModelAttribute 바로 다음에 와야 합니다.
+    public String modifyProfileUpdate(@Valid @ModelAttribute("member") UpdateMemberRequest request,
+                                      BindingResult bindingResult,
                                       Principal principal,
                                       RedirectAttributes redirectAttributes,
                                       Model model) {
-        // 1. DTO 유효성 검사 (@NotBlank, @Email 등) 실패 시 처리
+        Member currentMember = memberService.getMemberByUsername(principal.getName());
+
+        if (request.getMemEml() != null && !request.getMemEml().equals(currentMember.getMemEml())) {
+            boolean isDuplicated = memberService.checkEmailDuplicate(request.getMemEml());
+            if (isDuplicated) {
+                // 중복 시 BindingResult에 에러를 추가하여 하단의 에러 처리 로직을 타게 만듭니다.
+                model.addAttribute("member", currentMember);
+                bindingResult.rejectValue("memEml", "duplicate.email", "이미 사용 중인 이메일입니다.");
+            }
+        }
+
+        // 3. DTO 기본 유효성(@Valid) 검사 및 이메일 중복 검사 실패 시 처리
         if (bindingResult.hasErrors()) {
             // 에러가 발생하면 수정 폼 화면을 다시 렌더링합니다.
-            // Redirect하지 않고 뷰를 바로 리턴해야 사용자가 입력하던 값과 에러 메시지가 유지됩니다.
+            // @ModelAttribute("member")로 지정했으므로, 사용자가 입력하던 폼 데이터와 에러 메시지가 뷰에 그대로 유지됩니다.
             return "member/mypage/mypage-modify";
         }
 
         try {
-            // 2. 본인인증 impUid가 넘어왔는지 확인 (휴대폰 번호를 변경하여 인증을 진행한 경우)
+            // 4. 본인인증 impUid가 넘어왔는지 확인 (휴대폰 번호를 변경하여 인증을 진행한 경우)
             if (request.getImpUid() != null && !request.getImpUid().isBlank()) {
 
                 // 휴대폰 번호 API 검증 (백엔드 검증)
                 Mono<Map<String, Object>> verifyMono = portOneService.verify(request.getImpUid());
                 PhoneVerificationDto phoneVerificationDto = portOneService.MonoToPhoneVerificationDto(verifyMono).block();
 
-
-                // [수정된 부분] 1. 뷰로 돌아갈 때마다 쓸 수 있게 member 객체를 미리 조회해 둡니다.
-                Member member = memberService.getMemberByUsername(principal.getName());
-
-                // 2. DTO 유효성 검사 실패 시
-                if (bindingResult.hasErrors()) {
-                    model.addAttribute("member", member); // 뷰에서 쓸 수 있게 담아줌
-                    return "member/mypage/mypage-modify";
-                }
-
                 // [핵심] 포트원에서 받은 확실한 데이터로 교체 (위조 방지)
                 request.setName(phoneVerificationDto.getName());
-                request.setPhone(phoneVerificationDto.getPhoneNumber());
-                request.setCi(phoneVerificationDto.getCi());
+                request.setMemMbPhn(phoneVerificationDto.getPhoneNumber());
+                request.setMemCi(phoneVerificationDto.getCi());
 
                 // 🔍 객체 내부 데이터 뜯어보기 (콘솔 확인)
                 log.info("🔥 [포트원 본인인증 찐 데이터]: {}", phoneVerificationDto);
             }
 
-            // 3. 서비스 계층에서 업데이트 로직 실행
+            // 5. 서비스 계층에서 업데이트 로직 실행
             mypageService.updateMember(principal.getName(), request);
 
-            // 4. 성공 시 마이페이지나 수정 페이지로 리다이렉트
+            // 6. 성공 시 상세 페이지로 리다이렉트
             redirectAttributes.addFlashAttribute("message", "회원 정보가 성공적으로 변경되었습니다.");
             return "redirect:/mypage/detail";
 

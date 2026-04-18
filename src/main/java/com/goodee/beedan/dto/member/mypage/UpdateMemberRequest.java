@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateMemberRequest {
     private String name;
-    private String phone;
-    private String email;
+    private String memMbPhn;
+    private String memEml;
     private String impUid;
-    private String ci;
+    private String memCi;
 
     // 주소 관련 필드 추가
     private String postCode;       // 우편번호 (memPosCd)
