@@ -41,6 +41,10 @@
     transition: background-color 0.2s ease;
     }
 
+    #btnSaveReceiver:hover {
+
+    }
+
     #btnCancel {
     color: var(--color-secondary);
     display: inline-flex;

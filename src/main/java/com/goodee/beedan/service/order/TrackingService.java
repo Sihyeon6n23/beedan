@@ -10,6 +10,7 @@ import com.goodee.beedan.repository.order.ShipmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ public class TrackingService {
     @Value("${tracker.client.secret:}")
     private String clientSecret;
 
+    @Cacheable(value = "shipment:delivery", key = "#shId", unless = "#result == null")
     public TrackingResponseDto getTrackingInfo(Long shId) {
         Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
@@ -92,10 +94,7 @@ public class TrackingService {
     }
 
 
-    private TrackingResponseDto parseGraphQLResponse(String json,
-                                                     String carrierId,
-                                                     String trackingNumber,
-                                                     Shipment shipment,
+    private TrackingResponseDto parseGraphQLResponse(String json, String carrierId, String trackingNumber, Shipment shipment,
                                                      List<TrackingResponseDto.TrackingDetail> customsDetails) throws Exception {
         JsonNode root = objectMapper.readTree(json);
         JsonNode trackNode = root.path("data").path("track");
