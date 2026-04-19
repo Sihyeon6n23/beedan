@@ -84,6 +84,9 @@ public class RedisConfig {
         // 챗봇 조회 데이터는 변경이 거의 없어서 30분 캐시로 운영
         customConfigs.put("chatbot:flow", defaultConfig.entryTtl(Duration.ofMinutes(30)));
 
+        // 국내 배송 조회 데이터는 10분 캐시로 운영 (너무 오래 캐시하면 배송 상태가 업데이트 되어도 반영이 안될 수 있어서)
+        customConfigs.put("shipment:delivery", defaultConfig.entryTtl(Duration.ofMinutes(10)));
+
         /* 이런식으로 적용 가능
          customConfigs.put("display:exchangeRate", defaultConfig.entryTtl(Duration.ofDays(1)));
          customConfigs.put("display:newStocks", defaultConfig.entryTtl(Duration.ofMinutes(10)));

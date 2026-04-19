@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
+    if (typeof editSuccess !== 'undefined' && editSuccess) {
+            showGuideModal("회원 정보가 성공적으로 수정되었습니다.", null, "MODIFIED", "check_circle");
+    }
+
     loadMemberList(0);
 
     const filterButtons = document.querySelectorAll('.admin-chat-filter');

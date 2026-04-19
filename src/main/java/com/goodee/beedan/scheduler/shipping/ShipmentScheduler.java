@@ -10,6 +10,9 @@ import com.goodee.beedan.service.root.SchedulerService;
 import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +28,8 @@ public class ShipmentScheduler {
     private final ShipmentService shipmentService;
     private final TrackingService trackingService;
     private final SchedulerService schedulerService;
+
+    private final CacheManager cacheManager; // 캐시 설정을 위함
 
     @Scheduled(fixedDelay = 60000) // 1분마다
     public void trackShipmentSync() {
@@ -52,38 +57,29 @@ public class ShipmentScheduler {
 
         setting.setLastShipmentSyncRunTime(now.toString());
         schedulerService.saveSchedulerSetting(setting);
-        log.info("배송 상태 동기화 스케줄러 실행 완료");
     }
 
     public void syncShipmentStatus() {
-        try {
-            log.info("배송 상태 동기화 스케줄러 시작");
+        log.info("배송 상태 동기화 스케줄러 시작");
 
-            List<Shipment> targets = shipmentRepository.findByShSttIn(
-                    List.of(ShipmentStatus.SHIPPING, ShipmentStatus.DELIVERING)
-            );
+        List<Shipment> targets = shipmentRepository.findByShSttIn(
+                List.of(ShipmentStatus.SHIPPING, ShipmentStatus.DELIVERING)
+        );
 
-            int successCount = 0;
-            int failCount = 0;
+        Cache deliveryCache = cacheManager.getCache("shipment:delivery");  // Redis 캐시 매니저를 통해 해당 캐시 영역을 가져옴
 
-            for (Shipment shipment : targets) {
-                try {
-                    TrackingResponseDto response = trackingService.getTrackingInfo(shipment.getShId());
-                    shipmentService.processSingleShipment(shipment.getShId(), response);
-                    successCount++;
-                } catch (Exception e) {
-                    log.error("송장번호 {} 조회 실패: {}", shipment.getShTraNo(), e.getMessage());
-                    failCount++;
-                }
+        for (Shipment shipment : targets) {
+            try {
+                if (deliveryCache != null)  deliveryCache.evict(shipment.getShId());
 
-                waitForRateLimit();
+                // TrackingService.getTrackingInfo 내부에 @Cacheable이 필요함
+                TrackingResponseDto response = trackingService.getTrackingInfo(shipment.getShId());
+                shipmentService.processSingleShipment(shipment.getShId(), response);
+
+            } catch (Exception e) {
+                log.error("배송 ID {} 조회 실패: {}", shipment.getShId(), e.getMessage());
             }
-
-
-            log.info("배송 상태 동기화 완료 - 성공: {}, 실패: {}", successCount, failCount);
-
-        } catch (Exception e) {
-            log.error("배송 상태 동기화 스케줄러 실행 중 오류 발생", e);
+            waitForRateLimit();
         }
     }
 

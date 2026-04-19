@@ -106,6 +106,7 @@ public class UnipassScheduler {
 
         if (currentStatus.contains("반출완료") && shipment.getShStt() != ShipmentStatus.DELIVERING) {
             shipment.setShStt(ShipmentStatus.DELIVERING);
+
             isChanged = true;
         }
 

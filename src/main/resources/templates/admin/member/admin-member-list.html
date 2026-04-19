@@ -246,7 +246,9 @@
                 </div>
             </div>
 
-    <script th:src="@{/js/admin/member/admin-member-list.js}"></script>
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+    <script th:inline="javascript">const editSuccess = [[${editSuccess}]];</script>
+    <script  th:inline="javascript" th:src="@{/js/admin/member/admin-member-list.js}"></script>
 </th:block>
 </body>
 </html>
