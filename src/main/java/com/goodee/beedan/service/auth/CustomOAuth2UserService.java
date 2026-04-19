@@ -7,6 +7,7 @@ import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.member.sns.SnsIntegrateRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class CustomOAuth2UserService extends OidcUserService {
 
     private final MemberRepository memberRepository;
@@ -31,6 +33,8 @@ public class CustomOAuth2UserService extends OidcUserService {
 
         // 2. 카카오 식별자 추출
         String kakaoId = oidcUser.getAttribute("sub").toString();
+
+        log.info("여기까진 오나");
 
         // 3. ⭐️ 연동 테이블 조회 + 연관된 Member(user 계정)까지 한 번에 가져오기
         Member member = snsIntegrateRepository.findBySnsCanYnFalseAndSnsSeNo(kakaoId)

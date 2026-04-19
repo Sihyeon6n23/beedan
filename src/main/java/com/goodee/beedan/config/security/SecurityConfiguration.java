@@ -6,6 +6,7 @@ import com.goodee.beedan.service.auth.CustomOAuth2UserService;
 import com.goodee.beedan.service.root.SecurityService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,6 +21,7 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration {
 
     private final SecurityService securityService;
@@ -45,12 +47,14 @@ public class SecurityConfiguration {
                                 "/api/tracking/**",
                                 "/api/stock/list",
                                 "/files/**",
-                                "/auth/passwd/change"
+                                "/auth/passwd/change",
+                                "/auth/kakao/**",
+                                "/login/oauth2/**",
+                                "/oauth2/**"
                         ).permitAll()
 
                         // 2) 로그인은 필요하지만 공개 API로 열면 안 되는 예외 경로
                         .requestMatchers(
-                                "/auth/kakao/**",
                                 "/api/auth/disconnectSns",
                                 "/api/auth/check-password",
                                 "/api/member/postpone-password"
@@ -152,6 +156,7 @@ public class SecurityConfiguration {
                                 .oidcUserService(customOAuth2UserService)
                         )
                         .failureHandler((request, response, exception) -> {
+                            System.out.println("Error Type: " + exception.getClass().getName());
                             request.getSession().setAttribute("errorMessage",
                                     new SignInErrorMessageDto("소셜로그인", "잠시 후 다시 시도해주세요."));
                             response.sendRedirect("/auth/signin");
@@ -180,7 +185,8 @@ public class SecurityConfiguration {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().requestMatchers(
                 "/h2-console/**",
-                "/api/webhook/**"
+                "/api/webhook/**",
+                "/.well-known/**"
         );
     }
 
