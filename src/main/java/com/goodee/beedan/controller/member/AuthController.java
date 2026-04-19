@@ -1,25 +1,22 @@
 package com.goodee.beedan.controller.member;
 
-import com.goodee.beedan.common.constant.MemberAuthority;
-import com.goodee.beedan.common.constant.MemberStatus;
 import com.goodee.beedan.common.constant.SnsType;
 import com.goodee.beedan.dto.member.*;
 import com.goodee.beedan.dto.member.sns.SnsIntegrateRequest;
 import com.goodee.beedan.entity.Member;
-import com.goodee.beedan.service.auth.TokenService;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.file.FileService;
+import com.goodee.beedan.service.file.FileUtils;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
+import com.goodee.beedan.service.root.SecurityService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,10 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import reactor.core.publisher.Mono;
 
-import java.net.http.HttpRequest;
 import java.security.Principal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,21 +43,35 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final SnsIntegrateService snsIntegrateService;
     private final FileService fileService;
+    private final SecurityService securityService;
+    private final FileUtils fileUtils;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
+    @Value("${custom.security.oauth.client.registration.kakao.redirect-uri}")
+    private String customRedirectUri;
     @Value("${portone.store-id}")
     private String storeId;
     @Value("${portone.channel-key}")
     private String channelKey;
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxFileSizeStr;
+    @Value("${spring.servlet.multipart.max-request-size}")
+    private String maxRequestSizeStr;
 
     @GetMapping("/signup")
     public String getSignUp(Model model) {
+
+        long maxFileSize = fileUtils.parseSize(maxFileSizeStr);
+        long maxRequestSize = fileUtils.parseSize(maxRequestSizeStr);
+
         model.addAttribute("memberForm", new MemberFormDto());
         model.addAttribute("portoneStoreId", storeId);
         model.addAttribute("portoneChannelKey", channelKey);
+        model.addAttribute("maxFileSize", maxFileSize);
+        model.addAttribute("maxRequestSize", maxRequestSize);
         return "/member/auth/signup";
     }
 
@@ -170,7 +178,8 @@ public class AuthController {
             return "/member/auth/signup";
         }
 
-        return "redirect:/auth/signin";
+        model.addAttribute("signupSuccess", true);
+        return "/member/auth/signup";
     }
 
     @GetMapping("/signin")
@@ -241,7 +250,7 @@ public class AuthController {
 
         return "redirect:https://kauth.kakao.com/oauth/authorize?" +
                 "client_id=" + clientId +
-                "&redirect_uri=" + redirectUri +
+                "&redirect_uri=" + customRedirectUri +
                 "&response_type=code" +
                 "&state=" + state; // URL에 포함
     }

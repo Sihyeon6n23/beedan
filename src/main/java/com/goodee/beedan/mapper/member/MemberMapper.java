@@ -14,9 +14,9 @@ public interface MemberMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(source = "name", target = "memNm")
-    @Mapping(source = "email", target = "memEml")
-    @Mapping(source = "phone", target = "memMbPhn")
-    @Mapping(source = "ci", target = "memCi")
+    @Mapping(source = "memEml", target = "memEml")
+    @Mapping(source = "memMbPhn", target = "memMbPhn")
+    @Mapping(source = "memCi", target = "memCi")
     // 주소 필드 매핑 추가
     @Mapping(source = "postCode", target = "memPosCd")
     @Mapping(source = "address", target = "memBizAdr")

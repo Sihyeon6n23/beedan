@@ -118,7 +118,8 @@ public class    QuoteController {
 
     private boolean isAdminUser(Long memId) {
         return memberRepository.findById(memId)
-                .map(member -> MemberAuthority.ADMIN.equals(member.getMemAut()))
+                .map(member -> MemberAuthority.ADMIN.equals(member.getMemAut())
+                        || MemberAuthority.ROOT.equals(member.getMemAut()))
                 .orElse(false);
     }
 

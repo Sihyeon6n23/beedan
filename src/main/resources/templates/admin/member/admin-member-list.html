@@ -245,10 +245,19 @@
                     </div>
                 </div>
             </div>
-
     <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
-    <script th:inline="javascript">const editSuccess = [[${editSuccess}]];</script>
-    <script  th:inline="javascript" th:src="@{/js/admin/member/admin-member-list.js}"></script>
+
+    <script th:src="@{/js/admin/member/admin-member-list.js}"></script>
+    <th:block th:if="${status == 'AccountEdit' and message != null}">
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                const serverMessage = /*[[${message}]]*/ '기본 메시지';
+                if (typeof showGuideModal === 'function') {
+                    showGuideModal(serverMessage, null, 'NOTICE', 'info');
+                }
+            });
+        </script>
+    </th:block>
 </th:block>
 </body>
 </html>

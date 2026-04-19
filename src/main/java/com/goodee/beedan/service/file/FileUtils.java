@@ -91,4 +91,13 @@ public class FileUtils {
 
         return sb.toString();
     }
+    public long parseSize(String size) {
+        size = size.toUpperCase();
+        if (size.endsWith("MB")) {
+            return Long.parseLong(size.replace("MB", "")) * 1024 * 1024;
+        } else if (size.endsWith("KB")) {
+            return Long.parseLong(size.replace("KB", "")) * 1024;
+        }
+        return Long.parseLong(size);
+    }
 }

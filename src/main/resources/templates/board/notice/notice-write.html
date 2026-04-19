@@ -83,6 +83,11 @@
 
     <script defer th:src="@{/js/file/fileUpload.js}"></script>
     <script th:inline="javascript">
+        window.beedanConfig = {
+            // 컨트롤러에서 담아준 maxFileSize (Long 타입 byte 값)
+            maxFileSize: [[${maxFileSize}]],
+            maxRequestSize: [[${maxRequestSize}]]
+        };
         // ✅ 브라우저가 fileUpload.js(defer)까지 모두 완벽하게 읽을 때까지 기다립니다.
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('inquiry-write-form');
@@ -154,6 +159,14 @@
                 });
             }
 
+        });
+    </script>
+
+    <script th:if="${noticeSuccess}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var msg = /*[[${noticeSuccessMessage}]]*/ '';
+            var target = /*[[${noticeSuccessRedirect}]]*/ '';
+            showGuideModal(msg, function() { window.location.href = target; }, 'COMPLETE', 'check_circle');
         });
     </script>
 </th:block>

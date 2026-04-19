@@ -9,11 +9,13 @@ import com.goodee.beedan.repository.file.FileRepository;
 import com.goodee.beedan.service.board.NoticeBoardService;
 import com.goodee.beedan.service.board.ViewCountService;
 import com.goodee.beedan.service.file.FileService;
+import com.goodee.beedan.service.file.FileUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,7 +43,12 @@ public class NoticeBoardController {
     private final NoticeBoardService noticeBoardService;
     private final ViewCountService viewCountService;
     private final FileService fileService;
-    private final FileRepository fileRepository;
+    private final FileUtils fileUtils;
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxFileSizeStr;
+    @Value("${spring.servlet.multipart.max-request-size}")
+    private String maxRequestSizeStr;
+
 
     @ModelAttribute("searchTypes")
     public Map<String, String> searchTypes() {
@@ -77,6 +84,7 @@ public class NoticeBoardController {
     /** 2. 상세 조회 (조회수 중복 방지 및 통합 DTO 반영) */
     @GetMapping("/detail")
     public String noticeDetail(@RequestParam("id") Long id,
+                               @RequestParam(value = "returnUrl", required = false) String returnUrl,
                                HttpServletRequest request,
                                HttpServletResponse response,
                                Principal principal,
@@ -90,6 +98,8 @@ public class NoticeBoardController {
         CommonBoardDetailDto notice = noticeBoardService.getNoticeDetail(id, username);
 
         model.addAttribute("notice", notice);
+        model.addAttribute("returnUrl", returnUrl);
+
 
         return "board/notice/notice-detail";
     }
@@ -99,6 +109,8 @@ public class NoticeBoardController {
     public String noticeForm(@RequestParam(value = "id", required = false) Long id,
                              Principal principal,
                              Model model) {
+        long maxFileSize = fileUtils.parseSize(maxFileSizeStr);
+        long maxRequestSize = fileUtils.parseSize(maxRequestSizeStr);
 
         if (id != null) {
             CommonBoardDetailDto detail = noticeBoardService.getNoticeDetail(id, principal.getName());
@@ -118,6 +130,8 @@ public class NoticeBoardController {
             model.addAttribute("boardRequestDto", new CommonBoardRequestDto());
             model.addAttribute("isEdit", false);
         }
+        model.addAttribute("maxFileSize", maxFileSize);
+        model.addAttribute("maxRequestSize", maxRequestSize);
 
         return "board/notice/notice-write";
     }
@@ -139,7 +153,13 @@ public class NoticeBoardController {
 
         String boardResultMessage = noticeBoardService.writeNotice(boardRequestDto, principal.getName());
         if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
-        return "redirect:/notice/list";
+
+        model.addAttribute("boardRequestDto", new CommonBoardRequestDto());
+        model.addAttribute("isEdit", false);
+        model.addAttribute("noticeSuccess", true);
+        model.addAttribute("noticeSuccessMessage", "공지사항이 정상적으로 등록되었습니다.");
+        model.addAttribute("noticeSuccessRedirect", "/notice/list");
+        return "board/notice/notice-write";
     }
 
     /** 5. 수정 실행 (CommonBoardRequestDto 사용) */
@@ -169,7 +189,14 @@ public class NoticeBoardController {
 
         String boardResultMessage = noticeBoardService.updateNotice(boardRequestDto, principal.getName());
         if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
-        return "redirect:/notice/detail?id=" + boardRequestDto.getBrdId();
+
+        model.addAttribute("boardRequestDto", boardRequestDto);
+        model.addAttribute("fileList", fileList);
+        model.addAttribute("isEdit", true);
+        model.addAttribute("noticeSuccess", true);
+        model.addAttribute("noticeSuccessMessage", "공지사항이 정상적으로 수정되었습니다.");
+        model.addAttribute("noticeSuccessRedirect", "/notice/detail?id=" + boardRequestDto.getBrdId());
+        return "board/notice/notice-write";
     }
 
     /** 6. 삭제 실행 */
@@ -178,4 +205,5 @@ public class NoticeBoardController {
         noticeBoardService.deleteNotice(brdId, principal.getName());
         return "redirect:/notice/list";
     }
+
 }

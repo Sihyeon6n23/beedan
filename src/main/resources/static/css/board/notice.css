@@ -1,6 +1,12 @@
 /* ==========================================================================
    1. 기본 레이아웃 및 쉘 (Shell)
    ========================================================================== */
+.app-layout__content:has(.inquiry-page) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
 .inquiry-page {
   display: flex;
   flex-direction: column;
@@ -12,7 +18,8 @@
 }
 
 .inquiry-list-page { max-width: 1220px; }
-.inquiry-detail-page, .inquiry-write-page {
+.inquiry-detail-page { max-width: 1144px; }
+.inquiry-write-page {
   max-width: 1080px;}
 
 .inquiry-shell {
@@ -162,6 +169,28 @@
 .inquiry-detail-article__title-row { display: flex; justify-content: space-between; align-items: center; }
 .inquiry-detail-article__title { font-family: var(--font-headline); font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 900; }
 .inquiry-detail-article__meta { display: flex; gap: 1rem; margin-top: 0.85rem; color: var(--color-secondary); font-size: 0.9rem; font-weight: 600; }
+/* 제목과 배지를 감싸는 부모 컨테이너 */
+.inquiry-detail-article__title-row {
+  display: flex;
+  align-items: flex-start; /* 또는 center */
+  gap: 10px;               /* 제목과 배지 사이 간격 */
+  width: 100%;
+}
+
+/* 제목 태그 */
+.inquiry-detail-article__title {
+  flex: 1;                 /* 남는 공간을 모두 차지함 */
+  min-width: 0;            /* flex 아이템에서 텍스트 줄바꿈/말줄임 처리를 위해 필수 */
+  word-break: break-all;   /* 제목이 너무 길면 단어 단위로 줄바꿈 (선택) */
+  /* 만약 한 줄로 말줄임표(...)를 하고 싶다면 아래 주석 해제 */
+  /* white-space: nowrap; overflow: hidden; text-overflow: ellipsis; */
+}
+
+/* 중요공지 배지 */
+.inquiry-badge--received {
+  flex-shrink: 0;          /* ★핵심: 제목이 길어져도 배지 크기는 절대 줄어들지 않음 */
+  white-space: nowrap;     /* 배지 안의 글자가 두 줄로 변하는 것 방지 */
+}
 
 .inquiry-detail-article__body { padding: 1.45rem 1.55rem; border-top: 1px solid #f1ece2; }
 .inquiry-detail-article__content { font-size: 1rem; line-height: 1.95; word-break: break-word; }

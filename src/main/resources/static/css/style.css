@@ -71,6 +71,8 @@
     --color-outline-variant: #d0c6ab;
     --font-headline: "Manrope", sans-serif;
     --font-body: "Inter", sans-serif;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-standard: 150ms;
   }
 }
 @layer base {
@@ -855,6 +857,11 @@
       margin-bottom: 0.5rem;
     }
   }
+  .space-y-5 {
+    :where(& > :not(:last-child)) {
+      margin-bottom: 1.25rem;
+    }
+  }
   .space-y-6 {
     :where(& > :not(:last-child)) {
       --tw-space-y-reverse: 0;
@@ -1558,6 +1565,41 @@
   }
 }
 @layer utilities {
+  /* 1. text-secondary/80 */
+  /* color-mix를 사용하여 secondary 색상의 80% 불투명도를 구현합니다. */
+  .text-secondary\/80 {
+    color: color-mix(in srgb, var(--color-secondary) 80%, transparent);
+  }
+
+  /* 2. border-primary/20 */
+  /* primary 색상이 20%만 섞인 투명한 경계선을 구현합니다. */
+  .border-primary\/20 {
+    border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    border-style: solid;
+    border-width: 1px;
+  }
+
+  /* 3. bg-primary/5 */
+  /* 아주 은은한 배경 강조를 위한 5% 농도의 primary 배경색입니다. */
+  .bg-primary\/5 {
+    background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  }
+
+  /* 4. bg-surface-container-high */
+  /* 디자인 가이드에 정의된 높은 단계의 표면 색상을 적용합니다. */
+  .bg-surface-container-high {
+    background-color: var(--color-surface-container-high);
+  }
+
+  /* 5. hover:bg-primary/90 */
+  /* 호버 시 90% 농도로 살짝 투명해지는 효과를 주어 깊이감을 표현합니다. */
+  .hover\:bg-primary\/90 {
+    transition: background-color var(--duration-standard) var(--ease-standard);
+  }
+
+  .hover\:bg-primary\/90:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
+  }
   .grid-cols-4 {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr)); 
@@ -1700,6 +1742,9 @@
   .bd-input {
     border: 1px solid var(--color-outline-variant);
     background: transparent;
+  }
+  .status-badge-select {
+    padding-right: 15px; /* 오른쪽 끝에서 15px 정도 뗌 */
   }
 }
 @layer components {

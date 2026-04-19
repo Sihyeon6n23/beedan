@@ -11,7 +11,7 @@
             <h3 id="guide-modal-title"
                 style="font-family:'Manrope',sans-serif; font-weight:800; font-size:18px; letter-spacing:-0.02em; color:#1a1c1c; margin:0 0 12px;">COMPLETE</h3>
             <p id="guide-modal-message"
-               style="font-family:'Inter','Noto Sans KR',sans-serif; font-size:14px; color:#78716c; margin:0 0 36px; line-height:1.6;"></p>
+               style="font-family:'Inter','Noto Sans KR',sans-serif; font-size:14px; color:#78716c; margin:0 0 36px; line-height:1.6; white-space: pre-line;"></p>
             <button type="button" id="guide-modal-btn"
                     style="padding:12px 40px; background:#e8e0cc; color:#44403c; font-family:'Manrope',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; border:none; cursor:pointer;">
                 확인
@@ -41,6 +41,28 @@
             </div>
         </div>
     </div>
+    <div id="custom-confirm-modal"
+         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);"
+         onclick="if(event.target===this) closeCustomConfirmModal()">
+        <div style="background:#fff; border:1px solid #e0ddd6; width:420px; padding:48px; text-align:center;">
+        <span id="custom-confirm-modal-icon" class="material-symbols-outlined"
+              style="font-size:48px; color:#c4b799; margin-bottom:20px; display:block;">help</span>
+            <h3 id="custom-confirm-modal-title"
+                style="font-family:'Manrope',sans-serif; font-weight:800; font-size:18px; letter-spacing:-0.02em; color:#1a1c1c; margin:0 0 12px;">CONFIRM</h3>
+            <p id="custom-confirm-modal-message"
+               style="font-family:'Inter','Noto Sans KR',sans-serif; font-size:14px; color:#78716c; margin:0 0 36px; line-height:1.6; white-space: pre-line;"></p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button id="custom-confirm-modal-cancel"
+                        style="padding:12px 24px; background:#fff; border:1px solid #e0ddd6; color:#44403c; font-family:'Manrope',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; min-width: 120px;">
+                    다음에 변경하기
+                </button>
+                <button id="custom-confirm-modal-ok"
+                        style="padding:12px 24px; background:#e8e0cc; color:#44403c; font-family:'Manrope',sans-serif; font-weight:800; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; border:none; cursor:pointer; min-width: 120px;">
+                    지금 변경하기
+                </button>
+            </div>
+        </div>
+    </div>
     <script>
     function showGuideModal(message, callback, title, icon) {
         var m = document.getElementById('guide-modal');
@@ -63,6 +85,53 @@
         document.getElementById('confirm-modal-cancel').onclick = function () { m.style.display = 'none'; document.body.style.overflow = ''; };
     }
     function closeConfirmModal() { document.getElementById('confirm-modal').style.display = 'none'; document.body.style.overflow = ''; }
+
+    /**
+     * 커스텀 컨펌 모달 출력
+     * @param {string} message - 표시할 메시지
+     * @param {object} options - 옵션 객체
+     * options.title: 모달 제목
+     * options.icon: 아이콘 이름
+     * options.okText: 확인 버튼 텍스트
+     * options.cancelText: 취소 버튼 텍스트
+     * options.onConfirm: 확인 클릭 시 실행할 함수
+     * options.onCancel: 취소 클릭 시 실행할 함수
+     */
+    function showCustomConfirmModal(message, options) {
+        var opts = options || {};
+        var m = document.getElementById('custom-confirm-modal');
+
+        // 내용 세팅
+        document.getElementById('custom-confirm-modal-message').textContent = message;
+        document.getElementById('custom-confirm-modal-title').textContent = opts.title || 'CONFIRM';
+        document.getElementById('custom-confirm-modal-icon').textContent = opts.icon || 'help';
+
+        // 버튼 텍스트 세팅
+        var btnOk = document.getElementById('custom-confirm-modal-ok');
+        var btnCancel = document.getElementById('custom-confirm-modal-cancel');
+        btnOk.textContent = opts.okText || '확인';
+        btnCancel.textContent = opts.cancelText || '취소';
+
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // 확인 버튼 이벤트
+        btnOk.onclick = function () {
+            closeCustomConfirmModal();
+            if (opts.onConfirm) opts.onConfirm();
+        };
+
+        // 취소 버튼 이벤트
+        btnCancel.onclick = function () {
+            closeCustomConfirmModal();
+            if (opts.onCancel) opts.onCancel();
+        };
+    }
+
+    function closeCustomConfirmModal() {
+        document.getElementById('custom-confirm-modal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
     </script>
 </th:block>
 </html>

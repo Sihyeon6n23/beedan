@@ -12,6 +12,7 @@
 </th:block>
 
 <th:block th:fragment="content">
+    <div th:replace="~{fragments/modal/guidemodal :: guideModal}"></div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <div class="flex flex-col w-full max-w-5xl mx-auto px-6 mb-16">
@@ -36,7 +37,7 @@
                     <div class="space-y-2">
                         <div class="space-y-2">
                             <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">계정 권한 <span class="text-error">*</span></label>
-                            <select th:field="*{authority}" class="bd-input w-full appearance-none bg-white">
+                            <select th:field="*{authority}" class="bd-input w-full appearance-none bg-white status-badge-select">
                                 <option value="ADMIN">일반 관리자 (ADMIN)</option>
                                 <option value="ROOT">시스템 마스터 (ROOT)</option>
                             </select>
@@ -120,7 +121,7 @@
 
         idCheckedBtn.addEventListener('click', async () => {
             if (userLoginId.value.length < 4) {
-                alert("아이디는 4글자 이상 입력해주세요.");
+                showGuideModal("아이디는 4글자 이상 입력해주세요.", null, "알림", "info");
                 return;
             }
 
@@ -134,11 +135,12 @@
                     document.getElementById("available").classList.remove("hidden");
                     idCheckedBtn.disabled = true;
                     idCheckedInput.value = "true";
+                    showGuideModal("사용 가능한 아이디입니다.", null, "알림", "info");
                 } else {
-                    alert("이미 사용 중인 아이디입니다.");
+                    showGuideModal("이미 사용 중인 아이디입니다.", null, "중복", "error");
                 }
             } catch (error) {
-                alert("중복 확인 중 오류가 발생했습니다.");
+                showGuideModal("중복 확인 중 오류가 발생했습니다.", null, "오류", "error");
             }
         });
     </script>

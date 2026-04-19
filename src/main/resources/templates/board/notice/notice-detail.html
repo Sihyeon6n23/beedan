@@ -22,7 +22,8 @@
 
         <article class="inquiry-detail-article">
             <div class="inquiry-detail-article__utility">
-                <a class="inquiry-detail-back" th:href="@{/notice/list}">
+                <a class="inquiry-detail-back"
+                   th:href="${#strings.isEmpty(returnUrl) ? '/notice/list' : returnUrl}">
                     <span class="material-symbols-outlined">arrow_back</span>
                     <span>목록으로</span>
                 </a>

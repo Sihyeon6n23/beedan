@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -51,6 +53,7 @@ public class MypageService {
         }
 
         member.setMemLgnPw(passwordEncoder.encode(changeDto.getNewPassword()));
+        member.setMemUpdPwDt(LocalDateTime.now());
     }
 
     public boolean matchPassword(String username, String currentPassword) {
