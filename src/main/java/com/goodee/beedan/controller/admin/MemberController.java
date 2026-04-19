@@ -46,6 +46,7 @@ public class MemberController {
         }
         log.info(memberEditRequest.getBizStatus());
         adminMemberService.updateMember(memberEditRequest);
+        redirectAttributes.addFlashAttribute("status", "AccountEdit");
         redirectAttributes.addFlashAttribute("message", "정보변경을 성공했습니다.");
 
         return "redirect:/admin/member/list";

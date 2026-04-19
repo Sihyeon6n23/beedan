@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/root/member")
@@ -30,7 +31,8 @@ public class CreateMemberController {
     @PostMapping("/create")
     public String postCreateMember(Model model,
                                    @Valid @ModelAttribute MemberCreateFormDto memberCreateFormDto,
-                                   BindingResult bindingResult) {
+                                   BindingResult bindingResult,
+                                   RedirectAttributes rttr) {
         if (bindingResult.hasErrors()) {
             return "root/member/create";
         }
@@ -47,6 +49,8 @@ public class CreateMemberController {
             return "root/member/create";
         }
 
+        rttr.addFlashAttribute("status", "AccountCreate");
+        rttr.addFlashAttribute("message", "관리자 계정 생성을 성공했습니다.");
         return "redirect:/root/main";
     }
 }

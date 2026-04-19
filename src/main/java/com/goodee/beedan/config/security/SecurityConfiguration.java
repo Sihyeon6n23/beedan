@@ -65,7 +65,8 @@ public class SecurityConfiguration {
                         // 4) ROOT 전용
                         .requestMatchers(
                                 "/root/**",
-                                "/api/root/**"
+                                "/api/root/**",
+                                "/admin/member/edit"
                         ).hasRole("ROOT")
 
                         // 5) ADMIN / ROOT 전용
