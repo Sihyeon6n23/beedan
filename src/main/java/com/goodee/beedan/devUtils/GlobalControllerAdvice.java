@@ -8,6 +8,7 @@ import com.goodee.beedan.config.exception.BusinessException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.NoSuchElementException;
 
@@ -42,6 +43,14 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(BusinessException.class)
     public String handleBusinessException(BusinessException e, Model model) {
         model.addAttribute("message", e.getMessage());
+        return "error/common";
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException e,
+            Model model) {
+        model.addAttribute("message", "파일 업로드 용량이 초과되었습니다.");
         return "error/common";
     }
 

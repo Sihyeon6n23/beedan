@@ -23,6 +23,9 @@ window.InquiryUploader = (() => {
             this.selectedFiles = [];
             this.maxCount = this._parseMaxCount();
 
+            this.maxSize = window.beedanConfig?.maxFileSize || (10 * 1024 * 1024);
+            this.maxRequestSize = window.beedanConfig?.maxRequestSize || (50 * 1024 * 1024);
+
             if (this.root.dataset.bound === 'true') return;
             this.root.dataset.bound = 'true';
 
@@ -36,6 +39,13 @@ window.InquiryUploader = (() => {
                 if (match) return Number(match[1]);
             }
             return this.fileInput?.multiple ? 5 : 1;
+        }
+        _showError(message) {
+            if (typeof showGuideModal === 'function') {
+                showGuideModal(message, null, 'FILE ERROR', 'warning');
+            } else {
+                alert(message);
+            }
         }
 
         _init() {
@@ -124,6 +134,20 @@ window.InquiryUploader = (() => {
                 }
                 return;
             }
+
+            // let currentTotalSize = this.selectedFiles.reduce((sum, f) => sum + f.size, 0);
+            // for (let file of incomingFiles) {
+            //     if (file.size > this.maxSize) {
+            //         const mbSize = (this.maxSize / 1024 / 1024).toFixed(0);
+            //         this._showError(`파일 [${file.name}]의 용량이 너무 큽니다.\n최대 ${mbSize}MB까지 업로드 가능합니다.`);
+            //         return; // 한 개라도 초과하면 중단
+            //     }
+            //     currentTotalSize += file.size;
+            // }
+            // if (currentTotalSize > this.maxRequestSize) {
+            //     this._showError(`전체 첨부파일 용량이 ${(this.maxRequestSize / 1024 / 1024).toFixed(0)}MB를 초과할 수 없습니다.`);
+            //     return;
+            // }
 
             incomingFiles.forEach(file => {
                 const isDuplicate = this.selectedFiles.some(s =>
