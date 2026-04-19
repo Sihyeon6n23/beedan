@@ -7,6 +7,7 @@ import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.service.auth.biz.BizValidateService;
 import com.goodee.beedan.service.auth.phone.PortOneService;
 import com.goodee.beedan.service.file.FileService;
+import com.goodee.beedan.service.file.FileUtils;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
 import com.goodee.beedan.service.root.SecurityService;
@@ -43,6 +44,7 @@ public class AuthController {
     private final SnsIntegrateService snsIntegrateService;
     private final FileService fileService;
     private final SecurityService securityService;
+    private final FileUtils fileUtils;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
@@ -52,12 +54,22 @@ public class AuthController {
     private String storeId;
     @Value("${portone.channel-key}")
     private String channelKey;
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxFileSizeStr;
+    @Value("${spring.servlet.multipart.max-request-size}")
+    private String maxRequestSizeStr;
 
     @GetMapping("/signup")
     public String getSignUp(Model model) {
+
+        long maxFileSize = fileUtils.parseSize(maxFileSizeStr);
+        long maxRequestSize = fileUtils.parseSize(maxRequestSizeStr);
+
         model.addAttribute("memberForm", new MemberFormDto());
         model.addAttribute("portoneStoreId", storeId);
         model.addAttribute("portoneChannelKey", channelKey);
+        model.addAttribute("maxFileSize", maxFileSize);
+        model.addAttribute("maxRequestSize", maxRequestSize);
         return "/member/auth/signup";
     }
 
