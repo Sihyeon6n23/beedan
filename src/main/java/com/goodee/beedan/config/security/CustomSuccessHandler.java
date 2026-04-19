@@ -1,7 +1,6 @@
 package com.goodee.beedan.config.security;
 
 import com.goodee.beedan.dto.root.security.SecurityPolicyDto;
-import com.goodee.beedan.entity.Member;
 import com.goodee.beedan.repository.sessionlog.SessionLogRepository;
 import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.root.SecurityService;
@@ -11,21 +10,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import java.io.IOException;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-
-public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class CustomSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     private final SecurityService securityService;
     private final SessionRegistry sessionRegistry;
     private final MemberService memberService;
