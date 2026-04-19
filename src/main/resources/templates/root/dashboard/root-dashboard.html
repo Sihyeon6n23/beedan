@@ -348,7 +348,7 @@
             </div>
         </div>
     </div>
-
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
 </div>
 
 <script th:inline="javascript">
@@ -465,5 +465,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+    <th:block th:if="${status == 'AccountCreate' and message != null}">
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Thymeleaf의 인라인 기능을 통해 안전하게 메시지 주입
+                const serverMessage = /*[[${message}]]*/ '기본 메시지';
+                if (typeof showGuideModal === 'function') {
+                    showGuideModal(serverMessage, null, 'NOTICE', 'info');
+                }
+            });
+        </script>
+    </th:block>
 </th:block>
 </html>

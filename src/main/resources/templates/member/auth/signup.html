@@ -22,7 +22,7 @@
         </h1>
       </header>
 
-      <form th:action="@{/auth/signup}" th:object="${memberForm}" method="POST" enctype="multipart/form-data" class="bg-white border border-stone-200 p-8 md:p-12 shadow-sm space-y-12 w-full">
+      <form id="signupForm" th:action="@{/auth/signup}" th:object="${memberForm}" method="POST" enctype="multipart/form-data" class="bg-white border border-stone-200 p-8 md:p-12 shadow-sm space-y-12 w-full">
         <input type="hidden" th:field="*{impUid}" id="imp_uid" required>
 
         <section class="space-y-6 w-full">
@@ -225,14 +225,10 @@
 
         <footer class="pt-8 mt-12 border-t border-stone-200 w-full">
           <button type="submit" class="btn-primary w-full py-4 text-sm font-black tracking-widest uppercase transition-all hover:bg-primary/90 hover:shadow-md">
-            Complete Registration
+            가입하기
           </button>
         </footer>
       </form>
-
-      <p class="mt-8 text-center text-xs text-stone-500 uppercase tracking-wider w-full">
-        Need help? <a th:href="@{/support}" class="text-primary font-bold hover:underline underline-offset-4 ml-1">Contact Support</a>
-      </p>
 
     </div>
   </main>
@@ -335,58 +331,38 @@
     });
     certifyPhoneBtn.addEventListener('click', async () => {
       try {
-        // 1. PortOne 본인인증 팝업 호출
         const response = await PortOne.requestIdentityVerification({
-          storeId: PORTONE_STORE_ID, // 주입된 변수 사용
-          channelKey: PORTONE_CHANNEL_KEY, // 주입된 변수 사용
+          storeId: PORTONE_STORE_ID,
+          channelKey: PORTONE_CHANNEL_KEY,
           identityVerificationId: `identity-verification-${crypto.randomUUID()}`
         });
 
-        // 인증 창을 닫거나 취소한 경우 처리
         if (response.code !== undefined) {
-          return alert("인증이 취소되었습니다: " + response.message);
+          return showGuideModal("인증이 취소되었습니다.\n" + response.message, null, 'CERTIFICATION', 'cancel');
         }
 
-        // 2. 서버 API를 호출하여 번호 추출 및 중복 체크 수행
-        // response.identityVerificationId가 서버의 impUid 파라미터로 전달됩니다.
         const checkResult = await axios.post("/api/auth/phone-certification", {
           impUid: response.identityVerificationId
         });
 
-        // 3. 서버 응답 결과 처리
-        // 응답 DTO의 success 필드가 true인 경우 (중복 없음)
         if (checkResult.data.success) {
-          // hidden input에 값 세팅
           document.getElementById("imp_uid").value = response.identityVerificationId;
-
-          // UI 업데이트
           phoneAvailable.classList.remove("hidden");
           phoneAvailable.classList.add("flex");
-
-          // 버튼 비활성화
           certifyPhoneBtn.disabled = true;
           certifyPhoneBtn.classList.add("opacity-50", "cursor-not-allowed");
-
-          // 체크 여부 hidden input 업데이트
           phoneCheckedInput.value = "true";
 
-          // (선택) 인증된 이름을 상호명이나 대표자명에 자동 입력하고 싶을 경우
-          // if (checkResult.data.name) pNmEl.value = checkResult.data.name;
-
-          alert(checkResult.data.message || "본인인증이 완료되었습니다.");
+          showGuideModal(checkResult.data.message || "본인인증이 완료되었습니다.", null, 'COMPLETE', 'check_circle');
         }
 
       } catch (error) {
         console.error("본인인증 검증 중 에러 발생:", error);
-
-        // 서버에서 409 (Conflict) 에러를 보낸 경우 (중복 번호)
         if (error.response && error.response.status === 409) {
-          alert(error.response.data.message);
+          showGuideModal(error.response.data.message, null, 'ERROR', 'error');
         } else {
-          alert("인증 처리 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+          showGuideModal("인증 처리 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.", null, 'ERROR', 'error');
         }
-
-        // 실패 시 UI 초기화
         phoneCheckedInput.value = "false";
         document.getElementById("imp_uid").value = "";
         phoneAvailable.classList.add("hidden");
@@ -413,7 +389,7 @@
         if (!value) {
           emptyField = key;
           document.getElementById(key).focus();
-          alert(`${filedNames[emptyField]}을/를 입력해주세요.`);
+          showGuideModal(`${filedNames[emptyField]}을/를 입력해주세요.`, null, 'REQUIRED', 'warning');
           return;
         }
       }
@@ -429,14 +405,16 @@
         bizValidationBtn.disabled = true;
         bizValidationBtn.classList.add("opacity-50", "cursor-not-allowed");
         bizCheckedInput.value = true;
+        // (선택사항) 성공 메시지 모달을 띄우고 싶다면 추가
+        showGuideModal("사업자 인증이 완료되었습니다.", null, 'VERIFIED', 'verified');
       } else if (data.valid === "02") {
-        alert("사업자 정보가 일치하지 않습니다. 다시 확인해주세요.");
+        showGuideModal("사업자 정보가 일치하지 않습니다.\n다시 확인해주세요.", null, 'INVALID', 'error');
       }
     });
 
     idCheckedBtn.addEventListener('click', async () => {
       if (userLoginId.value.length < 6) {
-        alert("아이디는 6글자 이상 입력해주세요.");
+        showGuideModal("아이디는 6글자 이상 입력해주세요.", null, 'ID CHECK', 'warning');
       } else {
         let checked = await axios.post("/api/auth/idChecked", {
           username: userLoginId.value
@@ -450,7 +428,7 @@
           idCheckedBtn.classList.add("opacity-50", "cursor-not-allowed");
           idCheckedInput.value = true;
         } else {
-          alert("이미 사용 중인 아이디입니다. 다른 아이디를 입력해주세요.");
+          showGuideModal("이미 사용 중인 아이디입니다.\n다른 아이디를 입력해주세요.", () => { userLoginId.focus(); }, 'ID CHECK', 'error');
           userLoginId.focus();
         }
       }
@@ -460,7 +438,7 @@
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!emailInput.value || !emailPattern.test(emailInput.value)) {
-        alert("유효한 이메일 형식을 입력해주세요.");
+        showGuideModal("유효한 이메일 형식을 입력해주세요.", () => { emailInput.focus(); }, 'EMAIL CHECK', 'warning');
         emailInput.focus();
         return;
       }
@@ -478,14 +456,111 @@
           emailCheckedBtn.classList.add("opacity-50", "cursor-not-allowed");
           emailCheckedInput.value = true;
         } else {
-          alert("이미 사용 중인 이메일입니다. 다른 이메일을 입력해주세요.");
-          emailInput.focus();
-          emailInput.value = "";
+          showGuideModal("이미 사용 중인 이메일입니다.\n다른 이메일을 입력해주세요.", () => {
+            emailInput.focus();
+            emailInput.value = "";
+          }, 'EMAIL CHECK', 'error');
         }
       } catch (error) {
         console.error("이메일 중복 확인 에러:", error);
-        alert("중복 확인 중 오류가 발생했습니다.");
+        showGuideModal("중복 확인 중 오류가 발생했습니다.", null, 'ERROR', 'error');
       }
+    });
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      // 1. 본인 인증 확인
+      if (phoneCheckedInput.value !== "true") {
+        e.preventDefault(); // 폼 전송 중단
+        showGuideModal("휴대전화 본인인증을 완료해주세요.", function() {
+          certifyPhoneBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 2. 아이디 중복 확인
+      if (idCheckedInput.value !== "true") {
+        e.preventDefault();
+        showGuideModal("아이디 중복 확인을 완료해주세요.", function() {
+          userLoginId.focus();
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 3. 비밀번호 입력 및 확인
+      const pw = document.getElementById('password');
+      const pwConfirm = document.getElementById('confirmPassword');
+      if (!pw.value) {
+        e.preventDefault();
+        showGuideModal("비밀번호를 입력해주세요.", function() { pw.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+      if (pw.value !== pwConfirm.value) {
+        e.preventDefault();
+        showGuideModal("비밀번호가 서로 일치하지 않습니다.", function() { pwConfirm.focus(); }, "INVALID", "error");
+        return;
+      }
+
+      // 4. 이메일 중복 확인
+      if (emailCheckedInput.value !== "true") {
+        e.preventDefault();
+        showGuideModal("이메일 중복 확인을 완료해주세요.", function() {
+          emailInput.focus();
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 5. 사업자 정보 인증 확인
+      if (bizCheckedInput.value !== "true") {
+        e.preventDefault();
+        showGuideModal("사업자 정보 인증을 완료해주세요.", function() {
+          bizValidationBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      const attachedItems = document.querySelectorAll('.inquiry-upload__item');
+      const hasFileInUI = attachedItems.length > 0;
+
+      if (!hasFileInUI) {
+        e.preventDefault();
+        showGuideModal("사업자등록증 파일을 업로드해주세요.", function() {
+          // 업로드 섹션으로 부드럽게 이동
+          const uploadSection = document.querySelector('.bg-stone-50.p-6.border-dashed');
+          if(uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 7. 전화번호 확인
+      const ceoPh = document.getElementById('ceoPhone');
+      const cmpPh = document.getElementById('cmpPhone');
+      if (!ceoPh.value) {
+        e.preventDefault();
+        showGuideModal("대표자 전화번호를 입력해주세요.", function() { ceoPh.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+      if (!cmpPh.value) {
+        e.preventDefault();
+        showGuideModal("회사 전화번호를 입력해주세요.", function() { cmpPh.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 8. 주소 확인
+      const post = document.getElementById('postcode');
+      const addr = document.getElementById('detailAddress');
+      if (!post.value) {
+        e.preventDefault();
+        showGuideModal("주소 검색을 통해 우편번호를 입력해주세요.", function() {
+          searchPostCodeBtn.focus();
+        }, "REQUIRED", "warning");
+        return;
+      }
+      if (!addr.value) {
+        e.preventDefault();
+        showGuideModal("상세 주소를 입력해주세요.", function() { addr.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 모든 검사 통과 시 폼이 제출됩니다.
     });
   </script>
 </th:block>

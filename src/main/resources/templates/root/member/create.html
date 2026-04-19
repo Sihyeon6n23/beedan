@@ -135,6 +135,7 @@
                     document.getElementById("available").classList.remove("hidden");
                     idCheckedBtn.disabled = true;
                     idCheckedInput.value = "true";
+                    showGuideModal("사용 가능한 아이디입니다.", null, "알림", "info");
                 } else {
                     showGuideModal("이미 사용 중인 아이디입니다.", null, "중복", "error");
                 }

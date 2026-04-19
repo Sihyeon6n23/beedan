@@ -50,6 +50,8 @@ public class AuthController {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
+    @Value("${custom.security.oauth.client.registration.kakao.redirect-uri}")
+    private String customRedirectUri;
     @Value("${portone.store-id}")
     private String storeId;
     @Value("${portone.channel-key}")
@@ -248,7 +250,7 @@ public class AuthController {
 
         return "redirect:https://kauth.kakao.com/oauth/authorize?" +
                 "client_id=" + clientId +
-                "&redirect_uri=" + redirectUri +
+                "&redirect_uri=" + customRedirectUri +
                 "&response_type=code" +
                 "&state=" + state; // URL에 포함
     }
