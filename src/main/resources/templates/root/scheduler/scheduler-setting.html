@@ -518,7 +518,7 @@
                 <!-- 7. 통관 물품 갱신 주기 설정 -->
                 <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
                     <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                        <span class="material-symbols-outlined text-primary">schedule</span>
+                        <span class="material-symbols-outlined text-primary">local_shipping</span>
                         <h2 class="text-xl font-bold tracking-tight uppercase">7. 통관 물품 갱신</h2>
                     </div>
 
@@ -622,11 +622,8 @@
                                class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
                     </div>
 
-                    <button type="button" id="refreshShipmentSyncBtn"
-                            onclick="refreshShipmentSync()"
-                            class="scheduler-action">
-                        <span class="material-symbols-outlined text-[18px] leading-none">sync</span>
-                        즉시 동기화
+                    <button type="button" id="refreshShipmentSyncBtn" onclick="refreshShipmentSync()" class="scheduler-action">
+                        <span class="material-symbols-outlined text-[18px] leading-none">sync</span>즉시 동기화
                     </button>
                 </section>
             </form>
@@ -642,6 +639,7 @@
     </div>
     </main>
 
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
     <script th:inline="javascript">
         function refreshDisplay(type) {
             const btn = document.getElementById(type === 'popular' ? 'refreshPopularBtn' : 'refreshNewBtn');
@@ -661,10 +659,11 @@
                     location.reload();
                 })
                 .catch(err => {
-                    alert('갱신에 실패했습니다.');
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                });
+                // alert('갱신에 실패했습니다.'); -> 교체
+                showGuideModal('갱신에 실패했습니다.', null, 'ERROR', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -730,12 +729,13 @@
         });
 
         function triggerSync() {
-            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-            if(!confirm("현재 SHIPPING 상태인 모든 물품의 통관 정보를 즉시 업데이트하시겠습니까?")) return;
-
-            fetch('/api/admin/member/shipment/sync-unipass', {
+        showConfirmModal(
+            "통관 단계를 즉시 갱신하시겠습니까?",
+            function() {
+                fetch('/api/admin/member/shipment/sync-unipass', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -747,41 +747,46 @@
                     return res.text();
                 })
                 .then(data => {
-                    alert(data);
-                    location.reload();
+                    showGuideModal(data, function() { location.reload(); }, "SUCCESS", "check_circle");
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert("동기화 중 오류가 발생했습니다.");
+                    // alert("동기화 중 오류가 발생했습니다."); -> 교체
+                    showGuideModal("동기화 중 오류가 발생했습니다.", null, "ERROR", "error");
                 });
+            },
+            "통관 정보 동기화",
+            "sync"
+            );
         }
 
         function refreshShipmentSync() {
-            const btn = document.getElementById('refreshShipmentSyncBtn');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span> 동기화 중...';
+            showConfirmModal("국내 배송 단계를 즉시 갱신하시겠습니까?",
 
-            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+            function() {
+                const btn = document.getElementById('refreshShipmentSyncBtn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span> 동기화 중...';
 
-            fetch('/api/admin/member/shipment/sync-shipment', {
-                method: 'POST',
-                headers: { [csrfHeader]: csrfToken }
-            })
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+                fetch('/api/admin/member/shipment/sync-shipment', {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken }
+                })
                 .then(res => {
                     if (!res.ok) throw new Error('동기화 실패');
                     return res.text();
                 })
-                .then(data => {
-                    alert(data);
-                    location.reload();
-                })
+                .then(data => { showGuideModal(data, function() { location.reload(); }, "SUCCESS", "check_circle"); })
                 .catch(err => {
-                    alert('동기화에 실패했습니다.');
+                showGuideModal('동기화에 실패했습니다.', null, 'ERROR', 'error');
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 });
+            }, "배송 단계 갱신", "sync" );
         }
     </script>
 </th:block>

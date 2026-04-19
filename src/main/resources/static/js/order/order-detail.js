@@ -139,18 +139,32 @@ function cancelOrder(ordId) {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
-    if (!confirm("정말로 주문을 취소하시겠습니까?")) return;
+    showConfirmModal(
+        "정말로 주문을 취소하시겠습니까?",
 
-    fetch(`/api/orders/${ordId}`, {
-        method: 'DELETE',
-        headers: { [csrfHeader]: csrfToken }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('취소 실패');
-        alert("주문이 취소되었습니다.");
-        location.reload();
-    })
-    .catch(error => alert("오류가 발생했습니다."));
+        function() {
+            fetch(`/api/orders/${ordId}`, {
+                method: 'DELETE',
+                headers: { [csrfHeader]: csrfToken }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('취소 실패');
+
+                showGuideModal(
+                    "주문이 성공적으로 취소되었습니다.",
+                    function() {
+                        location.reload();
+                    },
+                    "CANCELED",
+                    "check_circle"
+                );
+            })
+            .catch(error => {
+                showGuideModal( "오류가 발생했습니다. 다시 시도해주세요.", null, "ERROR", "error" );
+            });
+        },
+        "주문 취소", "warning"
+    );
 }
 
 // ====== 배송 현황 =======
