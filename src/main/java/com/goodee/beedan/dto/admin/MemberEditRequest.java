@@ -25,4 +25,5 @@ public class MemberEditRequest {
 
     // 04. 회원정보 이용 이력
     private String status;          // th:field="*{status}"
+    private String bizStatus;
 }

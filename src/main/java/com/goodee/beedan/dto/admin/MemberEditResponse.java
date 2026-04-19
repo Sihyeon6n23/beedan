@@ -34,6 +34,7 @@ public class MemberEditResponse {
 
     // [04] 회원정보 이용 이력 (Read-only & Status Edit)
     private String status;           // memStt (계정 상태)
+    private String bizStatus;        // memBizStt (사업자 인증여부)
     private LocalDateTime createdAt; // memCreDt (가입일)
     private LocalDateTime updatedAt; // memUpdDt (최종 수정일)
 
@@ -64,6 +65,7 @@ public class MemberEditResponse {
 
                 // 04. 이력 매핑
                 .status(member.getMemStt())
+                .bizStatus(member.getMemBizStt())
                 .createdAt(member.getMemCreDt())
                 .updatedAt(member.getMemUpdDt())
                 .build();

@@ -16,6 +16,7 @@ public class MemberListDto {
     private String memBizAdr;
     private String memBizNo;
     private String memStt;
+    private String memBizStt;
     private LocalDateTime memCreDt;
     private String memNm;
     private MemberAuthority memAut;

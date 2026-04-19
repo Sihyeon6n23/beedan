@@ -18,6 +18,7 @@ public interface MemberEditRequestToMemberMapper {
     @Mapping(target = "memPosCd", source = "postCode")
     @Mapping(target = "memBizAdr", source = "address")
     @Mapping(target = "memBizDtAdr", source = "addressDetail")
+    @Mapping(target = "memBizStt", source = "bizStatus")
     @Mapping(target = "memStt", source = "status")
     void updateMemberFromDto(MemberEditRequest dto, @MappingTarget Member member);
 }

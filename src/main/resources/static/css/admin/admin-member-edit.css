@@ -175,7 +175,17 @@
     border-radius: 2px;
 }
 
-/* --- 6. 4분할 깨짐 방지 대응 --- */
+.status-badge-select {
+    width: 150px;
+    text-align: right;
+    padding-right: 30px;
+    direction: ltr;
+}
+
+.status-badge-select option {
+    direction: ltr;
+    text-align: left;
+}
 @media (max-width: 1200px) {
     .edit-form-grid {
         grid-template-columns: 1fr; /* 너비 부족 시 1열로 세로 정렬 */
