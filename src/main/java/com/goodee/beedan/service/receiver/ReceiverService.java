@@ -19,8 +19,7 @@ public class ReceiverService {
     private final MemberRepository memberRepository;
 
     public void addReceiverAddr(ReceiverDto receiverDto) {
-        Member member = memberRepository.findById(receiverDto.getMemId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Member member = memberRepository.getByIdOrThrow(receiverDto.getMemId());
 
         Receiver receiver = Receiver.builder()
                 .member(member)
