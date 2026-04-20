@@ -12,6 +12,8 @@ public class ReceiverDto {
     private String rcMsg;
     private String rcAdr;
     private String rcAdrDt;
+    private String rcZip;    // 우편번호
+    private Boolean rcIamYn;
 
     private Long memId;
 }

@@ -1,15 +1,11 @@
 package com.goodee.beedan.controller.order;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.dto.order.ShipmentDto;
 import com.goodee.beedan.dto.order.TrackingResponseDto;
+import com.goodee.beedan.entity.Shipment;
+import com.goodee.beedan.repository.order.ShipmentRepository;
 import com.goodee.beedan.service.order.TrackingService;
-import com.goodee.beedan.service.shipment.ShipmentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -19,45 +15,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/shipments")
 @RequiredArgsConstructor
 public class ShipmentApiController {
-    private final ShipmentService shipmentService;
     private final TrackingService trackingService;
-
-
-    @GetMapping("/list")
-    public ResponseEntity<Page<ShipmentDto>> getShipmentList(
-            @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestParam(name = "ordId") Long ordId,
-            @PageableDefault(size = 10, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable){
-        Page<ShipmentDto> shipmentDtoList = shipmentService.getShipmentList(userDetails.getMemberId(), ordId, pageable);
-
-        return ResponseEntity.ok(shipmentDtoList);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ShipmentDto> getShipmentDetail(
-            @PathVariable(name="id") Long shId,
-            @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestParam(name = "ordId") Long ordId){
-
-        ShipmentDto shipmentDetail = shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId);
-
-        return ResponseEntity.ok(shipmentDetail);
-    }
-
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ShipmentDto> updateShipmentStatus(
-            @PathVariable(name="id") Long shId,
-            @AuthenticationPrincipal MemberUserDetails userDetails,
-            @RequestParam(name = "ordId") Long ordId) {
-
-        shipmentService.updateStatus(shId, userDetails.getMemberId(), ordId);
-        ShipmentDto updatedShipment = shipmentService.getShipmentDetail(shId, userDetails.getMemberId(), ordId);
-
-        return ResponseEntity.ok(updatedShipment);
-    }
+    private final ShipmentRepository shipmentRepository;
 
     @GetMapping("/{shId}/track")
-    public ResponseEntity<TrackingResponseDto> getTrackingInfo(@PathVariable("shId") Long shId) {
+    public ResponseEntity<TrackingResponseDto> getTrackingInfo(@PathVariable("shId") Long shId,
+                                                               @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
+
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !shipment.getOrder().getMember().getMemId().equals(userDetails.getMemberId())) {
+            throw new IllegalArgumentException();
+        }
+
         TrackingResponseDto result = trackingService.getTrackingInfo(shId);
         return ResponseEntity.ok(result);
     }

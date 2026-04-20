@@ -3,6 +3,7 @@ package com.goodee.beedan.controller.order;
 import com.goodee.beedan.common.constant.NotificationType;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.repository.order.OrderRepository;
 import com.goodee.beedan.service.notification.NotificationService;
 import com.goodee.beedan.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 @Slf4j
 public class OrderController {
+    private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final NotificationService notificationService;
 
@@ -46,23 +48,6 @@ public class OrderController {
         model.addAttribute("order", order);
 
         return "order/order-detail";
-    }
-
-    @PostMapping("/cancel")
-    public String cancelOrder(@RequestParam("ordId") Long ordId,
-                              @AuthenticationPrincipal MemberUserDetails userDetails,
-                              RedirectAttributes redirectAttributes) {
-
-        try {
-            orderService.cancelOrder(ordId, userDetails.getMemberId());
-            redirectAttributes.addFlashAttribute("message", "주문이 정상적으로 취소되었습니다.");
-
-            notificationService.createNotification(userDetails.getMemberId(), NotificationType.ORDER_CANCEL, ordId);
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
-        return "redirect:/order/detail?id=" + ordId;
     }
 
 }
