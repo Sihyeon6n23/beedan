@@ -3,8 +3,13 @@
  * @param pullPath 서버에서 받은 UUID (또는 경로가 포함된 문자열)
  */
 function openBizFile(pullPath) {
-    if(!pullPath || pullPath === 'null' || pullPath === '/') {
-        alert("첨부된 파일이 없습니다.");
+    if(!pullPath || pullPath === 'null/null' || pullPath === '/') {
+        showGuideModal(
+            "첨부된 파일이 없습니다.",
+            null,
+            "INFO",
+            "info"
+        );
         return;
     }
     const url = `/files/${pullPath}`;
@@ -26,7 +31,12 @@ function processMember(memId, action) {
 
     if(!csrfMeta || !csrfHeaderMeta) {
         console.error("CSRF meta tags are missing.");
-        alert("보안 토큰이 누락되었습니다. 페이지를 새로고침해주세요.");
+        showGuideModal(
+            "보안토큰이 만료되었습니다\n 페이지를 새로고침 해주세요.",
+            null,
+            "ERROR",
+            "error"
+        );
         return;
     }
 
@@ -46,7 +56,12 @@ function processMember(memId, action) {
     // 3. Axios 요청
     axios.post(url, null, config)
         .then(response => {
-            alert(action === 'approve' ? "승인 완료되었습니다." : "거절 처리되었습니다.");
+            showGuideModal(
+                action === 'approve' ? "승인 완료되었습니다." : "거절 처리되었습니다.",
+                null,
+                action === 'approve' ? "APPROVED" : "REJECTED",
+                action === 'approve' ? "check_circle" : "info" // 승인은 체크, 거절은 info 아이콘
+            );
 
             const row = document.getElementById(`row-${memId}`);
             if(row) {
@@ -63,6 +78,11 @@ function processMember(memId, action) {
         .catch(error => {
             console.error('Error:', error);
             const status = error.response ? error.response.status : 'Network Error';
-            alert(`처리 중 오류가 발생했습니다. (상태: ${status})`);
+            showGuideModal(
+                `처리 중 오류가 발생했습니다. (상태: ${status})`,
+                null,
+                "ERROR",
+                "error"
+            );
         });
 }
