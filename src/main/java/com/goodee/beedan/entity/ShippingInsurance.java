@@ -32,7 +32,7 @@ public class ShippingInsurance {
 
     @PrePersist
     protected void onCreate(){
-        if (this.siYn != null) this.siYn = true;
+        if (this.siYn == null) this.siYn = true;
     }
 
     @Builder
