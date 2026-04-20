@@ -87,6 +87,7 @@
       <div th:replace="~{fragments/board/board-module :: pagination(${response}, '/root/member/approve', ${searchDto})}"></div>
     </section>
   </section>
+  <div th:replace="~{fragments/modal/guidemodal :: guideModal}"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script th:src="@{/js/root/approve.js}"></script>

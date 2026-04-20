@@ -152,7 +152,6 @@ public class NoticeBoardController {
         }
 
         String boardResultMessage = noticeBoardService.writeNotice(boardRequestDto, principal.getName());
-        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
 
         model.addAttribute("boardRequestDto", new CommonBoardRequestDto());
         model.addAttribute("isEdit", false);
@@ -188,7 +187,6 @@ public class NoticeBoardController {
         }
 
         String boardResultMessage = noticeBoardService.updateNotice(boardRequestDto, principal.getName());
-        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
 
         model.addAttribute("boardRequestDto", boardRequestDto);
         model.addAttribute("fileList", fileList);
