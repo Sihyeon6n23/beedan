@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/receiver")
 @RequiredArgsConstructor
-@Slf4j
 public class ReceiverApiController {
     private final ReceiverService receiverService;
 

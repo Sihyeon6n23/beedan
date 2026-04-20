@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public abstract class Receiver_ {
 
 	public static final String RC_MSG = "rcMsg";
+	public static final String RC_ZIP = "rcZip";
 	public static final String RC_NM = "rcNm";
 	public static final String RC_ADR = "rcAdr";
 	public static final String RC_DEL_YN = "rcDelYn";
@@ -29,6 +30,11 @@ public abstract class Receiver_ {
 	 * @see com.goodee.beedan.entity.Receiver#rcMsg
 	 **/
 	public static volatile SingularAttribute<Receiver, String> rcMsg;
+	
+	/**
+	 * @see com.goodee.beedan.entity.Receiver#rcZip
+	 **/
+	public static volatile SingularAttribute<Receiver, String> rcZip;
 	
 	/**
 	 * @see com.goodee.beedan.entity.Receiver#rcNm

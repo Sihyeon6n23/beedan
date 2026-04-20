@@ -60,7 +60,7 @@ public class OrderService {
         memberRepository.getByIdOrThrow(adminMemId).validateAdmin();
         memberRepository.getByIdOrThrow(memId);
 
-        Page<Order> orderPage = orderRepository.findAll(pageable);
+        Page<Order> orderPage = orderRepository.findByMember_MemId(memId, pageable);
 
         return orderPage.map(this::mapToOrderDto);
     }
@@ -105,6 +105,7 @@ public class OrderService {
     @Transactional
     public void cancelOrder(Long ordId, Long memId) {
         memberRepository.getByIdOrThrow(memId);
+
         Order order = orderRepository.getByIdOrThrow(ordId);
 
         if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {

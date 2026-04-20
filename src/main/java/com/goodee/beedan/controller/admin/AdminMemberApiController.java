@@ -80,8 +80,6 @@ public class AdminMemberApiController {
             @PathVariable Long memId,
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @PageableDefault(size = 6, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable) {
-        if(userDetails == null) throw new MemberNotFoundException();
-
         Page<OrderDto> orderList = orderService.getListByAdmin(memId, userDetails.getMemberId(), pageable);
         return ResponseEntity.ok(orderList);
     }
@@ -114,8 +112,6 @@ public class AdminMemberApiController {
 
     @GetMapping("/shipment/{shId}/track")
     public ResponseEntity<TrackingResponseDto> getTracking(@PathVariable("shId") Long shId, @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if(userDetails == null) throw new MemberNotFoundException();
-
         TrackingResponseDto result = trackingService.getTrackingInfo(shId);
 
         return ResponseEntity.ok(result);
@@ -123,8 +119,6 @@ public class AdminMemberApiController {
 
     @PostMapping("/shipment/{shId}/demo-progress")
     public ResponseEntity<String> progressDemoShipment(@PathVariable Long shId, @AuthenticationPrincipal MemberUserDetails userDetails) {
-        if(userDetails == null) throw new MemberNotFoundException();
-
         Shipment shipment = shipmentRepository.getByIdOrThrow(shId);
 
         ShipmentStatus nextStatus = switch (shipment.getShStt()) {
@@ -143,8 +137,6 @@ public class AdminMemberApiController {
 
     @PostMapping("/shipment/sync-unipass")
     public ResponseEntity<String> syncUnipassManually(@AuthenticationPrincipal MemberUserDetails userDetails) {
-        if(userDetails == null) throw new MemberNotFoundException();
-
         unipassScheduler.runUnipassTracking();
 
         try {
