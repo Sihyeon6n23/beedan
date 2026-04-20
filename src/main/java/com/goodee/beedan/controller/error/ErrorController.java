@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class ErrorController {
 
-    @GetMapping("/denied")
+    @RequestMapping("/denied")
     public String accessDenied() {
         return "error/common";
     }
