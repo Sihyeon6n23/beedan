@@ -12,6 +12,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,15 @@ public class StockService {
     // 상품 단건 조회
     public Stock findById(Long stId) {
         return stockRepository.findById(stId).orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+    }
+
+    // 노출 상품 검증 후 조회 (비노출 상품은 403)
+    public Stock getExposedOrThrow(Long stId) {
+        Stock stock = findById(stId);
+        if (!stock.isStExpYn()) {
+            throw new AccessDeniedException("노출되지 않은 상품입니다.");
+        }
+        return stock;
     }
 
     // 찜 여부 확인

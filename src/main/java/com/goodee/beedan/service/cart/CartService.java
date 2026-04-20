@@ -54,7 +54,7 @@ public class CartService {
         Stock stock = stockRepository.findById(stId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
         if(!stock.isStExpYn()) {
-            throw new IllegalArgumentException("주문할 수 없는 상품입니다.");
+            throw new AccessDeniedException("노출되지 않은 상품입니다.");
         }
         Cart cart = Cart.builder()
                 .memId(memId)
