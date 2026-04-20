@@ -1,5 +1,6 @@
 package com.goodee.beedan.repository.order;
 
+import com.goodee.beedan.common.constant.OrderStatus;
 import com.goodee.beedan.config.exception.EntityNotFoundException;
 import com.goodee.beedan.entity.Order;
 import org.springframework.data.domain.Page;
@@ -25,9 +26,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByMember_MemId(Long memId, Pageable pageable);
 
-    @Query("SELECT o FROM Order o " +
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.orderItems oi " +
             "WHERE o.member.memId = :memId " +
-            "AND (:status = 'ALL' OR CAST(o.ordBaseStt AS string) = :status) " +
-            "ORDER BY o.ordBaseCreDt DESC")
-    Page<Order>findAllByMemberIdAndStatus(Long memId, String status, Pageable pageable);
+            "AND (:status IS NULL OR o.ordBaseStt = :status) " +
+            "AND (:keyword IS NULL OR oi.ordItmNm LIKE %:keyword%)")
+    Page<Order> findAllBySearch(@Param("memId") Long memId, @Param("status") OrderStatus status,
+                                @Param("keyword") String keyword, Pageable pageable);
+
 }
