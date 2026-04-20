@@ -41,14 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    globalThis.updateUnreadCount = function() {
-        apiRequest('/api/notification/unread-count')
-            .then(count => {
-                updateBadgeUI(count);
-            })
-            .catch(err => console.error("배지 업데이트 실패:", err));
-    };
-
     globalThis.addEventListener('newNotification', function(e) { // 웹소켓 연결시 이벤트 실행 (알림 수신 시 서버에서 클라이언트로 count를 보내줄 예정)
         const newCount = e.detail.count;
         updateBadgeUI(newCount);
@@ -102,15 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (url) {
-            if (typeof globalThis.handlePageAction === 'function') ;
-
             apiRequest(url, method)
                 .then(updatedList => {
                     if (typeof renderNotifications === 'function') { renderNotifications(updatedList); }
 
                     globalThis.dispatchEvent(new CustomEvent('notificationUpdated', { detail: updatedList }));
-
-                    if (globalThis.updateUnreadCount) globalThis.updateUnreadCount();
 
                     if (type === 'read' && refUrl && refUrl !== 'null' && refUrl !== '') { location.href = refUrl;}
                 })
@@ -132,5 +120,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!notiDropdown.classList.contains('hidden')) notiDropdown.classList.add('hidden');
     });
 
-    updateUnreadCount();
 });
+
+function subscribeNotificationCount() {
+    if (!stompClient || !stompClient.connected) return;
+
+    // 💡앞에 "/user"를 붙여서 구독해야 합니다.
+    const notificationTopic = '/user/sub/unread-count';
+
+    stompClient.subscribe(notificationTopic, function (message) {
+        try {
+            // 보내시는 데이터가 숫자(Integer) 단일 값이므로 바로 파싱
+            const newCount = parseInt(message.body, 10);
+
+            globalThis.dispatchEvent(new CustomEvent('newNotification', {
+                detail: { count: newCount }
+            }));
+
+        } catch (error) {
+            console.error("알림 웹소켓 에러:", error);
+        }
+    });
+}
