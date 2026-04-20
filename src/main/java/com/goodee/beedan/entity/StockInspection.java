@@ -40,7 +40,7 @@ public class StockInspection {
 
     @PrePersist
     protected void onCreate() {
-        if(this.stiYn != true) this.stiYn = true;
+        if (this.stiYn == null) this.stiYn = true;
     }
 
     public void update(String name, BigDecimal amount, String description) {
