@@ -3,17 +3,17 @@ package com.goodee.beedan.config.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisPassword;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -24,9 +24,10 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 @EnableCaching
-public class RedisConfig {
+public class RedisConfig implements CachingConfigurer {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -102,6 +103,59 @@ public class RedisConfig {
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(customConfigs)
                 .build();
+    }
+
+    // Redis 장애 시 DB로 우회하게 만드는 최후의 방어선
+
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new CacheErrorHandler() {
+            @Override
+            public void handleCacheGetError(@Nonnull RuntimeException exception, @Nonnull Cache cache, @Nonnull Object key)
+            {// Redis가 죽어서 데이터를 못 가져오면 에러를 뿜지 않고 원래 하려던 DB 조회(@Cacheable 달린 메서드 원본)를 실행
+                log.warn( // 캐시를 읽을 수 없습니다. DB에서 직접 조회합니다.
+                        "[Redis Cache GET FAIL] cache={}, key={}, fallback=method-execution, exceptionType={}, message={}",
+                        cache.getName(),
+                        key,
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage()
+                );
+            }
+
+            @Override
+            public void handleCachePutError(@Nonnull RuntimeException exception, @Nonnull Cache cache, @Nonnull Object key,
+                                            Object value) {
+                log.warn( //캐시를 저장할 수 없습니다. 저장을 생략합니다.
+                        "[Redis Cache PUT FAIL] cache={}, key={}, impact=cache-not-updated(stale-possible), exceptionType={}, message={}",
+                        cache.getName(),
+                        key,
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage()
+                );
+            }
+
+            @Override
+            public void handleCacheEvictError(@Nonnull RuntimeException exception, @Nonnull Cache cache, @Nonnull Object
+                    key) {
+                log.warn( // 캐시 삭제 실패.
+                        "[Redis Cache EVICT FAIL] cache={}, key={}, impact=stale-cache-possible, exceptionType={}, message={}",
+                        cache.getName(),
+                        key,
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage()
+                );
+            }
+
+            @Override
+            public void handleCacheClearError(@Nonnull RuntimeException exception, @Nonnull Cache cache) {
+                log.warn( // 캐시 초기화 실패.
+                        "[Redis Cache CLEAR FAIL] cache={}, impact=stale-cache-possible, exceptionType={}, message={}",
+                        cache.getName(),
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage()
+                );
+            }
+        };
     }
 
 }

@@ -61,7 +61,15 @@ public class UnipassService {
     @CachePut(value = "shipment:customs", key = "#hblNo + '_' + #blYear", unless = "#result == null") // @CachePut이 걸려있어 최신 상태로 캐시가 갱신됨
     @CacheEvict(value = "shipment:customs", key = "'timeline_' + #hblNo + '_' + #blYear") // 타임라인 캐시도 같이 날려서 다음 조회 시 최신 타임라인이 뜨도록 함
     public String updateCargoStatusForScheduler(String hblNo, String blYear) {
-        return fetchUnipassRawData(hblNo, blYear); // 실제 API 호출 및 캐시 강제 갱신
+        log.info("[UNIPASS CACHE REFRESH] requested. hblNo={}, blYear={}", hblNo, blYear);
+
+        String result = fetchUnipassRawData(hblNo, blYear); // 실제 API 호출 및 캐시 강제 갱신
+
+        if (result == null) {
+            log.warn("[UNIPASS CACHE REFRESH] source fetch returned null. hblNo={}, blYear={}", hblNo, blYear);
+        }
+
+        return result;
     }
 
     @Cacheable(value = "shipment:customs", key = "'timeline_' + #hblNo + '_' + #blYear", unless = "#result == null || #result.isEmpty()")
