@@ -1,10 +1,7 @@
 package com.goodee.beedan.devUtils;
 
-import com.goodee.beedan.config.security.MemberUserDetails;
-import com.goodee.beedan.service.notification.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.goodee.beedan.config.exception.BusinessException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
