@@ -3,7 +3,6 @@ package com.goodee.beedan.config.advice;
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.service.notification.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
