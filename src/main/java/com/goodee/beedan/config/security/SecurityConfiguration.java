@@ -125,26 +125,41 @@ public class SecurityConfiguration {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/auth/signout")
-                        .deleteCookies("JSESSIONID") // 쿠키 삭제 추가
-                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true) // 여기서 스프링 시큐리티가 세션을 만료시킴
                         .clearAuthentication(true)
+                        // 💡 1. 로그아웃 과정 중에 실행되는 핸들러를 추가하여 로그 작성
+                        .addLogoutHandler((request, response, authentication) -> {
+                            log.info("==== [로그아웃 진행 중] SecurityContext 및 세션 정리 시작 ====");
+                            if (request.getSession(false) != null) {
+                                log.info("현재 세션 ID: {}", request.getSession(false).getId());
+                            } else {
+                                log.info("현재 세션: null (이미 만료되었거나 없음)");
+                            }
+                        })
+                        // 💡 2. 로그아웃이 완전히 성공한 직후
                         .logoutSuccessHandler((request, response, authentication) -> {
+                            log.info("==== [로그아웃 성공] /auth/signin 으로 리다이렉트 합니다 ====");
                             response.sendRedirect("/auth/signin");
                         })
                         .permitAll()
                 )
                 .sessionManagement(session -> session
+                        // 💡 3. 유효하지 않은 세션(이미 만료된 세션)으로 접근했을 때
                         .invalidSessionStrategy((request, response) -> {
-                            request.getSession().setAttribute("errorMessage",
+                            log.warn("==== [유효하지 않은 세션 감지] invalidSessionStrategy 실행 ====");
+                            request.getSession(true).setAttribute("errorMessage",
                                     new SignInErrorMessageDto("세션만료", "세션이 만료되었습니다. 재로그인 해주시기 바랍니다."));
                             response.sendRedirect("/auth/signin");
                         })
                         .sessionConcurrency(concurrency -> concurrency
                                 .maximumSessions(-1)
                                 .sessionRegistry(sessionRegistry)
+                                // 💡 4. 중복 로그인으로 인해 기존 세션이 만료 처리되었을 때
                                 .expiredSessionStrategy(event -> {
+                                    log.warn("==== [중복 로그인 감지] expiredSessionStrategy 실행 ====");
                                     HttpServletRequest request = event.getRequest();
-                                    request.getSession().setAttribute("errorMessage",
+                                    request.getSession(true).setAttribute("errorMessage",
                                             new SignInErrorMessageDto("중복로그인", "다른 사용자가 로그인하여 로그아웃 처리됩니다."));
                                     event.getResponse().sendRedirect("/auth/signin");
                                 })
@@ -165,7 +180,7 @@ public class SecurityConfiguration {
                 .exceptionHandling(ex -> ex              // ← 여기 추가
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             request.setAttribute("message", "잘못된 접근입니다.");
-                            request.getRequestDispatcher("/error/denied").forward(request, response);
+                            response.sendRedirect("/error/denied");
                         })
                 );
         return http.build();
@@ -186,7 +201,11 @@ public class SecurityConfiguration {
         return web -> web.ignoring().requestMatchers(
                 "/h2-console/**",
                 "/api/webhook/**",
-                "/.well-known/**"
+                "/.well-known/**",
+                "/css/**",
+                "/js/**",
+                "/image/**",
+                "/error"
         );
     }
 

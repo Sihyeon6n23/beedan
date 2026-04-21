@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('Operation', 'unit-discount', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | Unit Discount Policy</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('operation', 'unit-discount')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+    <div class="flex-grow mx-auto px-6 py-10 max-w-6xl">
+
+        <!-- 뒤로가기 -->
+        <a th:href="@{/root/operation}" class="inline-flex items-center gap-1 text-sm text-outline hover:text-primary transition-colors mb-8">
+            <span class="material-symbols-outlined text-base">arrow_back</span>
+            운영 정책으로 돌아가기
+        </a>
+
+        <!-- 페이지 헤더 -->
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">UNIT DISCOUNT</span>
+            <h1 class="mypage-security-page__title" th:text="${unitGroup.unGNm}">단위명</h1>
+            <div class="mypage-security-page__rule"><span></span></div>
+        </section>
+
+        <!-- 묶음 단위 기본 정보 -->
+        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8 mb-10">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">inventory_2</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">묶음 단위 정보</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="p-1.5 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                            th:data-id="${unitGroup.unGId}" data-type="unitGroup" title="묶음 단위 수정">
+                        <span class="material-symbols-outlined text-base">edit</span>
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">단위명</div>
+                    <div class="text-lg font-black" th:text="${unitGroup.unGNm}">—</div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">단위당 수량</div>
+                    <div class="text-lg font-black" th:text="${unitGroup.unGQn}">—</div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">등록일</div>
+                    <div class="text-lg font-black" th:text="${unitGroup.unGCrDt != null} ? ${#temporals.format(unitGroup.unGCrDt, 'yyyy-MM-dd')} : '—'">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 묶음 할인 정책 테이블 -->
+        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">percent</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">적용 할인 정책</h2>
+                    <span class="text-xs text-outline ml-2" th:text="${#lists.size(discounts)} + '건'">0건</span>
+                </div>
+                <button type="button" onclick="openModal('unitDiscountModal')"
+                        class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                    <span class="material-symbols-outlined text-base">add</span> 할인 정책 추가
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-surface-container-high text-left">
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">최소 수량</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">최소 금액</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">수량 할인율</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">금액 할인율</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">중복 처리</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center w-24">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-container">
+                        <tr th:each="d : ${discounts}" class="hover:bg-surface-container-low transition-colors">
+                            <td class="px-4 py-3" th:text="${d.unDMinQn != null} ? ${d.unDMinQn} : '—'">—</td>
+                            <td class="px-4 py-3" th:text="${d.unDMinAm != null} ? ${#numbers.formatDecimal(d.unDMinAm, 0, 'COMMA', 0, 'POINT')} : '—'">—</td>
+                            <td class="px-4 py-3" th:text="${d.unDQnDr != null} ? ${d.unDQnDr} : '—'">—</td>
+                            <td class="px-4 py-3" th:text="${d.unDAmDr != null} ? ${d.unDAmDr} : '—'">—</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded bg-amber-50 text-amber-700"
+                                      th:text="${d.unDOvTy}">HIGHER</span>
+                            </td>
+                            <td class="px-4 py-3 text-outline cell-wrap" th:text="${d.unDDes} ?: '—'">—</td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                            th:data-id="${d.unDId}" data-type="unitDiscount" title="수정">
+                                        <span class="material-symbols-outlined text-base">edit</span>
+                                    </button>
+                                    <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                            th:data-id="${d.unDId}" data-type="unitDiscount" title="삭제">
+                                        <span class="material-symbols-outlined text-base">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(discounts)}">
+                            <td colspan="7" class="px-4 py-8 text-center text-outline">등록된 할인 정책이 없습니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container" style="outline: 2px solid var(--color-primary, #ffd700); outline-offset: -2px;">
+            <div class="flex items-center justify-between p-6 border-b border-surface-container">
+                <h3 id="modalTitle" class="text-lg font-bold tracking-tight uppercase">할인 정책 추가</h3>
+                <button type="button" onclick="closeModal()" class="p-1 hover:bg-surface-container-high rounded transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="modalForm" class="p-6 space-y-4">
+                <div id="modalFields"></div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-surface-container">
+                    <button type="button" onclick="closeModal()"
+                            class="px-6 py-2.5 text-sm font-bold text-outline hover:bg-surface-container-high transition-colors">
+                        취소
+                    </button>
+                    <button type="submit"
+                            class="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-primary bg-primary-container hover:bg-primary hover:text-on-primary-container transition-all">
+                        <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">save</span>
+                        저장
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const unitGroupId = [[${unitGroup.unGId}]];
+        const unitGroupName = [[${unitGroup.unGNm}]];
+
+        const MODAL_CONFIG = {
+            unitDiscountModal: {
+                title: unitGroupName + ' 할인 정책',
+                fields: [
+                    { name: 'unDMinQn', label: '최소 묶음 수량 (null=미적용)', type: 'number', placeholder: '10', required: false },
+                    { name: 'unDMinAm', label: '최소 금액 (null=미적용)',      type: 'number', placeholder: '1000000', required: false },
+                    { name: 'unDQnDr', label: '수량 할인율 (예: 0.05=5%)',    type: 'number', placeholder: '0.05', step: '0.0001', required: false },
+                    { name: 'unDAmDr', label: '금액 할인율 (예: 0.03=3%)',    type: 'number', placeholder: '0.03', step: '0.0001', required: false },
+                    { name: 'unDOvTy', label: '중복 충족 처리방식',            type: 'select', options: ['HIGHER', 'LOWER', 'MULTIPLY', 'FIXED'] },
+                    { name: 'unDDes',  label: '설명',                         type: 'text', placeholder: '관리자 메모', required: false }
+                ]
+            },
+            unitGroupModal: {
+                title: '묶음 단위',
+                fields: [
+                    { name: 'unGNm', label: '단위명',       type: 'text',   placeholder: '다스' },
+                    { name: 'unGQn', label: '단위당 수량',  type: 'number', placeholder: '12' }
+                ]
+            }
+        };
+
+        let currentConfigKey = null;
+        let currentEditId = null;
+
+        function openModal(configKey, editId, editData) {
+            const config = MODAL_CONFIG[configKey];
+            if (!config) return;
+            currentConfigKey = configKey;
+            currentEditId = editId || null;
+
+            document.getElementById('modalTitle').textContent =
+                config.title + (currentEditId ? ' 수정' : ' 추가');
+            const fieldsContainer = document.getElementById('modalFields');
+            fieldsContainer.innerHTML = '';
+
+            config.fields.forEach(field => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'space-y-1';
+                const label = document.createElement('label');
+                label.className = 'block text-xs font-bold text-zinc-500 uppercase';
+                label.textContent = field.label;
+                wrapper.appendChild(label);
+
+                let input;
+                if (field.type === 'select') {
+                    input = document.createElement('select');
+                    input.className = 'w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all';
+                    field.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        input.appendChild(option);
+                    });
+                } else {
+                    input = document.createElement('input');
+                    input.type = field.type;
+                    if (field.placeholder) input.placeholder = field.placeholder;
+                    input.className = 'w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all';
+                    if (field.step) input.step = field.step;
+                }
+                input.name = field.name;
+                input.required = field.required !== false;
+                if (editData && editData[field.name] != null) {
+                    input.value = editData[field.name];
+                }
+                wrapper.appendChild(input);
+                fieldsContainer.appendChild(wrapper);
+            });
+
+            const modal = document.getElementById('policyModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('policyModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            document.getElementById('modalForm').reset();
+            currentConfigKey = null;
+            currentEditId = null;
+        }
+
+        document.getElementById('policyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        const TYPE_TO_API = {
+            unitDiscount: '/api/root/operation/unit-discount',
+            unitGroup:    '/api/root/operation/unit-group'
+        };
+        const TYPE_TO_CONFIG = {
+            unitDiscount: 'unitDiscountModal',
+            unitGroup:    'unitGroupModal'
+        };
+
+        // 저장
+        document.getElementById('modalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const config = MODAL_CONFIG[currentConfigKey];
+            if (!config) return;
+
+            const formData = {};
+            if (currentConfigKey === 'unitDiscountModal' && !currentEditId) {
+                formData.unGId = unitGroupId;
+            }
+            config.fields.forEach(field => {
+                const input = this.querySelector('[name="' + field.name + '"]');
+                if (input) formData[field.name] = input.value || null;
+            });
+
+            const apiBase = currentConfigKey === 'unitGroupModal'
+                ? '/api/root/operation/unit-group'
+                : '/api/root/operation/unit-discount';
+            const url = currentEditId ? apiBase + '/' + currentEditId : apiBase;
+            const method = currentEditId ? 'PUT' : 'POST';
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            fetch(url, { method, headers, body: JSON.stringify(formData) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') { closeModal(); location.reload(); }
+                    else alert('저장 실패: ' + (data.message || ''));
+                })
+                .catch(err => alert('저장 실패: ' + err.message));
+        });
+
+        // 삭제
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!confirm('정말 삭제하시겠습니까?')) return;
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                const api = TYPE_TO_API[type];
+                if (!api) return;
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+                fetch(api + '/' + id, { method: 'DELETE', headers })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'ok') location.reload();
+                        else alert('삭제 실패: ' + (data.message || ''));
+                    })
+                    .catch(err => alert('삭제 실패: ' + err.message));
+            });
+        });
+
+        // 수정
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                const configKey = TYPE_TO_CONFIG[type];
+                const api = TYPE_TO_API[type];
+                if (!configKey || !api) return;
+
+                fetch(api + '/' + id)
+                    .then(res => res.json())
+                    .then(data => openModal(configKey, id, data))
+                    .catch(err => alert('데이터 조회 실패: ' + err.message));
+            });
+        });
+    </script>
+</th:block>
+</html>

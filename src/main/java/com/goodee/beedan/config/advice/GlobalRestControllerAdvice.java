@@ -1,4 +1,4 @@
-package com.goodee.beedan.devUtils;
+package com.goodee.beedan.config.advice;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;

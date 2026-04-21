@@ -32,8 +32,8 @@ public class Receiver {
     private Boolean rcDelYn;
     private Boolean rcAdrDfYn;
     private Boolean rcIamYn;
+    private String rcZip;
 
-    @ManyToOne
-    @JoinColumn(name = "mem_id")
+    @ManyToOne @JoinColumn(name = "mem_id")
     private Member member;
 }

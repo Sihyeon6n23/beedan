@@ -12,6 +12,7 @@ import com.goodee.beedan.service.member.MemberService;
 import com.goodee.beedan.service.member.SnsIntegrateService;
 import com.goodee.beedan.service.root.SecurityService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -184,7 +185,11 @@ public class AuthController {
 
     @GetMapping("/signin")
     public String getSignIn(HttpServletRequest request,
+                            HttpServletResponse response,
                             Model model) {
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
+        response.setHeader("Pragma", "no-cache"); // HTTP 1.0
+        response.setHeader("Expires", "0"); // Proxies
         HttpSession session = request.getSession();
 
         if (session != null && session.getAttribute("errorMessage") != null) {

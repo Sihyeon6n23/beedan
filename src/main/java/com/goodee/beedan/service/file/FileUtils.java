@@ -31,7 +31,7 @@ public class FileUtils {
                 successCount++;
             } else { // 업로드 실패
                 failCount++;
-                failReasons.add(fileDto.getFileNm() + " : " + fileDto.getErrorMessage());
+                failReasons.add(fileDto.getErrorMessage());
             }
         }
 
@@ -44,7 +44,7 @@ public class FileUtils {
     }
 
     public String generateBoardResultMessage(BoardResultMessage result, Boolean isEdit) {
-        if (result == null) return "처리 결과 데이터가 없습니다.";
+        if (result == null) return null;
 
         StringBuilder sb = new StringBuilder();
 
@@ -59,30 +59,29 @@ public class FileUtils {
 
         // 1. 제목 결정 (삭제 건수가 있으면 '수정', 없으면 '작성')
         String title = (isEdit == true)
-                ? "🔄 게시글 수정 결과"
-                : "📝 게시글 작성 결과";
+                ? "\n[게시글 수정 파일업로드 결과]"
+                : "\n[게시글 작성 파일업로드 결과]";
         sb.append(title).append("\n");
-        sb.append("----------------------------\n");
 
         // 2. 항목별 출력 (0건이 아닌 경우에만 출력)
 
         // 삭제 결과 (0보다 클 때만)
         if (result.getDeleteSuccess() != null && result.getDeleteSuccess() > 0) {
-            sb.append(String.format("🗑️ 기존 파일 삭제: %d건\n", result.getDeleteSuccess()));
+            sb.append(String.format("기존 파일 삭제: %d건\n", result.getDeleteSuccess()));
         }
 
         // 업로드 성공 결과 (0보다 클 때만)
         if (result.getUploadSuccess() != null && result.getUploadSuccess() > 0) {
-            sb.append(String.format("✅ 파일 업로드 성공: %d건\n", result.getUploadSuccess()));
+            sb.append(String.format("파일 업로드 성공: %d건\n", result.getUploadSuccess()));
         }
 
         // 업로드 실패 결과 (0보다 클 때만)
         if (result.getFail() != null && result.getFail() > 0) {
-            sb.append(String.format("❌ 파일 처리 실패: %d건\n", result.getFail()));
+            sb.append(String.format("파일 처리 실패: %d건\n", result.getFail()));
 
             // 상세 사유 출력
             if (result.getFailReason() != null && !result.getFailReason().isEmpty()) {
-                sb.append("\n⚠️ 실패 상세 내역:\n");
+                sb.append("\n[실패 상세 내역]\n");
                 for (String reason : result.getFailReason()) {
                     sb.append(String.format("• %s\n", reason));
                 }

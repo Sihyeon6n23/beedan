@@ -106,7 +106,7 @@ public class AdminMemberService {
 
         if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
             int totalItems = order.getOrderItems().size();
-            String firstItemName = order.getOrderItems().get(0).getOrdItmNm();
+            String firstItemName = order.getOrderItems().getFirst().getOrdItmNm();
 
             if (totalItems > 1) {
                 summaryName = firstItemName + " 외 " + (totalItems - 1) + "건";

@@ -24,6 +24,7 @@ public class WishlistApiController {
     @PostMapping("/{stId}")
     public ResponseEntity<Void> add(@PathVariable Long stId,
                                     @AuthenticationPrincipal MemberUserDetails userDetails) {
+        stockService.getExposedOrThrow(stId);
         Long memId = userDetails.getMemberId();
         wishlistService.addItem(stId, memId);
         return ResponseEntity.ok().build();
@@ -32,6 +33,7 @@ public class WishlistApiController {
     @DeleteMapping("/{stId}")
     public ResponseEntity<Void> delete(@PathVariable Long stId,
                                        @AuthenticationPrincipal MemberUserDetails userDetails) {
+        stockService.getExposedOrThrow(stId);
         Long memId = userDetails.getMemberId();
         wishlistService.deleteItem(stId, memId);
         return ResponseEntity.ok().build();

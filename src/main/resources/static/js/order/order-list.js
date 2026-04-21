@@ -2,14 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchOrders(0);
 });
 
-async function fetchOrders(page) {
+async function fetchOrders(page, keyword = '') {
     const listBody = document.getElementById('order-list-body');
     const pagination = document.getElementById('order-pagination');
     const activeFilter = document.querySelector('.admin-chat-filter.is-active');
     const status = activeFilter ? activeFilter.dataset.status : 'ALL';
 
     try {
-        const response = await fetch(`/api/orders/list?page=${page}&status=${status}`);
+        const response = await fetch(`/api/orders/list?page=${page}&status=${status}&keyword=${encodeURIComponent(keyword)}`);
         if (!response.ok) throw new Error("데이터 요청에 실패했습니다.");
 
         const data = await response.json();
@@ -29,10 +29,19 @@ document.querySelectorAll('.admin-chat-filter').forEach(button => {
         e.preventDefault();
 
         document.querySelectorAll('.admin-chat-filter').forEach(btn => btn.classList.remove('is-active'));
+
+        const keyword = document.getElementById('search-input').value.trim();
         button.classList.add('is-active');
 
-        fetchOrders(0);
+        fetchOrders(0, keyword);
     });
+});
+
+document.getElementById('search-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const keyword = e.target.value.trim();
+        fetchOrders(0, keyword);
+    }
 });
 
 function renderOrderList(orders) {
@@ -92,9 +101,29 @@ function renderOrderList(orders) {
     }).join('');
 }
 
+let currentKeyword = '';
+
+function searchOrders() {
+    const searchInput = document.getElementById('search-input');
+    const keyword = searchInput.value.trim();
+
+    currentKeyword = keyword;
+    fetchOrders(0, currentKeyword);
+}
+
+function resetSearch() {
+    const searchInput = document.getElementById('search-input');
+    searchInput.value = '';
+
+    fetchOrders(0, '');
+}
+
 function renderPagination(data) {
     const pagination = document.getElementById('order-pagination');
     if (!pagination) return;
+
+    const keyword = document.getElementById('search-input').value.trim();  // 검색어 부분 추가
+    const safeKeyword = keyword.replace(/'/g, "\\'");
 
     const currentPage = data.number;
     const totalPages = data.totalPages || 1;
@@ -108,20 +137,20 @@ function renderPagination(data) {
     if (data.first || totalPages <= 1) {
         html += `<span class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>`;
     } else {
-        html += `<a href="javascript:void(0)" class="admin-chat-page-button admin-chat-page-button--wide" onclick="fetchOrders(${currentPage - 1})">Prev</a>`;
+        html += `<a href="javascript:void(0)" class="admin-chat-page-button admin-chat-page-button--wide" onclick="fetchOrders(${currentPage - 1}, '${safeKeyword}')">Prev</a>`;
     }
 
-    // Numbers (최소 1은 무조건 나옴)
+    // Numbers
     for (let i = startPage; i <= endPage; i++) {
         const activeClass = (i === currentPage) ? 'is-current' : '';
-        html += `<a href="javascript:void(0)" class="admin-chat-page-button ${activeClass}" onclick="fetchOrders(${i})">${i + 1}</a>`;
+        html += `<a href="javascript:void(0)" class="admin-chat-page-button ${activeClass}" onclick="fetchOrders(${i}, '${safeKeyword}')">${i + 1}</a>`;
     }
 
     // Next
     if (data.last || totalPages <= 1) {
         html += `<span class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>`;
     } else {
-        html += `<a href="javascript:void(0)" class="admin-chat-page-button admin-chat-page-button--wide" onclick="fetchOrders(${currentPage + 1})">Next</a>`;
+        html += `<a href="javascript:void(0)" class="admin-chat-page-button admin-chat-page-button--wide" onclick="fetchOrders(${currentPage + 1}, '${safeKeyword}')">Next</a>`;
     }
 
     html += `</div>`;

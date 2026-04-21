@@ -2,6 +2,7 @@ package com.goodee.beedan.controller.receiver;
 
 import com.goodee.beedan.config.security.MemberUserDetails;
 import com.goodee.beedan.dto.receiver.ReceiverDto;
+import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.service.receiver.ReceiverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,12 +16,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/receiver")
 @RequiredArgsConstructor
-@Slf4j
 public class ReceiverApiController {
     private final ReceiverService receiverService;
-
+    private final MemberRepository memberRepository;
     @GetMapping
     public ResponseEntity<List<ReceiverDto>> getReceiverList(@AuthenticationPrincipal MemberUserDetails userDetails) {
+        validOwner(userDetails.getMemberId());
+
         return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
     }
 
@@ -28,6 +30,7 @@ public class ReceiverApiController {
     public ResponseEntity<List<ReceiverDto>> addReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @RequestBody ReceiverDto receiverDto) {
+        validOwner(userDetails.getMemberId());
 
         receiverDto.setMemId(userDetails.getMemberId());
         receiverService.addReceiverAddr(receiverDto);
@@ -39,6 +42,7 @@ public class ReceiverApiController {
     public ResponseEntity<ReceiverDto> getReceiver(
             @AuthenticationPrincipal MemberUserDetails userDetails,
             @PathVariable("id") Long rcId) {
+        validOwner(userDetails.getMemberId());
 
         ReceiverDto receiverDto = receiverService.getReceiver(userDetails.getMemberId(), rcId);
         return ResponseEntity.ok(receiverDto);
@@ -65,4 +69,9 @@ public class ReceiverApiController {
 
         return ResponseEntity.ok(receiverService.getReceiverList(userDetails.getMemberId()));
     }
+
+    private void validOwner(Long memId){
+        if(!memberRepository.getByIdOrThrow(memId).getMemId().equals(memId)) throw new IllegalArgumentException();
+    }
+
 }

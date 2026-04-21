@@ -513,9 +513,7 @@ async function viewFullOrderList(memId, page = 0) {
                                 <option value="CANCELED">주문취소</option>
                             </select>
 
-                            <button class="btn-icon-sm"
-                                    onclick="submitOrderStatusUpdate('${order.ordBaseId}', ${page})"
-                                    title="변경상태저장"
+                            <button class="btn-icon-sm" onclick="submitOrderStatusUpdate('${order.ordBaseId}', ${page})" title="변경상태저장"
                                     ${isCanceled ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                                 <span class="material-symbols-outlined">edit</span>
                             </button>
@@ -586,13 +584,26 @@ async function submitOrderStatusUpdate(orderId, currentPage) {
             throw new Error('상태 업데이트에 실패했습니다.');
         }
 
-        alert('주문 상태가 성공적으로 변경되었습니다.');
-
-        viewFullOrderList(memberId, currentPage);
+        // 성공 모달 알림
+        showGuideModal(
+            '주문 상태가 성공적으로 변경되었습니다.',
+            function() {
+                viewFullOrderList(memberId, currentPage);
+            },
+            'SUCCESS',
+            'check_circle'
+        );
 
     } catch (error) {
         console.error('Update Error:', error);
-        alert(error.message);
+
+        // 에러 모달 알림
+        showGuideModal(
+            error.message,
+            null,
+            'ERROR',
+            'error'
+        );
     }
 }
 

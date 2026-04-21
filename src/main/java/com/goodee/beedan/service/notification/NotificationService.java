@@ -127,7 +127,7 @@ public class NotificationService {
         Member member = memberRepository.getByIdOrThrow(memId);
 
         Integer currentUnreadCount = notificationRepository.countByMember_MemIdAndNotiReaYnFalseAndNotiDelYnFalse(memId);
-        String destinationUser = String.valueOf(member.getMemLgnId()); // MemberUserDetails의 getUsername()이 memLgnId이기 때문에.
+        String destinationUser = String.valueOf(member.getMemLgnId());
 
         messagingTemplate.convertAndSendToUser(destinationUser, "/sub/unread-count", currentUnreadCount);
 

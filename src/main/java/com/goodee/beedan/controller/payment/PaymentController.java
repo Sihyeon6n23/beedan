@@ -3,6 +3,8 @@ package com.goodee.beedan.controller.payment;
 import com.goodee.beedan.common.constant.PaymentMethod;
 import com.goodee.beedan.common.constant.QuoteStatus;
 import com.goodee.beedan.config.security.MemberUserDetails;
+import com.goodee.beedan.dto.buyer.BuyerRequest;
+import com.goodee.beedan.entity.Buyer;
 import com.goodee.beedan.entity.*;
 import com.goodee.beedan.repository.member.MemberRepository;
 import com.goodee.beedan.repository.payment.PaymentRepository;
@@ -31,6 +33,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -198,11 +201,16 @@ public class PaymentController {
                     httpEntity, Map.class);
 
             if (!tossResponse.getStatusCode().is2xxSuccessful()) {
-                log.error("토스 결제 승인 실패: {}", tossResponse.getBody());
+                log.error("토스 결제 승인 실패: status={}, body={}", tossResponse.getStatusCode(), tossResponse.getBody());
                 return "redirect:/payment/fail?quId=" + quId;
             }
+        } catch (HttpStatusCodeException e) {
+            log.error("토스 결제 승인 실패: status={}, body={}, headers={}",
+                    e.getStatusCode(), e.getResponseBodyAsString(), e.getResponseHeaders());
+            return "redirect:/payment/fail?quId=" + quId;
         } catch (Exception e) {
-            log.error("토스 결제 승인 실패: {}", e.getMessage());
+            log.error("토스 결제 승인 실패(기타): paymentKey={}, orderId={}, amount={}, err={}",
+                    paymentKey, orderId, amount, e.getMessage(), e);
             return "redirect:/payment/fail?quId=" + quId;
         }
 
@@ -239,13 +247,15 @@ public class PaymentController {
         for(QuoteDetail d : details) {
             stockService.stockHitRecord(d.getStId());
         }
-        // 고객 거래 실적 누적
+        // 고객 거래 실적 누적 (Buyer 없으면 자동 생성 — 결제 완료가 곧 고객사 등록 시점)
         try {
             Member customer = memberRepository.findById(negotiation.getMemId()).orElse(null);
             if (customer != null && customer.getMemBizNo() != null) {
-                buyerService.updateAfterPayment(
-                        buyerService.findByBizNo(customer.getMemBizNo()).getById(),
-                        BigDecimal.valueOf(amount));
+                Buyer buyer = buyerService.createOrFind(BuyerRequest.builder()
+                        .memBizNo(customer.getMemBizNo())
+                        .memBizTtl(customer.getMemBizTtl())
+                        .build());
+                buyerService.updateAfterPayment(buyer.getById(), BigDecimal.valueOf(amount));
             }
         } catch (Exception e) {
             log.warn("고객 실적 업데이트 실패: {}", e.getMessage());

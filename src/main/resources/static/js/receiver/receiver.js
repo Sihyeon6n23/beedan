@@ -82,12 +82,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const rcPhn = document.getElementById('rcPhn').value.trim();
         const rcAdr = document.getElementById('baseAddress').value.trim();
         const rcAdrDt = document.getElementById('detailAddress').value.trim();
+        const postcode = document.getElementById('postcode').value.trim();
 
-        // 1. 필수 입력값 체크 모달
         if (!rcNm || !rcAdr) {
             showGuideModal("이름과 주소는 필수 입력 사항입니다.", null, "입력 오류", "error");
             return;
         }
+
+        const isIslandResult = checkIsIsland(postcode);
 
         const isDuplicate = allReceivers.some(receiver => {
             if (rcId && String(receiver.rcId) === String(rcId)) return false;
@@ -99,13 +101,20 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         });
 
-        // 2. 중복 체크 모달
         if (isDuplicate) {
             showGuideModal("이미 동일한 정보로 등록된 배송지가 존재합니다.", null, "중복 확인", "warning");
             return;
         }
 
-        const data = { rcNm, rcPhn, rcAdr, rcAdrDt };
+        const data = {
+            rcNm,
+            rcPhn,
+            rcAdr,
+            rcAdrDt,
+            rcIamYn: isIslandResult,
+            rcZip: postcode
+        };
+
         const method = rcId ? 'PATCH' : 'POST';
         const url = rcId ? `/api/receiver/${rcId}` : '/api/receiver';
 
@@ -115,13 +124,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return res.json();
         })
         .then(newList => {
-            // 3. 저장 성공 모달
             showGuideModal(rcId ? "배송지가 수정되었습니다." : "배송지가 등록되었습니다.", null, "COMPLETE", "check_circle");
             allReceivers = newList;
             displayPage(0);
             closeForm();
         })
-        // 4. 저장 실패 모달
         .catch(err => showGuideModal(err.message, null, "ERROR", "error"));
     }
 
@@ -136,10 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxPage = Math.ceil(allReceivers.length / itemsPerPage) - 1;
             const targetPage = currentPage > maxPage ? Math.max(0, maxPage) : currentPage;
             displayPage(targetPage);
-            // 5. 삭제 성공 모달
-            showGuideModal("배송지가 삭제되었습니다.", null, "DELETED", "delete");
         })
-        // 6. 삭제 실패 모달
         .catch(err => showGuideModal(err.message, null, "ERROR", "error"));
     }
 
@@ -290,3 +294,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadReceiverList();
 });
+
+function checkIsIsland(postcode) {
+    const numPost = parseInt(postcode);
+
+    if (numPost >= 63000 && numPost <= 63644) return true; // 제주도
+    else if (numPost >= 40220 && numPost <= 40223) return true; // 울릉도
+
+    return false;
+}

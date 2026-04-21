@@ -56,7 +56,7 @@ public class StockController {
                                  Model model,
                                  @AuthenticationPrincipal MemberUserDetails userDetails) {
         Long memId = userDetails != null ? userDetails.getMemberId() : null;
-        Stock stock = stockService.findById(stId);
+        Stock stock = stockService.getExposedOrThrow(stId);
         boolean wished = stockService.isWished(stId, memId);
 
         // 요청 상품인지

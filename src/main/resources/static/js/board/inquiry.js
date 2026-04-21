@@ -221,6 +221,7 @@
 
     let pendingConfirmAction = null;
     let pendingFormAction = null;
+    let pendingModalCloseAction = null;
 
     const handleError = (message = '처리 중 오류가 발생했습니다.') => {
       if (!confirmModal || !confirmTitle || !confirmLead || !confirmDescription || !confirmButton) {
@@ -246,29 +247,43 @@
       initInquiryDetailActions(true);
     };
 
-    const closeModals = () => {
-      detailPage.querySelectorAll('.inquiry-modal').forEach(modal => {
-        modal.classList.add('is-hidden');
-        modal.setAttribute('aria-hidden', 'true');
-      });
-      pendingConfirmAction = null;
-      pendingFormAction = null;
-      if (confirmCancelButton) confirmCancelButton.classList.remove('is-hidden');
-      if (formTextarea) formTextarea.value = '';
-      if (formError) formError.classList.add('is-hidden');
+    const closeModals = async () => {
+        detailPage.querySelectorAll('.inquiry-modal').forEach(modal => {
+          modal.classList.add('is-hidden');
+          modal.setAttribute('aria-hidden', 'true');
+        });
+
+        const closeAction = pendingModalCloseAction;
+
+        pendingConfirmAction = null;
+        pendingFormAction = null;
+        pendingModalCloseAction = null;
+
+        if (confirmCancelButton) confirmCancelButton.classList.remove('is-hidden');
+        if (formTextarea) formTextarea.value = '';
+        if (formError) formError.classList.add('is-hidden');
+
+        if (closeAction) {
+          try {
+            await closeAction();
+          } catch (error) {
+            handleError();
+          }
+        }
     };
 
     const openConfirmModal = (options) => {
-      if (!confirmModal) return;
-      pendingConfirmAction = options.onConfirm || null;
-      confirmTitle.textContent = options.title;
-      confirmLead.textContent = options.lead;
-      confirmDescription.textContent = options.description;
-      confirmButton.textContent = options.confirmText;
-      if (confirmCancelButton) confirmCancelButton.classList.toggle('is-hidden', Boolean(options.hideCancel));
+        if (!confirmModal) return;
+        pendingConfirmAction = options.onConfirm || null;
+        pendingModalCloseAction = options.onClose || null;
+        confirmTitle.textContent = options.title;
+        confirmLead.textContent = options.lead;
+        confirmDescription.textContent = options.description;
+        confirmButton.textContent = options.confirmText;
+        if (confirmCancelButton) confirmCancelButton.classList.toggle('is-hidden', Boolean(options.hideCancel));
 
-      confirmModal.classList.remove('is-hidden');
-      confirmModal.setAttribute('aria-hidden', 'false');
+        confirmModal.classList.remove('is-hidden');
+        confirmModal.setAttribute('aria-hidden', 'false');
     };
 
     const openFormModal = (options) => {
@@ -292,15 +307,22 @@
     });
 
     if (confirmButton) {
-      confirmButton.addEventListener('click', async () => {
-        if (!pendingConfirmAction) {
-          closeModals();
-          return;
-        }
-        const action = pendingConfirmAction;
-        closeModals();
-        try { await action(); } catch (error) { handleError(); }
-      });
+        confirmButton.addEventListener('click', async () => {
+          if (!pendingConfirmAction) {
+            await closeModals();
+            return;
+          }
+
+          const action = pendingConfirmAction;
+          pendingModalCloseAction = null; // 확인 버튼 경로에선 close 후처리 중복 실행 방지
+          await closeModals();
+
+          try {
+            await action();
+          } catch (error) {
+            handleError();
+          }
+        });
     }
 
     if (formSubmitButton) {
@@ -313,7 +335,7 @@
           return;
         }
         const action = pendingFormAction;
-        closeModals();
+        await closeModals();
         try { await action(value); } catch (error) { handleError(); }
       });
     }
@@ -367,7 +389,8 @@
           ].filter(Boolean).join('\n\n'),
           confirmText: '확인',
           hideCancel: true,
-          onConfirm
+          onConfirm,
+          onClose: onConfirm
         });
       };
 

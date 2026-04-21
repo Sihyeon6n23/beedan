@@ -127,7 +127,12 @@
 
       // 현재 채팅방 구독
       roomSubscription = stompClient.subscribe("/sub/chat/rooms/" + currentChatRoomId, function (frame) {
-        var message = JSON.parse(frame.body);
+        try {
+          var message = JSON.parse(frame.body);
+        } catch (e) {
+          console.error("메시지 파싱 실패", e, frame.body);
+          return;
+        }
 
         if (message.eventType === "ROOM_STATUS") {
             currentChatRoomStatus = message.chRoStt;

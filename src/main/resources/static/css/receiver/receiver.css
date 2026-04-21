@@ -42,7 +42,7 @@
     }
 
     #btnSaveReceiver:hover {
-
+        opacity: 0.8;
     }
 
     #btnCancel {
@@ -59,6 +59,8 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     }
+
+    #btnCancel:hover {opacity: 0.8;}
 
     .btn-edit{
       display: inline-flex;
@@ -85,4 +87,13 @@
       background: #1a1c1c;
       var(--color-on-background);
       color: #ffffff;
+    }
+
+    .btn-edit:hover{
+        cursor: pointer;
+        opacity: 0.8;
+    }
+    .btn-delete:hover{
+        cursor: pointer;
+        opacity: 0.8;
     }

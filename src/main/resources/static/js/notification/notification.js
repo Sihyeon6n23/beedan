@@ -10,31 +10,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
 
     async function apiRequest(url, method = 'GET') {
-            const headers = { 'Content-Type': 'application/json' };
-            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
 
-            try {
-                const response = await fetch(url, { method, headers });
-
-                if (response.status === 401 || response.status === 403) {
-                    localStorage.removeItem('unreadNotiCount');
-                    return null;
-                }
-
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-                return await response.json();
-            } catch (error) {
-                console.error("API 요청 실패:", error);
-                throw error;
-            }
+        try {
+            const response = await fetch(url, { method, headers });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error("API 요청 실패:", error);
+            throw error;
         }
+    }
 
     globalThis.updateBadgeUI = function(count) {
         const badge = document.getElementById('unreadBadge');
         if (!badge) return;
-
-        localStorage.setItem('unreadNotiCount', count)
 
         const numCount = Number.parseInt(count, 10);
         if (numCount > 0) {
@@ -50,13 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-   globalThis.updateUnreadCount = function() {
-       apiRequest('/api/notification/unread-count')
-           .then(count => {
-               if (count !== null) { updateBadgeUI(count); }
-           })
-           .catch(err => console.error("배지 업데이트 실패:", err));
-   };
+    globalThis.updateUnreadCount = function() {
+        apiRequest('/api/notification/unread-count')
+            .then(count => {
+                updateBadgeUI(count);
+            })
+            .catch(err => console.error("배지 업데이트 실패:", err));
+    };
 
     globalThis.addEventListener('newNotification', function(e) { // 웹소켓 연결시 이벤트 실행 (알림 수신 시 서버에서 클라이언트로 count를 보내줄 예정)
         const newCount = e.detail.count;
@@ -140,10 +131,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', () => {
         if (!notiDropdown.classList.contains('hidden')) notiDropdown.classList.add('hidden');
     });
-
-    const cachedCount = localStorage.getItem('unreadNotiCount');
-
-    if (cachedCount !== null) { updateBadgeUI(cachedCount); }
 
     updateUnreadCount();
 });

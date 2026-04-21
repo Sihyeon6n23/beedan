@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @lombok.extern.slf4j.Slf4j
 @Service
@@ -62,6 +63,10 @@ public class BuyerService {
                 .orElseThrow(()-> new EntityNotFoundException(
                         "고객사를 찾을 수 없습니다. 사업자번호: " + memBizNo
                 ));
+    }
+
+    public Optional<Buyer> findByBizNoOptional(String memBizNo) {
+        return buyerRepository.findByMemBizNo(memBizNo);
     }
 
     public List<Buyer> findAllByGrade(String grade){

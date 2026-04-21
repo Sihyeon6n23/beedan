@@ -1,7 +1,5 @@
 package com.goodee.beedan.service.file;
 
-import com.goodee.beedan.common.constant.BoardType;
-import com.goodee.beedan.dto.board.notice.BoardResultMessage;
 import com.goodee.beedan.dto.file.FileDownloadDto;
 import com.goodee.beedan.dto.file.FileDto;
 import com.goodee.beedan.dto.file.RefDto;

@@ -152,12 +152,15 @@ public class NoticeBoardController {
         }
 
         String boardResultMessage = noticeBoardService.writeNotice(boardRequestDto, principal.getName());
-        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
 
         model.addAttribute("boardRequestDto", new CommonBoardRequestDto());
         model.addAttribute("isEdit", false);
         model.addAttribute("noticeSuccess", true);
-        model.addAttribute("noticeSuccessMessage", "공지사항이 정상적으로 등록되었습니다.");
+        model.addAttribute("noticeSuccessMessage",
+                "공지사항이 등록되었습니다." +
+                        (boardResultMessage != null ?
+                                boardResultMessage :
+                                ""));
         model.addAttribute("noticeSuccessRedirect", "/notice/list");
         return "board/notice/notice-write";
     }
@@ -188,13 +191,16 @@ public class NoticeBoardController {
         }
 
         String boardResultMessage = noticeBoardService.updateNotice(boardRequestDto, principal.getName());
-        if (boardResultMessage != null) reAttr.addFlashAttribute("serverMessage", boardResultMessage);
 
         model.addAttribute("boardRequestDto", boardRequestDto);
         model.addAttribute("fileList", fileList);
         model.addAttribute("isEdit", true);
         model.addAttribute("noticeSuccess", true);
-        model.addAttribute("noticeSuccessMessage", "공지사항이 정상적으로 수정되었습니다.");
+        model.addAttribute("noticeSuccessMessage",
+                "공지사항이 수정되었습니다." +
+                        (boardResultMessage != null ?
+                                boardResultMessage :
+                                ""));
         model.addAttribute("noticeSuccessRedirect", "/notice/detail?id=" + boardRequestDto.getBrdId());
         return "board/notice/notice-write";
     }

@@ -71,6 +71,65 @@
             font-variant-numeric: tabular-nums;
             padding-right: 10px;
         }
+
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-input);
+            padding: 0.75rem 1.25rem;
+        }
+
+        .search-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .search-input-wrapper .material-symbols-outlined {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .btn-search {
+        background-color: #ffd700;
+        color: var(--primary-gold);
+        padding: 0.75rem 1.5rem;
+        border: none;
+        font-size: 0.7rem;
+        font-weight: 800;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background-color: #facc15;
+        }
+
+        .btn-reset {
+            background-color: #e8e8e8;
+            color: var(--text-main);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-reset:hover {
+            background-color: #d1d1d1;
+        }
     </style>
 
     <section class="admin-chat-page admin-chat-list-page order-management-list">
@@ -94,6 +153,15 @@
                         <a class="admin-chat-filter" href="#" data-status="DELIVERING">배송중</a>
                         <a class="admin-chat-filter" href="#" data-status="DELIVERED">배송완료</a>
                     </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="search-input-wrapper flex items-center gap-2 border-b border-outline-variant pb-2">
+                        <input id="search-input" type="text" placeholder="상품명 검색" class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-64" />
+                        <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+                    </div>
+                    <button class="btn-search" onclick="searchOrders()">검색</button>
+                    <button class="btn-reset" onclick="resetSearch()">초기화</button>
                 </div>
             </div>
         </section>

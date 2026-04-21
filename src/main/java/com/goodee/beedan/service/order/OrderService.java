@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,10 +50,13 @@ public class OrderService {
 
     private static final String THUMB_URL = "/api/images/thumb/";
 
-    public Page<OrderDto> getOrderList(Long memId, String status, Pageable pageable){
-        memberRepository.getByIdOrThrow(memId);
-        Page<Order> orderList = orderRepository.findAllByMemberIdAndStatus(memId, status, pageable);
-        return orderList.map(this::mapToOrderDto);
+    public Page<OrderDto> getOrderList(Long memId, String status, String keyword, Pageable pageable) {
+        OrderStatus orderStatus = "ALL".equals(status) ? null : OrderStatus.valueOf(status);
+
+        String searchKeyword = StringUtils.hasText(keyword) ? keyword : null;
+
+        return orderRepository.findAllBySearch(memId, orderStatus, searchKeyword, pageable)
+                .map(this::mapToOrderDto);
     }
 
     @Transactional(readOnly = true)
@@ -60,7 +64,7 @@ public class OrderService {
         memberRepository.getByIdOrThrow(adminMemId).validateAdmin();
         memberRepository.getByIdOrThrow(memId);
 
-        Page<Order> orderPage = orderRepository.findAll(pageable);
+        Page<Order> orderPage = orderRepository.findByMember_MemId(memId, pageable);
 
         return orderPage.map(this::mapToOrderDto);
     }
@@ -105,6 +109,7 @@ public class OrderService {
     @Transactional
     public void cancelOrder(Long ordId, Long memId) {
         memberRepository.getByIdOrThrow(memId);
+
         Order order = orderRepository.getByIdOrThrow(ordId);
 
         if (order.getOrdBaseStt() == OrderStatus.DELIVERING || order.getOrdBaseStt() == OrderStatus.DELIVERED) {

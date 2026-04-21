@@ -1,4 +1,4 @@
-package com.goodee.beedan.devUtils;
+package com.goodee.beedan.config.advice;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;

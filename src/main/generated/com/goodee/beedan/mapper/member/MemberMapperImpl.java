@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-16T21:30:07+0900",
+    date = "2026-04-21T06:49:55+0900",
     comments = "version: 1.6.3, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
@@ -22,14 +22,14 @@ public class MemberMapperImpl implements MemberMapper {
         if ( dto.getName() != null ) {
             entity.setMemNm( dto.getName() );
         }
-        if ( dto.getEmail() != null ) {
-            entity.setMemEml( dto.getEmail() );
+        if ( dto.getMemEml() != null ) {
+            entity.setMemEml( dto.getMemEml() );
         }
-        if ( dto.getPhone() != null ) {
-            entity.setMemMbPhn( dto.getPhone() );
+        if ( dto.getMemMbPhn() != null ) {
+            entity.setMemMbPhn( dto.getMemMbPhn() );
         }
-        if ( dto.getCi() != null ) {
-            entity.setMemCi( dto.getCi() );
+        if ( dto.getMemCi() != null ) {
+            entity.setMemCi( dto.getMemCi() );
         }
         if ( dto.getPostCode() != null ) {
             entity.setMemPosCd( dto.getPostCode() );
