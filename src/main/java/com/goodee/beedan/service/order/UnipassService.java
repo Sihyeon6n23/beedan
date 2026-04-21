@@ -39,12 +39,10 @@ public class UnipassService {
         this.xmlToJsonService = xmlToJsonService;
     }
 
-
     @Cacheable(value = "shipment:customs", key = "#hblNo + '_' + #blYear", unless = "#result == null")
     public String getCargoStatus(String hblNo, String blYear) {  // 사용자용
         return fetchUnipassRawData(hblNo, blYear);
     }
-
 
     private String fetchUnipassRawData(String hblNo, String blYear) {
         String fullUrl = apiUrl + "?crkyCn=" + apiKey.trim() + "&hblNo=" + hblNo.trim() + "&blYy=" + blYear.trim();
