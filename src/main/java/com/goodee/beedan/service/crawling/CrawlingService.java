@@ -358,7 +358,6 @@ public class CrawlingService {
                     new BrowserType.LaunchOptions()
                             // 실제로 화면을 띄우지 않고 메모리에서만 실행
                             .setHeadless(true)
-                            .setChannel("chrome")
             )) {
                 try (
                         // 새 탭 열기
