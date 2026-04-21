@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -47,14 +48,16 @@ public class Order {
     @Column(name = "ord_base_tt_am", precision = 18, scale = 0)
     private BigDecimal ordBaseTtAm; // 주문 총 금액
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mem_id")
     private Member member;
 
+    @BatchSize(size = 100)
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<Shipment> shipments = new ArrayList<>();
 
+    @BatchSize(size = 100)
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
@@ -64,4 +67,7 @@ public class Order {
             throw new IllegalArgumentException("본인의 주문만 조회할 수 있습니다.");
         }
     }
+
+
+
 }

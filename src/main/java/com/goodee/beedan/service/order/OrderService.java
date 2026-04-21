@@ -62,7 +62,6 @@ public class OrderService {
     @Transactional(readOnly = true)
     public Page<OrderDto> getListByAdmin(Long memId, Long adminMemId, Pageable pageable) {
         memberRepository.getByIdOrThrow(adminMemId).validateAdmin();
-        memberRepository.getByIdOrThrow(memId);
 
         Page<Order> orderPage = orderRepository.findByMember_MemId(memId, pageable);
 

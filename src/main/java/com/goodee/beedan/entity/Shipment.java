@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -23,8 +24,8 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sh_id")
     private Long shId;
-    private String shTraNo; // 국내 운송장 번호
-	private String shCarCd; // 국내 배송 업체
+    private String shTraNo;
+	private String shCarCd; 
     @Enumerated(EnumType.STRING)
     private ShipmentStatus shStt;
     @CreatedDate
@@ -45,6 +46,7 @@ public class Shipment {
     private String shCusStt;
     private String shHblNo;
 
+    @BatchSize(size = 100)
     @Builder.Default
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ShipmentItem> shipmentItems = new ArrayList<>();
