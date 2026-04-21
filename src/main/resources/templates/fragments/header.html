@@ -33,28 +33,14 @@
                 </a>
             </div>
 
-            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center justify-center w-8 h-8 shrink-0 cursor-pointer text-stone-900 hover:opacity-70 transition-opacity">
+            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center justify-center w-8 h-8 shrink-0 cursor-pointer text-stone-900 ">
                 <span class="material-symbols-outlined leading-none block">notifications</span>
 
                 <span id="unreadBadge"
-                      class="opacity-0 absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white z-10 pointer-events-none transition-opacity duration-200">
+                      th:with="count=${unreadCount}"
+                      th:style="${count == null or count == 0} ? 'display: none !important;' : 'display: flex !important;'"
+                      class="bg-primary"> [[${count != null and count > 6 ? '6+' : (count != null and count > 0 ? count : '')}]]
                 </span>
-
-                <script>
-                    (function() {
-                        const cachedCount = localStorage.getItem('unreadNotiCount');
-                        const badge = document.getElementById('unreadBadge');
-                        if (cachedCount && badge) {
-                            const numCount = parseInt(cachedCount, 10);
-                            if (numCount > 0) {
-                                badge.innerText = numCount > 6 ? '6+' : numCount;
-                                // 클래스 교체로 깜박임 최소화
-                                badge.classList.remove('opacity-0');
-                                badge.classList.add('opacity-100');
-                            }
-                        }
-                    })();
-                </script>
 
                 <div th:replace="~{notification/notification :: notificationDropdown}"></div>
             </div>

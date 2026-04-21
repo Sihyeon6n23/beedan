@@ -111,10 +111,10 @@ public class NotificationService {
 
     public void readNotification(Long notiId, Long memId){
         memberRepository.getByIdOrThrow(memId);
-
         Notification notification = notificationRepository.getByIdOrThrow(notiId);
-
         notification.setNotiReaYn(true);
+
+        sendRealTimeUnreadCount(memId);
     }
 
     public void readAll(Long memId){

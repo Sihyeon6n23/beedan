@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const badge = document.getElementById('unreadBadge');
     const notiIcon = document.getElementById('notiIcon');
     const notiDropdown = document.getElementById('notiDropdown');
-    const notiContent = document.querySelector(".notification-info-box");
+
+    const notiContent = document.getElementById('notiContent');
 
     if (!badge || !notiIcon || !notiDropdown || !notiContent) return;
 
@@ -30,26 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const numCount = Number.parseInt(count, 10);
         if (numCount > 0) {
             badge.innerText = numCount > 6 ? '6+' : numCount;
-
-            badge.classList.remove('hidden');
             badge.style.setProperty('display', 'flex', 'important');
         } else {
             badge.innerText = '';
-
-            badge.classList.add('hidden');
             badge.style.setProperty('display', 'none', 'important');
         }
     };
 
-    globalThis.updateUnreadCount = function() {
-        apiRequest('/api/notification/unread-count')
-            .then(count => {
-                updateBadgeUI(count);
-            })
-            .catch(err => console.error("배지 업데이트 실패:", err));
-    };
-
-    globalThis.addEventListener('newNotification', function(e) { // 웹소켓 연결시 이벤트 실행 (알림 수신 시 서버에서 클라이언트로 count를 보내줄 예정)
+    globalThis.addEventListener('newNotification', function(e) {
         const newCount = e.detail.count;
         updateBadgeUI(newCount);
     });
@@ -69,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        let html = '<ul class="data-list-container">';
+        let html = '<ul class="data-list-container !border-0">'; // 디자인을 위해 보더 제거 클래스 추가
         html += data.map(noti => `
             <li class="data-list-item ${noti.notiReaYn === false ? 'unread' : ''}" onclick="handleAction('read', ${noti.notiId}, this, '${noti.notiRef}')">
                 <div style="flex: 1;">
@@ -102,15 +91,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (url) {
-            if (typeof globalThis.handlePageAction === 'function') ;
-
             apiRequest(url, method)
                 .then(updatedList => {
                     if (typeof renderNotifications === 'function') { renderNotifications(updatedList); }
 
                     globalThis.dispatchEvent(new CustomEvent('notificationUpdated', { detail: updatedList }));
-
-                    if (globalThis.updateUnreadCount) globalThis.updateUnreadCount();
 
                     if (type === 'read' && refUrl && refUrl !== 'null' && refUrl !== '') { location.href = refUrl;}
                 })
@@ -132,5 +117,4 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!notiDropdown.classList.contains('hidden')) notiDropdown.classList.add('hidden');
     });
 
-    updateUnreadCount();
 });

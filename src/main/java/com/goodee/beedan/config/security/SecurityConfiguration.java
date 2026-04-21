@@ -201,11 +201,7 @@ public class SecurityConfiguration {
         return web -> web.ignoring().requestMatchers(
                 "/h2-console/**",
                 "/api/webhook/**",
-                "/.well-known/**",
-                "/css/**",
-                "/js/**",
-                "/image/**",
-                "/error"
+                "/.well-known/**"
         );
     }
 
