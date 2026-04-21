@@ -294,3 +294,19 @@
 .notification-info-box::-webkit-scrollbar-thumb:hover {
     background: var(--pub-text-muted, #9ca3af);
 }
+
+#notiIcon:hover {
+    opacity: 1 !important;
+}
+
+/* 2. 대신, 아이콘 안에 있는 '종 모양(span)'에만 hover 효과를 줍니다. */
+#notiIcon:hover > span.material-symbols-outlined {
+    opacity: 0.6; /* 여기서 원하는 흐릿함 정도를 조절하세요 (0.7 ~ 0.5) */
+    transition: opacity 0.2s ease; /* 부드러운 효과를 위해 추가 */
+}
+
+/* 3. 드롭다운 메뉴는 부모가 hover 상태여도 항상 선명하게(1) 유지합니다. */
+#notiDropdown {
+    opacity: 1 !important;
+    filter: none !important;
+}

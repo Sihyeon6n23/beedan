@@ -1,4 +1,4 @@
-package com.goodee.beedan.devUtils;
+package com.goodee.beedan.config.advice;
 
 import com.goodee.beedan.config.exception.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class GlobalRestControllerAdvice {
@@ -20,6 +21,12 @@ public class GlobalRestControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalStateException.class)
     public Map<String, String> handleIllegalState(IllegalStateException e) {
+        return Map.of("message", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(NoSuchElementException.class)
+    public Map<String, String> handleNoSuchElement(NoSuchElementException e) {
         return Map.of("message", e.getMessage());
     }
 
