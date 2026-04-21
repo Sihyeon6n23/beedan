@@ -25,7 +25,7 @@ public class Shipment {
     @Column(name = "sh_id")
     private Long shId;
     private String shTraNo;
-	private String shCarCd; 
+	private String shCarCd;
     @Enumerated(EnumType.STRING)
     private ShipmentStatus shStt;
     @CreatedDate
