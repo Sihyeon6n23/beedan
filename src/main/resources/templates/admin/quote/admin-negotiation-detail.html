@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('NEGOTIATION', 'Negotiation Detail', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title" th:text="'BEEDAN | ' + ${negotiation.ngNm}">BEEDAN | 협상 상세</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('quote', 'negotiation-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/admin/admin-negotiation-detail.css}">
+
+    <section class="and-container">
+
+        <!-- Header -->
+        <header class="and-header">
+            <div class="and-header__title">
+                <span class="and-kicker">Negotiation Detail</span>
+                <h1 class="and-title">협상 상세</h1>
+            </div>
+            <div class="and-header__rule">
+                <span></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:1.25rem;">
+                <p class="and-ng-id" th:text="'#' + ${negotiation.ngNm}" style="margin:0;">#NG</p>
+                <span class="and-badge"
+                      th:classappend="${negotiation.ongoing} ? ' and-badge--ongoing' : ' and-badge--closed'"
+                      th:text="${negotiation.ongoing} ? '진행중' : '종료'">상태</span>
+            </div>
+        </header>
+
+        <!-- Negotiation Info Card -->
+        <section class="and-info-card">
+            <div class="and-info-card__header">
+                <span class="and-section-label">협상 정보</span>
+            </div>
+            <div class="and-info-card__body">
+                <div class="and-info-grid">
+                    <div class="and-info-item">
+                        <span class="and-info-key">협상명</span>
+                        <span class="and-info-val" th:text="${negotiation.ngNm}">-</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">회원명</span>
+                        <span class="and-info-val" th:text="${member != null ? member.memNm : '-'}">-</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">회사명</span>
+                        <span class="and-info-val" th:text="${member != null ? member.memBizTtl : '-'}">-</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">시작일</span>
+                        <span class="and-info-val" th:text="${negotiation.ngCreDt != null ? #temporals.format(negotiation.ngCreDt, 'yyyy.MM.dd HH:mm') : '-'}">-</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">종료일</span>
+                        <span th:if="${negotiation.ngEndDt != null}" class="and-info-val"
+                              th:text="${#temporals.format(negotiation.ngEndDt, 'yyyy.MM.dd HH:mm')}">-</span>
+                        <span th:if="${negotiation.ngEndDt == null}" class="and-info-val and-info-val--empty">진행중</span>
+                    </div>
+                    <div class="and-info-item">
+                        <span class="and-info-key">총 견적 수</span>
+                        <span class="and-info-val and-info-val--highlight" th:text="${quoteCount + '건'}">0건</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Summary -->
+        <section class="and-stats">
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">임시저장</span>
+                <span class="and-stat-card__value" th:text="${statusCounts['TEMP_SAVE']}">0</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">대기중</span>
+                <span class="and-stat-card__value" th:text="${statusCounts['SUBMITTED']}">0</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">승인</span>
+                <span class="and-stat-card__value" th:text="${statusCounts['APPROVED']}">0</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">반려</span>
+                <span class="and-stat-card__value" th:text="${statusCounts['REJECTED']}">0</span>
+            </div>
+            <div class="and-stat-card">
+                <span class="and-stat-card__label">만료</span>
+                <span class="and-stat-card__value" th:text="${statusCounts['EXPIRED']}">0</span>
+            </div>
+        </section>
+
+        <!-- Quote List Table -->
+        <section class="and-quotes">
+            <div class="and-quotes__header">
+                <span class="and-section-label">견적 목록</span>
+            </div>
+            <div class="and-table-wrapper">
+                <table class="and-table">
+                    <thead>
+                    <tr>
+                        <th class="col-no">No.</th>
+                        <th class="col-qu-id">견적 ID</th>
+                        <th class="col-status">상태</th>
+                        <th class="col-items">품목수</th>
+                        <th class="col-first-item">대표 품목</th>
+                        <th class="col-date">발행일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="q : ${quotes}">
+                        <tr th:data-qu-id="${q.quId}"
+                            th:data-display-stt="${q.displayStt}"
+                            th:class="${q.quStt == 'REJECTED' or q.quStt == 'EXPIRED'} ? 'and-row--closed' : ''"
+                            style="cursor:pointer">
+                            <td class="col-no" th:text="${q.no}">1</td>
+                            <td class="col-qu-id" th:text="${q.quCd}">QU0000</td>
+                            <td class="col-status">
+                                <span class="and-q-badge"
+                                      th:classappend="'and-q-badge--' + ${q.displayStt.toLowerCase()}"
+                                      th:text="${q.displayStt == 'TEMP_SAVE' ? '임시저장' :
+                                                 q.displayStt == 'SUBMITTED' ? '제출완료' :
+                                                 q.displayStt == 'UNREAD' ? '읽지 않음' :
+                                                 q.displayStt == 'CONFIRMED' ? '확인함' :
+                                                 q.displayStt == 'APPROVED' ? '승인' :
+                                                 q.displayStt == 'REJECTED' ? '반려' :
+                                                 q.displayStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
+                            </td>
+                            <td class="col-items" th:text="${q.itemCount}">0</td>
+                            <td class="col-first-item" th:text="${q.firstItemName != null ? q.firstItemName : '-'}">-</td>
+                            <td class="col-date" th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">-</td>
+                        </tr>
+                    </th:block>
+                    <tr th:if="${#lists.isEmpty(quotes)}">
+                        <td colspan="6" style="text-align:center; padding:3rem; color:#78716c;">
+                            표시할 견적이 없습니다.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        var tbody = document.querySelector('.and-table tbody');
+        if (tbody) {
+            tbody.addEventListener('click', function (e) {
+                var row = e.target.closest('tr');
+                if (row && row.dataset.quId) {
+                    // 미열람 견적이면 열람 처리
+                    if (row.dataset.displayStt === 'UNREAD') {
+                        var headers = {};
+                        headers[csrfHeader] = csrfToken;
+                        fetch('/api/quote/' + row.dataset.quId + '/admin-opened', {
+                            method: 'POST', headers: headers
+                        });
+                    }
+                    window.location.href = '/admin/quote/detail?quId=' + row.dataset.quId;
+                }
+            });
+        }
+    });
+    </script>
+</th:block>
+</html>

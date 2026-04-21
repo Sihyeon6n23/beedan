@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('INQUIRY MANAGEMENT', 'Inquiry Edit', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 문의 수정</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('inquiry','inquiry-edit')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+
+    <section class="inquiry-page inquiry-write-page">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">Edit Inquiry</span>
+                <h2 class="inquiry-title">문의 수정</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-write-panel">
+            <form class="inquiry-write-form"
+                  id="inquiry-write-form"
+                  th:action="@{/inquiry/edit(id=${brdId})}"
+                  th:object="${inquiryBoardEditDto}"
+                  method="post"
+                  enctype="multipart/form-data">
+                <div class="inquiry-write-form__stack">
+                    <div class="inquiry-write-field">
+                        <input type="hidden" name="returnUrl" th:if="${returnUrl != null and !#strings.isEmpty(returnUrl)}"
+                               th:value="${returnUrl}">
+                        <label class="inquiry-write-field__label" for="brdTtl">문의 제목 <em>*</em></label>
+                        <input class="inquiry-write-field__input"
+                               type="text"
+                               id="brdTtl"
+                               th:field="*{brdTtl}"
+                               maxlength="100">
+                        <p class="inquiry-write-field__error is-hidden" data-inquiry-title-error>문의 제목을 입력해 주세요.</p>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdCon">문의 내용 <em>*</em></label>
+                        <textarea id="brdCon"
+                                  class="inquiry-write-field__editor"
+                                  th:field="*{brdCon}"></textarea>
+                        <p class="inquiry-write-field__error is-hidden" data-inquiry-content-error>문의 내용을 입력해 주세요.</p>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label">첨부 파일</label>
+                        <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=*{existingFiles}, isMultiple=true)}"></div>
+                    </div>
+                </div>
+
+                <div class="inquiry-write-form__actions">
+                    <a class="inquiry-outline-button"
+                       th:if="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="@{/inquiry/detail(id=${brdId})}">취소</a>
+
+                    <a class="inquiry-outline-button"
+                       th:unless="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="@{/inquiry/detail(id=${brdId}, returnUrl=${returnUrl})}">취소</a>
+                    <button type="submit" class="inquiry-outline-button inquiry-outline-button--primary">적용</button>
+                </div>
+            </form>
+        </section>
+    </section>
+
+    <script defer th:src="@{/js/file/fileUpload.js}"></script>
+    <script defer th:src="@{/js/board/inquiry.js}"></script>
+</th:block>
+</html>

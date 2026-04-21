@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('CHAT MANAGEMENT', 'Chat Room', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title" th:text="'BEEDAN | ' + ${chatRoomDetail.memBizTtl}">BEEDAN | 관리자 채팅방</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+
+      <section class="admin-chat-page admin-chat-detail-page"
+               th:attr="data-chat-status=${chatRoomDetail.chRoStt.name()}, data-room-id=${chatRoomDetail.chRoId}, data-admin-name=${chatRoomDetail.adminName != null ? chatRoomDetail.adminName : '담당자'}, data-member-biz-name=${chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록'}, data-member-name=${chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록'}, data-can-write=${chatRoomDetail.canWrite}, data-qr-api-base-url=${qrApiBaseUrl}">
+        <section class="admin-chat-shell admin-chat-shell--detail-board">
+            <header class="admin-chat-detail-topbar">
+                <div class="admin-chat-detail-topbar__side">
+                    <a th:if="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="@{/admin/chat/list}"
+                       class="admin-chat-icon-link">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </a>
+
+                    <a th:unless="${returnUrl == null or #strings.isEmpty(returnUrl)}"
+                       th:href="${returnUrl}"
+                       class="admin-chat-icon-link">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </a>
+                </div>
+
+                <div class="admin-chat-detail-topbar__center">
+                    <!-- 상담방 기본 정보 출력 -->
+                    <strong th:text="${chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록'}">상호명</strong>
+                    <span class="admin-chat-badge admin-chat-badge--open"
+                          th:classappend="${chatRoomDetail.chRoStt.name() == 'OPEN'} ? '' : ' is-hidden'"
+                          data-status-badge="OPEN">신규</span>
+                    <span class="admin-chat-badge admin-chat-badge--ongoing"
+                          th:classappend="${chatRoomDetail.chRoStt.name() == 'ONGOING'} ? '' : ' is-hidden'"
+                          data-status-badge="ONGOING">상담중</span>
+                    <span class="admin-chat-badge admin-chat-badge--closed"
+                          th:classappend="${chatRoomDetail.chRoStt.name() == 'CLOSED'} ? '' : ' is-hidden'"
+                          data-status-badge="CLOSED">종료됨</span>
+                </div>
+
+                <div class="admin-chat-detail-topbar__side admin-chat-detail-topbar__side--right">
+                    <button type="button"
+                            class="admin-chat-outline-button"
+                            th:classappend="${chatRoomDetail.chRoStt.name() == 'CLOSED'} ? ' is-hidden' : ''"
+                            data-modal-open="close"
+                            data-close-trigger>
+                        <span class="admin-chat-outline-button__dot"></span>
+                        <span>상담 종료</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="admin-chat-detail-body">
+                <div class="admin-chat-detail-body__stack" data-admin-message-list>
+                    <!-- 상담 시작 시각 출력 -->
+                    <div class="admin-chat-room__system admin-chat-room__system--detail"
+                         th:if="${chatRoomDetail.chRoAsgDt != null}"
+                         th:text="${'상담 시작 · ' + #temporals.format(chatRoomDetail.chRoAsgDt, 'yyyy.MM.dd')}">상담 시작</div>
+
+                    <!-- 실제 메시지 출력 -->
+                    <th:block th:if="${!#lists.isEmpty(chatRoomDetail.messages)}"
+                              th:each="message, messageStat : ${chatRoomDetail.messages}">
+                        <article class="admin-chat-detail-message"
+                                 style="animation-delay: [[${messageStat.index * 45}]]ms;"
+                                 th:attr="data-message-created-at=${#temporals.format(message.chMsCreDt, 'yyyy-MM-dd''T''HH:mm:ss')}"
+                                 th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message--admin' : ' admin-chat-detail-message--client'">
+                            <div class="admin-chat-detail-message__avatar"
+                                 th:if="${message.chMsSenTy.name() != 'ADMIN'}">
+                                <span class="material-symbols-outlined">corporate_fare</span>
+                            </div>
+
+                            <div class="admin-chat-detail-message__content">
+                                <div class="admin-chat-detail-message__meta"
+                                     th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__meta--admin' : ''">
+                                    <th:block th:unless="${message.chMsSenTy.name() == 'ADMIN'}">
+                                        <strong th:text="${(chatRoomDetail.memBizTtl != null ? chatRoomDetail.memBizTtl : '상호명 미등록') + ' · ' + (chatRoomDetail.memNm != null ? chatRoomDetail.memNm : '이름 미등록')}">상호명 · 이름</strong>
+                                    </th:block>
+                                </div>
+
+                                <th:block th:switch="${message.chMsTp != null ? message.chMsTp.name() : 'TEXT'}">
+                                    <div th:case="'TEXT'"
+                                         class="admin-chat-detail-message__bubble"
+                                         th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''"
+                                         th:text="${message.chMsCon}">메시지</div>
+
+                                    <div th:case="'IMAGE'"
+                                         class="admin-chat-detail-message__bubble admin-chat-detail-message__bubble--image"
+                                         th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''">
+                                        <a class="admin-chat-detail-message__image-link"
+                                           th:if="${message.imageFile != null}"
+                                           th:href="@{/api/files/view/{fileUuid}(fileUuid=${message.imageFile.fileUuid})}"
+                                           target="_blank"
+                                           rel="noopener noreferrer">
+                                            <img class="admin-chat-detail-message__image"
+                                                 th:src="@{/api/files/view/{fileUuid}(fileUuid=${message.imageFile.fileUuid})}"
+                                                 alt="첨부 이미지">
+                                        </a>
+                                        <p class="admin-chat-detail-message__image-empty"
+                                           th:if="${message.imageFile == null}">
+                                            이미지를 불러올 수 없습니다.
+                                        </p>
+                                    </div>
+
+                                    <div th:case="'QUOTE_CARD'"
+                                         class="admin-chat-detail-message__bubble admin-chat-detail-message__bubble--quote-card"
+                                         th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__bubble--admin' : ''">
+                                        <div class="admin-chat-quote-card">
+                                            <strong class="admin-chat-quote-card__title"
+                                                    th:text="${message.chMsLnkTtl}">견적 초안</strong>
+
+                                            <p class="admin-chat-quote-card__desc"
+                                               th:if="${message.chMsCon != null and !#strings.isEmpty(message.chMsCon)}"
+                                               th:text="${message.chMsCon}">설명</p>
+
+                                            <a class="admin-chat-quote-card__link"
+                                               th:href="${message.chMsLnkUrl}"
+                                               target="_blank"
+                                               rel="noopener noreferrer">
+                                                견적 초안 열기
+                                            </a>
+
+                                            <img class="admin-chat-quote-card__qr"
+                                                 th:if="${message.chMsLnkUrl != null}"
+                                                 th:attr="data-qr-url=${message.chMsLnkUrl}"
+                                                 alt="견적 QR 코드">
+                                        </div>
+                                    </div>
+                                </th:block>
+
+                                <span class="admin-chat-detail-message__time"
+                                      th:classappend="${message.chMsSenTy.name() == 'ADMIN'} ? ' admin-chat-detail-message__time--admin' : ''"
+                                      th:text="${#temporals.format(message.chMsCreDt, 'HH:mm')}">시간</span>
+                            </div>
+                        </article>
+                    </th:block>
+
+                    <div class="admin-chat-room__system admin-chat-room__system--detail"
+                         th:if="${#lists.isEmpty(chatRoomDetail.messages)}">아직 사용자가 메시지를 보내지 않았습니다.</div>
+
+                    <!-- 상담 종료 안내 출력 -->
+                    <div class="admin-chat-room__closed-panel"
+                         th:classappend="${chatRoomDetail.chRoStt.name() == 'CLOSED'} ? '' : ' is-hidden'"
+                         data-closed-panel>
+                        <span class="material-symbols-outlined">lock</span>
+                        <strong>상담 종료</strong>
+                        <p th:utext="${chatRoomDetail.chRoClsRsn != null and chatRoomDetail.chRoClsRsn.name() == 'AUTO'} ? '일정 시간 동안 메시지가 없어 <br>채팅방이 자동 종료되었습니다.' : '종료 상태에서는 <br>상담 이력만 확인할 수 있습니다.'">종료 안내</p>
+                        <span class="admin-chat-room__closed-date"
+                              th:if="${chatRoomDetail.chRoClsDt != null}"
+                              th:text="${#temporals.format(chatRoomDetail.chRoClsDt, 'yyyy.MM.dd HH:mm') + ' 종료'}">종료 시각</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상담중 입력 영역 -->
+            <footer class="admin-chat-detail-footer"
+                    th:classappend="${chatRoomDetail.chRoStt.name() == 'ONGOING'} ? '' : ' is-hidden'"
+                    data-composer="ONGOING">
+                <div class="admin-chat-detail-footer__composer admin-chat-detail-footer__composer--stitch">
+                    <button type="button"
+                            class="admin-chat-attach-button"
+                            title="이미지 첨부하기"
+                            aria-label="이미지 첨부하기"
+                            th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-attach-button--disabled' : ''"
+                            th:disabled="${!chatRoomDetail.canWrite}"
+                            data-admin-image-trigger>
+                        <span class="material-symbols-outlined">attach_file</span>
+                    </button>
+                    <input type="file"
+                           accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                           class="is-hidden"
+                           th:disabled="${!chatRoomDetail.canWrite}"
+                           data-admin-image-input>
+                    <input type="text"
+                           class="bd-input"
+                           th:placeholder="${chatRoomDetail.canWrite} ? '메시지를 입력하세요...' : '다른 담당자가 진행 중인 상담입니다. 조회만 가능합니다.'"
+                           th:disabled="${!chatRoomDetail.canWrite}"
+                           data-admin-message-input>
+                    <button type="button"
+                            class="admin-chat-send-button"
+                            title="전송"
+                            aria-label="전송"
+                            th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-send-button--disabled' : ''"
+                            th:disabled="${!chatRoomDetail.canWrite}"
+                            data-admin-message-send>
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                    <a th:href="@{/stock/list(chatRoomId=${chatRoomDetail.chRoId})}"
+                       class="admin-chat-quote-button"
+                       title="견적 초안 작성"
+                       aria-label="견적 초안 작성"
+                       th:classappend="${!chatRoomDetail.canWrite} ? ' admin-chat-quote-button--disabled' : ''"
+                       data-admin-quote-link>
+                        견적 보내기
+                    </a>
+                </div>
+
+                <!-- 관리자 채팅 상세 비동기 오류를 짧게 안내하는 토스트 -->
+                <div class="admin-chat-toast is-hidden"
+                     data-admin-chat-toast
+                     role="status"
+                     aria-live="polite"
+                     aria-atomic="true"
+                     aria-hidden="true">
+                    <span class="material-symbols-outlined admin-chat-toast__icon">error</span>
+                    <p class="admin-chat-toast__text" data-admin-chat-toast-text>
+                        요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.
+                    </p>
+                </div>
+            </footer>
+
+            <!-- 종료 상태 안내 영역 -->
+            <footer class="admin-chat-detail-footer admin-chat-detail-footer--closed"
+                    th:classappend="${chatRoomDetail.chRoStt.name() == 'CLOSED'} ? '' : ' is-hidden'"
+                    data-composer="CLOSED">
+                <div class="admin-chat-detail-footer__closed">
+                    <span class="material-symbols-outlined">chat_bubble_outline</span>
+                    <p>종료된 상담은 추가 메시지를 보낼 수 없습니다.</p>
+                    <button type="button" class="admin-chat-send-button admin-chat-send-button--disabled" disabled>
+                        <span class="material-symbols-outlined">send</span>
+                    </button>
+                </div>
+            </footer>
+        </section>
+
+        <div th:replace="~{fragments/chat/admin-close-modal :: closeConfirmModal}"></div>
+        <div th:replace="~{fragments/chat/admin-error-modal :: actionErrorModal}"></div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs/bundles/stomp.umd.min.js"></script>
+    <script defer th:src="@{/js/chat/admin-chat.js}"></script>
+</th:block>
+</html>

@@ -1,0 +1,110 @@
+<div class="order-history-fragment">
+
+    <div class="fragment-top">
+        <button class="btn-go-back" onclick="restoreModalSummary()">
+            <span class="material-symbols-outlined">arrow_back</span> 이전으로
+        </button>
+
+        <div class="title-row">
+            <h2 class="fragment-title">INQUIRY History</h2>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card border-right">
+            <span class="stat-label">총 문의건수</span>
+            <span class="stat-number">42</span>
+        </div>
+        <div class="stat-card border-right">
+            <span class="stat-label">답변 대기</span>
+            <span class="stat-number" style="color: var(--status-yellow);">03</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">답변완료</span>
+            <span class="stat-number" style="color: var(--status-green);">39</span>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="fragment-table">
+            <thead>
+            <tr>
+                <th>Inquiry ID</th>
+                <th>문의제목</th>
+                <th>문의 유형</th>
+                <th class="text-center">문의 상태</th>
+                <th>등록일자</th>
+                <th>답변일자</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="order-id">#INQ-77491</td>
+                <td><strong>배송일자 문의합니다.</strong></td>
+                <td><span style="color: var(--text-muted); font-size: 13px;">상품배송</span></td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-green">답변완료</span>
+                </td>
+                <td class="order-date">2026-01-01 13:00</td>
+                <td class="order-date">2026-01-01 13:00</td>
+            </tr>
+            <tr>
+                <td class="order-id">#INQ-77492</td>
+                <td><strong>배송일자 문의합니다.</strong></td>
+                <td><span style="color: var(--text-muted); font-size: 13px;">상품배송</span></td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-yellow">답변 대기중</span>
+                </td>
+                <td class="order-date">2026-01-01 13:00</td>
+                <td class="order-date" style="color: #ccc;">-</td>
+            </tr>
+            <tr>
+                <td class="order-id">#INQ-77493</td>
+                <td><strong>배송일자 문의합니다.</strong></td>
+                <td><span style="color: var(--text-muted); font-size: 13px;">상품배송</span></td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-yellow">답변 대기중</span>
+                </td>
+                <td class="order-date">2026-01-01 13:00</td>
+                <td class="order-date" style="color: #ccc;">-</td>
+            </tr>
+            <tr>
+                <td class="order-id">#INQ-77494</td>
+                <td><strong>배송일자 문의합니다.</strong></td>
+                <td><span style="color: var(--text-muted); font-size: 13px;">상품배송</span></td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-green">답변완료</span>
+                </td>
+                <td class="order-date">2026-01-01 13:00</td>
+                <td class="order-date">2026-01-01 13:00</td>
+            </tr>
+            <tr>
+                <td class="order-id">#INQ-77495</td>
+                <td><strong>배송일자 문의합니다.</strong></td>
+                <td><span style="color: var(--text-muted); font-size: 13px;">상품배송</span></td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-green">답변완료</span>
+                </td>
+                <td class="order-date">2026-01-01 13:00</td>
+                <td class="order-date">2026-01-01 13:00</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="table-footer-row">
+            <span class="showing-text">Showing 1-5 of 142 INQUIRIES</span>
+
+            <div class="fragment-pagination">
+                <button class="page-arrow">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="page-num active">1</button>
+                <button class="page-num">2</button>
+                <button class="page-num">3</button>
+                <button class="page-arrow">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

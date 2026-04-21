@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="sidebar(activeMain, activeSub)">
+    <div class="sidebar-scope">
+        <a th:href="@{/admin/member/list}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'member'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>회원 관리</span>
+        </a>
+
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'stock'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'stock'} ? 'true' : 'false'">
+                <span class="material-symbols-outlined sidebar-menu__icon">inventory_2</span>
+                <span>상품 관리</span>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/admin/stock/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    상품 목록
+                </a>
+                <a th:href="@{/admin/require/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-require'} ? ' sidebar-menu__child-link--current' : ''">
+                    상품 요청 목록
+                </a>
+                <a th:href="@{/admin/newstock}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'stock-new'} ? ' sidebar-menu__child-link--current' : ''">
+                    상품 등록
+                </a>
+                <a th:href="@{/admin/brand/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'brand-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    브랜드 목록
+                </a>
+                <a th:href="@{/admin/category/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'category-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    카테고리 목록
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'quote'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'quote'} ? 'true' : 'false'">
+                <span class="material-symbols-outlined sidebar-menu__icon">request_quote</span>
+                <span>견적 관리</span>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/admin/negotiation/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'negotiation-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    협상 목록
+                </a>
+                <a th:href="@{/admin/quote/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'quote-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    견적 목록
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-menu__group"
+             th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__group--open' : ''">
+            <button type="button"
+                    class="sidebar-menu__link sidebar-menu__toggle"
+                    th:classappend="${activeMain == 'inquiry'} ? ' sidebar-menu__link--current' : ''"
+                    th:attr="aria-expanded=${activeMain == 'inquiry'} ? 'true' : 'false'">
+                <span class="material-symbols-outlined sidebar-menu__icon">support_agent</span>
+                <span>문의 관리</span>
+                <span class="material-symbols-outlined sidebar-menu__chevron">expand_more</span>
+            </button>
+
+            <div class="sidebar-menu__child-wrap">
+                <a th:href="@{/admin/inquiry/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'inquiry-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    문의 목록
+                </a>
+                <a th:href="@{/admin/chat/list}"
+                   class="sidebar-menu__child-link"
+                   th:classappend="${activeSub == 'chat-list'} ? ' sidebar-menu__child-link--current' : ''">
+                    채팅 관리
+                </a>
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>

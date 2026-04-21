@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'STOCK REQUIREMENTS', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 상품 관리</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('stock', 'stock-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+<link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}"/>
+<link rel="stylesheet" th:href="@{/css/admin/admin-stock-list.css}"/>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<section class="admin-chat-page admin-chat-list-page" style="max-width:1280px;">
+    <!-- 헤더 -->
+    <header class="admin-chat-shell admin-chat-shell--header">
+        <div class="admin-chat-shell__heading">
+            <span class="admin-chat-kicker">Stock Management</span>
+            <h2 class="admin-chat-title">상품 목록</h2>
+        </div>
+        <div class="admin-chat-shell__rule">
+            <span></span>
+        </div>
+    </header>
+
+    <!-- 검색/필터 -->
+    <section class="filter-bar">
+        <div class="search-input-wrapper">
+            <input type="text" id="search-keyword" placeholder="상품명, 브랜드명, 상품코드 검색">
+            <span class="material-symbols-outlined">search</span>
+        </div>
+        <select id="search-category" class="search-category-select">
+            <option value="">전체 카테고리</option>
+        </select>
+        <div class="date-input-wrapper">
+            <input type="date" id="search-start-date">
+            <span>~</span>
+            <input type="date" id="search-end-date">
+        </div>
+        <button class="btn-search" onclick="searchStock()">검색</button>
+        <button class="btn-reset" onclick="resetSearch()">초기화</button>
+        <div class="batch-actions" id="batch-actions" style="display:none;">
+            <span class="batch-count" id="batch-count">0개 선택</span>
+            <select id="batch-category-select">
+                <option value="">카테고리 선택</option>
+            </select>
+            <button class="btn-batch-category" onclick="batchChangeCategory()">카테고리 변경</button>
+        </div>
+    </section>
+
+    <!-- 테이블 -->
+    <div class="table-responsive">
+        <table class="stock-table">
+            <thead>
+            <tr>
+                <th class="col-check" onclick="var cb=document.getElementById('check-all'); cb.checked=!cb.checked; toggleCheckAll(cb);"><input type="checkbox" id="check-all"></th>
+                <th class="col-id">ID</th>
+                <th class="col-code">상품코드</th>
+                <th class="col-img">사진</th>
+                <th class="col-brand">브랜드</th>
+                <th class="col-category">카테고리</th>
+                <th class="col-name">상품명</th>
+                <th class="col-price">가격</th>
+                <th class="col-exp">노출 <button class="toggle-all-btn" onclick="toggleAllExp(true)" title="전체 ON">ON</button><button class="toggle-all-btn" onclick="toggleAllExp(false)" title="전체 OFF">OFF</button></th>
+                <th class="col-use">사용 <button class="toggle-all-btn" onclick="toggleAllUse(true)" title="전체 ON">ON</button><button class="toggle-all-btn" onclick="toggleAllUse(false)" title="전체 OFF">OFF</button></th>
+                <th class="col-wish">관심</th>
+                <th class="col-purchase">구매</th>
+                <th class="col-action">관리</th>
+            </tr>
+            </thead>
+            <tbody id="stock-tbody">
+            <!-- JS로 동적 렌더링 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <footer class="admin-chat-shell admin-chat-shell--pagination">
+        <p class="page-info" id="page-info"></p>
+        <div class="page-numbers" id="page-numbers"></div>
+    </footer>
+</section>
+
+<!-- 수정 모달 -->
+<div id="editModal" class="modal-overlay hidden">
+    <div class="modal-container">
+        <div class="modal-top-line"></div>
+
+        <header class="modal-header">
+            <div>
+                <p class="stock-id-label" id="modal-stock-id"></p>
+                <h2>상품 수정</h2>
+            </div>
+            <button class="btn-close-modal" onclick="closeEditModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </header>
+
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>상품코드</label>
+                    <input type="text" id="modal-stCd">
+                    <span class="field-error" data-for="stCd"></span>
+                </div>
+                <div class="form-group">
+                    <label>상품명</label>
+                    <input type="text" id="modal-stNm">
+                    <span class="field-error" data-for="stNm"></span>
+                </div>
+                <div class="form-group">
+                    <label>브랜드</label>
+                    <input type="text" id="modal-stBrNm" list="brand-list">
+                    <span class="field-error" data-for="stBrNm"></span>
+                    <datalist id="brand-list"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>카테고리</label>
+                    <input type="text" id="modal-stCatNm" list="category-list">
+                    <span class="field-error" data-for="stCatNm"></span>
+                    <datalist id="category-list"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>가격</label>
+                    <input type="number" id="modal-stPr" step="0.01">
+                    <span class="field-error" data-for="stPr"></span>
+                </div>
+                <div class="form-group">
+                    <label>통화</label>
+                    <select id="modal-stCur">
+                        <option value="$">$ (USD)</option>
+                        <option value="€">€ (EUR)</option>
+                        <option value="£">£ (GBP)</option>
+                        <option value="¥">¥ (JPY)</option>
+                        <option value="₩">₩ (KRW)</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>상품 이미지</label>
+                    <div style="display:flex; gap:1rem; align-items:flex-start;">
+                        <div id="modal-img-preview" style="width:80px; height:80px; border:1px solid #e7e5e4; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; background:#faf8f5;">
+                            <span class="material-symbols-outlined" style="color:#a8a29e;">image_not_supported</span>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; gap:0.5rem;">
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="text" id="modal-stImgUrl" style="flex:1;" readonly>
+                                <label style="cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding:6px 14px; background:#1a1c1c; color:#ffd700; font-size:11px; font-weight:700; white-space:nowrap;">
+                                    <span class="material-symbols-outlined" style="font-size:14px;">upload</span> 업로드
+                                    <input type="file" id="modal-img-file" accept="image/*" style="display:none;">
+                                </label>
+                            </div>
+                            <span id="modal-img-status" style="font-size:11px; color:#a8a29e;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 토글 -->
+            <div class="toggle-group">
+                <div class="toggle-item">
+                    <label>요청상품</label>
+                    <button type="button" class="modal-toggle-btn" id="modal-stReqYn" onclick="toggleReqYn(this)">OFF</button>
+                </div>
+            </div>
+
+            <!-- 요청자 ID -->
+            <div class="form-grid" style="margin-top: 8px;">
+                <div class="form-group" id="reqMemId-group">
+                    <label>요청자 ID</label>
+                    <input type="number" id="modal-stReqMemId" readonly>
+                </div>
+            </div>
+        </div>
+
+        <footer class="modal-footer">
+            <button class="btn-delete" id="btn-delete-stock" onclick="deleteStock()">삭제</button>
+            <button class="btn-save" onclick="saveStock()">저장</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+(function() {
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    if (csrfToken) axios.defaults.headers.common[csrfHeader] = csrfToken;
+
+    let currentPage = 0;
+    let currentStId = null;
+    let stockDataCache = []; // 현재 페이지 데이터 캐시
+    let brandsList = [];
+    let categoriesList = [];
+
+    // ===== 상태 저장/복원 (detail 갔다가 뒤로올 때) =====
+    function saveListState() {
+        sessionStorage.setItem('stockListState', JSON.stringify({
+            page: currentPage,
+            keyword: document.getElementById('search-keyword').value.trim(),
+            category: document.getElementById('search-category').value,
+            startDate: document.getElementById('search-start-date').value,
+            endDate: document.getElementById('search-end-date').value
+        }));
+    }
+
+    function restoreListState() {
+        const saved = sessionStorage.getItem('stockListState');
+        if (!saved) return;
+        const state = JSON.parse(saved);
+        document.getElementById('search-keyword').value = state.keyword || '';
+        document.getElementById('search-category').value = state.category || '';
+        document.getElementById('search-start-date').value = state.startDate || '';
+        document.getElementById('search-end-date').value = state.endDate || '';
+        currentPage = state.page || 0;
+    }
+
+    // ===== 초기 로드 (pageshow: bfcache 복원 시에도 input 값 반영) =====
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            restoreListState();
+        } else {
+            sessionStorage.removeItem('stockListState');
+            currentPage = 0;
+        }
+        loadStockList(currentPage);
+    });
+    loadBrandsAndCategories();
+
+    // ===== 브랜드/카테고리 로드 =====
+    function loadBrandsAndCategories() {
+        axios.get('/api/admin/stock/brands').then(res => {
+            brandsList = res.data;
+            const dl = document.getElementById('brand-list');
+            dl.innerHTML = brandsList.map(b => '<option value="' + b.brNm + '">').join('');
+        });
+        axios.get('/api/admin/stock/categories').then(res => {
+            categoriesList = res.data;
+            const dl = document.getElementById('category-list');
+            dl.innerHTML = categoriesList.map(c => '<option value="' + c.catNm + '">').join('');
+            const sel = document.getElementById('batch-category-select');
+            sel.innerHTML = '<option value="">카테고리 선택</option>' + categoriesList.map(c => '<option value="' + c.catNm + '">' + c.catNm + '</option>').join('');
+            const searchCat = document.getElementById('search-category');
+            searchCat.innerHTML = '<option value="">전체 카테고리</option>' + categoriesList.map(c => '<option value="' + c.catNm + '">' + c.catNm + '</option>').join('');
+        });
+    }
+
+    // ===== 체크박스 =====
+    window.toggleCheckAll = function(el) {
+        document.querySelectorAll('.stock-check').forEach(cb => cb.checked = el.checked);
+        updateBatchUI();
+    };
+
+    window.updateBatchUI = function() {
+        const checked = document.querySelectorAll('.stock-check:checked');
+        const bar = document.getElementById('batch-actions');
+        const count = document.getElementById('batch-count');
+        if (checked.length > 0) {
+            bar.style.display = '';
+            count.textContent = checked.length + '개 선택';
+        } else {
+            bar.style.display = 'none';
+        }
+        // 전체 체크 동기화
+        const all = document.querySelectorAll('.stock-check');
+        document.getElementById('check-all').checked = all.length > 0 && checked.length === all.length;
+    };
+
+    window.batchChangeCategory = function() {
+        const catNm = document.getElementById('batch-category-select').value;
+        if (!catNm) { showGuideModal('카테고리를 선택하세요.', null, 'NOTICE', 'info'); return; }
+        const stIds = Array.from(document.querySelectorAll('.stock-check:checked')).map(cb => Number(cb.value));
+        if (stIds.length === 0) return;
+        showConfirmModal(stIds.length + '개 상품의 카테고리를 "' + catNm + '"(으)로 변경하시겠습니까?', function() {
+            axios.patch('/api/admin/stock/batch-category', { stIds, catNm })
+                .then(() => {
+                    document.getElementById('check-all').checked = false;
+                    loadStockList(currentPage);
+                })
+                .catch(() => showGuideModal('카테고리 변경 실패', null, 'ERROR', 'error'));
+        });
+    };
+
+    // ===== 상품 목록 로드 =====
+    function loadStockList(page) {
+        currentPage = page;
+        document.getElementById('check-all').checked = false;
+        document.getElementById('batch-actions').style.display = 'none';
+        const keyword = document.getElementById('search-keyword').value.trim();
+        const category = document.getElementById('search-category').value;
+        const startDate = document.getElementById('search-start-date').value;
+        const endDate = document.getElementById('search-end-date').value;
+
+        let params = 'page=' + page;
+        if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
+        if (category) params += '&category=' + encodeURIComponent(category);
+        if (startDate) params += '&startDate=' + startDate;
+        if (endDate) params += '&endDate=' + endDate;
+
+        saveListState();
+
+        axios.get('/api/admin/stock/list?' + params)
+            .then(res => {
+                const data = res.data;
+                stockDataCache = data.content;
+                renderTable(data.content);
+                renderPagination(data);
+            })
+            .catch(err => {
+                console.error('목록 로드 실패:', err);
+            });
+    }
+
+    // 이스케이프 헬퍼
+     function esc(str) {
+     if (str == null) return '';
+     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+         .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ===== 테이블 렌더링 =====
+    function renderTable(stocks) {
+        const tbody = document.getElementById('stock-tbody');
+        if (!stocks || stocks.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="13">등록된 상품이 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = stocks.map(s => {
+            const imgCell = s.stImgUrl
+                ? '<img class="stock-thumb" src="' + s.stImgUrl + '" alt="">'
+                : '<div class="stock-thumb-empty"><span class="material-symbols-outlined">image_not_supported</span></div>';
+
+            const price = s.stCur === '₩'
+                ? s.stCur + ' ' + Math.floor(Number(s.stPr)).toLocaleString()
+                : s.stCur + ' ' + Number(s.stPr).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            return '<tr onclick="openEditModal(' + s.stId + ')">'
+                + '<td class="col-check" onclick="event.stopPropagation(); var cb=this.querySelector(\'input\'); cb.checked=!cb.checked; updateBatchUI();"><input type="checkbox" class="stock-check" value="' + s.stId + '"></td>'
+                + '<td class="col-id">' + s.stId + '</td>'
+                + '<td class="col-code">' + (s.stCd || '-') + '</td>'
+                + '<td class="col-img">' + imgCell + '</td>'
+                + '<td class="col-brand">' + (s.stBrNm || '-') + '</td>'
+                + '<td class="col-category">' + (s.stCatNm || '-') + '</td>'
+                + '<td class="col-name"><span class="stock-name-link">' + (s.stNm || '-') + '</span></td>'
+                + '<td class="col-price">' + price + '</td>'
+                + '<td class="col-exp" onclick="event.stopPropagation()"><button class="toggle-btn ' + (s.stExpYn ? 'is-on' : 'is-off') + '" onclick="toggleExp(' + s.stId + ', this)">' + (s.stExpYn ? 'ON' : 'OFF') + '</button></td>'
+                + '<td class="col-use" onclick="event.stopPropagation()"><button class="toggle-btn ' + (s.stUseYn ? 'is-on' : 'is-off') + '" onclick="toggleUse(' + s.stId + ', this)">' + (s.stUseYn ? 'ON' : 'OFF') + '</button></td>'
+                + '<td class="col-wish">' + (s.stWisCnt || 0) + '</td>'
+                + '<td class="col-purchase">' + (s.stPurCnt || 0) + '</td>'
+                + '<td class="col-action"><div class="action-btns"><a class="btn-detail" href="/stock/detail/' + s.stId + '" onclick="event.stopPropagation()">DETAIL</a><button class="btn-edit" onclick="event.stopPropagation(); openEditModal(' + s.stId + ')">EDIT</button></div></td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    // ===== 페이지네이션 렌더링 =====
+    function renderPagination(data) {
+        const info = document.getElementById('page-info');
+        const nums = document.getElementById('page-numbers');
+        const start = data.number * data.size + 1;
+        const end = Math.min(start + data.numberOfElements - 1, data.totalElements);
+
+        if (data.totalElements === 0) {
+            info.textContent = '';
+            nums.innerHTML = '';
+            return;
+        }
+
+        info.textContent = start + '-' + end + ' of ' + data.totalElements + ' 개';
+
+        let html = '';
+        // 이전 버튼
+        html += '<button class="page-btn" ' + (data.first ? 'disabled' : '') + ' onclick="loadStockList(' + (data.number - 1) + ')"><span class="material-symbols-outlined" style="font-size:18px">chevron_left</span></button>';
+
+        // 페이지 번호
+        const maxPages = 10;
+        let startPage = Math.max(0, data.number - 4);
+        let endPage = Math.min(data.totalPages - 1, startPage + maxPages - 1);
+        if (endPage - startPage < maxPages - 1) {
+            startPage = Math.max(0, endPage - maxPages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += '<button class="page-btn ' + (i === data.number ? 'active' : '') + '" onclick="loadStockList(' + i + ')">' + (i + 1) + '</button>';
+        }
+
+        // 다음 버튼
+        html += '<button class="page-btn" ' + (data.last ? 'disabled' : '') + ' onclick="loadStockList(' + (data.number + 1) + ')"><span class="material-symbols-outlined" style="font-size:18px">chevron_right</span></button>';
+
+        nums.innerHTML = html;
+    }
+
+    // ===== 토글: 노출 =====
+    window.toggleExp = function(stId, btn) {
+        axios.patch('/api/admin/stock/' + stId + '/toggle-exp')
+            .then(() => {
+                const isOn = btn.classList.contains('is-on');
+                btn.classList.toggle('is-on', !isOn);
+                btn.classList.toggle('is-off', isOn);
+                btn.textContent = isOn ? 'OFF' : 'ON';
+            })
+            .catch(err => showGuideModal('노출 변경 실패', null, 'ERROR', 'error'));
+    };
+
+    // ===== 토글: 사용 =====
+    window.toggleUse = function(stId, btn) {
+        axios.patch('/api/admin/stock/' + stId + '/toggle-use')
+            .then(() => {
+                const isOn = btn.classList.contains('is-on');
+                btn.classList.toggle('is-on', !isOn);
+                btn.classList.toggle('is-off', isOn);
+                btn.textContent = isOn ? 'OFF' : 'ON';
+            })
+            .catch(err => showGuideModal('사용 변경 실패', null, 'ERROR', 'error'));
+    };
+
+    // ===== 전체 토글: 노출 =====
+    window.toggleAllExp = function(value) {
+        showConfirmModal('현재 페이지 전체 상품의 노출을 ' + (value ? 'ON' : 'OFF') + '으로 변경하시겠습니까?', function() {
+            const keyword = document.getElementById('search-keyword').value.trim();
+            const startDate = document.getElementById('search-start-date').value;
+            const endDate = document.getElementById('search-end-date').value;
+            let params = 'page=' + currentPage;
+            if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
+            if (startDate) params += '&startDate=' + startDate;
+            if (endDate) params += '&endDate=' + endDate;
+
+            axios.get('/api/admin/stock/list?' + params).then(res => {
+                const freshData = res.data.content;
+                const targets = freshData.filter(s => s.stExpYn !== value);
+                if (targets.length === 0) { showGuideModal('변경할 항목이 없습니다.', null, 'NOTICE', 'info'); return; }
+                return Promise.all(targets.map(s => axios.patch('/api/admin/stock/' + s.stId + '/toggle-exp')));
+            }).then(() => loadStockList(currentPage))
+              .catch(err => showGuideModal('일괄 변경 실패', null, 'ERROR', 'error'));
+        });
+    };
+
+    // ===== 전체 토글: 사용 =====
+    window.toggleAllUse = function(value) {
+        showConfirmModal('현재 페이지 전체 상품의 사용을 ' + (value ? 'ON' : 'OFF') + '으로 변경하시겠습니까?', function() {
+            const keyword = document.getElementById('search-keyword').value.trim();
+            const startDate = document.getElementById('search-start-date').value;
+            const endDate = document.getElementById('search-end-date').value;
+            let params = 'page=' + currentPage;
+            if (keyword) params += '&keyword=' + encodeURIComponent(keyword);
+            if (startDate) params += '&startDate=' + startDate;
+            if (endDate) params += '&endDate=' + endDate;
+
+            axios.get('/api/admin/stock/list?' + params).then(res => {
+                const freshData = res.data.content;
+                const targets = freshData.filter(s => s.stUseYn !== value);
+                if (targets.length === 0) { showGuideModal('변경할 항목이 없습니다.', null, 'NOTICE', 'info'); return; }
+                return Promise.all(targets.map(s => axios.patch('/api/admin/stock/' + s.stId + '/toggle-use')));
+            }).then(() => loadStockList(currentPage))
+              .catch(err => showGuideModal('일괄 변경 실패', null, 'ERROR', 'error'));
+        });
+    };
+
+    // ===== 모달 열기 =====
+    window.openEditModal = function(stId) {
+        currentStId = stId;
+        const stock = stockDataCache.find(s => s.stId === stId);
+        if (!stock) return;
+
+        document.getElementById('modal-stock-id').textContent = 'STOCK ID: ' + stock.stId;
+        document.getElementById('modal-stCd').value = stock.stCd || '';
+        document.getElementById('modal-stNm').value = stock.stNm || '';
+        document.getElementById('modal-stBrNm').value = stock.stBrNm || '';
+        document.getElementById('modal-stCatNm').value = stock.stCatNm || '';
+        document.getElementById('modal-stPr').value = stock.stPr || '';
+        document.getElementById('modal-stCur').value = stock.stCur || '$';
+        document.getElementById('modal-stImgUrl').value = stock.stImgUrl || '';
+        document.getElementById('modal-stReqMemId').value = stock.stReqMemId || '';
+        document.getElementById('modal-img-status').textContent = '';
+        document.getElementById('modal-img-file').value = '';
+        const preview = document.getElementById('modal-img-preview');
+        if (stock.stImgUrl) {
+            preview.innerHTML = '<img src="' + stock.stImgUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+        } else {
+            preview.innerHTML = '<span class="material-symbols-outlined" style="color:#a8a29e;">image_not_supported</span>';
+        }
+
+        setModalToggle('modal-stReqYn', stock.stReqYn);
+        updateReqMemIdState(stock.stReqYn);
+
+        document.getElementById('editModal').classList.remove('hidden');
+    };
+
+    // ===== 모달 닫기 =====
+    window.closeEditModal = function() {
+        document.getElementById('editModal').classList.add('hidden');
+        currentStId = null;
+    };
+
+    // 모달 바깥 클릭 시 닫기
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+
+    // ===== 모달 토글 버튼 =====
+    function setModalToggle(id, value) {
+        const btn = document.getElementById(id);
+        btn.classList.toggle('is-on', value);
+        btn.classList.toggle('is-off', !value);
+        btn.textContent = value ? 'ON' : 'OFF';
+        btn.dataset.value = value;
+    }
+
+    window.toggleModalBtn = function(btn) {
+        const isOn = btn.dataset.value === 'true';
+        btn.dataset.value = !isOn;
+        btn.classList.toggle('is-on', !isOn);
+        btn.classList.toggle('is-off', isOn);
+        btn.textContent = isOn ? 'OFF' : 'ON';
+    };
+
+    // ===== 요청상품 토글 (요청자ID 연동) =====
+    window.toggleReqYn = function(btn) {
+        toggleModalBtn(btn);
+        const isReq = btn.dataset.value === 'true';
+        updateReqMemIdState(isReq);
+    };
+
+    function updateReqMemIdState(isReq) {
+        const group = document.getElementById('reqMemId-group');
+        const input = document.getElementById('modal-stReqMemId');
+        if (isReq) {
+            group.classList.remove('disabled');
+            input.removeAttribute('readonly');
+        } else {
+            group.classList.add('disabled');
+            input.setAttribute('readonly', true);
+            input.value = '';
+        }
+    }
+
+    // ===== 모달 폼 검증 =====
+    function validateEditModal() {
+        document.querySelectorAll('#editModal .field-error').forEach(el => el.textContent = '');
+
+        const fields = [
+            { id: 'modal-stCd',    forKey: 'stCd',    msg: '상품코드를 입력하세요.' },
+            { id: 'modal-stNm',    forKey: 'stNm',    msg: '상품명을 입력하세요.' },
+            { id: 'modal-stBrNm',  forKey: 'stBrNm',  msg: '브랜드명을 입력하세요.' },
+            { id: 'modal-stCatNm', forKey: 'stCatNm',  msg: '카테고리를 입력하세요.' },
+            { id: 'modal-stPr',    forKey: 'stPr',     msg: '가격을 입력하세요.' },
+        ];
+
+        for (const f of fields) {
+            if (!document.getElementById(f.id).value.trim()) {
+                document.querySelector('#editModal [data-for="' + f.forKey + '"]').textContent = f.msg;
+                document.getElementById(f.id).focus();
+                return false;
+            }
+        }
+
+        if (Number(document.getElementById('modal-stPr').value) < 0) {
+            document.querySelector('#editModal [data-for="stPr"]').textContent = '가격은 0 이상이어야 합니다.';
+            document.getElementById('modal-stPr').focus();
+            return false;
+        }
+
+        return true;
+    }
+
+    // ===== 저장 =====
+    window.saveStock = function() {
+        if (!currentStId) return;
+        if (!validateEditModal()) return;
+
+        const dto = {
+            stCd: document.getElementById('modal-stCd').value,
+            stNm: document.getElementById('modal-stNm').value,
+            stBrNm: document.getElementById('modal-stBrNm').value,
+            stCatNm: document.getElementById('modal-stCatNm').value,
+            stPr: parseFloat(document.getElementById('modal-stPr').value) || 0,
+            stCur: document.getElementById('modal-stCur').value,
+            stImgUrl: document.getElementById('modal-stImgUrl').value,
+            stReqYn: document.getElementById('modal-stReqYn').dataset.value === 'true',
+            stReqMemId: document.getElementById('modal-stReqMemId').value ? parseInt(document.getElementById('modal-stReqMemId').value) : null
+        };
+
+        axios.put('/api/admin/stock/' + currentStId, dto)
+            .then(() => {
+                closeEditModal();
+                loadStockList(currentPage);
+            })
+            .catch(err => {
+                console.error('저장 실패:', err);
+                showGuideModal('저장에 실패했습니다.', null, 'ERROR', 'error');
+            });
+    };
+
+    // ===== 삭제 =====
+    window.deleteStock = function() {
+        if (!currentStId) return;
+        showConfirmModal('정말 삭제하시겠습니까?', function() {
+            axios.delete('/api/admin/stock/' + currentStId)
+                .then(() => {
+                    closeEditModal();
+                    loadStockList(currentPage);
+                })
+                .catch(err => {
+                    console.error('삭제 실패:', err);
+                    showGuideModal('삭제에 실패했습니다.', null, 'ERROR', 'error');
+                });
+        }, 'DELETE', 'delete');
+    };
+
+    // ===== 검색 =====
+    window.searchStock = function() {
+        loadStockList(0);
+    };
+
+    // ===== 초기화 =====
+    window.resetSearch = function() {
+        document.getElementById('search-keyword').value = '';
+        document.getElementById('search-category').value = '';
+        document.getElementById('search-start-date').value = '';
+        document.getElementById('search-end-date').value = '';
+        sessionStorage.removeItem('stockListState');
+        loadStockList(0);
+    };
+
+    // ===== datalist 입력창: focus 시 전체 목록 표시 =====
+    ['modal-stBrNm', 'modal-stCatNm'].forEach(id => {
+        const input = document.getElementById(id);
+        let savedValue = '';
+        input.addEventListener('focus', function() {
+            savedValue = this.value;
+            this.value = '';
+        });
+        input.addEventListener('blur', function() {
+            if (this.value === '') this.value = savedValue;
+        });
+    });
+
+    // ===== 이미지 업로드 =====
+    document.getElementById('modal-img-file').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        if (!currentStId) { showGuideModal('상품을 먼저 선택하세요.', null, 'NOTICE', 'info'); return; }
+
+        const status = document.getElementById('modal-img-status');
+        status.textContent = '업로드 중…';
+        status.style.color = '#a8a29e';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        axios.post('/api/admin/stock/' + currentStId + '/image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        .then(function(res) {
+            const imgUrl = res.data.imgUrl;
+            document.getElementById('modal-stImgUrl').value = imgUrl;
+            document.getElementById('modal-img-preview').innerHTML =
+                '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;">';
+            status.textContent = '업로드 완료';
+            status.style.color = '#059669';
+        })
+        .catch(function() {
+            status.textContent = '업로드 실패';
+            status.style.color = '#dc2626';
+        });
+    });
+
+    // ===== 검색 엔터키 =====
+    document.getElementById('search-keyword').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') searchStock();
+    });
+
+    // ===== 전역 함수 등록 =====
+    window.loadStockList = loadStockList;
+})();
+</script>
+
+<th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+</th:block>
+</html>

@@ -1,0 +1,109 @@
+<div class="order-history-fragment">
+
+    <div class="fragment-top">
+        <button class="btn-go-back" onclick="restoreModalSummary()">
+            <span class="material-symbols-outlined">arrow_back</span> 이전으로
+        </button>
+
+        <div class="title-row">
+            <h2 class="fragment-title">ORDER History</h2>
+            <div class="account-status">
+                <span class="status-label">Account Status</span>
+                <span class="status-value text-green">ACTIVE</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card border-right">
+            <span class="stat-label">Completed</span>
+            <span class="stat-number">128</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">In Progress</span>
+            <span class="stat-number">14</span>
+        </div>
+        <div class="stat-card border-right">
+            <span class="stat-label">Total Orders</span>
+            <span class="stat-number">142</span>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="fragment-table">
+            <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Placement Date</th>
+                <th>Product Summary</th>
+                <th class="text-right">Total Amount</th>
+                <th class="text-center">Status</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="order-id">#ORD-98821</td>
+                <td class="order-date">2023.11.24</td>
+                <td class="order-summary">
+                    <strong>Oxford Button-Down Shirts</strong><br>
+                    <span>And 5 other items</span>
+                </td>
+                <td class="order-amount text-right">$1,420.00</td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-red">주문 취소</span>
+                </td>
+                <td class="action-cell">
+                    <button class="btn-icon"><span class="material-symbols-outlined">more_horiz</span></button>
+                </td>
+            </tr>
+            <tr>
+                <td class="order-id">#ORD-98810</td>
+                <td class="order-date">2023.11.20</td>
+                <td class="order-summary">
+                    <strong>Cashmere Blend Blazer</strong><br>
+                    <span>Bulk Purchase</span>
+                </td>
+                <td class="order-amount text-right">$3,850.00</td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-yellow">승인대기중</span>
+                </td>
+                <td class="action-cell">
+                    <button class="btn-icon"><span class="material-symbols-outlined">more_horiz</span></button>
+                </td>
+            </tr>
+            <tr>
+                <td class="order-id">#ORD-98755</td>
+                <td class="order-date">2023.11.05</td>
+                <td class="order-summary">
+                    <strong>Linen Trousers - Seasonal</strong><br>
+                    <span>12 units</span>
+                </td>
+                <td class="order-amount text-right">$840.00</td>
+                <td class="order-status text-center">
+                    <span class="badge-status badge-green">배송완료</span>
+                </td>
+                <td class="action-cell">
+                    <button class="btn-icon"><span class="material-symbols-outlined">more_horiz</span></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="table-footer-row">
+            <span class="showing-text">Showing 1-4 of 142 orders</span>
+
+            <div class="fragment-pagination">
+                <button class="page-arrow">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="page-num active">1</button>
+                <button class="page-num">2</button>
+                <button class="page-num">3</button>
+                <button class="page-arrow">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

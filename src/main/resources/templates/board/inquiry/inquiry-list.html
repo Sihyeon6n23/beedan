@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="${isAdmin}
+          ? ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame(
+                  'INQUIRY MANAGEMENT',
+                  'Inquiry List',
+                  ~{admin/admin-sidebar :: sidebar('inquiry', 'inquiry-list')}
+              )},
+              ~{::content}
+          )}
+          : ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame(
+                  'INQUIRY MANAGEMENT',
+                  'Inquiry List',
+                  ~{member/mypage/mypage-sidebar :: sidebar('inquiry', 'inquiry-list')}
+              )},
+              ~{::content}
+          )}">
+
+<title th:fragment="title">BEEDAN | 문의 목록</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+
+    <section class="inquiry-page inquiry-list-page"
+             th:with="currentListUrl=${isAdmin}
+              ? @{/admin/inquiry/list(
+                  brdInqStt=${searchDto.brdInqStt},
+                  keyword=${searchDto.keyword},
+                  myAnsweredOnly=${searchDto.myAnsweredOnly},
+                  page=${boardPage.number},
+                  size=${searchDto.size}
+                )}
+              : @{/inquiry/list(
+                  brdInqStt=${searchDto.brdInqStt},
+                  keyword=${searchDto.keyword},
+                  page=${boardPage.number},
+                  size=${searchDto.size}
+                )}">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">Inquiry List</span>
+                <h2 class="inquiry-title"
+                    th:text="${isAdmin} ? '문의 관리' : '나의 문의 목록'">문의 관리</h2>
+            </div>
+            <div class="inquiry-shell__rule">
+                <span></span>
+            </div>
+        </header>
+
+        <section class="inquiry-shell inquiry-shell--toolbar" aria-label="문의 목록 필터">
+            <div class="inquiry-toolbar">
+                <div class="inquiry-toolbar__filters">
+                    <div class="inquiry-filter-set" data-filter-group="status">
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt == null} ? ' is-active' : ''"
+                           th:if="${isAdmin}"
+                           th:href="@{/admin/inquiry/list(keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=0, size=${searchDto.size})}">전체</a>
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt == null} ? ' is-active' : ''"
+                           th:unless="${isAdmin}"
+                           th:href="@{/inquiry/list(keyword=${searchDto.keyword}, page=0, size=${searchDto.size})}">전체</a>
+
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'RECEIVED'} ? ' is-active' : ''"
+                           th:if="${isAdmin}"
+                           th:href="@{/admin/inquiry/list(brdInqStt='RECEIVED', keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=0, size=${searchDto.size})}">접수</a>
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'RECEIVED'} ? ' is-active' : ''"
+                           th:unless="${isAdmin}"
+                           th:href="@{/inquiry/list(brdInqStt='RECEIVED', keyword=${searchDto.keyword}, page=0, size=${searchDto.size})}">접수</a>
+
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'IN_PROGRESS'} ? ' is-active' : ''"
+                           th:if="${isAdmin}"
+                           th:href="@{/admin/inquiry/list(brdInqStt='IN_PROGRESS', keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=0, size=${searchDto.size})}">처리중</a>
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'IN_PROGRESS'} ? ' is-active' : ''"
+                           th:unless="${isAdmin}"
+                           th:href="@{/inquiry/list(brdInqStt='IN_PROGRESS', keyword=${searchDto.keyword}, page=0, size=${searchDto.size})}">처리중</a>
+
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'ANSWERED'} ? ' is-active' : ''"
+                           th:if="${isAdmin}"
+                           th:href="@{/admin/inquiry/list(brdInqStt='ANSWERED', keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=0, size=${searchDto.size})}">답변완료</a>
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'ANSWERED'} ? ' is-active' : ''"
+                           th:unless="${isAdmin}"
+                           th:href="@{/inquiry/list(brdInqStt='ANSWERED', keyword=${searchDto.keyword}, page=0, size=${searchDto.size})}">답변완료</a>
+
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'CANCELLED'} ? ' is-active' : ''"
+                           th:if="${isAdmin}"
+                           th:href="@{/admin/inquiry/list(brdInqStt='CANCELLED', keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=0, size=${searchDto.size})}">취소</a>
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.brdInqStt != null and searchDto.brdInqStt.name() == 'CANCELLED'} ? ' is-active' : ''"
+                           th:unless="${isAdmin}"
+                           th:href="@{/inquiry/list(brdInqStt='CANCELLED', keyword=${searchDto.keyword}, page=0, size=${searchDto.size})}">취소</a>
+                    </div>
+
+                    <div class="inquiry-filter-set" data-filter-group="ownership" th:if="${isAdmin}">
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.myAnsweredOnly == null or !searchDto.myAnsweredOnly} ? ' is-active' : ''"
+                           th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=false, page=0, size=${searchDto.size})}">전체 문의</a>
+                        <a class="inquiry-filter"
+                           th:classappend="${searchDto.myAnsweredOnly != null and searchDto.myAnsweredOnly} ? ' is-active' : ''"
+                           th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=true, page=0, size=${searchDto.size})}">내 답변</a>
+                    </div>
+                </div>
+
+                <div class="inquiry-toolbar__actions">
+                    <form class="inquiry-search-form"
+                          method="get"
+                          th:if="${isAdmin}"
+                          th:action="@{/admin/inquiry/list}">
+                        <input type="hidden" name="page" value="0">
+                        <input type="hidden" name="size" th:value="${searchDto.size}">
+                        <input type="hidden" name="myAnsweredOnly" th:value="${searchDto.myAnsweredOnly}">
+                        <input type="hidden" name="brdInqStt" th:if="${searchDto.brdInqStt != null}" th:value="${searchDto.brdInqStt.name()}">
+
+                        <label class="sr-only" for="inquiry-keyword">제목 검색</label>
+                        <input id="inquiry-keyword"
+                               class="inquiry-search-form__input"
+                               type="text"
+                               name="keyword"
+                               th:value="${searchDto.keyword}"
+                               placeholder="문의 제목 또는 회사 상호명 검색">
+
+                        <button type="submit" class="inquiry-search-form__submit">조회</button>
+                    </form>
+
+                    <form class="inquiry-search-form"
+                          method="get"
+                          th:unless="${isAdmin}"
+                          th:action="@{/inquiry/list}">
+                        <input type="hidden" name="page" value="0">
+                        <input type="hidden" name="size" th:value="${searchDto.size}">
+                        <input type="hidden" name="brdInqStt" th:if="${searchDto.brdInqStt != null}" th:value="${searchDto.brdInqStt.name()}">
+
+                        <label class="sr-only" for="user-inquiry-keyword">문의 제목 검색</label>
+                        <input id="user-inquiry-keyword"
+                               class="inquiry-search-form__input"
+                               type="text"
+                               name="keyword"
+                               th:value="${searchDto.keyword}"
+                               placeholder="문의 제목 검색">
+
+                        <button type="submit" class="inquiry-search-form__submit">검색</button>
+                    </form>
+
+                    <a th:unless="${isAdmin}"
+                       th:href="@{/inquiry/write}"
+                       class="inquiry-action-link">
+                        <span class="material-symbols-outlined inquiry-action-link__icon">edit_square</span>
+                        <span>문의 작성</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="inquiry-shell inquiry-shell--list">
+            <div class="inquiry-list-head" aria-hidden="true">
+                <div>번호</div>
+                <div>문의 제목</div>
+                <div>첨부</div>
+                <div>상태</div>
+                <div>회사 상호명</div>
+                <div>등록일</div>
+            </div>
+
+            <div class="inquiry-list-body" th:classappend="${#lists.isEmpty(boardPage.content)} ? ' inquiry-list-body--empty' : ''">
+                <a th:each="board, iterStat : ${boardPage.content}"
+                   th:if="${isAdmin}"
+                   th:href="@{/admin/inquiry/detail(id=${board.brdId}, returnUrl=${currentListUrl})}"
+                   class="inquiry-row"
+                   th:classappend="${board.brdInqStt != null and board.brdInqStt.name() == 'RECEIVED'} ? ' inquiry-row--featured' : ''">
+                    <div class="inquiry-row__no"
+                         th:text="${boardPage.totalElements - (boardPage.number * boardPage.size) - iterStat.index}">
+                        1
+                    </div>
+
+                    <div class="inquiry-row__primary">
+                        <div class="inquiry-row__text">
+                            <h2 th:text="${board.brdTtl}">문의 제목</h2>
+                        </div>
+                    </div>
+
+                    <div class="inquiry-row__file">
+                          <span th:if="${board.hasAttachment}"
+                                class="material-symbols-outlined">
+                              attach_file
+                          </span>
+                    </div>
+
+                    <div class="inquiry-row__status">
+                        <span class="inquiry-badge"
+                              th:classappend="${
+                                  board.brdInqStt.name() == 'RECEIVED' ? ' inquiry-badge--received' :
+                                  (board.brdInqStt.name() == 'IN_PROGRESS' ? ' inquiry-badge--progress' :
+                                  (board.brdInqStt.name() == 'ANSWERED' ? ' inquiry-badge--answered' : ' inquiry-badge--cancelled'))
+                              }"
+                              th:text="${
+                                  board.brdInqStt.name() == 'RECEIVED' ? '접수' :
+                                  (board.brdInqStt.name() == 'IN_PROGRESS' ? '처리중' :
+                                  (board.brdInqStt.name() == 'ANSWERED' ? '답변완료' : '취소'))
+                              }">상태</span>
+                    </div>
+
+                    <div class="inquiry-row__company">
+                        <span th:text="${board.memBizTtl != null ? board.memBizTtl : '상호명 미등록'}">회사 상호명</span>
+                    </div>
+
+                    <div class="inquiry-row__time">
+                        <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">등록일</span>
+                    </div>
+                </a>
+
+                <a th:each="board, iterStat : ${boardPage.content}"
+                   th:unless="${isAdmin}"
+                   th:href="@{/inquiry/detail(id=${board.brdId}, returnUrl=${currentListUrl})}"
+                   class="inquiry-row"
+                   th:classappend="${board.brdInqStt != null and board.brdInqStt.name() == 'RECEIVED'} ? ' inquiry-row--featured' : ''">
+                    <div class="inquiry-row__no"
+                         th:text="${boardPage.totalElements - (boardPage.number * boardPage.size) - iterStat.index}">
+                        1
+                    </div>
+
+                    <div class="inquiry-row__primary">
+                        <div class="inquiry-row__text">
+                            <h2 th:text="${board.brdTtl}">문의 제목</h2>
+                        </div>
+                    </div>
+
+                    <div class="inquiry-row__file">
+                          <span th:if="${board.hasAttachment}"
+                                class="material-symbols-outlined">
+                              attach_file
+                          </span>
+                    </div>
+
+                    <div class="inquiry-row__status">
+                        <span class="inquiry-badge"
+                              th:classappend="${
+                                  board.brdInqStt.name() == 'RECEIVED' ? ' inquiry-badge--received' :
+                                  (board.brdInqStt.name() == 'IN_PROGRESS' ? ' inquiry-badge--progress' :
+                                  (board.brdInqStt.name() == 'ANSWERED' ? ' inquiry-badge--answered' : ' inquiry-badge--cancelled'))
+                              }"
+                              th:text="${
+                                  board.brdInqStt.name() == 'RECEIVED' ? '접수' :
+                                  (board.brdInqStt.name() == 'IN_PROGRESS' ? '처리중' :
+                                  (board.brdInqStt.name() == 'ANSWERED' ? '답변완료' : '취소'))
+                              }">상태</span>
+                    </div>
+
+                    <div class="inquiry-row__company">
+                        <span th:text="${board.memBizTtl != null ? board.memBizTtl : '상호명 미등록'}">회사 상호명</span>
+                    </div>
+
+                    <div class="inquiry-row__time">
+                        <span th:text="${#temporals.format(board.brdCreDt, 'yyyy.MM.dd')}">등록일</span>
+                    </div>
+                </a>
+
+                <th:block th:if="${#lists.size(boardPage.content) < 10}"
+                          th:each="spacer : ${#numbers.sequence(1, 10 - #lists.size(boardPage.content))}">
+                    <div class="inquiry-row-spacer" aria-hidden="true"></div>
+                </th:block>
+                <div class="inquiry-empty-state" th:if="${#lists.isEmpty(boardPage.content)}">
+                    <strong>표시할 내용이 없습니다.</strong>
+                    <p th:text="${isAdmin} ? '조건에 맞는 문의가 없습니다.' : '등록한 문의가 아직 없습니다.'">빈 상태 안내</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="inquiry-shell inquiry-shell--pagination">
+            <div class="inquiry-pagination">
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasPrevious() and isAdmin}"
+                   class="inquiry-page-button inquiry-page-button--wide"
+                   th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=${boardPage.number - 1}, size=${searchDto.size})}">Prev</a>
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasPrevious() and !isAdmin}"
+                   class="inquiry-page-button inquiry-page-button--wide"
+                   th:href="@{/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, page=${boardPage.number - 1}, size=${searchDto.size})}">Prev</a>
+                <span th:unless="${boardPage.totalPages > 0 and boardPage.hasPrevious()}"
+                      class="inquiry-page-button inquiry-page-button--wide is-disabled">Prev</span>
+
+                <th:block th:if="${boardPage.totalPages > 0}"
+                          th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}">
+                    <a th:if="${isAdmin}"
+                       class="inquiry-page-button"
+                       th:classappend="${pageNumber == boardPage.number} ? ' is-current' : ''"
+                       th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
+                       th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=${pageNumber}, size=${searchDto.size})}">01</a>
+                    <a th:unless="${isAdmin}"
+                       class="inquiry-page-button"
+                       th:classappend="${pageNumber == boardPage.number} ? ' is-current' : ''"
+                       th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
+                       th:href="@{/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, page=${pageNumber}, size=${searchDto.size})}">01</a>
+                </th:block>
+                <span th:unless="${boardPage.totalPages > 0}"
+                      class="inquiry-page-button is-current is-disabled">01</span>
+
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasNext() and isAdmin}"
+                   class="inquiry-page-button inquiry-page-button--wide"
+                   th:href="@{/admin/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, myAnsweredOnly=${searchDto.myAnsweredOnly}, page=${boardPage.number + 1}, size=${searchDto.size})}">Next</a>
+                <a th:if="${boardPage.totalPages > 0 and boardPage.hasNext() and !isAdmin}"
+                   class="inquiry-page-button inquiry-page-button--wide"
+                   th:href="@{/inquiry/list(brdInqStt=${searchDto.brdInqStt}, keyword=${searchDto.keyword}, page=${boardPage.number + 1}, size=${searchDto.size})}">Next</a>
+                <span th:unless="${boardPage.totalPages > 0 and boardPage.hasNext()}"
+                      class="inquiry-page-button inquiry-page-button--wide is-disabled">Next</span>
+            </div>
+        </footer>
+    </section>
+
+    <script defer th:src="@{/js/board/inquiry.js}"></script>
+</th:block>
+</html>
+

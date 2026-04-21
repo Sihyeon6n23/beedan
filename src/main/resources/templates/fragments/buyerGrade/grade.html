@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="tierCard(tierName, iconName, features)">
+  <div class="border-2 border-primary-container p-8 relative">
+
+    <div class="flex items-center gap-3 mb-6">
+      <span class="material-symbols-outlined text-3xl text-primary-container" th:text="${iconName}">workspace_premium</span>
+      <h3 class="font-headline font-extrabold text-xl tracking-tight" th:text="${tierName}">VIP</h3>
+    </div>
+
+    <div class="w-full h-px bg-neutral-700 mb-6"></div>
+
+    <ul class="space-y-4 text-sm">
+      <li th:each="feature : ${features}" class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary-container text-lg">check</span>
+        <span class="text-neutral-300" th:text="${feature}">혜택 내용</span>
+      </li>
+    </ul>
+
+  </div>
+</th:block>
+
+</html>

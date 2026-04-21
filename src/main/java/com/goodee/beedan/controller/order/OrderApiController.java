@@ -1,0 +1,67 @@
+package com.goodee.beedan.controller.order;
+
+import com.goodee.beedan.common.constant.NotificationType;
+import com.goodee.beedan.common.constant.OrderStatus;
+import com.goodee.beedan.config.security.MemberUserDetails;
+import com.goodee.beedan.dto.order.OrderDto;
+import com.goodee.beedan.service.notification.NotificationService;
+import com.goodee.beedan.service.order.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+
+@RestController
+@RequestMapping("/api/orders")
+@RequiredArgsConstructor
+public class OrderApiController {
+    private final OrderService orderService;
+    private final NotificationService notificationService;
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<OrderDto>> getOrders(
+            @AuthenticationPrincipal MemberUserDetails userDetails,
+            @RequestParam(value = "status", defaultValue = "ALL") String status,
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(size = 6, sort = "ordBaseCreDt", direction = Sort.Direction.DESC) Pageable pageable){
+        Page<OrderDto> orderList = orderService.getOrderList(userDetails.getMemberId(), status, keyword, pageable);
+
+        return ResponseEntity.ok(orderList);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderDto> getOrderDetail(@PathVariable("id") Long ordId,
+                                                   @AuthenticationPrincipal MemberUserDetails userDetails) {
+        OrderDto orderDetail = orderService.getOrderDetail(ordId, userDetails.getMemberId());
+
+        return ResponseEntity.ok(orderDetail);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<OrderDto> updateOrderDetail(@PathVariable("id") Long ordId,
+                                                      @AuthenticationPrincipal MemberUserDetails userDetails,
+                                                      @RequestBody OrderDto orderDto) {
+        Long memId = userDetails.getMemberId();
+        orderService.updateOrder(ordId, memId, orderDto);
+
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<OrderDto> cancelOrder(@PathVariable("id") Long ordId,
+                                                @AuthenticationPrincipal MemberUserDetails userDetails) {
+        Long memId = userDetails.getMemberId();
+
+        orderService.cancelOrder(ordId, memId);
+
+        notificationService.createNotification(memId, NotificationType.ORDER_CANCEL,ordId);
+
+        return ResponseEntity.ok(orderService.getOrderDetail(ordId, userDetails.getMemberId()));
+    }
+
+}

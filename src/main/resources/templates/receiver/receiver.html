@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ACCOUNT', 'Receiver Management', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 배송지 관리</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('member', 'receiver')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+    <link rel="stylesheet" th:href="@{/css/receiver/receiver.css}">
+
+    <section class="admin-chat-page admin-chat-list-page receiver-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Receiver Management</span>
+                <h2 class="admin-chat-title">배송지 관리</h2>
+
+                <div class="admin-chat-shell__rule">
+                    <span></span>
+                </div>
+            </div>
+        </header>
+
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="배송지 추가 버튼">
+            <div class="admin-chat-toolbar" style="justify-content: end;">
+                <button class="admin-chat-filter is-active" type="button" id="btnOpenAddForm">배송지 추가</button>
+            </div>
+        </section>
+
+        <div id="receiverFormSection" class="admin-chat-shell" style="display: none; padding: 20px; border: 1px solid #ddd; margin-bottom: 20px;">
+            <input type="hidden" id="rcId">
+
+            <h3 id="formTitle" style="margin-bottom: 15px;">배송지 등록</h3>
+
+            <div class="flex-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="rcNm" class="bd-input" style="flex: 1;" placeholder="수령자명">
+                <input type="text" id="rcPhn" class="bd-input" style="flex: 1;" placeholder="연락처 (예: 010-1234-5678)">
+            </div>
+
+            <div class="flex-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="postcode" class="bd-input" style="flex: 1;" placeholder="우편번호" readonly>
+            </div>
+
+            <div class="flex-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="baseAddress" class="bd-input" style="flex: 1; width: 70%;" placeholder="기본주소" readonly>
+                <button type="button" id="searchPostCode" class="btn-secondary" style="white-space: nowrap;">주소 찾기</button>
+            </div>
+
+            <div class="flex-row" style="margin-bottom: 15px;">
+                <input type="text" id="detailAddress" class="bd-input" style="width: 100%;" placeholder="상세주소">
+            </div>
+
+            <div class="form-actions" style="display: flex; justify-content: end; gap: 10px">
+                <button type="button" id="btnSaveReceiver" class="btn-detail">저장하기</button>
+                <button type="button" id="btnCancel" class="btn-edit">취소</button>
+            </div>
+        </div>
+
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>수령자 정보</div>
+                <div style="text-align: center;">배송지</div>
+                <div>도서산관여부</div>
+                <div style="text-align: center;">관리</div>
+            </div>
+
+            <div class="admin-chat-list-body" id="receiver-body">
+            </div>
+        </section>
+
+        <footer id="order-pagination" class="admin-chat-shell admin-chat-shell--pagination" style="gap: 0;"></footer>
+
+        <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+        <script th:src="@{/js/postcode/postcode.js}"></script>
+        <script th:src="@{/js/receiver/receiver.js}"></script>
+    </section>
+
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+</th:block>
+</html>

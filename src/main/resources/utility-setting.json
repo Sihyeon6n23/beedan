@@ -1,0 +1,17 @@
+{
+  "weather_location_list" : [ {
+    "city_name" : "Las Vegas",
+    "region" : "US"
+  }, {
+    "city_name" : "Osaka",
+    "region" : "Osaka, JP"
+  }, {
+    "city_name" : "Tokyo",
+    "region" : "JP"
+  }, {
+    "city_name" : "Seoul",
+    "region" : "Seoul, KR"
+  } ],
+  "news_keyword_left" : "세계 패션 의류",
+  "news_keyword_right" : "세계 무역 관세 환율"
+}

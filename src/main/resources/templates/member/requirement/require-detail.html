@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html
+      th:replace="${isAdmin}
+          ? ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame('COMMUNICATIONS', 'Requirement Detail', ~{admin/admin-sidebar :: sidebar('require', 'require-list')})},
+              ~{::content}
+          )}
+          : ~{layout/layout :: layout(
+              ~{::title},
+              ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'Requirement Detail', ~{member/mypage/mypage-sidebar :: sidebar('stock', 'stock-require')})},
+              ~{::content}
+          )}">
+
+<title th:fragment="title" th:text="'BEEDAN | ' + ${require.reqTtl}">BEEDAN | DETAIL</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/inquiry.css}">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:if="${isAdmin}" src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+
+    <section class="inquiry-page inquiry-detail-page" th:object="${require}">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker">Requirement Detail</span>
+                <h2 class="inquiry-title">상품 요청 상세</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-detail-layout">
+            <article class="inquiry-detail-article">
+                <input type="hidden" th:value="*{reqId}" id="reqId">
+                <input type="hidden" th:value="*{reqRepId}" id="reqRepId">
+
+                <!-- 목록으로 -->
+                <div class="inquiry-detail-article__utility">
+                    <a class="inquiry-detail-back"
+                       th:href="${isAdmin} ? @{/admin/require/list} : @{/require/list}">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                        <span>목록으로</span>
+                    </a>
+                </div>
+
+                <!-- 제목 + 상태 배지 -->
+                <div class="inquiry-detail-article__head">
+                    <div class="inquiry-detail-article__title-row">
+                        <h3 class="inquiry-detail-article__title" th:text="*{reqTtl}">요청 제목</h3>
+                        <span th:if="*{reqStt == 'DRAFT'}" class="inquiry-badge inquiry-badge--received">임시 저장</span>
+                        <span th:if="*{reqStt == 'SUBMITTED' and (reqRepYn == null or !reqRepYn)}" class="inquiry-badge inquiry-badge--progress">대기중</span>
+                        <span th:if="*{reqStt == 'SUBMITTED' and reqRepYn != null and reqRepYn and reqPerYn != null and reqPerYn}" class="inquiry-badge inquiry-badge--answered">승인</span>
+                        <span th:if="*{reqStt == 'SUBMITTED' and reqRepYn != null and reqRepYn and reqPerYn != null and !reqPerYn}" class="inquiry-badge inquiry-badge--cancelled">반려</span>
+                    </div>
+                    <div class="inquiry-detail-article__meta">
+                        <span th:text="*{memBizTtl}">회사명</span>
+                        <span th:text="*{memNm}">작성자</span>
+                    </div>
+                </div>
+
+                <!-- 내용 -->
+                <div class="inquiry-detail-article__body">
+                    <div class="inquiry-detail-article__content" th:utext="*{reqCnt}">요청 내용</div>
+                </div>
+
+                <!-- 부가 정보 -->
+                <div class="inquiry-detail-article__body" style="border-top:1px solid #f1ece2;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                        <div>
+                            <div style="font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-secondary);margin-bottom:0.4rem;">참고 URL</div>
+                            <div style="font-size:0.95rem;">
+                                <a th:if="*{reqRef != null and !reqRef.isEmpty()}" th:href="*{reqRef}" th:text="*{reqRef}" target="_blank" style="color:#705d00;text-decoration:underline;word-break:break-all;"></a>
+                                <span th:if="*{reqRef == null or reqRef.isEmpty()}" style="color:var(--color-outline);">-</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.75rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-secondary);margin-bottom:0.4rem;">희망 가격</div>
+                            <div style="font-size:0.95rem;font-weight:700;">
+                                <span th:if="*{reqPr != null}" th:text="*{reqCur} + ' ' + *{reqPr}"></span>
+                                <span th:if="*{reqPr == null}" style="color:var(--color-outline);">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 사용자 버튼 -->
+                <div class="inquiry-detail-article__footer" th:if="${!isAdmin}">
+                    <div class="inquiry-detail-actions">
+                        <th:block th:if="*{reqStt == 'DRAFT'}">
+                            <a th:href="@{/require/write(reqId=*{reqId})}" class="inquiry-detail-action inquiry-detail-action--primary" style="text-decoration:none;">수정</a>
+                            <button type="button" id="btn-delete" class="inquiry-detail-action">삭제</button>
+                            <button type="button" id="btn-submit" class="inquiry-detail-action inquiry-detail-action--primary">제출</button>
+                        </th:block>
+                        <th:block th:if="*{reqStt == 'SUBMITTED' and (reqRepYn == null or !reqRepYn)}">
+                            <button type="button" id="btn-cancel" class="inquiry-detail-action">등록 취소</button>
+                        </th:block>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 답변 섹션 -->
+            <section class="inquiry-detail-reply">
+                <div class="inquiry-detail-reply__header">
+                    <div class="inquiry-detail-reply__title-row">
+                        <h3>답변</h3>
+                        <span class="inquiry-kicker inquiry-kicker--reply">Reply</span>
+                    </div>
+                    <!-- 관리자: 답변 수정 버튼 -->
+                    <button type="button"
+                            class="inquiry-detail-action"
+                            th:if="${isAdmin and require.reqRepYn != null and require.reqRepYn}"
+                            id="btn-reply-edit-toggle">답변 수정</button>
+                </div>
+
+                <!-- 답변 있을 때: 표시 -->
+                <div class="inquiry-detail-reply__body" th:if="*{reqRepYn != null and reqRepYn}">
+                    <div class="inquiry-detail-reply__display" id="reply-display">
+                        <div class="inquiry-detail-reply__meta">
+                            <strong>BEEDAN</strong>
+                            <span th:if="*{reqRepPerYn != null and reqRepPerYn}" style="color:#b8960c;font-weight:700;">승인</span>
+                            <span th:if="*{reqRepPerYn != null and !reqRepPerYn}" style="color:#ba1a1a;font-weight:700;">반려</span>
+                        </div>
+                        <h4 th:text="*{reqRepTtl}" style="margin:0.6rem 0 0.4rem;font-weight:800;font-size:1.05rem;"></h4>
+                        <div class="inquiry-detail-reply__content" th:utext="*{reqRepCon}">답변 내용</div>
+                    </div>
+
+                    <!-- 관리자: 수정 인라인 폼 -->
+                    <div class="inquiry-detail-inline-form is-hidden" id="reply-edit-form" th:if="${isAdmin}">
+                        <div class="inquiry-detail-inline-form__editor">
+                            <input type="text" id="edit-rep-ttl" class="inquiry-detail-inline-form__textarea"
+                                   th:value="*{reqRepTtl}" placeholder="답변 제목" style="min-height:auto;padding:0.7rem 1rem;">
+                            <textarea class="inquiry-detail-inline-form__textarea" rows="10" id="edit-rep-con"
+                                      placeholder="답변 내용을 입력해 주세요." th:text="*{reqRepCon}"></textarea>
+                            <div style="display:flex;align-items:center;gap:0.8rem;margin-top:0.5rem;">
+                                <label style="font-size:0.82rem;font-weight:800;">승인 여부</label>
+                                <select id="edit-rep-per" style="padding:0.4rem 0.8rem;border:1px solid #d8cfc2;font-size:0.85rem;font-weight:700;">
+                                    <option value="true" th:selected="*{reqRepPerYn != null and reqRepPerYn}">승인</option>
+                                    <option value="false" th:selected="*{reqRepPerYn != null and !reqRepPerYn}">반려</option>
+                                </select>
+                            </div>
+                            <p class="inquiry-detail-inline-form__error is-hidden" id="edit-rep-error">답변 내용을 입력해 주세요.</p>
+                        </div>
+                        <div class="inquiry-detail-inline-form__actions-wrap">
+                            <div class="inquiry-detail-inline-form__actions">
+                                <button type="button" class="inquiry-detail-action" id="btn-reply-edit-cancel">취소</button>
+                                <button type="button" class="inquiry-detail-action inquiry-detail-action--primary" id="btn-reply-edit-submit">적용</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 답변 없을 때: 관리자 작성 폼 -->
+                <div class="inquiry-detail-reply__body" th:if="${(require.reqRepYn == null or !require.reqRepYn) and isAdmin}">
+                    <div class="inquiry-detail-inline-form" id="reply-create-form">
+                        <div class="inquiry-detail-inline-form__editor">
+                            <input type="text" id="create-rep-ttl" class="inquiry-detail-inline-form__textarea"
+                                   placeholder="답변 제목" style="min-height:auto;padding:0.7rem 1rem;">
+                            <textarea class="inquiry-detail-inline-form__textarea" rows="10" id="create-rep-con"
+                                      placeholder="답변 내용을 입력해 주세요."></textarea>
+                            <div style="display:flex;align-items:center;gap:0.8rem;margin-top:0.5rem;">
+                                <label style="font-size:0.82rem;font-weight:800;">승인 여부</label>
+                                <select id="create-rep-per" style="padding:0.4rem 0.8rem;border:1px solid #d8cfc2;font-size:0.85rem;font-weight:700;">
+                                    <option value="true">승인</option>
+                                    <option value="false">반려</option>
+                                </select>
+                            </div>
+                            <p class="inquiry-detail-inline-form__error is-hidden" id="create-rep-error">답변 내용을 입력해 주세요.</p>
+                        </div>
+                        <div class="inquiry-detail-inline-form__actions-wrap">
+                            <div class="inquiry-detail-inline-form__actions">
+                                <button type="button" class="inquiry-detail-action" id="btn-reply-create-cancel">취소</button>
+                                <button type="button" class="inquiry-detail-action inquiry-detail-action--primary" id="btn-reply-create-submit">답변 완료</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 답변 없을 때: 사용자 대기 메시지 -->
+                <div class="inquiry-detail-empty" th:if="${(require.reqRepYn == null or !require.reqRepYn) and !isAdmin and (require.reqStt == 'SUBMITTED')}">
+                    <strong>문의 내용을 확인하고 있습니다.</strong>
+                </div>
+                <div class="inquiry-detail-empty" th:if="${!isAdmin and (require.reqStt == 'DRAFT')}">
+                    <strong>상품 요청 제출시 관리자가 답변드리겠습니다.</strong>
+                </div>
+            </section>
+        </section>
+    </section>
+
+    <script>
+    (function() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+        if (csrfToken) axios.defaults.headers.common[csrfHeader] = csrfToken;
+
+        const reqId = document.getElementById('reqId').value;
+        const reqRepIdEl = document.getElementById('reqRepId');
+        const reqRepId = reqRepIdEl ? reqRepIdEl.value : '';
+
+        // ===== TinyMCE 초기화 (관리자 전용) =====
+        var tinyMceConfig = {
+            height: 280,
+            language: 'ko_KR',
+            menubar: false,
+            plugins: 'lists link table wordcount preview',
+            toolbar: 'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+                     'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+            block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
+            font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
+            content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
+            branding: false,
+            promotion: false,
+            license_key: 'gpl'
+        };
+
+        if (typeof tinymce !== 'undefined') {
+            if (document.getElementById('create-rep-con')) {
+                tinymce.init(Object.assign({}, tinyMceConfig, { selector: '#create-rep-con', placeholder: '답변 내용을 입력해 주세요.' }));
+            }
+            if (document.getElementById('edit-rep-con')) {
+                tinymce.init(Object.assign({}, tinyMceConfig, { selector: '#edit-rep-con', placeholder: '답변 내용을 입력해 주세요.' }));
+            }
+        }
+
+        // ===== 사용자 버튼 =====
+        var btnDelete = document.getElementById('btn-delete');
+        if (btnDelete) {
+            btnDelete.addEventListener('click', function() {
+                if (!confirm('삭제하시겠습니까?')) return;
+                axios.delete('/api/require/' + reqId)
+                    .then(function() { alert('삭제되었습니다.'); location.href = '/require/list'; })
+                    .catch(function() { alert('삭제에 실패했습니다.'); });
+            });
+        }
+
+        var btnSubmit = document.getElementById('btn-submit');
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', function() {
+                if (!confirm('제출하시겠습니까? 제출 후에는 수정할 수 없습니다.')) return;
+                axios.post('/api/require/' + reqId + '/submit')
+                    .then(function() { alert('제출되었습니다.'); location.reload(); })
+                    .catch(function() { alert('제출에 실패했습니다.'); });
+            });
+        }
+
+        var btnCancel = document.getElementById('btn-cancel');
+        if (btnCancel) {
+            btnCancel.addEventListener('click', function() {
+                if (!confirm('등록을 취소하시겠습니까?')) return;
+                axios.post('/api/require/' + reqId + '/cancel')
+                    .then(function() { alert('등록이 취소되었습니다.'); location.reload(); })
+                    .catch(function() { alert('등록 취소에 실패했습니다.'); });
+            });
+        }
+
+        // ===== 관리자: 답변 작성 =====
+        var btnCreateCancel = document.getElementById('btn-reply-create-cancel');
+        if (btnCreateCancel) {
+            btnCreateCancel.addEventListener('click', function() {
+                document.getElementById('create-rep-ttl').value = '';
+                document.getElementById('create-rep-con').value = '';
+                document.getElementById('create-rep-error').classList.add('is-hidden');
+            });
+        }
+
+        var btnCreateSubmit = document.getElementById('btn-reply-create-submit');
+        if (btnCreateSubmit) {
+            btnCreateSubmit.addEventListener('click', function() {
+                var ttl = document.getElementById('create-rep-ttl').value.trim();
+                var con = (typeof tinymce !== 'undefined' && tinymce.get('create-rep-con'))
+                    ? tinymce.get('create-rep-con').getContent({format:'text'}).trim() : document.getElementById('create-rep-con').value.trim();
+                var conHtml = (typeof tinymce !== 'undefined' && tinymce.get('create-rep-con'))
+                    ? tinymce.get('create-rep-con').getContent() : document.getElementById('create-rep-con').value.trim();
+                var per = document.getElementById('create-rep-per').value === 'true';
+                var errEl = document.getElementById('create-rep-error');
+
+                if (!ttl || !con) {
+                    errEl.classList.remove('is-hidden');
+                    errEl.textContent = !ttl ? '답변 제목을 입력해 주세요.' : '답변 내용을 입력해 주세요.';
+                    return;
+                }
+                errEl.classList.add('is-hidden');
+
+                axios.post('/api/admin/require/' + reqId + '/reply', {
+                    reqRepTtl: ttl, reqRepCon: conHtml, reqRepPerYn: per
+                }).then(function() {
+                    alert('답변이 등록되었습니다.');
+                    location.reload();
+                }).catch(function() { alert('답변 등록에 실패했습니다.'); });
+            });
+        }
+
+        // ===== 관리자: 답변 수정 =====
+        var btnEditToggle = document.getElementById('btn-reply-edit-toggle');
+        if (btnEditToggle) {
+            btnEditToggle.addEventListener('click', function() {
+                document.getElementById('reply-display').classList.add('is-hidden');
+                document.getElementById('reply-edit-form').classList.remove('is-hidden');
+            });
+        }
+
+        var btnEditCancel = document.getElementById('btn-reply-edit-cancel');
+        if (btnEditCancel) {
+            btnEditCancel.addEventListener('click', function() {
+                document.getElementById('reply-display').classList.remove('is-hidden');
+                document.getElementById('reply-edit-form').classList.add('is-hidden');
+            });
+        }
+
+        var btnEditSubmit = document.getElementById('btn-reply-edit-submit');
+        if (btnEditSubmit) {
+            btnEditSubmit.addEventListener('click', function() {
+                var ttl = document.getElementById('edit-rep-ttl').value.trim();
+                var con = (typeof tinymce !== 'undefined' && tinymce.get('edit-rep-con'))
+                    ? tinymce.get('edit-rep-con').getContent({format:'text'}).trim() : document.getElementById('edit-rep-con').value.trim();
+                var conHtml = (typeof tinymce !== 'undefined' && tinymce.get('edit-rep-con'))
+                    ? tinymce.get('edit-rep-con').getContent() : document.getElementById('edit-rep-con').value.trim();
+                var per = document.getElementById('edit-rep-per').value === 'true';
+                var errEl = document.getElementById('edit-rep-error');
+
+                if (!ttl || !con) {
+                    errEl.classList.remove('is-hidden');
+                    errEl.textContent = !ttl ? '답변 제목을 입력해 주세요.' : '답변 내용을 입력해 주세요.';
+                    return;
+                }
+                errEl.classList.add('is-hidden');
+
+                axios.put('/api/admin/require/reply/' + reqRepId, {
+                    reqRepTtl: ttl, reqRepCon: conHtml, reqRepPerYn: per
+                }).then(function() {
+                    alert('답변이 수정되었습니다.');
+                    location.reload();
+                }).catch(function() { alert('답변 수정에 실패했습니다.'); });
+            });
+        }
+    })();
+    </script>
+</th:block>
+</html>

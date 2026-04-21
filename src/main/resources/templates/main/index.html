@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          null,
+          ~{::content}
+      )}">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title th:fragment="title">BEEDAN | Home</title>
+</head>
+<body th:fragment="content">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link th:href="@{/css/main/index.css}" rel="stylesheet"/>
+
+<!-- ===================== -->
+<!-- 1. HERO               -->
+<!-- ===================== -->
+<section class="hero">
+    <img class="hero__img"
+         src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80"
+         alt="BEEDAN Global Network"/>
+    <div class="hero__overlay"></div>
+
+    <!-- Animated flight paths -->
+    <div class="hero__flights">
+        <svg class="hero__routes" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+            <!-- Route lines (curved arcs) -->
+            <path class="route-path" d="M200,380 Q500,180 820,280" />
+            <path class="route-path route-path--2" d="M900,200 Q650,100 380,320" />
+            <path class="route-path route-path--3" d="M150,250 Q450,80 750,190" />
+
+            <!-- Planes on paths -->
+            <g class="plane plane--1">
+                <text font-size="20" fill="#ffd700" text-anchor="middle" dominant-baseline="middle">&#9992;</text>
+                <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
+                    <mpath href="#flight1"/>
+                </animateMotion>
+            </g>
+            <g class="plane plane--2">
+                <text font-size="18" fill="rgba(255,215,0,0.7)" text-anchor="middle" dominant-baseline="middle">&#9992;</text>
+                <animateMotion dur="10s" repeatCount="indefinite" rotate="auto" begin="2s">
+                    <mpath href="#flight2"/>
+                </animateMotion>
+            </g>
+            <g class="plane plane--3">
+                <text font-size="16" fill="rgba(255,215,0,0.5)" text-anchor="middle" dominant-baseline="middle">&#9992;</text>
+                <animateMotion dur="12s" repeatCount="indefinite" rotate="auto" begin="4s">
+                    <mpath href="#flight3"/>
+                </animateMotion>
+            </g>
+
+            <!-- Hidden paths for animateMotion -->
+            <defs>
+                <path id="flight1" d="M200,380 Q500,180 820,280" />
+                <path id="flight2" d="M900,200 Q650,100 380,320" />
+                <path id="flight3" d="M150,250 Q450,80 750,190" />
+            </defs>
+        </svg>
+    </div>
+
+    <!-- Floating location pins -->
+    <div class="hero__pin" style="top:42%; left:72%;">
+        <span class="hero__pin-dot"></span>
+        <span class="hero__pin-label">TOKYO</span>
+    </div>
+    <div class="hero__pin" style="top:48%; left:68%;">
+        <span class="hero__pin-dot"></span>
+        <span class="hero__pin-label">OSAKA</span>
+    </div>
+    <div class="hero__pin" style="top:44%; left:60%;">
+        <span class="hero__pin-dot"></span>
+        <span class="hero__pin-label">SHANGHAI</span>
+    </div>
+    <div class="hero__pin" style="top:38%; left:64%;">
+        <span class="hero__pin-dot"></span>
+        <span class="hero__pin-label">SEOUL</span>
+    </div>
+
+    <div class="hero__content">
+        <p class="hero__eyebrow">GLOBAL FASHION SUPPLY CHAIN</p>
+        <h1 class="hero__title">BEEDAN</h1>
+        <p class="hero__subtitle">Connecting Asia&rsquo;s finest brands to the world</p>
+        <a href="/stock/list" class="hero__cta">Explore Collection</a>
+    </div>
+</section>
+
+<!-- ===================== -->
+<!-- 2. WEATHER (Dark Band) -->
+<!-- ===================== -->
+<section class="weather-band" id="weather-section">
+    <div class="weather-band__inner">
+        <div class="weather-band__header">
+            <span class="material-symbols-outlined" style="font-size:18px; color:#ffd700;">radar</span>
+            <span class="weather-band__live">LIVE CONDITIONS</span>
+            <span class="weather-band__dot"></span>
+        </div>
+        <div class="weather-grid" id="weather-grid">
+            <div class="weather-card" th:each="w : ${weatherList}">
+                <div class="weather-card__top">
+                    <div>
+                        <span class="weather-card__city" th:text="${w.cityName}">Tokyo</span>
+                        <span class="weather-card__region" th:text="${w.region}">Kanto, JP</span>
+                    </div>
+                    <span class="material-symbols-outlined weather-card__icon" th:text="${w.icon}">sunny</span>
+                </div>
+                <div class="weather-card__bottom">
+                    <span class="weather-card__temp" th:text="${w.temp} + '°C'">18°C</span>
+                    <div class="weather-card__detail">
+                        <span><span class="material-symbols-outlined" style="font-size:14px; font-family:'Material Symbols Outlined';">water_drop</span> <th:block th:text="${w.humidity}"/>%</span>
+                        <span><span class="material-symbols-outlined" style="font-size:14px; font-family:'Material Symbols Outlined';">air</span> <th:block th:text="${w.windSpeed}"/>km/h</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== -->
+<!-- 3. NEWS               -->
+<!-- ===================== -->
+<section class="main-section">
+    <p class="main-section__label">Industry Insights</p>
+    <h2 class="main-section__title">News &amp; Updates</h2>
+
+    <div class="news-grid">
+        <!-- Left -->
+        <div class="news-column">
+            <h3 class="news-column__title">Fashion & Trend</h3>
+            <th:block th:each="n : ${leftNewsList}">
+                <a th:href="${n.link}" th:target="_blank">
+                    <div class="news-item">
+                        <p class="news-item__title" th:text="${n.title}">기사 제목</p>
+                        <span class="news-item__meta" th:text="${n.pubDate}">2026.01.01</span>
+                    </div>
+                </a>
+            </th:block>
+        </div>
+
+        <!-- Right -->
+        <div class="news-column">
+            <h3 class="news-column__title">Tariff & Economy</h3>
+            <th:block th:each="n : ${rightNewsList}">
+                <a th:href="${n.link}" th:target="_blank">
+                    <div class="news-item">
+                        <p class="news-item__title" th:text="${n.title}">기사 제목</p>
+                        <span class="news-item__meta" th:text="${n.pubDate}">2026.01.01</span>
+                    </div>
+                </a>
+            </th:block>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== -->
+<!-- 4. BEST SELLERS -->
+<!-- ===================== -->
+<section class="main-section" style="padding-top: 0;">
+    <p class="main-section__label">MONTHLY RANKING</p>
+    <h2 class="main-section__title">Best Sellers - Last Month</h2>
+
+    <div class="carousel" id="carousel-popular">
+        <button class="carousel__btn carousel__btn--prev" onclick="carouselMove('carousel-popular', -1)">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <div class="carousel__track" >
+            <div th:each="item : ${popularStockList}" th:onclick="'location.href=\'/stock/detail/' + ${item.stId} + '\''" class="product-card">
+                <div class="product-card__img-wrap">
+                    <img th:src="${item.getStImgUrl()}" alt="Product"/>
+                </div>
+                <p th:text="${item.stBrNm}" class="product-card__brand">Nanamica</p>
+                <p th:text="${item.stNm}" class="product-card__name">Ruck Sack</p>
+                <p th:text="${item.stCur + ' ' + (item.stCur == '₩' ? #numbers.formatInteger(item.stPr, 1, 'COMMA') : #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT'))}" class="product-card__price"></p>
+            </div>
+        </div>
+        <button class="carousel__btn carousel__btn--next" onclick="carouselMove('carousel-popular', 1)">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+
+<!-- ===================== -->
+<!-- 5. RECENTLY UPDATED   -->
+<!-- ===================== -->
+<section class="main-section" style="padding-top: 0;">
+    <p class="main-section__label">New Arrivals</p>
+    <h2 class="main-section__title">Recently Updated</h2>
+
+    <div class="carousel" id="carousel-recent">
+        <button class="carousel__btn carousel__btn--prev" onclick="carouselMove('carousel-recent', -1)">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <div class="carousel__track" >
+            <div th:each="item : ${newStockList}" th:onclick="'location.href=\'/stock/detail/' + ${item.stId} + '\''" class="product-card">
+                <div class="product-card__img-wrap">
+                    <img th:src="${item.getStImgUrl()}" alt="Product"/>
+                </div>
+                <p th:text="${item.stBrNm}" class="product-card__brand">Nanamica</p>
+                <p th:text="${item.stNm}" class="product-card__name">Ruck Sack</p>
+                <p th:text="${item.stCur + ' ' + (item.stCur == '₩' ? #numbers.formatInteger(item.stPr, 1, 'COMMA') : #numbers.formatDecimal(item.stPr, 1, 'COMMA', 2, 'POINT'))}" class="product-card__price"></p>
+            </div>
+        </div>
+        <button class="carousel__btn carousel__btn--next" onclick="carouselMove('carousel-recent', 1)">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+    </div>
+</section>
+
+<th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+
+<!-- Carousel Script -->
+<script>
+function carouselMove(id, dir) {
+    const track = document.querySelector('#' + id + ' .carousel__track');
+    const card = track.querySelector('.product-card');
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+    const page = (card.offsetWidth + gap) * 4;
+    const target = track.scrollLeft + page * dir;
+    track.scrollTo({ left: target, behavior: 'smooth' });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const LOGIN_TRIGGER = "[[${showPwChangeModal}]]";
+    const EXPIRE_DAY = "[[${DAY}]]";
+
+    if (LOGIN_TRIGGER === "true") {
+        showCustomConfirmModal(
+            "비밀번호를 변경한 지" + EXPIRE_DAY + "일이 지났습니다.\n지금 안전한 비밀번호로 변경하시겠습니까?",
+            {
+                title: "보안 정책 알림",
+                icon: "lock_reset",
+                okText: "지금 변경하기",
+                cancelText: "다음에 변경하기",
+                onConfirm: function() {
+                    // 확인 시 실행 로직 (예: 비밀번호 변경 페이지 이동)
+                    location.href = "/mypage/changepw";
+                },
+                onCancel: function() {
+                    // CSRF 토큰 정보 가져오기 (Spring Security 사용 시 필수)
+                    const token = document.querySelector('meta[name="_csrf"]')?.content;
+                    const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+                    fetch('/api/auth/postpone-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [header]: token // 헤더에 CSRF 토큰 포함
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log("비밀번호 변경 유예 처리가 완료되었습니다.");
+                            } else {
+                                console.error("유예 처리 중 오류 발생");
+                            }
+                        })
+                        .catch(error => console.error("네트워크 에러:", error));
+                }
+            }
+        );
+    }
+});
+</script>
+
+
+</body>
+</html>

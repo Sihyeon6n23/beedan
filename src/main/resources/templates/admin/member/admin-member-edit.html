@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ADMIN', 'MEMBER EDIT', ~{::sidebar})},
+          ~{::content}
+      )}">
+<head>
+    <title>회원 정보 수정 | BEEDAN</title>
+</head>
+<body>
+
+<th:block th:fragment="sidebar">
+    <div sec:authorize="hasRole('ROOT')"
+         th:replace="~{root/root-sidebar :: sidebar('memberList', 'member-list')}">
+    </div>
+
+    <div sec:authorize="hasRole('ADMIN') and !hasRole('ROOT')"
+         th:replace="~{admin/admin-sidebar :: sidebar('member', 'member-list')}">
+    </div>
+</th:block>
+
+<th:block th:fragment="content">
+    <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+    <link rel="stylesheet" th:href="@{/css/admin/admin-member-edit.css}">
+
+    <section class="admin-chat-page admin-chat-list-page">
+            <header class="admin-chat-shell admin-chat-shell--header">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+                    <div>
+                        <div class="admin-chat-shell__heading">
+                            <span class="admin-chat-kicker">Member Edit</span>
+                            <h2 class="admin-chat-title">회원정보 수정</h2>
+
+                            <div class="meta-info">
+                                <span class="material-symbols-outlined">person</span>
+                                <span>ID: <th:block th:text="${member.loginId}">user02</th:block></span>
+                                <span class="divider">|</span>
+                                <span>가입일 : [[${#temporals.format(member.createdAt, 'yyyy/MM/dd')}]]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="header-actions" style="display: flex; gap: 10px;">
+                            <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+                            <button type="submit" form="editForm" class="btn-save">변경사항 저장 <span class="material-symbols-outlined">save</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                    <div class="admin-chat-shell__rule">
+                        <span></span>
+                    </div>
+            </header>
+
+            <form id="editForm" th:action="@{/admin/member/edit}" th:object="${member}" method="post" class="edit-form-grid">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="grid-left">
+                    <article class="form-section">
+                        <h2>01. 사업자 및 대표자 정보</h2>
+                        <div class="form-group">
+                            <label>법인명(상호)</label>
+                            <input type="text" class="form-control" th:value="*{companyName}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>사업자 등록번호</label>
+                            <input type="text" class="form-control" th:value="*{businessNumber}" readonly>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label>개업년월일</label>
+                                <input type="text" class="form-control" th:value="${#temporals.format(member.bizCreatedAt, 'yyyy-MM-dd')}" readonly>
+                            </div>
+                            <div class="form-group flex-1">
+                                <label>대표자명</label>
+                                <input type="text" class="form-control" th:value="*{representativeName}" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>대표자 연락처</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-outlined">call</span>
+                                <input type="text" th:field="*{phone}" class="form-control" placeholder="010-0000-0000">
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="form-section">
+                        <h2>02. 담당자 정보</h2>
+                        <div class="form-group">
+                            <label>담당자 성함</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-outlined">badge</span>
+                                <input type="text" th:field="*{managerName}" class="form-control" placeholder="성함을 입력하세요">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>담당자 연락처</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-outlined">smartphone</span>
+                                <input type="text" th:field="*{managerPhone}" class="form-control" placeholder="010-0000-0000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>담당자 이메일</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-outlined">mail</span>
+                                <input type="email" th:field="*{email}" class="form-control">
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="grid-right">
+                    <article class="form-section">
+                        <h2>03. 회사 주소 (배송지)</h2>
+                        <div class="form-group">
+                            <label>우편번호 / 기본주소</label>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" th:field="*{postCode}" id="postcode" class="form-control flex-grow" readonly>
+                                <button type="button" id="searchPostCode" class="btn-secondary px-4 whitespace-nowrap"
+                                        style="background: #e2e2e2; font-size: 11px; font-weight: bold;">주소 검색</button>
+                            </div>
+                            <input type="text" th:field="*{address}" id="baseAddress" class="form-control mb-2" readonly>
+                            <label>상세주소</label>
+                            <input type="text" th:field="*{addressDetail}" id="detailAddress" class="form-control">
+                        </div>
+                        <div id="map" class="map-placeholder">
+                            <div class="map-overlay">
+                                <span class="material-symbols-outlined">location_on</span> 위치 정보
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="form-section history-section">
+                        <h2>04. 회원정보 이용 이력</h2>
+                        <div class="history-item border-bottom">
+                            <span class="history-label">계정 상태</span>
+                            <select th:field="*{status}" class="status-badge-select">
+                                <option value="ACTIVE">활성화</option>
+                                <option value="INACTIVE">비활성화</option>
+                            </select>
+                        </div>
+                        <div class="history-item border-bottom">
+                            <span class="history-label">사업자 인증 여부</span>
+                            <select th:field="*{bizStatus}" class="status-badge-select">
+                                <option value="APPROVAL_MANUAL">승인</option>
+                                <option value="REJECT">반려</option>
+                            </select>
+                        </div>
+                        <div class="history-item mt-4">
+                            <span class="history-label">최종 수정일자</span>
+                            <span class="history-value" th:text="${#temporals.format(member.updatedAt, 'yyyy-MM-dd HH:mm')}">2024-05-12 14:02</span>
+                        </div>
+                        <div class="history-item">
+                            <span class="history-label">최종 수정자</span>
+                            <span class="history-value">시스템 관리자</span>
+                        </div>
+                    </article>
+                </div>
+            </form>
+        </section>
+
+    <script th:if="${kakaoAppKey != null and !kakaoAppKey.isEmpty()}" type="text/javascript" th:src="${'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoAppKey + '&libraries=services&autoload=false'}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            /** 3. 주소 검색 스크립트 이식 **/
+            const searchPostCodeBtn = document.getElementById("searchPostCode");
+            if (searchPostCodeBtn) {
+                searchPostCodeBtn.addEventListener('click', function() {
+                    new daum.Postcode({
+                        oncomplete: function(data) {
+                            let addr = (data.userSelectedType === 'R') ? data.roadAddress : data.jibunAddress;
+                            document.getElementById('postcode').value = data.zonecode;
+                            document.getElementById("baseAddress").value = addr;
+                            document.getElementById("detailAddress").focus();
+
+                            // 주소 변경 시 지도도 함께 업데이트하도록 트리거
+                            updateMap(addr);
+                        }
+                    }).open();
+                });
+            }
+
+            /** 카카오 맵 로직 (기존 유지 및 업데이트 함수 추가) **/
+            if (typeof kakao === 'undefined') return;
+
+            let map, geocoder;
+
+            kakao.maps.load(function() {
+                var mapContainer = document.getElementById('map');
+                if (!mapContainer) return;
+
+                map = new kakao.maps.Map(mapContainer, {
+                    center: new kakao.maps.LatLng(37.566826, 126.978656),
+                    level: 3
+                });
+                geocoder = new kakao.maps.services.Geocoder();
+
+                // 초기 로드 시 지도 표시
+                const initialAddr = document.getElementById('baseAddress').value;
+                if (initialAddr) updateMap(initialAddr);
+            });
+
+            // 주소 정보를 받아 지도를 갱신하는 공통 함수
+            function updateMap(address) {
+                if (!geocoder || !map) return;
+                geocoder.addressSearch(address, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                        new kakao.maps.Marker({ map: map, position: coords });
+                        map.setCenter(coords);
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>
+</body>
+</html>

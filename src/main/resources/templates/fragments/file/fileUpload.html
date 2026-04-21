@@ -1,0 +1,41 @@
+<div th:fragment="upload(maxCount, existingFiles, isMultiple)">
+  <div class="inquiry-upload"
+       data-inquiry-upload
+       th:data-max-count="${isMultiple ? maxCount : 1}"
+       th:data-is-multiple="${isMultiple}">
+
+    <div class="inquiry-upload__zone cursor-pointer" data-upload-zone>
+      <span class="material-symbols-outlined inquiry-upload__icon">cloud_upload</span>
+      <p class="inquiry-upload__text">
+        파일을 여기에 끌어다 놓거나 <strong>클릭해서 업로드</strong>
+        <br>
+        <small class="text-zinc-500" data-upload-count>
+          [[${isMultiple ? '(0 / ' + maxCount + ')' : '(0 / 1)'}]]
+        </small>
+      </p>
+      <input type="file" name="newFiles"
+             th:multiple="${isMultiple}" style="display: none;"
+             data-upload-input>
+    </div>
+
+    <div class="inquiry-upload__list mt-4" data-upload-list>
+      <div th:each="file : ${existingFiles}"
+           class="inquiry-upload__item existing flex items-center justify-between gap-3 p-3 mb-2 border-l-4 border-zinc-200 bg-white shadow-sm transition-all">
+        <div class="flex items-center gap-2 overflow-hidden flex-1">
+          <span class="material-symbols-outlined text-secondary !text-lg flex-shrink-0">description</span>
+          <span class="text-sm font-medium text-on-background truncate">
+            [[${file.fileNm}]]
+            <small class="text-zinc-400 ml-1" th:text="'(' + ${file.fileSz != null ? (file.fileSz < 1024 ? file.fileSz + ' B' : (file.fileSz < 1048576 ? #numbers.formatDecimal(file.fileSz/1024.0, 1, 1) + ' KB' : #numbers.formatDecimal(file.fileSz/1048576.0, 1, 1) + ' MB')) : '0 B'} + ')'"></small>
+          </span>
+        </div>
+
+        <button type="button" class="inquiry-upload__remove text-secondary hover:text-error transition-colors flex-shrink-0">
+          <span class="material-symbols-outlined !text-lg">close</span>
+        </button>
+        <input type="hidden" class="delete-input" th:data-uuid="${file.fileUuid}">
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/modal/guidemodal :: guideModal}"></div>
+</div>

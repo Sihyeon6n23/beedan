@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('UTILITY', 'setting', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 유틸리티 설정</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('utility', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <main class="mypage-security-page bg-background">
+        <div class="max-w-5xl mx-auto">
+
+            <section class="mypage-security-page__intro">
+                <span class="mypage-security-page__kicker">UTILITY</span>
+                <h1 class="mypage-security-page__title">유틸리티 설정</h1>
+                <div class="mypage-security-page__rule">
+                    <span></span>
+                </div>
+            </section>
+
+        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-10 space-y-12">
+
+            <form id="utilityForm" th:action="@{/root/utility/save}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- 메인 페이지 날씨 지역 설정 -->
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">sunny</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">1. 날씨 지역 설정</h2>
+                    </div>
+
+                    <div id="location-slots" class="space-y-1">
+                        <th:block th:each="loc, iter : ${setting.weatherLocationList}">
+                            <div class="location-slot flex items-center gap-3 py-2 border-b border-zinc-100"
+                                 th:data-index="${iter.index}">
+                                <span class="text-xs font-bold text-zinc-400 w-4 text-center" th:text="${iter.index + 1}">1</span>
+                                <input type="text" readonly
+                                       th:name="${'weatherLocationList[' + iter.index + '].cityName'}"
+                                       th:value="${loc.cityName}"
+                                       class="input-city bg-transparent text-sm font-bold w-28 p-0 border-none cursor-default">
+                                <input type="text" readonly
+                                       th:name="${'weatherLocationList[' + iter.index + '].region'}"
+                                       th:value="${loc.region}"
+                                       class="input-region bg-transparent text-xs text-zinc-400 flex-grow p-0 border-none cursor-default">
+                                <button type="button"
+                                        class="btn-change flex-shrink-0 whitespace-nowrap text-xs text-primary hover:underline"
+                                        th:data-index="${iter.index}">변경</button>
+                            </div>
+                        </th:block>
+                    </div>
+                </section>
+                <!-- 메인 페이지 뉴스 키워드 설정 -->
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">breaking_news</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">2. 뉴스 키워드 설정</h2>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-3 py-2 border-b border-zinc-100">
+                            <span class="text-xs font-bold text-zinc-400 w-4 text-center">L</span>
+                            <label class="text-sm font-bold w-28">Left 키워드</label>
+                            <input type="text" name="newsKeywordLeft"
+                                   th:value="${setting.newsKeywordLeft}"
+                                   class="flex-grow text-sm border border-zinc-200 rounded px-3 py-1.5 focus:border-primary focus:outline-none"
+                                   placeholder="예: 일본 패션 유통">
+                        </div>
+                        <div class="flex items-center gap-3 py-2 border-b border-zinc-100">
+                            <span class="text-xs font-bold text-zinc-400 w-4 text-center">R</span>
+                            <label class="text-sm font-bold w-28">Right 키워드</label>
+                            <input type="text" name="newsKeywordRight"
+                                   th:value="${setting.newsKeywordRight}"
+                                   class="flex-grow text-sm border border-zinc-200 rounded px-3 py-1.5 focus:border-primary focus:outline-none"
+                                   placeholder="예: 관세 환율">
+                        </div>
+                    </div>
+                </section>
+            </form>
+
+            <!-- 검색 모달 (form 밖) -->
+            <div id="search-modal"
+                 class="fixed inset-0 z-[999] hidden items-center justify-center px-4">
+                <div class="absolute inset-0 bg-black/30" id="modal-overlay"></div>
+
+                <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md border-l-8 border-primary-container">
+                    <!-- 헤더 -->
+                    <div class="flex items-center justify-between px-7 pt-6 pb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary" style="font-size:22px;">travel_explore</span>
+                            <h3 class="text-xl font-bold tracking-tight uppercase">지역 검색</h3>
+                        </div>
+                        <button type="button" id="modal-close"
+                                class="text-zinc-400 hover:text-zinc-700 transition p-1">
+                            <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+                        </button>
+                    </div>
+
+                    <!-- 검색 입력 -->
+                    <div class="px-7 pb-5">
+                        <input type="text" id="search-input"
+                               placeholder="도시명을 입력하세요"
+                               class="w-full text-sm border border-zinc-200 rounded px-3 py-2 focus:border-primary focus:outline-none transition">
+                        <p class="mt-1.5 text-[11px] text-zinc-400">예: London, Paris, Tokyo</p>
+                    </div>
+
+                    <!-- 결과 영역 -->
+                    <div class="px-3 pb-5">
+                        <div id="search-results" class="max-h-72 overflow-y-auto">
+                            <div class="py-10 text-center text-zinc-300 text-xs tracking-wider">
+                                검색어를 입력하면 결과가 표시됩니다
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-zinc-100 flex justify-end">
+                <button type="submit" form="utilityForm" class="btn-primary px-8 py-4 text-sm gap-2 flex items-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                    설정 저장
+                </button>
+            </div>
+
+        </div>
+    </div>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let editingIndex = -1;
+        let debounceTimer = null;
+
+        const modal = document.getElementById('search-modal');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            editingIndex = -1;
+        }
+
+        // 변경 버튼 클릭
+        document.querySelectorAll('.btn-change').forEach(btn => {
+            btn.addEventListener('click', function() {
+                editingIndex = parseInt(this.dataset.index);
+                openModal();
+                const input = document.getElementById('search-input');
+                input.value = '';
+                input.focus();
+                document.getElementById('search-results').innerHTML =
+                    '<div class="py-10 text-center text-zinc-300 text-xs tracking-wider">검색어를 입력하면 결과가 표시됩니다</div>';
+            });
+        });
+
+        // 모달 닫기
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+        document.getElementById('modal-overlay').addEventListener('click', closeModal);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
+
+        // 검색 입력 (debounce 300ms)
+        document.getElementById('search-input').addEventListener('input', function() {
+            const query = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                document.getElementById('search-results').innerHTML =
+                    '<div class="py-10 text-center text-zinc-300 text-xs tracking-wider">2글자 이상 입력하세요</div>';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                document.getElementById('search-results').innerHTML =
+                    '<div class="py-10 text-center text-primary text-xs tracking-wider">' +
+                    '  <span class="material-symbols-outlined animate-spin align-middle mr-1.5" style="font-size:16px;">progress_activity</span>검색중...' +
+                    '</div>';
+
+                fetch('/root/utility/weather/search?q=' + encodeURIComponent(query))
+                    .then(res => res.json())
+                    .then(data => renderResults(data))
+                    .catch(() => {
+                        document.getElementById('search-results').innerHTML =
+                            '<div class="py-10 text-center text-red-400 text-xs tracking-wider">검색에 실패했습니다</div>';
+                    });
+            }, 300);
+        });
+
+        // 검색 결과 렌더링
+        function renderResults(data) {
+            const container = document.getElementById('search-results');
+
+            if (!data || data.length === 0) {
+                container.innerHTML =
+                    '<div class="py-10 text-center text-zinc-300 text-xs tracking-wider">검색 결과가 없습니다</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(item => {
+                const region = [item.state, item.country].filter(Boolean).join(', ');
+                const div = document.createElement('div');
+                div.className = 'group flex items-center justify-between gap-3 px-4 py-2.5 cursor-pointer hover:bg-zinc-50 border-b border-zinc-100 last:border-b-0 transition';
+                div.innerHTML =
+                    '<div class="flex items-center gap-3 min-w-0">' +
+                    '  <span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition flex-shrink-0" style="font-size:18px;">location_on</span>' +
+                    '  <div class="min-w-0">' +
+                    '    <p class="text-sm font-bold text-zinc-800 truncate">' + escapeHtml(item.name) + '</p>' +
+                    '    <p class="text-xs text-zinc-400 truncate">' + (region ? escapeHtml(region) : '-') + '</p>' +
+                    '  </div>' +
+                    '</div>' +
+                    '<span class="material-symbols-outlined text-zinc-200 group-hover:text-primary transition flex-shrink-0" style="font-size:16px;">arrow_forward</span>';
+                div.addEventListener('click', () => selectCity(item.name, region));
+                container.appendChild(div);
+            });
+        }
+
+        // 지역 선택 → 폼 input 값 업데이트
+        function selectCity(cityName, region) {
+            if (editingIndex < 0) return;
+
+            const slot = document.querySelector('.location-slot[data-index="' + editingIndex + '"]');
+            slot.querySelector('.input-city').value = cityName;
+            slot.querySelector('.input-region').value = region;
+
+            closeModal();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+    });
+    </script>
+</th:block>
+</html>

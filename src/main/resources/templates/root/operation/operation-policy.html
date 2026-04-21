@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('OPERATION', 'policy', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 운영 정책 설정</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('operation', 'policy')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/root/operation-policy.css}">
+    <div class="flex-grow mx-auto px-6 pt-10 pb-20 max-w-6xl">
+
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">OPERATION</span>
+            <h1 class="mypage-security-page__title">운영 정책 설정</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
+
+        <div class="space-y-10">
+
+            <!-- ========== 1. 고객사 등급 정책 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">star</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">1. 고객사 등급 정책</h2>
+                        <span class="text-xs text-outline ml-2">(Customer Grade Policy)</span>
+                    </div>
+                    <button type="button" onclick="openModal('gradeModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 등급 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="gradeTable">
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">등급명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">최소 거래횟수</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">최소 누적금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">시작일</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">종료일</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center w-24">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="g : ${grades}"
+                                class="grade-row-clickable"
+                                th:onclick="'location.href=\'/root/operation/fee-policy/' + ${g.bgpId} + '\''">
+                                <td class="px-4 py-3 font-bold">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full"
+                                              th:classappend="${g.bgpGr == 'VIP'} ? 'bg-amber-400' : (${g.bgpGr == 'PREMIUM'} ? 'bg-gray-400' : 'bg-zinc-300')"></span>
+                                        <span th:text="${g.bgpGr}"></span>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3" style="text-align:center;" th:text="${g.bgpMinOrdCnt != null} ? ${g.bgpMinOrdCnt} + '회' : '—'"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${g.bgpMinTtAm != null} ? ${#numbers.formatDecimal(g.bgpMinTtAm, 0, 'COMMA', 0, 'POINT')} : '—'"></td>
+                                <td class="px-4 py-3" th:text="${g.bgpEfFrDt != null} ? ${#temporals.format(g.bgpEfFrDt, 'yyyy-MM-dd')} : '—'"></td>
+                                <td class="px-4 py-3" th:text="${g.bgpEfToDt != null} ? ${#temporals.format(g.bgpEfToDt, 'yyyy-MM-dd')} : '무기한'"></td>
+                                <td class="px-4 py-3 text-outline cell-wrap" th:text="${g.bgpDes} ?: '—'"></td>
+                                <td class="px-4 py-3 text-center" onclick="event.stopPropagation();">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${g.bgpId}" data-type="grade" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${g.bgpId}" data-type="grade" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(grades)}">
+                                <td colspan="7" class="px-4 py-8 text-center text-outline">등록된 등급 정책이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== 2. 적하보험 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">shield</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">2. 적하보험</h2>
+                        <span class="text-xs text-outline ml-2">(Cargo Insurance)</span>
+                    </div>
+                    <button type="button" onclick="openModal('insuranceModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 보험 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="insuranceTable">
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">보험명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">요율 / 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="si : ${insurances}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-4 py-3 font-bold" th:text="${si.siNm}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${si.siAm}"></td>
+                                <td class="px-4 py-3 text-outline cell-wrap" th:text="${si.siDes} ?: '—'"></td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${si.siId}" data-type="insurance" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${si.siId}" data-type="insurance" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(insurances)}">
+                                <td colspan="4" class="px-4 py-8 text-center text-outline">등록된 적하보험이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== 3. 품질 검사 서비스 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">fact_check</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">3. 품질 검사 서비스</h2>
+                        <span class="text-xs text-outline ml-2">(Quality Inspection)</span>
+                    </div>
+                    <button type="button" onclick="openModal('inspectionModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 검사 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="inspectionTable">
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">검사명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="sti : ${inspections}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-4 py-3 font-bold" th:text="${sti.stiNm}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sti.stiAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3 text-outline cell-wrap" th:text="${sti.stiDes} ?: '—'"></td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${sti.stiId}" data-type="inspection" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${sti.stiId}" data-type="inspection" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(inspections)}">
+                                <td colspan="4" class="px-4 py-8 text-center text-outline">등록된 품질 검사 서비스가 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== 4. 묶음 단위 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">inventory_2</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">4. 묶음 단위</h2>
+                        <span class="text-xs text-outline ml-2">(Packing Unit)</span>
+                    </div>
+                    <button type="button" onclick="openModal('packingModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 묶음 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="packingTable" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:40%;">
+                            <col style="width:40%;">
+                            <col style="width:20%;">
+                        </colgroup>
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">단위명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">단위당 수량</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="ug : ${unitGroups}"
+                                class="grade-row-clickable"
+                                th:onclick="'location.href=\'/root/operation/unit-discount/' + ${ug.unGId} + '\''">
+                                <td class="px-4 py-3 font-bold" style="text-align:left;" th:text="${ug.unGNm}"></td>
+                                <td class="px-4 py-3" style="text-align:left;" th:text="${ug.unGQn}"></td>
+                                <td class="px-4 py-3 text-center" onclick="event.stopPropagation();">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${ug.unGId}" data-type="unitGroup" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${ug.unGId}" data-type="unitGroup" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(unitGroups)}">
+                                <td colspan="3" class="px-4 py-8 text-center text-outline">등록된 묶음 단위가 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== 5. 해외 운임 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">sailing</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">5. 해외 운임</h2>
+                        <span class="text-xs text-outline ml-2">(International Freight)</span>
+                    </div>
+                    <button type="button" onclick="openModal('freightModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 운임 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="freightTable">
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">국가코드</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">운송 방식</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">소형 기준</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">소형 운임</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">중형 기준</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">중형 운임</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">대형 기준</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">대형 운임</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="sr : ${shippingRates}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-4 py-3 font-bold" th:text="${sr.srCCd}"></td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded"
+                                          th:classappend="${sr.srTrspTy.name() == 'SEA'} ? 'bg-blue-50 text-blue-700' : (${sr.srTrspTy.name() == 'AIR'} ? 'bg-violet-50 text-violet-700' : 'bg-amber-50 text-amber-700')"
+                                          th:text="${sr.srTrspTy}"></span>
+                                </td>
+                                <td class="px-4 py-3 text-center" th:text="${sr.srSmQn}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sr.srSmAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3 text-center" th:text="${sr.srMdQn}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sr.srMdAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3 text-center" th:text="${sr.srLgQn}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(sr.srLgAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3 text-outline cell-wrap" th:text="${sr.srDes} ?: '—'"></td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${sr.srId}" data-type="shippingRate" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${sr.srId}" data-type="shippingRate" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(shippingRates)}">
+                                <td colspan="10" class="px-4 py-8 text-center text-outline">등록된 해외 운임이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== 6. 항만비 · 통관 수수료 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">request_quote</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">6. 항만비 · 통관 수수료</h2>
+                        <span class="text-xs text-outline ml-2">(Port & Customs Fees)</span>
+                    </div>
+                    <button type="button" onclick="openModal('portFeeModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 수수료 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="portFeeTable">
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:center;">비용 종류</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">소형 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">중형 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">대형 금액</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-left">설명</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="pcr : ${portCustomsRates}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-4 py-3 font-bold" style="text-align:center;">
+                                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded"
+                                          th:classappend="${pcr.pcrTy == 'PORT'} ? 'bg-blue-50 text-blue-700' : (${pcr.pcrTy == 'CUSTOMS'} ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-violet-700')"
+                                          th:text="${pcr.pcrTy}"></span>
+                                </td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(pcr.pcrSmAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(pcr.pcrMdAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3" style="text-align:right;" th:text="${#numbers.formatDecimal(pcr.pcrLgAm, 0, 'COMMA', 0, 'POINT')}"></td>
+                                <td class="px-4 py-3 text-outline cell-wrap" th:text="${pcr.pcrDes} ?: '—'"></td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${pcr.pcrId}" data-type="portCustoms" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${pcr.pcrId}" data-type="portCustoms" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(portCustomsRates)}">
+                                <td colspan="6" class="px-4 py-8 text-center text-outline">등록된 항만비·통관 수수료가 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========== 7. 국내 배송비 설정 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div th:if="${!#lists.isEmpty(deliveryRates)}" th:with="ddr=${deliveryRates[0]}">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">local_shipping</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">7. 국내 배송비 설정</h2>
+                        <span class="text-xs text-outline ml-2">(Domestic Delivery)</span>
+                    </div>
+                    <button type="button" class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all btn-edit"
+                            th:data-id="${ddr.ddrId}" data-type="delivery">
+                        <span class="material-symbols-outlined text-base">edit</span> 금액 수정
+                    </button>
+                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-surface-container-low rounded-lg p-6">
+                            <p class="text-xs font-bold text-outline uppercase mb-2">기본 배송비</p>
+                            <p class="text-2xl font-black text-on-surface" th:text="'₩' + ${#numbers.formatDecimal(ddr.ddrAm, 0, 'COMMA', 0, 'POINT')}">₩0</p>
+                            <p class="text-xs text-outline mt-1">일반 지역 기준</p>
+                        </div>
+                        <div class="bg-surface-container-low rounded-lg p-6">
+                            <p class="text-xs font-bold text-outline uppercase mb-2">산간지역 추가금</p>
+                            <p class="text-2xl font-black text-on-surface" th:text="'₩' + ${ddr.ddrEAm != null ? #numbers.formatDecimal(ddr.ddrEAm, 0, 'COMMA', 0, 'POINT') : '0'}">₩0</p>
+                            <p class="text-xs text-outline mt-1">도서산간 지역 추가 요금</p>
+                        </div>
+                        <div class="bg-surface-container-low rounded-lg p-6">
+                            <p class="text-xs font-bold text-outline uppercase mb-2">산간지역 합계</p>
+                            <p class="text-2xl font-black text-primary" th:text="'₩' + ${#numbers.formatDecimal(ddr.totalAmount(), 0, 'COMMA', 0, 'POINT')}">₩0</p>
+                            <p class="text-xs text-outline mt-1">기본 + 추가금</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2" th:if="${ddr.ddrDes != null and !ddr.ddrDes.isEmpty()}">
+                        <span class="text-xs text-outline">설명:</span>
+                        <span class="text-sm text-on-surface" th:text="${ddr.ddrDes}"></span>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(deliveryRates)}">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">7. 국내 배송비 설정</h2>
+                    <span class="text-xs text-outline ml-2">(Domestic Delivery)</span>
+                </div>
+                <div class="text-center py-8">
+                    <p class="text-outline mb-4">등록된 배송비가 없습니다.</p>
+                    <button type="button" onclick="openModal('deliveryModal')"
+                            class="text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base align-middle">add</span> 배송비 등록
+                    </button>
+                </div>
+                </div>
+            </div>
+
+            <!-- ========== 8. 견적 제출 확인 항목 ========== -->
+            <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">checklist</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">8. 견적 제출 확인 항목</h2>
+                        <span class="text-xs text-outline ml-2">(Quote Submit Checklist)</span>
+                    </div>
+                    <button type="button" onclick="openModal('submitCheckModal')"
+                            class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                        <span class="material-symbols-outlined text-base">add</span> 항목 추가
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="submitCheckTable" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:15%;">
+                            <col style="width:65%;">
+                            <col style="width:20%;">
+                        </colgroup>
+                        <thead>
+                            <tr class="bg-surface-container-high">
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">정렬</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:left;">확인 항목 텍스트</th>
+                                <th class="px-4 py-3 font-bold text-xs uppercase text-outline" style="text-align:right;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="qsc : ${submitChecks}" class="hover:bg-surface-container-low transition-colors">
+                                <td class="px-4 py-3 text-outline" style="text-align:left;" th:text="${qsc.qscSort}"></td>
+                                <td class="px-4 py-3 cell-wrap" th:text="${qsc.qscDes}"></td>
+                                <td class="px-4 py-3" style="text-align:right;">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                                th:data-id="${qsc.qscId}" data-type="submitCheck" title="수정">
+                                            <span class="material-symbols-outlined text-base">edit</span>
+                                        </button>
+                                        <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                                th:data-id="${qsc.qscId}" data-type="submitCheck" title="삭제">
+                                            <span class="material-symbols-outlined text-base">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(submitChecks)}">
+                                <td colspan="3" class="px-4 py-8 text-center text-outline">등록된 제출 확인 항목이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- end space-y-10 -->
+    </div>
+
+    <!-- ========== 공통 모달 ========== -->
+    <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container" style="outline: 2px solid var(--color-primary, #ffd700); outline-offset: -2px;">
+            <div class="flex items-center justify-between p-6 border-b border-surface-container">
+                <h3 id="modalTitle" class="text-lg font-bold tracking-tight uppercase">항목 추가</h3>
+                <button type="button" onclick="closeModal()" class="p-1 hover:bg-surface-container-high rounded transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="modalForm" class="p-6 space-y-4">
+                <div id="modalFields"></div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-surface-container">
+                    <button type="button" onclick="closeModal()"
+                            class="px-6 py-2.5 text-sm font-bold text-outline hover:bg-surface-container-high transition-colors">
+                        취소
+                    </button>
+                    <button type="submit"
+                            class="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-primary bg-primary-container hover:bg-primary hover:text-on-primary-container transition-all">
+                        <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">save</span>
+                        저장
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        /* ============================
+         *  모달 설정 (섹션별 필드 + API 경로)
+         * ============================ */
+        let currentConfigKey = null;
+        let currentEditId = null;
+
+        const MODAL_CONFIG = {
+            gradeModal: {
+                title: '고객사 등급',
+                api: '/api/root/operation/grade',
+                dataType: 'grade',
+                fields: [
+                    { name: 'bgpGr',        label: '등급명',              type: 'text',   placeholder: 'STANDARD, PREMIUM, VIP 등' },
+                    { name: 'bgpMinOrdCnt',  label: '최소 거래횟수',       type: 'number', placeholder: '5' },
+                    { name: 'bgpMinTtAm',    label: '최소 누적금액',       type: 'number', placeholder: '100000' },
+                    { name: 'bgpEfFrDt',     label: '시작일',             type: 'date' },
+                    { name: 'bgpEfToDt',     label: '종료일 (빈값=무기한)', type: 'date',  required: false },
+                    { name: 'bgpDes',        label: '설명',               type: 'text',   placeholder: '등급 설명' }
+                ]
+            },
+            insuranceModal: {
+                title: '적하보험',
+                api: '/api/root/operation/insurance',
+                dataType: 'insurance',
+                fields: [
+                    { name: 'siNm',  label: '보험명',       type: 'text',   placeholder: 'ICC(A) — 전위험담보' },
+                    { name: 'siAm',  label: '요율 / 금액',  type: 'number', placeholder: '0.35', step: '0.0001' },
+                    { name: 'siDes', label: '설명',         type: 'text',   placeholder: '보험 설명' }
+                ]
+            },
+            inspectionModal: {
+                title: '품질 검사 서비스',
+                api: '/api/root/operation/inspection',
+                dataType: 'inspection',
+                fields: [
+                    { name: 'stiNm',  label: '검사명',  type: 'text',   placeholder: '선적 전 검사 (PSI)' },
+                    { name: 'stiAm',  label: '금액',    type: 'number', placeholder: '280' },
+                    { name: 'stiDes', label: '설명',    type: 'text',   placeholder: '검사 설명' }
+                ]
+            },
+            packingModal: {
+                title: '묶음 단위',
+                api: '/api/root/operation/unit-group',
+                dataType: 'packing',
+                fields: [
+                    { name: 'unGNm', label: '단위명',       type: 'text',   placeholder: '다스' },
+                    { name: 'unGQn', label: '단위당 수량',   type: 'number', placeholder: '12' }
+                ]
+            },
+            freightModal: {
+                title: '해외 운임',
+                api: '/api/root/operation/shipping-rate',
+                dataType: 'freight',
+                fields: [
+                    { name: 'srCCd',   label: '국가코드',          type: 'text',   placeholder: 'CN' },
+                    { name: 'srTrspTy', label: '운송 방식',        type: 'select', options: ['SEA', 'AIR', 'EXPRESS'] },
+                    { name: 'srSmQn',  label: '소형 기준 (유닛)',   type: 'number', placeholder: '1' },
+                    { name: 'srSmAm',  label: '소형 운임',         type: 'number', placeholder: '100000' },
+                    { name: 'srMdQn',  label: '중형 기준 (유닛)',   type: 'number', placeholder: '10' },
+                    { name: 'srMdAm',  label: '중형 운임',         type: 'number', placeholder: '200000' },
+                    { name: 'srLgQn',  label: '대형 기준 (유닛)',   type: 'number', placeholder: '50' },
+                    { name: 'srLgAm',  label: '대형 운임',         type: 'number', placeholder: '400000' },
+                    { name: 'srDes',   label: '설명',              type: 'text',   placeholder: '운임 설명' }
+                ]
+            },
+            portFeeModal: {
+                title: '항만비 · 통관 수수료',
+                api: '/api/root/operation/port-customs',
+                dataType: 'portFee',
+                fields: [
+                    { name: 'pcrTy',   label: '비용 종류',  type: 'select', options: ['PORT', 'CUSTOMS', 'HS_CODE'] },
+                    { name: 'pcrSmAm', label: '소형 금액',  type: 'number', placeholder: '50000' },
+                    { name: 'pcrMdAm', label: '중형 금액',  type: 'number', placeholder: '80000' },
+                    { name: 'pcrLgAm', label: '대형 금액',  type: 'number', placeholder: '120000' },
+                    { name: 'pcrDes',  label: '설명',       type: 'text',   placeholder: '수수료 설명' }
+                ]
+            },
+            deliveryModal: {
+                title: '국내 배송비 설정',
+                api: '/api/root/operation/delivery-rate',
+                dataType: 'delivery',
+                fields: [
+                    { name: 'ddrAm',   label: '기본 배송비',       type: 'number', placeholder: '80000' },
+                    { name: 'ddrEAm',  label: '산간지역 추가금',   type: 'number', placeholder: '30000' },
+                    { name: 'ddrDes',  label: '설명',              type: 'text',   placeholder: '배송비 설명', required: false }
+                ]
+            },
+            submitCheckModal: {
+                title: '견적 제출 확인 항목',
+                api: '/api/root/operation/submit-check',
+                dataType: 'submitCheck',
+                fields: [
+                    { name: 'qscDes',   label: '확인 항목 텍스트',  type: 'text',   placeholder: '견적 내용을 확인하였습니다.' },
+                    { name: 'qscSort',  label: '정렬 순서',         type: 'number', placeholder: '1' }
+                ]
+            }
+        };
+
+        /* ============================
+         *  모달 열기 / 닫기
+         * ============================ */
+        // dataType → configKey 매핑
+        const TYPE_TO_CONFIG = {
+            grade: 'gradeModal', insurance: 'insuranceModal', inspection: 'inspectionModal',
+            unitGroup: 'packingModal', shippingRate: 'freightModal', portCustoms: 'portFeeModal',
+            delivery: 'deliveryModal', submitCheck: 'submitCheckModal'
+        };
+        // dataType → API 경로 매핑
+        const TYPE_TO_API = {
+            grade: '/api/root/operation/grade', insurance: '/api/root/operation/insurance',
+            inspection: '/api/root/operation/inspection', unitGroup: '/api/root/operation/unit-group',
+            shippingRate: '/api/root/operation/shipping-rate', portCustoms: '/api/root/operation/port-customs',
+            delivery: '/api/root/operation/delivery-rate', submitCheck: '/api/root/operation/submit-check'
+        };
+
+        function openModal(configKey, editId, editData) {
+            const config = MODAL_CONFIG[configKey];
+            if (!config) return;
+            currentConfigKey = configKey;
+            currentEditId = editId || null;
+
+            document.getElementById('modalTitle').textContent =
+                config.title + (currentEditId ? ' 수정' : ' 추가');
+
+            const fieldsContainer = document.getElementById('modalFields');
+            fieldsContainer.innerHTML = '';
+
+            config.fields.forEach(field => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'space-y-1';
+                const label = document.createElement('label');
+                label.className = 'block text-xs font-bold text-zinc-500 uppercase';
+                label.textContent = field.label;
+                wrapper.appendChild(label);
+
+                let input;
+                if (field.type === 'select') {
+                    input = document.createElement('select');
+                    input.className = 'w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all';
+                    field.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        input.appendChild(option);
+                    });
+                } else {
+                    input = document.createElement('input');
+                    input.type = field.type;
+                    if (field.placeholder) input.placeholder = field.placeholder;
+                    input.className = 'w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all';
+                    if (field.step) input.step = field.step;
+                }
+                input.name = field.name;
+                input.required = field.required !== false;
+                // 수정 시 기존 값 프리필
+                if (editData && editData[field.name] != null) {
+                    input.value = editData[field.name];
+                }
+                wrapper.appendChild(input);
+                fieldsContainer.appendChild(wrapper);
+            });
+
+            const modal = document.getElementById('policyModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('policyModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            document.getElementById('modalForm').reset();
+            currentConfigKey = null;
+            currentEditId = null;
+        }
+
+        document.getElementById('policyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // 저장 (생성 / 수정)
+        document.getElementById('modalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const config = MODAL_CONFIG[currentConfigKey];
+            if (!config) return;
+
+            const formData = {};
+            config.fields.forEach(field => {
+                const input = this.querySelector('[name="' + field.name + '"]');
+                if (input) formData[field.name] = input.value || null;
+            });
+
+            const url = currentEditId ? config.api + '/' + currentEditId : config.api;
+            const method = currentEditId ? 'PUT' : 'POST';
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            fetch(url, { method, headers, body: JSON.stringify(formData) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        closeModal();
+                        location.reload();
+                    } else {
+                        alert('저장 실패: ' + (data.message || ''));
+                    }
+                })
+                .catch(err => alert('저장 실패: ' + err.message));
+        });
+
+        // 삭제 (비활성화)
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!confirm('정말 비활성화하시겠습니까?')) return;
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                const api = TYPE_TO_API[type];
+                if (!api) return;
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+                fetch(api + '/' + id, { method: 'DELETE', headers })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'ok') location.reload();
+                        else alert('삭제 실패: ' + (data.message || ''));
+                    })
+                    .catch(err => alert('삭제 실패: ' + err.message));
+            });
+        });
+
+        // 수정 (서버에서 기존 값 조회 → 모달 프리필)
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                const configKey = TYPE_TO_CONFIG[type];
+                const api = TYPE_TO_API[type];
+                if (!configKey || !api) return;
+
+                fetch(api + '/' + id)
+                    .then(res => res.json())
+                    .then(data => {
+                        openModal(configKey, id, data);
+                    })
+                    .catch(err => alert('데이터 조회 실패: ' + err.message));
+            });
+        });
+    </script>
+</th:block>
+</html>

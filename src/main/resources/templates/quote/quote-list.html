@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('QUOTATION', 'Quotation list', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 견적 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('quote', 'quote-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/quote/quote-list.css}">
+
+    <section class="quote-page quote-list-page">
+        <!-- Header -->
+        <header class="quote-shell quote-shell--header">
+            <div class="quote-shell__heading">
+                <span class="quote-kicker">Quotation Overview</span>
+                <h2 class="quote-title">견적 목록</h2>
+            </div>
+            <div class="quote-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Toolbar -->
+        <section class="quote-shell quote-shell--toolbar" aria-label="견적 목록 필터">
+            <div class="quote-toolbar">
+                <div class="quote-toolbar__filters">
+                    <div class="quote-filter-set" data-filter-group="status">
+                        <a class="quote-filter is-active" href="#">전체</a>
+                        <a class="quote-filter" href="#">임시저장</a>
+                        <a class="quote-filter" href="#">제출완료</a>
+                        <a class="quote-filter" href="#">승인</a>
+                        <a class="quote-filter" href="#">반려</a>
+                        <a class="quote-filter" href="#">결제완료</a>
+                        <a class="quote-filter" href="#">만료</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- List -->
+        <section class="quote-shell quote-shell--list">
+            <div class="quote-list-head">
+                <div>견적 정보</div>
+                <div>상태</div>
+                <div class="quote-sortable is-active" style="cursor:pointer;"
+                     th:onclick="'location.href=\'/quote/list?sort=' + (${sort == 'desc'} ? 'asc' : 'desc') + '\''">
+                    발행일 <span class="quote-sort-icon" th:text="${sort == 'asc' ? '▲' : '▼'}">▼</span>
+                </div>
+                <div>관리자 열람</div>
+            </div>
+
+            <div class="quote-list-body">
+                <th:block th:each="q : ${quotes}">
+                    <a th:href="${q.quStt == 'TEMP_SAVE' ? '/quote/write?quId=' + q.quId : '/quote/detail?quId=' + q.quId}"
+                       class="quote-row"
+                       th:classappend="${!q.quOpYn} ? ' quote-row--featured' : ''"
+                       th:data-qu-id="${q.quId}"
+                       th:data-status="${q.quStt == 'SUBMITTED' ? '0' : q.quStt == 'APPROVED' ? '1' : q.quStt == 'REJECTED' ? '2' : q.quStt == 'EXPIRED' ? '3' : q.quStt == 'TEMP_SAVE' ? '4' : q.quStt == 'PAID' ? '5' : '6'}"
+                       th:data-qu-cre-dt="${q.quCreDt}"
+                       th:data-qu-op-yn="${q.quOpYn}">
+                        <div class="quote-row__primary">
+                            <div class="quote-row__text">
+                                <h2 th:text="${q.ngNm + ' ' + q.quCd}">협상명 QU0001</h2>
+                            </div>
+                        </div>
+                        <div class="quote-row__status">
+                            <span class="quote-badge"
+                                  th:classappend="'quote-badge--' + ${q.displayStt.toLowerCase()}"
+                                  th:text="${q.displayStt == 'TEMP_SAVE' ? '임시저장' :
+                                             q.displayStt == 'SUBMITTED' ? '제출완료' :
+                                             q.displayStt == 'UNREAD' ? '읽지 않음' :
+                                             q.displayStt == 'CONFIRMED' ? '확인함' :
+                                             q.displayStt == 'APPROVED' ? '승인' :
+                                             q.displayStt == 'REJECTED' ? '반려' :
+                                             q.displayStt == 'PAID' ? '결제완료' : '만료'}">상태</span>
+                        </div>
+                        <div class="quote-row__time">
+                            <span th:text="${q.quCreDt != null ? #temporals.format(q.quCreDt, 'yyyy.MM.dd HH:mm') : '-'}">2024.10.21 14:30</span>
+                        </div>
+                        <div class="quote-row__admin-read">
+                            <span th:if="${q.quAdOpYn}" class="quote-admin-badge quote-admin-badge--read">확인</span>
+                            <span th:unless="${q.quAdOpYn}" class="quote-admin-badge quote-admin-badge--unread">미확인</span>
+                        </div>
+                    </a>
+                </th:block>
+
+                <div class="quote-empty-state"
+                     th:if="${#lists.isEmpty(quotes)}">
+                    <strong>표시할 견적이 없습니다.</strong>
+                    <p>아직 요청한 견적이 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pagination (JS) -->
+        <footer class="quote-shell quote-shell--pagination">
+            <div class="quote-pagination" id="quotePageNumbers"></div>
+        </footer>
+    </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var listBody = document.querySelector('.quote-list-body');
+        var filterLinks = document.querySelectorAll('.quote-filter');
+        var emptyState = document.querySelector('.quote-empty-state');
+        var pageContainer = document.getElementById('quotePageNumbers');
+        var PAGE_SIZE = 10;
+        var currentPage = 0;
+        var currentFilter = null;
+
+        var STATUS_MAP = {
+            '전체': null,
+            '임시저장': 'TEMP_SAVE',
+            '제출완료': 'SUBMITTED',
+            '승인': 'APPROVED',
+            '반려': 'REJECTED',
+            '결제완료': 'PAID',
+            '만료': 'EXPIRED'
+        };
+        var STATUS_CODE_MAP = {
+            'TEMP_SAVE': '4',
+            'SUBMITTED': '0',
+            'APPROVED': '1',
+            'REJECTED': '2',
+            'PAID': '5',
+            'EXPIRED': '3'
+        };
+
+        function getFilteredRows() {
+            var allRows = Array.from(listBody.querySelectorAll('.quote-row'));
+            if (!currentFilter) return allRows;
+            var code = STATUS_CODE_MAP[currentFilter];
+            return allRows.filter(function (r) { return r.dataset.status === code; });
+        }
+
+        function renderPage() {
+            var allRows = listBody.querySelectorAll('.quote-row');
+            var filtered = getFilteredRows();
+            var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            if (currentPage >= totalPages) currentPage = totalPages - 1;
+            var start = currentPage * PAGE_SIZE;
+            var end = start + PAGE_SIZE;
+            var visibleSet = new Set(filtered.slice(start, end));
+            allRows.forEach(function (r) { r.style.display = visibleSet.has(r) ? '' : 'none'; });
+            if (emptyState) emptyState.style.display = filtered.length === 0 ? '' : 'none';
+
+            if (totalPages <= 1) { pageContainer.innerHTML = ''; return; }
+            var html = '';
+            html += currentPage > 0
+                ? '<a href="#" class="quote-page-button quote-page-button--wide" data-p="' + (currentPage - 1) + '">Prev</a>'
+                : '<span class="quote-page-button quote-page-button--wide is-disabled">Prev</span>';
+            for (var i = 0; i < totalPages; i++) {
+                html += '<a href="#" class="quote-page-button' + (i === currentPage ? ' is-current' : '') + '" data-p="' + i + '">' + ('0' + (i + 1)).slice(-2) + '</a>';
+            }
+            html += currentPage < totalPages - 1
+                ? '<a href="#" class="quote-page-button quote-page-button--wide" data-p="' + (currentPage + 1) + '">Next</a>'
+                : '<span class="quote-page-button quote-page-button--wide is-disabled">Next</span>';
+            pageContainer.innerHTML = html;
+            pageContainer.querySelectorAll('[data-p]').forEach(function (btn) {
+                btn.addEventListener('click', function (e) { e.preventDefault(); currentPage = parseInt(btn.dataset.p); renderPage(); });
+            });
+        }
+
+        filterLinks.forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                filterLinks.forEach(function (l) { l.classList.remove('is-active'); });
+                link.classList.add('is-active');
+                currentFilter = STATUS_MAP[link.textContent.trim()];
+                currentPage = 0;
+                renderPage();
+            });
+        });
+
+        renderPage();
+
+        // ── 열람 처리 ──
+        var csrfMeta = document.querySelector('meta[name="_csrf"]');
+        var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+        var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+        var csrfHeader = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : null;
+
+        listBody.addEventListener('click', function (e) {
+            var row = e.target.closest('.quote-row');
+            if (!row || row.dataset.quOpYn === 'true') return;
+            row.classList.remove('quote-row--featured');
+            var dot = row.querySelector('.quote-row__unread');
+            if (dot) dot.classList.add('quote-row__unread--empty');
+            row.dataset.quOpYn = 'true';
+            var headers = {};
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+            fetch('/api/quote/' + row.dataset.quId + '/opened', { method: 'POST', headers: headers });
+        });
+    });
+    </script>
+</th:block>
+</html>

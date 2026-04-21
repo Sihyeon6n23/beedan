@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ACCOUNT', 'Password Settings', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 비밀번호 변경</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('member', 'changepw')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <main class="mypage-changepw-page bg-background">
+        <div class="max-w-5xl mx-auto">
+<!--            <section class="mypage-changepw-page__intro">-->
+            <section class="mypage-changepw-page__intro">
+                <span class="mypage-changepw-page__kicker">Credential Security</span>
+                <h1 class="mypage-changepw-page__title">비밀번호 변경</h1>
+                <div class="mypage-changepw-page__rule">
+                    <span></span>
+                </div>
+            </section>
+
+            <div class="mypage-changepw-page__layout grid grid-cols-12 gap-12">
+                <div class="col-span-12 lg:col-span-8">
+                    <div class="bg-surface-container-lowest p-10 border-l-[6px] border-primary shadow-chat-shell">
+                        <div class="mypage-changepw-page__notice">
+                            <p>
+                                고유한 비밀번호를 사용하여 기업 계정을 안전하게 보호하세요. <br>
+                                보안을 위해 90일마다 비밀번호를 갱신하는 것이 좋습니다.
+                            </p>
+                        </div>
+
+                        <form th:action="@{/mypage/changepw}" id="password-form" th:object="${passwordForm}" method="POST" class="space-y-8">
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-secondary" for="current_password">현재 비밀번호</label>
+                                <div class="relative">
+                                    <input type="password"
+                                           id="current_password"
+                                           name="currentPassword"
+                                           class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all"
+                                           placeholder="현재 사용 중인 비밀번호를 입력하세요"
+                                           required />
+                                </div>
+                                <p th:if="${#fields.hasErrors('currentPassword')}"
+                                   th:errors="*{currentPassword}"
+                                   style="color: red;">에러 메시지</p>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-secondary" for="new_password">새 비밀번호</label>
+                                <input type="password"
+                                       id="new_password"
+                                       name="newPassword"
+                                       class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all"
+                                       placeholder="새로운 비밀번호를 입력하세요"
+                                       required />
+                                <p id="password-regex-msg" class="text-xs font-medium mt-1 hidden"></p>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-secondary" for="confirm_password">새 비밀번호 확인</label>
+                                <input type="password"
+                                       id="confirm_password"
+                                       name="confirmPassword"
+                                       class="bd-input bg-surface-container-low focus:ring-1 focus:ring-primary transition-all"
+                                       placeholder="비밀번호를 다시 한 번 입력하세요"
+                                       required />
+                                <p id="password-confirm-msg" class="text-xs font-medium mt-1 hidden"></p>
+                            </div>
+
+                            <div class="pt-4">
+                                <button type="submit" class="btn-primary w-full md:w-auto px-12 py-4 text-xs">
+                                    비밀번호 변경
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-span-12 lg:col-span-4">
+                    <div class="mypage-changepw-page__sidebar-stack">
+                        <div class="bg-primary-container p-8 shadow-sm">
+                            <h3 class="font-headline text-lg font-black uppercase tracking-tight text-on-primary-container mb-4">비밀번호 설정 기준</h3>
+                            <ul class="space-y-4 text-sm font-medium text-on-primary-container">
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">check_circle</span>
+                                    <span>최소 9자 이상의 길이</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">check_circle</span>
+                                    <span>영문 숫자 특수문자 조합 필수</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="material-symbols-outlined text-sm mt-0.5">check_circle</span>
+                                    <span>특수기호 @$!%*#?& 외 사용불가</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-surface-container-low p-8 relative overflow-hidden border border-outline-variant/30 h-[200px]">
+                            <div class="relative z-10">
+                                <h3 class="font-headline text-lg font-black uppercase tracking-tight text-on-surface mb-4">보안 유의사항</h3>
+                                <p class="text-sm text-secondary leading-relaxed">
+                                    비밀번호를 변경한 이후에는 계정의 무결성을 보호하기 위해
+                                    현재 접속 중인 다른 모든 기기에서 자동으로 로그아웃됩니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script inline="javascript">
+        const passwordForm = document.getElementById('password-form');
+        const newPwInput = document.getElementById('new_password');
+        const confirmPwInput = document.getElementById('confirm_password');
+        const regexMsg = document.getElementById('password-regex-msg');
+        const confirmMsg = document.getElementById('password-confirm-msg');
+        const getCsrfToken = () => document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const getCsrfHeader = () => document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        // 영문, 숫자, 특수문자 포함 9자 이상 정규식
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{9,}$/;
+
+        function validatePassword() {
+            const value = newPwInput.value;
+            const isValid = passwordRegex.test(value);
+
+            if (value.length === 0) {
+                regexMsg.classList.add('hidden');
+                return false;
+            }
+
+            regexMsg.classList.remove('hidden');
+            if (isValid) {
+                regexMsg.textContent = "사용 가능한 비밀번호입니다.";
+                regexMsg.style.color = "#22c55e"; // 초록색 (Success)
+                return true;
+            } else {
+                regexMsg.textContent = "영문, 숫자, 특수문자를 포함하여 9자 이상 입력해주세요.";
+                regexMsg.style.color = "#ef4444"; // 빨간색 (Error)
+                return false;
+            }
+        }
+
+        function validateConfirm() {
+            const isMatch = newPwInput.value === confirmPwInput.value;
+            const hasValue = confirmPwInput.value.length > 0;
+
+            if (!hasValue) {
+                confirmMsg.classList.add('hidden');
+                return false;
+            }
+
+            confirmMsg.classList.remove('hidden');
+            if (isMatch) {
+                confirmMsg.textContent = "비밀번호가 일치합니다.";
+                confirmMsg.style.color = "#22c55e";
+                return true;
+            } else {
+                confirmMsg.textContent = "비밀번호가 일치하지 않습니다.";
+                confirmMsg.style.color = "#ef4444";
+                return false;
+            }
+        }
+
+        // 실시간 입력 이벤트 바인딩
+        newPwInput.addEventListener('input', () => {
+            // 1. 먼저 정규식 검사를 수행합니다.
+            const isPwValid = validatePassword();
+
+            if (!isPwValid) {
+                // 정규식에 적합하지 않으면 '비밀번호 확인' 메시지를 숨깁니다.
+                confirmMsg.classList.add('hidden');
+                return;
+            }
+
+            // 2. 정규식을 통과했을 때만 일치 여부를 검사합니다.
+            validateConfirm();
+        });
+
+        // 비밀번호 확인 칸 입력 시에도 정규식을 먼저 체크하도록 수정 (선택 사항이지만 권장)
+        confirmPwInput.addEventListener('input', () => {
+            if (validatePassword()) {
+                validateConfirm();
+            } else {
+                confirmMsg.classList.add('hidden');
+            }
+        });
+
+
+        passwordForm.addEventListener('submit', async function(e) {
+            // 1. 기본 제출 동작 방지
+            e.preventDefault();
+
+            try {
+                // 2. [프론트엔드 검증] 새 비밀번호 조건 및 일치 확인
+                const isPwValid = validatePassword();
+                const isConfirmValid = validateConfirm();
+                const currentPwInput = document.getElementById('current_password');
+
+                if (!currentPwInput.value) {
+                    showGuideModal('현재 비밀번호를 입력해주세요.', () => currentPwInput.focus(), 'REQUIRED', 'info');
+                    return;
+                }
+
+                if (!isPwValid || !isConfirmValid) {
+                    showGuideModal('비밀번호 형식이 올바르지 않거나 일치하지 않습니다.', null, 'VALIDATION ERROR', 'warning');
+                    return;
+                }
+
+                // 3. [비동기 서버 검증] 현재 비밀번호 일치 여부 확인
+                // (버튼을 로딩 상태로 만들면 더 좋습니다)
+                const response = await fetch('/api/auth/check-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [getCsrfHeader()]: getCsrfToken()
+                    },
+                    body: JSON.stringify({ currentPassword: currentPwInput.value })
+                });
+
+                if (!response.ok) throw new Error('서버 응답 오류');
+
+                const isMatched = await response.json();
+
+                if (!isMatched) {
+                    // 현재 비밀번호가 틀린 경우
+                    showGuideModal('현재 비밀번호가 일치하지 않습니다.\n다시 확인 후 입력해주세요.', () => {
+                        currentPwInput.value = '';
+                        currentPwInput.focus();
+                    }, 'INVALID PASSWORD', 'lock_reset');
+                    return;
+                }
+                this.submit();
+
+            } catch (error) {
+                console.error("검증 중 오류 발생:", error);
+                showGuideModal('처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.', null, 'SYSTEM ERROR', 'error');
+            }
+        });
+    </script>
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+</th:block>
+
+</html>

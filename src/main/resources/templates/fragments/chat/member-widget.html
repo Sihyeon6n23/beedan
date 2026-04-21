@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="memberChatWidget">
+    <link rel="stylesheet" th:href="@{/css/chat/member-chat-widget.css}">
+
+    <section class="member-chat-widget"
+             data-member-chat
+             th:attr="data-authenticated=${#authorization.expression('isAuthenticated()')},
+                    data-login-url=@{/auth/signin},
+                    data-member-id=${#authorization.expression('isAuthenticated()') ? #authentication.principal.memberId : ''}, data-qr-api-base-url=${@environment.getProperty('qr.api.base-url')}">
+        <button type="button" class="member-chat-launcher" data-widget-toggle aria-expanded="false" aria-controls="member-chat-panel">
+            <span class="material-symbols-outlined">chat</span>
+            <svg class="member-chat-launcher__badge" aria-hidden="true" viewBox="0 0 10 10" focusable="false">
+                <circle cx="5" cy="5" r="5"></circle>
+            </svg>
+        </button>
+
+        <div id="member-chat-panel" class="member-chat-panel is-hidden" aria-hidden="true">
+            <section class="member-chat-view is-active" data-chat-view="chatbot">
+                <header class="member-chat-topbar">
+                    <span class="member-chat-brand">BEEDAN</span>
+                    <button type="button" class="member-chat-icon-button" data-widget-close aria-label="채팅 닫기">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </header>
+
+                <div class="member-chat-content member-chat-content--chatbot">
+                    <section class="member-chat-hero">
+                        <h3>안녕하세요.<br>BEEDAN 입니다!</h3>
+                        <p>상담 시간 : 9:00 - 18:00 (공휴일 제외)<br>점심 시간 : 12:00 - 13:00</p>
+                    </section>
+
+                    <article class="member-chat-bot-stack">
+                        <div class="member-chat-bubble__label">
+                            <span class="member-chat-bubble__icon material-symbols-outlined">smart_toy</span>
+                            <strong>BEEDAN</strong>
+                        </div>
+                        <div class="member-chat-bubble member-chat-bubble--bot">
+                            <p>반갑습니다! BEEDAN 챗봇입니다.<br>무슨 도움이 필요하신가요?</p>
+                        </div>
+                    </article>
+
+                    <div class="member-chat-context" data-chatbot-context></div>
+                    <div class="member-chat-topics" data-chatbot-topics></div>
+
+                    <div class="member-chat-response" data-chatbot-response></div>
+                    <div class="member-chat-actions" data-chatbot-actions></div>
+                    
+                </div>
+            </section>
+
+            <section class="member-chat-view" data-chat-view="chat-list">
+                <header class="member-chat-topbar">
+                    <span class="member-chat-brand">BEEDAN</span>
+                    <button type="button" class="member-chat-icon-button" data-widget-close aria-label="채팅 닫기">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </header>
+
+                <div class="member-chat-content member-chat-content--list">
+                    <div class="member-chat-list-end">
+                        <p>End of consultation history</p>
+                        <span></span>
+                    </div>
+                </div>
+
+                <button type="button" class="member-chat-fab" data-new-chat-trigger aria-label="새 문의 열기">
+                    <span class="material-symbols-outlined">add</span>
+                </button>
+            </section>
+
+            <section class="member-chat-view" data-chat-view="chat-room">
+                <header class="member-chat-room-topbar">
+                    <button type="button" class="member-chat-icon-button" data-view-target="chat-list" aria-label="목록으로">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <div class="member-chat-room-topbar__title">
+                        <!-- 채팅방 제목 출력 -->
+                        <strong data-chat-room-title>BEEDAN</strong>
+                    </div>
+                    <!-- 상담 종료 버튼 -->
+                    <button type="button" class="member-chat-room-close-button" data-chat-room-close>상담 종료</button>
+                </header>
+
+                <!-- 실제 메시지 출력 부분 -->
+                <div class="member-chat-content member-chat-content--room" data-chat-room-messages></div>
+
+                <footer class="member-chat-room-footer">
+                    <!-- 이미지 첨부 버튼: 클릭하면 숨김 file input 열기 -->
+                    <button type="button"
+                            class="member-chat-attach-button"
+                            data-member-image-trigger>
+                        <span class="material-symbols-outlined">attach_file</span>
+                    </button>
+
+                    <!-- 실제 이미지 파일 선택 input: UI에는 숨기고 JS로만 사용 -->
+                    <input type="file"
+                           accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                           class="is-hidden"
+                           data-member-image-input>
+
+                    <!-- 텍스트 메시지 입력창 -->
+                    <input type="text"
+                           placeholder="메시지를 입력해 주세요."
+                           data-member-message-input>
+
+                    <!-- 기존 텍스트 전송 버튼 -->
+                    <button type="button"
+                            class="member-chat-send-button"
+                            data-member-message-send>전송</button>
+                </footer>
+            </section>
+
+            <nav class="member-chat-bottom-nav" aria-label="채팅 위젯 하단 네비게이션">
+                <button type="button" class="member-chat-bottom-nav__item is-active" data-view-target="chatbot">
+                    <span class="material-symbols-outlined">smart_toy</span>
+                    <span>CHATBOT</span>
+                </button>
+                <button type="button" class="member-chat-bottom-nav__item" data-view-target="chat-list">
+                    <span class="material-symbols-outlined">chat</span>
+                    <span>CHAT</span>
+                </button>
+            </nav>
+
+            <!-- 사용자 채팅/챗봇 비동기 오류를 짧게 안내하는 토스트 -->
+            <div class="member-chat-toast is-hidden"
+                 data-member-chat-toast
+                 role="status"
+                 aria-live="polite"
+                 aria-atomic="true"
+                 aria-hidden="true">
+                <span class="material-symbols-outlined member-chat-toast__icon">error</span>
+                <div class="member-chat-toast__body">
+                    <p class="member-chat-toast__title" data-member-chat-toast-title>
+                        요청을 처리하지 못했습니다.
+                    </p>
+                    <p class="member-chat-toast__text" data-member-chat-toast-text>
+                        잠시 후 다시 시도해 주세요.
+                    </p>
+                </div>
+            </div>
+
+            <div class="member-chat-modal is-hidden" data-chat-modal aria-hidden="true">
+                <div class="member-chat-modal__backdrop" data-chat-modal-close></div>
+                <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-chat-modal-title">
+                    <div class="member-chat-modal__accent"></div>
+                    <h3 id="member-chat-modal-title" data-chat-modal-title>이미 진행 중인 채팅방이 있습니다</h3>
+                    <p data-chat-modal-description>현재 진행 중인 상담방으로 이동하시겠습니까?</p>
+                    <div class="member-chat-modal__actions">
+                        <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-chat-modal-confirm>
+                            채팅방으로 이동
+                        </button>
+                        <button type="button" class="member-chat-modal__button" data-chat-modal-close>
+                            취소
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-chat-modal is-hidden" data-close-confirm-modal aria-hidden="true">
+                <div class="member-chat-modal__backdrop" data-close-confirm-close></div>
+                <div class="member-chat-modal__dialog member-chat-modal__dialog--danger"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="member-chat-close-modal-title">
+                    <div class="member-chat-modal__accent member-chat-modal__accent--danger"></div>
+                    <h3 id="member-chat-close-modal-title">상담을 종료하시겠습니까?</h3>
+                    <p>상담을 종료하면 더 이상 메시지를 보낼 수 없고, 이후에는 상담 이력만 확인할 수 있습니다.</p>
+                    <div class="member-chat-modal__actions">
+                        <button type="button"
+                                class="member-chat-modal__button member-chat-modal__button--danger"
+                                data-close-confirm-submit>
+                            상담 종료
+                        </button>
+                        <button type="button" class="member-chat-modal__button" data-close-confirm-close>
+                            취소
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="member-chat-modal is-hidden" data-login-modal aria-hidden="true">
+            <div class="member-chat-modal__backdrop" data-login-modal-close></div>
+            <div class="member-chat-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="member-login-modal-title">
+                <div class="member-chat-modal__accent"></div>
+                <h3 id="member-login-modal-title">로그인이 필요합니다</h3>
+                <p>로그인해야 위젯을 사용하실 수 있습니다.</p>
+                <div class="member-chat-modal__actions">
+                    <button type="button" class="member-chat-modal__button member-chat-modal__button--primary" data-login-modal-confirm>
+                        로그인 페이지로 이동
+                    </button>
+                    <button type="button" class="member-chat-modal__button" data-login-modal-close>
+                        취소
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs/bundles/stomp.umd.min.js"></script>
+    <script defer th:src="@{/js/chat/member-chat-widget.js}"></script>
+</th:block>
+</html>

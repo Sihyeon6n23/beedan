@@ -1,0 +1,354 @@
+/* ==========================================================================
+   1. 기본 레이아웃 및 쉘 (Shell)
+   ========================================================================== */
+.app-layout__content:has(.inquiry-page) {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.inquiry-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 2rem clamp(1rem, 2vw, 2rem) 2rem;
+  margin-inline: auto;
+}
+
+.inquiry-list-page { max-width: 1220px; }
+.inquiry-detail-page { max-width: 1144px; }
+.inquiry-write-page {
+  max-width: 1080px;}
+
+.inquiry-shell {
+  background: var(--color-surface-container-lowest);
+  box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
+}
+
+.inquiry-shell--header, .inquiry-shell--toolbar, .inquiry-shell--pagination {
+  background: transparent;
+  box-shadow: none;
+}
+
+.inquiry-shell__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inquiry-kicker {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.inquiry-title {
+  font-family: var(--font-headline);
+  font-size: clamp(2.3rem, 5vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: var(--tracking-tighter);
+  line-height: 0.95;
+}
+
+.inquiry-shell__rule {
+  margin-top: 1.25rem;
+  width: 100%;
+  height: 2px;
+  background: var(--color-surface-container-highest);
+}
+
+.inquiry-shell__rule span {
+  display: block;
+  width: 11rem;
+  height: 100%;
+  background: var(--color-primary-container);
+}
+
+/* ==========================================================================
+   2. 목록 페이지 (List)
+   ========================================================================== */
+.inquiry-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.inquiry-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 5.4rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.inquiry-shell--list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fcfbf8;
+  border: 1px solid #ebe6da;
+  box-shadow: 0 18px 34px rgba(26, 28, 28, 0.06);
+}
+
+.inquiry-list-head, .inquiry-row {
+  display: grid;
+  grid-template-columns: minmax(45px, 0.5fr) minmax(65px, 0.6fr) minmax(200px, 4fr) minmax(45px, 0.4fr) minmax(90px, 1fr) minmax(60px, 0.7fr) minmax(110px, 1fr);
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.inquiry-list-head {
+  padding: 1rem 1.75rem;
+  background: #f4f1e8;
+  color: #7a7a7a;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.inquiry-list-body { position: relative; border-top: 1px solid var(--color-surface-container-highest); }
+
+.inquiry-row {
+  padding: 0.48rem 1.75rem;
+  border-left: 4px solid transparent;
+  background: var(--color-surface-container-lowest);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.inquiry-row:hover { background: #fffdfa; border-left-color: var(--color-primary); }
+.inquiry-row--featured { background: linear-gradient(180deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 248, 220, 0.44) 100%); border-left-color: var(--color-primary); }
+
+.inquiry-row__primary h2 {
+  color: #1a1c1c;
+  font-size: 0.92rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inquiry-row__no, .inquiry-row__top, .inquiry-row__file, .inquiry-row__writer, .inquiry-row__hit, .inquiry-row__time {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.inquiry-badge {
+  padding: 0.42rem 0.7rem;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.inquiry-badge--received { border: 1px solid var(--color-outline-variant); color: var(--color-secondary); }
+
+.inquiry-row-spacer { min-height: 2.68rem; visibility: hidden; }
+
+/* ==========================================================================
+   3. 상세 페이지 (Detail)
+   ========================================================================== */
+.inquiry-detail-article { background: #fffdf9; border: 1px solid #ece6d8; box-shadow: 0 14px 28px rgba(26, 28, 28, 0.04); }
+.inquiry-detail-article__utility { padding: 1.15rem 1.55rem 0; }
+.inquiry-detail-back { display: inline-flex; gap: 0.35rem; align-items: center; color: var(--color-secondary); font-size: 0.85rem; font-weight: 700; text-decoration: none; }
+
+.inquiry-detail-article__head { padding: 0.7rem 1.55rem 1.15rem; }
+.inquiry-detail-article__title-row { display: flex; justify-content: space-between; align-items: center; }
+.inquiry-detail-article__title { font-family: var(--font-headline); font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 900; }
+.inquiry-detail-article__meta { display: flex; gap: 1rem; margin-top: 0.85rem; color: var(--color-secondary); font-size: 0.9rem; font-weight: 600; }
+/* 제목과 배지를 감싸는 부모 컨테이너 */
+.inquiry-detail-article__title-row {
+  display: flex;
+  align-items: flex-start; /* 또는 center */
+  gap: 10px;               /* 제목과 배지 사이 간격 */
+  width: 100%;
+}
+
+/* 제목 태그 */
+.inquiry-detail-article__title {
+  flex: 1;                 /* 남는 공간을 모두 차지함 */
+  min-width: 0;            /* flex 아이템에서 텍스트 줄바꿈/말줄임 처리를 위해 필수 */
+  word-break: break-all;   /* 제목이 너무 길면 단어 단위로 줄바꿈 (선택) */
+  /* 만약 한 줄로 말줄임표(...)를 하고 싶다면 아래 주석 해제 */
+  /* white-space: nowrap; overflow: hidden; text-overflow: ellipsis; */
+}
+
+/* 중요공지 배지 */
+.inquiry-badge--received {
+  flex-shrink: 0;          /* ★핵심: 제목이 길어져도 배지 크기는 절대 줄어들지 않음 */
+  white-space: nowrap;     /* 배지 안의 글자가 두 줄로 변하는 것 방지 */
+}
+
+.inquiry-detail-article__body { padding: 1.45rem 1.55rem; border-top: 1px solid #f1ece2; }
+.inquiry-detail-article__content { font-size: 1rem; line-height: 1.95; word-break: break-word; }
+
+.inquiry-detail-article__footer { padding: 1.05rem 1.55rem; border-top: 1px solid #f1ece2; display: flex; justify-content: flex-end; }
+.inquiry-detail-actions { display: flex; gap: 0.5rem; }
+.inquiry-detail-action {
+  padding: 0.6rem 0.95rem;
+  border: 1px solid #d8cfc2;
+  background: #f4ede1;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.inquiry-detail-action--primary { background: #ead7bb; border-color: #d9c4a9; }
+
+/* ==========================================================================
+   4. 작성 페이지 및 업로드 (Write & Upload)
+   ========================================================================== */
+.inquiry-write-form { display: flex; flex-direction: column; gap: 1.75rem; }
+.inquiry-write-field { display: flex; flex-direction: column; gap: 0.72rem; }
+.inquiry-write-field__label { font-size: 0.96rem; font-weight: 800; }
+.inquiry-write-field__label em { color: #d86b00; font-style: normal; }
+.inquiry-write-field__input { width: 100%; height: 3.25rem; padding: 0.9rem 1rem; border: 1px solid #e3ddcf; background: #fffdfa; }
+
+.inquiry-upload__zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 10rem;
+  padding: 1.5rem;
+  border: 1px dashed #d5ccb8;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(252, 249, 241, 0.92) 100%);
+  text-align: center;
+  cursor: pointer;
+}
+
+.inquiry-upload__item { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem; border: 1px solid #ece7da; background: #f7f5ef; margin-top: 0.5rem; }
+.inquiry-upload__item.to-delete { opacity: 0.5; text-decoration: line-through; }
+
+.inquiry-detail-action,
+.inquiry-outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  min-height: 2.5rem; /* 기존 높이 유지 */
+  padding: 0.7rem 1.2rem;
+  border: 1px solid #d8cfc2;
+  background: #f4ede1;
+  color: #1a1c1c;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 마우스 호버 효과 */
+.inquiry-detail-action:hover,
+.inquiry-outline-button:hover {
+  background: #fffdfa;
+  border-color: rgba(112, 93, 0, 0.18);
+}
+
+/* 강조용 버튼 (등록/수정완료/공지수정 등) */
+.inquiry-detail-action--primary,
+.inquiry-outline-button--primary {
+  border-color: #d9c4a9;
+  background: #ead7bb; /* HTML 소스의 primary 테마 컬러 */
+  color: #4d4538;
+}
+
+.inquiry-detail-action--primary:hover,
+.inquiry-outline-button--primary:hover {
+  background: #e3ccae;
+}
+
+/* 작성 페이지 버튼 정렬 섹션 */
+.inquiry-write-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1ece2;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   5. 공통 컴포넌트 (Pagination & Misc)
+   ========================================================================== */
+.inquiry-shell--pagination { display: flex; justify-content: center; border-top: 1px solid #e8e8e8; }
+.inquiry-page-button {
+  min-width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-surface-container-highest);
+  background: var(--color-surface-container-lowest);
+  text-decoration: none;
+  font-weight: 900;
+  transition: all 0.2s ease;
+}
+.inquiry-page-button.is-current { background: var(--color-primary-container); border-color: #d7d2c6; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+.inquiry-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 1.5rem; /* 충분한 상하 여백으로 중앙 집중도 향상 */
+  text-align: center;
+  background: #fffdfa;
+  border-bottom: 1px solid #efefef;
+}
+
+/* "표시할 내용이 없습니다" 강하게 강조 */
+.inquiry-empty-state strong {
+  display: block;
+  color: #1a1c1c;
+  font-family: var(--font-headline);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+}
+
+/* "등록된 공지사항이 없습니다" 보조 문구 */
+.inquiry-empty-state p {
+  color: var(--color-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* (선택 사항) 아이콘을 추가하고 싶다면 HTML에 아이콘 태그를 넣고 아래 스타일 활용 */
+.inquiry-empty-state::before {
+  content: 'search_off'; /* 머티리얼 심볼 사용 시 */
+  font-family: 'Material Symbols Outlined';
+  font-size: 3rem;
+  color: #d8cfc2;
+  margin-bottom: 0.5rem;
+}
+
+/* ==========================================================================
+   6. 반응형 (Mobile)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .inquiry-list-head { display: none; }
+  .inquiry-row { grid-template-columns: 1fr; gap: 0.85rem; }
+  .inquiry-detail-article__utility, .inquiry-detail-article__head, .inquiry-detail-article__body { padding: 1rem; }
+  .inquiry-detail-article__title { font-size: 1.5rem; }
+  .inquiry-write-form__actions { flex-direction: column-reverse; }
+}

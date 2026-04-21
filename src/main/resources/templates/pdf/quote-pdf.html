@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        @page { size: A4; margin: 30px 40px; }
+        body { font-family: 'NotoSansKR', sans-serif; font-size: 10px; color: #1a1a1a; line-height: 1.5; }
+        h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px 0; }
+        h2 { font-size: 13px; font-weight: 700; margin: 20px 0 8px 0; padding-bottom: 4px; border-bottom: 2px solid #1a1a1a; }
+        h3 { font-size: 11px; font-weight: 700; margin: 12px 0 6px 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        th, td { border: 1px solid #c0c0c0; padding: 5px 8px; text-align: left; font-size: 9px; }
+        th { background: #f0f0f0; font-weight: 700; font-size: 8px; text-transform: uppercase; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .bold { font-weight: 700; }
+        .muted { color: #737373; }
+        .section { margin-bottom: 16px; }
+        .header-meta { font-size: 10px; color: #555; margin-bottom: 16px; }
+        .summary-row { display: block; padding: 3px 0; }
+        .summary-label { display: inline-block; width: 180px; font-weight: 600; }
+        .summary-value { font-weight: 700; }
+        .total-row { font-size: 14px; font-weight: 800; padding: 8px 0; border-top: 2px solid #1a1a1a; margin-top: 8px; }
+        .factory-header { background: #f5f5f5; padding: 4px 8px; font-weight: 700; margin-top: 8px; }
+        .indent { padding-left: 16px; }
+        .note { font-size: 8px; color: #999; margin-top: 12px; padding: 8px; background: #fafafa; border-left: 3px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<!-- 1. 견적 기본 정보 -->
+<h1>견적서</h1>
+<div class="header-meta">
+    <span th:text="'#' + ${quoteBase.quCd}">QU0000</span>
+    <span th:if="${negotiation != null}"> · <span th:text="${negotiation.ngNm}">NG0000</span></span>
+    <span th:if="${quoteBase.quCreDt != null}"> · <span th:text="${#temporals.format(quoteBase.quCreDt, 'yyyy.MM.dd')}">2026.04.01</span> 작성</span>
+    <span th:if="${quoteBase.quExpDt != null}"> · <span th:text="${#temporals.format(quoteBase.quExpDt, 'yyyy.MM.dd')}">2026.04.08</span>까지 유효</span>
+</div>
+
+<!-- 2. 회원 정보 -->
+<div class="section" th:if="${member != null}">
+    <h2>회원 정보</h2>
+    <table>
+        <tr>
+            <th style="width:120px;">회사명</th>
+            <td th:text="${member.memBizTtl != null ? member.memBizTtl : '-'}">-</td>
+            <th style="width:120px;">담당자</th>
+            <td th:text="${member.memNm != null ? member.memNm : '-'}">-</td>
+        </tr>
+        <tr>
+            <th>사업자등록번호</th>
+            <td th:text="${member.memBizNo != null ? member.memBizNo : '-'}">-</td>
+            <th>적용 등급</th>
+            <td th:text="${buyerGrade}">STANDARD</td>
+        </tr>
+    </table>
+</div>
+
+<!-- 3. 품목 테이블 -->
+<div class="section">
+    <h2 th:text="'품목 내역 (' + ${details.size()} + '개)'">품목 내역</h2>
+    <table>
+        <thead>
+            <tr>
+                <th class="text-center" style="width:30px;">No.</th>
+                <th>상품명</th>
+                <th>상품코드</th>
+                <th class="text-center">수량</th>
+                <th class="text-center">규격</th>
+                <th class="text-right">공급가 총액</th>
+                <th class="text-right">소계 (한화)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="detail, idx : ${details}">
+                <td class="text-center" th:text="${idx.count}">1</td>
+                <td>
+                    <span class="bold" th:text="${detail.stNm}">상품명</span><br/>
+                    <span class="muted" th:text="${detail.faNm != null ? detail.faNm : ''}">공장</span>
+                </td>
+                <td th:text="${detailExtras[__${idx.index}__]['stCd']}">-</td>
+                <td class="text-center" th:text="${detail.quDtQn}">0</td>
+                <td class="text-center"
+                    th:text="${detailExtras[__${idx.index}__]['spec'] != null ? detailExtras[__${idx.index}__]['spec'] + ' ' + (detail.unGNm != null ? detail.unGNm : '') : '-'}">-</td>
+                <td class="text-right"
+                    th:text="${detail.quDtFgPr != null and detail.quDtQn != null ? detailExtras[__${idx.index}__]['stCur'] + #numbers.formatDecimal(detail.quDtFgPr * detail.quDtQn, 1, 'COMMA', 0, 'POINT') : '-'}">-</td>
+                <td class="text-right bold"
+                    th:text="${detail.quDtPr != null ? '₩' + #numbers.formatInteger(detail.quDtPr, 1, 'COMMA') : '-'}">₩0</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" class="text-right bold">품목 소계</td>
+                <td class="text-right bold" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA')}">₩0</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<!-- 4. 공장별 운임 상세 -->
+<div class="section" th:if="${!shipFees.isEmpty()}">
+    <h2>공장별 운임 상세</h2>
+    <th:block th:each="sf, idx : ${shipFees}">
+        <div class="factory-header">
+            <span th:text="${(sf.qsfFaNm != null ? sf.qsfFaNm : '알 수 없음') + (sf.qsfFaCCd != null ? ' (' + sf.qsfFaCCd + ')' : '')}">공장</span>
+        </div>
+        <table>
+            <tr>
+                <th style="width:150px;">해외 운임</th>
+                <td class="text-right" th:text="${sf.qsfSrAm != null ? '₩' + #numbers.formatInteger(sf.qsfSrAm, 1, 'COMMA') : '-'}">-</td>
+                <th style="width:150px;">항만비</th>
+                <td class="text-right" th:text="${sf.qsfPrtAm != null ? '₩' + #numbers.formatInteger(sf.qsfPrtAm, 1, 'COMMA') : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>통관비</th>
+                <td class="text-right" th:text="${sf.qsfCstAm != null ? '₩' + #numbers.formatInteger(sf.qsfCstAm, 1, 'COMMA') : '-'}">-</td>
+                <th>HS 신고비</th>
+                <td class="text-right" th:text="${sf.qsfHsCd != null ? '₩' + #numbers.formatInteger(sf.qsfHsCd, 1, 'COMMA') : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>보험료</th>
+                <td class="text-right" th:text="${sf.qsfInsYn != null and sf.qsfInsYn and sf.qsfInsAm != null ? '₩' + #numbers.formatInteger(sf.qsfInsAm, 1, 'COMMA') : '-'}">-</td>
+                <th>CIF</th>
+                <td class="text-right" th:text="${sf.qsfCifAm != null ? '₩' + #numbers.formatInteger(sf.qsfCifAm, 1, 'COMMA') : '-'}">-</td>
+            </tr>
+            <tr>
+                <th>관세 (<span th:if="${sf.qsfDtyR != null}" th:text="${#numbers.formatDecimal(sf.qsfDtyR * 100, 1, 'POINT', 1, 'POINT')} + '%'">13%</span><span th:if="${sf.qsfDtyR == null}">13%</span>)</th>
+                <td class="text-right" th:text="${sf.qsfDty != null ? '₩' + #numbers.formatInteger(sf.qsfDty, 1, 'COMMA') : '-'}">-</td>
+                <th>부가세 (10%)</th>
+                <td class="text-right" th:text="${sf.qsfVat != null ? '₩' + #numbers.formatInteger(sf.qsfVat, 1, 'COMMA') : '-'}">-</td>
+            </tr>
+        </table>
+    </th:block>
+</div>
+
+<!-- 5. 부가 서비스 -->
+<div class="section" th:if="${insuranceName != null or inspectionName != null}">
+    <h2>부가 서비스</h2>
+    <table>
+        <tr th:if="${insuranceName != null}">
+            <th style="width:150px;">적하보험</th>
+            <td th:text="${insuranceName}">-</td>
+        </tr>
+        <tr th:if="${inspectionName != null}">
+            <th style="width:150px;">품질 검사</th>
+            <td th:text="${inspectionName}">-</td>
+        </tr>
+    </table>
+</div>
+
+<!-- 6. 큐레이션 수수료 -->
+<div class="section" th:if="${quoteInfo != null}">
+    <h2>큐레이션 수수료</h2>
+    <table>
+        <tr>
+            <th style="width:150px;">적용 등급</th>
+            <td th:text="${buyerGrade}">STANDARD</td>
+            <th style="width:150px;">정가 수수료</th>
+            <td class="text-right" th:text="${quoteInfo.quInfoSrvFe != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFe, 1, 'COMMA') : '-'}">-</td>
+        </tr>
+        <tr>
+            <th>할인율</th>
+            <td th:text="${quoteInfo.quInfoSrvFeR != null and quoteInfo.quInfoSrvFeR > 0 ? #numbers.formatDecimal(quoteInfo.quInfoSrvFeR * 100, 1, 'POINT', 1, 'POINT') + '%' : '없음'}">-</td>
+            <th>적용 수수료</th>
+            <td class="text-right bold" th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">-</td>
+        </tr>
+    </table>
+</div>
+
+<!-- 7. 비용 명세 요약 -->
+<div class="section" th:if="${quoteInfo != null}">
+    <h2>비용 명세 요약</h2>
+    <div class="summary-row">
+        <span class="summary-label">품목 대금</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(itemTotalKrw, 1, 'COMMA')}">₩0</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">물류 비용 (국제 운임 + 국내 배송)</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(intShipFeeOnly.add(quoteInfo.quInfoDomShiFe != null ? quoteInfo.quInfoDomShiFe : 0), 1, 'COMMA')}">₩0</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">큐레이션 수수료</span>
+        <span class="summary-value" th:text="${quoteInfo.quInfoSrvFeAm != null ? '₩' + #numbers.formatInteger(quoteInfo.quInfoSrvFeAm, 1, 'COMMA') : '-'}">₩0</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">관세 및 부가세</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(totalDutyVat, 1, 'COMMA')}">₩0</span>
+    </div>
+    <div class="total-row">
+        <span class="summary-label">최종 결제 금액</span>
+        <span class="summary-value" th:text="${'₩' + #numbers.formatInteger(calculatedTotal, 1, 'COMMA')}">₩0</span>
+    </div>
+</div>
+
+<!-- 8. 메모 -->
+<div class="section" th:if="${quoteInfo != null and quoteInfo.quInfoPs != null and !quoteInfo.quInfoPs.isEmpty()}">
+    <h2>메모 / 특이사항</h2>
+    <p th:text="${quoteInfo.quInfoPs}">메모 내용</p>
+</div>
+
+<!-- 9. 안내 -->
+<div class="note">
+    <p>본 견적의 유효 기간은 발행일로부터 영업일 기준 7일입니다.</p>
+    <p th:if="${quoteInfo != null and quoteInfo.quInfoCurCd != null and quoteInfo.quInfoExcRt != null}"
+       th:text="'견적 금액은 ' + ${quoteInfo.quInfoCurCd} + '/KRW ' + ${#numbers.formatDecimal(quoteInfo.quInfoExcRt, 1, 'COMMA', 2, 'POINT')} + ' 환율을 기준으로 산출되었으며 최종 인보이스 발행 시점의 환율에 따라 조정될 수 있습니다.'">환율 안내</p>
+    <p>관세는 CIF 금액(상품가 + 해외운임 + 보험료)에 HS Code별 관세율을 적용하여 산출됩니다. 부가세는 (CIF + 관세) × 10%로 계산됩니다.</p>
+</div>
+
+</body>
+</html>

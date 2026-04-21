@@ -1,0 +1,557 @@
+/* ============================================================
+   Goodee — 결제 완료 (Payment Complete Page)
+   Design tokens from Figma node 115-2
+   ============================================================ */
+
+:root {
+    --color-bg:            #f9f9f9;
+    --color-white:         #ffffff;
+    --color-surface:       #f3f3f3;
+    --color-surface-2:     #e2e2e2;
+    --color-border:        #e7e5e4;
+    --color-border-mid:    #d6d3d1;
+    --color-border-gold:   #d0c6ab;
+
+    --color-text-primary:  #1a1c1c;
+    --color-text-warm:     #4d4732;
+    --color-text-muted:    #78716c;
+    --color-text-light:    #a8a29e;
+
+    --color-gold:          #ffd700;
+    --color-gold-dark:     #705d00;
+    --color-gold-border:   #705e00;
+    --color-gold-bg:       #fffdf0;
+
+    --font-display: 'Manrope', 'Noto Sans KR', sans-serif;
+    --font-serif:   'Noto Serif KR', serif;
+    --font-body:    'Inter', 'Noto Sans KR', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.page-wrapper { min-height: 100vh; }
+
+.main {
+    max-width: 1152px;
+    margin: 0 auto;
+    padding: 80px 88px;
+}
+
+.main-canvas {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+}
+
+/* ============================================================
+   ① 성공 헤더
+   ============================================================ */
+.success-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-gold);
+    padding: 4px 16px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--color-gold-border);
+    line-height: 16px;
+    margin-bottom: 16px;
+    width: fit-content;
+}
+
+.hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 64px;
+    line-height: 72px;
+    letter-spacing: -3.6px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+}
+
+.hero-order-id {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--color-text-warm);
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+}
+
+.hero-right { flex-shrink: 0; }
+
+.btn-receipt-save {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--color-gold);
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-gold-border);
+    white-space: nowrap;
+    transition: filter 0.15s ease;
+}
+
+.btn-receipt-save:hover { filter: brightness(1.05); }
+
+/* ============================================================
+   Section 공통
+   ============================================================ */
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.section-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    white-space: nowrap;
+    line-height: 20px;
+}
+
+.section-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+/* ② 진행 타임라인 → fragments/quoteAndPayment/roadToPayment.html + roadToPayment.css 참조 */
+
+/* ============================================================
+   ③ 본문
+   ============================================================ */
+.body-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+}
+
+.col-main {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
+/* 문서 다운로드 + 추가 작업 나란히 */
+.cards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ---- 정보 카드 (배송지, 결제수단) ---- */
+.info-card {
+    background: var(--color-white);
+    padding: 28px 32px;
+}
+
+.info-card-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.info-icon { flex-shrink: 0; margin-top: 2px; }
+
+.card-icon-box {
+    width: 48px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    background: #f5f5f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-company {
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 22px;
+    margin-bottom: 2px;
+}
+
+.info-line {
+    font-size: 14px;
+    color: var(--color-text-warm);
+    line-height: 22px;
+}
+
+/* ---- 구매 재고 목록 ---- */
+.inventory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inventory-item {
+    display: grid;
+    grid-template-columns: 64px 3fr 1fr;
+    gap: 24px;
+    align-items: center;
+    background: var(--color-surface);
+    padding: 24px 32px;
+}
+
+.inventory-thumb {
+    width: 64px;
+    height: 64px;
+    background: #e7e5e4;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.inventory-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.inventory-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inventory-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.35px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 20px;
+}
+
+.inventory-sku {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 16px;
+}
+
+.inventory-price {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inventory-amount {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 20px;
+}
+
+.inventory-qty {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    line-height: 16px;
+}
+
+/* ---- 주문 요약 카드 ---- */
+.summary-card {
+    background: var(--color-surface-2);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-label {
+    font-size: 14px;
+    color: var(--color-text-warm);
+    line-height: 20px;
+}
+
+.summary-val {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--color-text-primary);
+}
+
+.summary-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border-mid);
+    margin-top: 4px;
+}
+
+.summary-total-label {
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+}
+
+.summary-total-val {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--color-gold-dark);
+    letter-spacing: -0.5px;
+    line-height: 36px;
+}
+
+/* ---- 뒤로가기 ---- */
+.back-link-wrap { padding-top: 8px; }
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark);
+    text-decoration: none;
+    border-bottom: 2px solid var(--color-gold);
+    padding-bottom: 6px;
+    transition: opacity 0.15s ease;
+}
+
+.back-link:hover { opacity: 0.75; }
+
+/* ============================================================
+   사이드바
+   ============================================================ */
+.col-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.aside-card {
+    background: var(--color-white);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.aside-card-heading { border-left: 3px solid var(--color-gold); padding-left: 12px; }
+
+.aside-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    line-height: 16px;
+}
+
+/* ---- 다운로드 버튼 목록 ---- */
+.download-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.download-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    width: 100%;
+}
+
+.download-btn:hover {
+    border-color: var(--color-gold);
+    background: var(--color-gold-bg);
+}
+
+.download-btn-icon {
+    width: 36px;
+    height: 36px;
+    background: #fffbde;
+    border: 1px solid #ede9c8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.download-btn-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.download-btn-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    line-height: 18px;
+}
+
+.download-btn-sub {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    line-height: 16px;
+}
+
+.download-chevron { flex-shrink: 0; }
+
+/* ---- 추가 액션 버튼 목록 ---- */
+.action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    transition: filter 0.15s ease;
+}
+
+.action-btn--primary {
+    background: var(--color-gold);
+    color: var(--color-gold-border);
+    justify-content: center;
+}
+
+.action-btn--primary:hover { filter: brightness(1.05); }
+
+.action-btn--secondary {
+    background: var(--color-surface);
+    color: var(--color-text-warm);
+    border: 1px solid var(--color-border);
+}
+
+.action-btn--secondary:hover {
+    border-color: var(--color-gold);
+    background: var(--color-gold-bg);
+}
+
+/* ---- 안내 메모 ---- */
+.aside-notice {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--color-gold-bg);
+    border: 1px solid #ede9c8;
+    padding: 14px 16px;
+}
+
+.notice-dot {
+    font-size: 14px;
+    color: var(--color-gold-dark);
+    flex-shrink: 0;
+    line-height: 20px;
+}
+
+.aside-notice p {
+    font-size: 11px;
+    color: var(--color-text-warm);
+    line-height: 18px;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+    .hero-title { font-size: 48px; letter-spacing: -2px; }
+    .cards-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .main { padding: 48px 32px; }
+    .hero-title { font-size: 36px; letter-spacing: -1.5px; }
+    .success-hero { flex-direction: column; align-items: flex-start; }
+    .btn-receipt-save { width: 100%; justify-content: center; }
+    .timeline { flex-direction: column; gap: 24px; }
+}
+
+@media (max-width: 480px) {
+    .main { padding: 40px 20px; }
+    .hero-title { font-size: 28px; }
+    .inventory-item { grid-template-columns: 48px 1fr; }
+    .inventory-price { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; }
+}

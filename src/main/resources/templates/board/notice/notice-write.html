@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          null,
+          ~{::content}
+      )}">
+
+<title th:fragment="title">
+    BEEDAN | 공지사항 [[${boardRequestDto.brdId == null ? '작성' : '수정'}]]
+</title>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/board/notice.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+
+    <section class="inquiry-page inquiry-write-page">
+        <header class="inquiry-shell inquiry-shell--header">
+            <div class="inquiry-shell__heading">
+                <span class="inquiry-kicker" th:text="${isEdit ? 'Edit Notice' : 'New Notice'}">Notice</span>
+                <h2 class="inquiry-title" th:text="${isEdit ? '공지사항 수정' : '공지사항 작성'}">공지사항</h2>
+            </div>
+            <div class="inquiry-shell__rule"><span></span></div>
+        </header>
+
+        <section class="inquiry-write-panel">
+            <form class="inquiry-write-form"
+                  id="inquiry-write-form"
+                  th:action="${isEdit ? '/notice/edit' : '/notice/write'}"
+                  th:object="${boardRequestDto}"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{brdId}">
+
+                <div class="inquiry-write-form__stack">
+                    <div class="inquiry-write-field" th:if="${#authorization.expression('hasRole(''ROOT'')')}">
+                        <label class="flex items-center gap-2 cursor-pointer" style="margin-bottom: 20px; display: flex; align-items: center;">
+                            <input type="checkbox" th:field="*{brdFixYn}" class="w-4 h-4 accent-primary" style="width: 18px; height: 18px;">
+                            <span class="text-sm font-bold text-secondary" style="font-weight: 700; color: #1a1c1c;">이 게시물을 상단에 고정합니다. (중요 공지)</span>
+                        </label>
+                    </div>
+                    <input type="hidden" th:unless="${#authorization.expression('hasRole(''ROOT'')')}" th:field="*{brdFixYn}">
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdTtl">공지 제목 <em>*</em></label>
+                        <input class="inquiry-write-field__input"
+                               type="text"
+                               id="brdTtl"
+                               th:field="*{brdTtl}"
+                               maxlength="100"
+                               required>
+                    </div>
+
+                    <div class="inquiry-write-field">
+                        <label class="inquiry-write-field__label" for="brdCon">공지 내용 <em>*</em></label>
+                        <textarea id="brdCon"
+                                  class="inquiry-write-field__editor"
+                                  th:field="*{brdCon}"></textarea>
+                    </div>
+
+                        <div class="inquiry-write-field">
+                            <label class="inquiry-write-field__label">첨부 파일</label>
+                            <th:block th:if="${isEdit}">
+                            <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=${fileList}, isMultiple=true)}"></div>
+                            </th:block>
+                            <th:block th:if="${!isEdit}">
+                                <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=5, existingFiles=null, isMultiple=true)}"></div>
+                            </th:block>
+                            <p th:if="${#fields.hasErrors('newFiles')}" th:errors="*{newFiles}" class="text-error text-xs font-bold mt-1 error-text-wrap leading-relaxed"></p>
+                        </div>
+
+                </div>
+
+                <div class="inquiry-write-form__actions">
+                    <a class="inquiry-outline-button" th:href="@{/notice/list}">취소</a>
+                    <button type="button" class="inquiry-outline-button inquiry-outline-button--primary"
+                            th:text="${boardRequestDto.brdId == null ? '등록' : '수정 완료'}">확인</button>
+                </div>
+            </form>
+        </section>
+    </section>
+
+    <script defer th:src="@{/js/file/fileUpload.js}"></script>
+    <script th:inline="javascript">
+        window.beedanConfig = {
+            // 컨트롤러에서 담아준 maxFileSize (Long 타입 byte 값)
+            maxFileSize: [[${maxFileSize}]],
+            maxRequestSize: [[${maxRequestSize}]]
+        };
+        // ✅ 브라우저가 fileUpload.js(defer)까지 모두 완벽하게 읽을 때까지 기다립니다.
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('inquiry-write-form');
+
+            // 이제 fileUpload.js가 확실히 로드되었으므로 모듈을 정상적으로 찾을 수 있습니다!
+            if (window.InquiryUploader) {
+                window.InquiryUploader.init();
+            }
+
+            if (window.InquiryUploader) {
+                window.InquiryUploader.init();
+            }
+
+            if (form && window.tinymce) {
+                tinymce.init({
+                    selector: '#brdCon',
+                    height: 420,
+                    menubar: false,
+                    resize: false,
+                    plugins: 'lists link table wordcount preview',
+                    toolbar:
+                        'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+                        'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+                    block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
+                    font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
+                    placeholder: '공지사항 내용을 입력해 주세요.',
+                    content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
+                    branding: false,
+                    promotion: false,
+                    license_key: 'gpl'
+                });
+            }
+            const submitBtn = form.querySelector('.inquiry-outline-button--primary');
+
+            if (submitBtn) {
+                submitBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // 일단 전송 중단
+
+                    // 1. 데이터 동기화
+                    tinymce.triggerSave();
+
+                    const title = document.getElementById("brdTtl");
+                    if (!title.value || title.value.trim() === '') {
+                        showGuideModal('공지 제목을 입력해 주세요.', () => {
+                            title.focus();
+                        }, 'REQUIRED', 'edit_note');
+                        return;
+                    }
+
+                    const content = tinymce.get('brdCon').getContent({ format: 'text' });
+                    if (!content || content.trim() === '') {
+                        showGuideModal('공지 내용을 입력해 주세요.', () => {
+                            tinymce.get('brdCon').focus();
+                        }, 'REQUIRED', 'edit_note');
+                        return;
+                    }
+
+                    let uploader = null;
+                    if (window.InquiryUploader) {
+                        const uploadRoot = form.querySelector('[data-inquiry-upload]');
+                        uploader = window.InquiryUploader.get(uploadRoot);
+                        if (uploader) uploader.syncToInput();
+                    }
+
+                    if (uploader && !uploader.validateFileCount()) {
+                        return;
+                    }
+                    form.submit();
+                });
+            }
+
+        });
+    </script>
+
+    <script th:if="${noticeSuccess}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var msg = /*[[${noticeSuccessMessage}]]*/ '';
+            var target = /*[[${noticeSuccessRedirect}]]*/ '';
+            showGuideModal(msg, function() { window.location.href = target; }, 'COMPLETE', 'check_circle');
+        });
+    </script>
+</th:block>
+</html>

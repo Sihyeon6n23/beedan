@@ -1,0 +1,312 @@
+/* [1] Variables - 퍼블리셔 제공 테마 */
+:root {
+    --pub-primary: #e7c84b;
+    --pub-primary-light: #fff1c4;
+    --pub-primary-dark: #b89f3c;
+    --pub-bg-main: #fcfbf8;
+    --pub-bg-sidebar: #f3eee3;
+    --pub-bg-card: #ffffff;
+    --pub-text-main: #1a1c1c;
+    --pub-text-sub: #7a7a7a;
+    --pub-text-muted: #a3a3a3;
+    --pub-border: #ebe6da;
+    --pub-radius: 6px;
+    --pub-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* [2] Dropdown Container (알림창 전용) */
+.dropdown-panel {
+    background-color: var(--pub-bg-card);
+    border: 1px solid var(--pub-border);
+    border-radius: var(--pub-radius);
+    box-shadow: var(--pub-shadow);
+    overflow: hidden;
+}
+
+/* [3] List Item Style (알림 항목 등 공통 리스트) */
+.list-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--pub-border);
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.list-item:hover {
+    background-color: var(--pub-bg-main);
+}
+
+.list-item.unread {
+    border-left: 3px solid var(--pub-primary);
+    background-color: rgba(231, 200, 75, 0.05);
+}
+
+.list-item__title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--pub-text-main);
+}
+
+.list-item__content {
+    font-size: 0.813rem;
+    color: var(--pub-text-sub);
+    margin-top: 0.25rem;
+}
+
+.list-item__date {
+    font-size: 0.75rem;
+    color: var(--pub-text-muted);
+    margin-top: 0.5rem;
+}
+
+/* [4] Interactive Elements (버튼, 링크) */
+.text-link {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--pub-primary-dark);
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.text-link:hover {
+    opacity: 0.7;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--pub-text-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    color: var(--pub-text-main);
+}
+
+/* [7. 데이터 표시 - 데이터 목록 디자인 기반] */
+
+/* 68. 데이터 목록 컨테이너 */
+.data-list-container {
+    border: 1px solid var(--pub-border);
+    padding: 0; /* 내부 여백은 li에서 처리 */
+    background-color: var(--pub-bg-card);
+    list-style: none;
+}
+
+/* 데이터 목록 아이템 */
+.data-list-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.data-list-item:last-child {
+    border-bottom: none; /* 마지막 선 제거 */
+}
+
+.data-list-item:hover {
+    background-color: var(--pub-bg-main);
+}
+
+.data-list-item.unread {
+    border-left: 4px solid var(--pub-primary) !important;
+    background-color: rgba(231, 200, 75, 0.08) !important;
+}
+
+.data-list-item:not(.unread) {
+    border-left: 4px solid transparent; /* 간격 유지용 */
+}
+
+.status-badge {
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.close-btn {
+    opacity: 0.5;
+    transition: opacity 0.2s, color 0.2s;
+}
+.data-list-item:hover .close-btn {
+    opacity: 1;
+}
+.close-btn:hover {
+    color: #ef4444 !important; /* 삭제 버튼 호버 시 레드 계열 */
+}
+
+#notiIcon {
+    position: relative !important; /* 이 설정이 있어야 알림창이 아이콘을 따라다님 */
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#notiIcon > span.bg-primary {
+    width: auto !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    padding: 0 4px !important;
+
+    /* 2. 위치 조정 (종 아이콘의 오른쪽 어깨 부분) */
+    position: absolute !important;
+    top: -5px !important;
+    right: -8px !important;
+
+    background-color: #ef4444 !important; /* var(--error) */
+    color: #ffffff !important;
+    border: 1.5px solid #ffffff !important;
+
+    border-radius: 25px !important;
+
+    /* 5. 내부 숫자 정중앙 배치 */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    z-index: 20 !important;
+}
+
+
+/* [2] 알림창(Dropdown) - 위치 고정 해제 및 상대 배치 */
+#notiDropdown {
+    position: absolute !important; /* fixed가 아닌 absolute여야 스크롤 시 따라옴 */
+
+    /* 아이콘 바로 아래(100%)에서 10px 띄움 */
+    top: 100% !important;
+    right: 0 !important;
+    margin-top: 12px !important;
+
+    /* 너비 및 디자인 */
+    width: 420px !important;
+    min-width: 350px !important;
+    background-color: var(--pub-bg-card) !important;
+    border: 1px solid var(--pub-border) !important;
+    border-radius: var(--pub-radius) !important;
+    box-shadow: var(--pub-shadow) !important;
+
+    /* 레이어 순위 최상단 */
+    z-index: 1000 !important;
+}
+
+/* [3] 말풍선 꼬리표 (아이콘을 가리키는 삼각형) */
+#notiDropdown::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 15px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--pub-bg-card);
+    transform: rotate(45deg);
+    border-left: 1px solid var(--pub-border);
+    border-top: 1px solid var(--pub-border);
+    z-index: -1;
+}
+
+.noti-page-container {
+    width: 100%;             /* 부모 layout__content의 너비를 100% 사용 */
+    max-width: 1200px;       /* 너무 넓어지지 않게 상한선 지정 */
+    margin: 0 auto;          /* 중앙 정렬 */
+    padding: 40px 24px;      /* 상하좌우 적절한 여백 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 버튼 커스텀 스타일 */
+.btn-noti-all {
+    background: #1A1C1C;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.btn-noti-delete {
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.btn-noti-all:hover, .btn-noti-delete:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.flex { display: flex; }
+.gap-3 { gap: 12px; }
+.items-end { align-items: flex-end; }
+
+#unreadBadge {
+    transition: all 0.2s ease-in-out;
+    pointer-events: none; /* 아이콘 클릭에 방해되지 않도록 */
+}
+
+/* 알림 드롭다운 컨테이너 또는 정보 박스에 적용 */
+.notification-info-box {
+    max-height: 400px;    /* 원하는 최대 높이 설정 */
+    overflow-y: auto;     /* 세로 내용이 넘칠 때만 스크롤바 생성 */
+    overflow-x: hidden;   /* 가로 스크롤은 방지 */
+}
+
+/* (선택 사항) 스크롤바 디자인 커스텀 - 브라우저 기본보다 훨씬 깔끔합니다 */
+.notification-info-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-info-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-info-box::-webkit-scrollbar-thumb {
+    background: var(--pub-bg-sub, #e5e7eb); /* 배경색보다 약간 진한 색 */
+    border-radius: 10px;
+}
+
+.notification-info-box::-webkit-scrollbar-thumb:hover {
+    background: var(--pub-text-muted, #9ca3af);
+}
+
+#notiIcon:hover {
+    opacity: 1 !important;
+}
+
+/* 2. 대신, 아이콘 안에 있는 '종 모양(span)'에만 hover 효과를 줍니다. */
+#notiIcon:hover > span.material-symbols-outlined {
+    opacity: 0.6; /* 여기서 원하는 흐릿함 정도를 조절하세요 (0.7 ~ 0.5) */
+    transition: opacity 0.2s ease; /* 부드러운 효과를 위해 추가 */
+}
+
+/* 3. 드롭다운 메뉴는 부모가 hover 상태여도 항상 선명하게(1) 유지합니다. */
+#notiDropdown {
+    opacity: 1 !important;
+    filter: none !important;
+}

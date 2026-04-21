@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html th:replace="~{layout/layout :: layout(~{::title}, _, ~{::main})}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>BEEDAN | 오류</title>
+</head>
+<body>
+<main>
+    <style>
+        /* 에러 페이지 전용: 부모 컨테이너를 뷰포트 전체 너비로 강제 */
+        .app-layout__content { width: 100% !important; }
+
+        .error-wrap {
+            min-height: calc(100vh - 64px - 60px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        .error-glow {
+            background: radial-gradient(circle, var(--color-primary-container) 0%, transparent 70%);
+            padding: 1.2rem;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+        }
+        .error-glow img {
+            width: 330px;
+            height: 330px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));
+        }
+        .error-title {
+            font-family: var(--font-headline);
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--color-on-background);
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+        .error-msg {
+            font-size: 0.875rem;
+            color: var(--color-secondary);
+            line-height: 1.6;
+            max-width: 320px;
+            margin-bottom: 2.5rem;
+        }
+        .error-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .error-btn-back {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 1px solid var(--color-outline-variant);
+            background: var(--color-surface-container-lowest);
+            color: var(--color-on-background);
+            transition: all 0.2s ease;
+        }
+        .error-btn-back:hover {
+            background: var(--color-surface-container-high);
+        }
+    </style>
+
+    <div class="error-wrap">
+
+        <div class="error-glow">
+            <img th:src="@{/image/error.png}" alt="error" />
+        </div>
+
+        <p class="error-title">오류가 발생했습니다.</p>
+
+        <p class="error-msg"
+           th:text="${message} ?: '요청을 처리하는 중 오류가 발생했습니다.'">
+            오류 메시지
+        </p>
+
+        <div class="error-actions">
+            <button onclick="history.back()" class="error-btn-back">
+                이전 페이지로
+            </button>
+            <a th:href="@{/}"
+               class="btn-primary no-underline"
+               style="padding: 0.6rem 1.5rem; font-size: 0.75rem;">
+                메인으로
+            </a>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

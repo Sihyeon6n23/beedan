@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('STOCK MANAGEMENT', 'Requirements', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 상품 요청 작성</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('stock','stock-require')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/requirement/require-write.css}">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- TinyMCE (GPL, CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+
+    <section class="admin-chat-page admin-chat-list-page" style="max-width:1080px;">
+        <!-- Header -->
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">New Requirement</span>
+                <h2 class="admin-chat-title">상품 요청 작성</h2>
+            </div>
+            <div class="admin-chat-shell__rule"><span></span></div>
+        </header>
+
+        <!-- Form -->
+        <form th:object="${require}" th:action="@{/require/write}" method="post" id="req-form" class="req-write__form" enctype="multipart/form-data">
+            <input type="hidden" th:field="*{reqId}" id="reqId">
+            <!-- 제목 -->
+            <div class="req-field">
+                <label class="req-field__label" for="reqTtl">제목 <em>*</em></label>
+                <input th:field="*{reqTtl}" class="req-field__input" type="text" id="reqTtl" name="reqTtl"
+                       placeholder="요청하실 상품명 또는 요청 제목을 입력하세요">
+                <span class="field-error" data-for="reqTtl"></span>
+            </div>
+
+            <!-- 회사명 / 이름 -->
+            <div class="req-field--row">
+                <div class="req-field">
+                    <label class="req-field__label" for="memBizTtl">회사명</label>
+                    <input class="req-field__input" type="text" id="memBizTtl" name="memBizTtl"
+                           th:value="${#authentication.principal.bizName}" placeholder="회사(상호)명" readonly>
+                </div>
+                <div class="req-field">
+                    <label class="req-field__label" for="memNm">이름</label>
+                    <input class="req-field__input" type="text" id="memNm" name="memNm"
+                           th:value="${#authentication.principal.displayName}" placeholder="작성자 이름" readonly>
+                </div>
+            </div>
+
+            <!-- 내용 (에디터) -->
+            <div class="req-field">
+                <label class="req-field__label">내용 <em>*</em></label>
+                <textarea th:field="*{reqCnt}" id="editor" name="reqCon"
+                          placeholder="요청하실 상품의 상세 내용을 작성해주세요 (브랜드, 사이즈, 색상, 수량 등)"></textarea>
+                <span class="field-error" data-for="editor"></span>
+            </div>
+
+            <!-- 참고 URL / 희망가격 -->
+            <div class="req-field--row">
+                <div class="req-field">
+                    <label class="req-field__label" for="reqRef">참고 URL</label>
+                    <input th:field="*{reqRef}" class="req-field__input" type="url" id="reqRef" name="reqRef"
+                           placeholder="https://example.com/product">
+                    <span class="req-field__hint">상품 참고 링크가 있다면 입력해주세요</span>
+                </div>
+                <div class="req-field">
+                    <label class="req-field__label" for="reqPr">희망 가격</label>
+                    <div class="req-field__price-wrap">
+                        <input th:field="*{reqPr}" class="req-field__input" type="number" id="reqPr" name="reqPr"
+                               placeholder="0" min="0">
+                        <select th:field="*{reqCur}" class="req-field__price-unit-select" id="reqCur" name="reqCur">
+                            <option value="₩" selected>₩</option>
+                            <option value="$">$</option>
+                            <option value="¥">¥</option>
+                            <option value="€">€</option>
+                            <option value="CNY">CNY</option>
+                        </select>
+                    </div>
+                    <span class="field-error" data-for="reqPr"></span>
+                    <span class="req-field__hint">대략적인 희망 매입 단가를 입력해주세요</span>
+                </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="req-write__actions">
+                <button type="button" id="btn-draft" class="req-btn req-btn--draft">임시 저장</button>
+                <button type="submit" class="req-btn req-btn--primary">요청 제출</button>
+            </div>
+        </form>
+    </section>
+
+    <script>
+    (function() {
+        // --- CSRF ---
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+        // --- TinyMCE Editor ---
+        tinymce.init({
+            selector: '#editor',
+            height: 380,
+            language: 'ko_KR',
+            menubar: false,
+            plugins: 'lists link table wordcount preview',
+            toolbar: 'blocks fontsize | bold italic underline strikethrough | forecolor backcolor | ' +
+                     'alignleft aligncenter alignright | bullist numlist | link table | removeformat',
+            block_formats: '본문=p; 제목1=h2; 제목2=h3; 제목3=h4',
+            font_size_formats: '10px 12px 14px 16px 18px 20px 24px 28px 36px',
+            placeholder: '요청하실 상품의 상세 내용을 작성해주세요 (브랜드, 사이즈, 색상, 수량 등)',
+            content_style: 'body { font-family: Inter, Noto Sans KR, sans-serif; font-size: 14px; color: #1a1c1c; }',
+            branding: false,
+            promotion: false,
+            license_key: 'gpl'
+        });
+
+        // --- 순서대로 필드 검증 ---
+        function validateForm() {
+            document.querySelectorAll('.field-error').forEach(function(el) { el.textContent = ''; });
+
+            var fields = [
+                { id: 'reqTtl', label: '제목을 입력하세요.', getValue: function() { return document.getElementById('reqTtl').value.trim(); } },
+                { id: 'editor', label: '내용을 입력하세요.', getValue: function() { tinymce.triggerSave(); return tinymce.get('editor').getContent({format:'text'}).trim(); } },
+                { id: 'reqPr', label: '희망 가격을 입력하세요.', getValue: function() { return document.getElementById('reqPr').value.trim(); } }
+            ];
+            for (var i = 0; i < fields.length; i++) {
+                var f = fields[i];
+                if (!f.getValue()) {
+                    document.querySelector('[data-for="' + f.id + '"]').textContent = f.label;
+                    if (f.id === 'editor') {
+                        tinymce.get('editor').focus();
+                    } else {
+                        document.getElementById(f.id).focus();
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // --- 임시 저장 (비동기) ---
+        document.getElementById('btn-draft').addEventListener('click', function() {
+            tinymce.triggerSave();
+            var form = document.getElementById('req-form');
+            var formData = new FormData(form);
+
+            var headers = {};
+            if (csrfToken) headers[csrfHeader] = csrfToken;
+
+            axios.post('/api/require/draft', formData, { headers: headers })
+                .then(function(res) {
+                    document.getElementById('reqId').value = res.data;
+                    alert('임시 저장되었습니다.');
+                })
+                .catch(function(err) {
+                    console.error('임시 저장 실패:', err);
+                    alert('임시 저장에 실패했습니다.');
+                });
+        });
+
+        // --- Form Submit (제출) ---
+        document.getElementById('req-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!validateForm()) return;
+
+            tinymce.triggerSave();
+
+            this.submit();
+        });
+    })();
+    </script>
+</th:block>
+</html>

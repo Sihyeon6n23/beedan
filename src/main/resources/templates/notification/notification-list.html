@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('NOTIFICATION', 'NOTIFICATION LIST', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 알림 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('Notification', 'Notification-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <style>
+        <style>
+        .admin-chat-shell--toolbar {
+         display: flex;
+         justify-content: space-between; /* 좌우 끝으로 배치 */
+         align-items: center;
+         padding: 10px 16px;
+         border-bottom: 1px solid var(--pub-bg-sub);
+     }
+
+     .admin-chat-toolbar__filters {
+         display: flex;
+         gap: 12px;
+     }
+
+     .flex.items-center.gap-2 {
+         display: flex;
+         align-items: center;
+         gap: 8px; /* 버튼 사이 8px 간격 */
+     }
+
+     .admin-chat-filter {
+         text-decoration: none;
+         font-size: 13px;
+         color: var(--pub-text-sub);
+     }
+
+     .admin-chat-filter.is-active {
+         font-weight: bold;
+         color: var(--pub-primary);
+     }
+    </style>
+
+    <section class="admin-chat-page admin-chat-list-page order-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Notification List</span>
+                <h2 class="admin-chat-title">알림 목록</h2>
+
+                <div class="admin-chat-shell__rule">
+                    <span></span>
+                </div>
+            </div>
+        </header>
+
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="알림 목록 필터">
+            <div class="admin-chat-toolbar">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                        <a class="admin-chat-filter" href="#" data-status="UNREAD">미읽음</a>
+                        <a class="admin-chat-filter" href="#" data-status="READ">읽음</a>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="handlePageAction('readAll')" class="btn-noti-all">모두 읽음</button>
+                    <button type="button" onclick="handlePageAction('deleteAll')" class="btn-noti-delete">전체 삭제</button>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-body" id="require-list-body">
+
+                <div id="notiPageContent"></div>
+            </div>
+        </section>
+
+        <div id="noti-pagination" class="admin-chat-shell admin-chat-shell--pagination admin-chat-pagination" style="margin-top: 20px; display: flex; justify-content: center; gap: 0 !important;"></div>
+    </section>
+
+    <script src="/js/notification/notification-list.js"></script>
+</th:block>
+</html>

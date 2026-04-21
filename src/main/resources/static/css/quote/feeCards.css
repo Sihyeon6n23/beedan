@@ -1,0 +1,737 @@
+/* ============================================================
+   Fee Cards + Modal Fragment
+   fragments/quoteAndPayment/feeCards.html 전용
+   ============================================================ */
+
+.fees-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: #e8e8e8;
+}
+
+.fee-card {
+    background: var(--color-white, #ffffff);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fee-card:hover {
+    border-color: var(--color-gold, #ffd700);
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.18), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.fee-card-header { display: flex; align-items: center; gap: 16px; }
+
+.fee-card-title {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: -0.45px;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #1a1c1c);
+    line-height: 28px;
+}
+
+.fee-items { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+/* ---- Factory Groups in Card ---- */
+.fc-factory-group {
+    border: 1px solid var(--color-border-light, #e7e5e4);
+    margin-bottom: 8px;
+}
+
+.fc-factory-group:last-child {
+    margin-bottom: 0;
+}
+
+.fc-factory-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--color-surface, #f3f3f3);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.fc-factory-header:hover {
+    background: var(--color-surface-container, #eeeeee);
+}
+
+.fc-factory-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fc-factory-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.fc-factory-meta {
+    font-size: 11px;
+    color: var(--color-text-muted, #78716c);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.fc-factory-amount {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a1c1c);
+    white-space: nowrap;
+}
+
+.fc-factory-details {
+    display: none;
+    padding: 8px 16px 12px;
+    border-top: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.fc-factory-group.is-open .fc-factory-details {
+    display: block;
+}
+
+.fc-factory-details .fee-item {
+    padding: 6px 0;
+    font-size: 12px;
+}
+
+.fc-factory-details .fee-label {
+    font-size: 12px;
+}
+
+.fc-factory-details .fee-value {
+    font-size: 12px;
+}
+
+.fee-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.fee-label { font-size: 14px; color: var(--color-text-muted, #78716c); line-height: 20px; }
+.fee-value { font-weight: 700; font-size: 14px; color: var(--color-text-primary, #1a1c1c); white-space: nowrap; }
+
+.included-badge {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark, #705d00);
+    margin-left: 6px;
+}
+
+.fee-subtotal {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px dashed var(--color-border-subtle, #e7e5e4);
+    margin-top: auto;
+}
+
+.fee-subtotal-label {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #1a1c1c);
+    line-height: 16px;
+}
+
+.fee-subtotal-value {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-gold-dark, #705d00);
+    line-height: 24px;
+}
+
+/* ── 등급 할인 표시 ── */
+.fee-value.has-discount,
+.fee-subtotal-value.has-discount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    white-space: normal;
+}
+.fee-value .original-price,
+.fee-subtotal-value .original-price {
+    text-decoration: line-through;
+    color: var(--color-text-light, #a8a29e);
+}
+.fee-value .discounted-line,
+.fee-subtotal-value .discounted-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-gold-dark, #705d00);
+}
+.grade-badge {
+    display: inline-block;
+    background: var(--color-gold-light, #fef9c3);
+    color: var(--color-gold-dark, #705d00);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 16px;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   Fee Info Tooltip
+   ============================================================ */
+.fee-info-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-light, #a8a29e);
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 2px;
+    transition: color 0.15s ease;
+}
+
+.fee-info-btn:hover {
+    color: var(--color-gold-dark, #705d00);
+}
+
+.fee-tooltip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 220px;
+    padding: 7px 10px;
+    background: var(--color-text-primary, #1a1c1c);
+    color: #fff;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    white-space: normal;
+    z-index: 100;
+}
+
+.fee-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-text-primary, #1a1c1c);
+}
+
+.fee-info-btn.is-active .fee-tooltip {
+    display: block;
+}
+
+/* ---- Shipping Rate Table ---- */
+.shipping-rate-table {
+    margin: 12px 0 4px;
+    padding: 14px 16px;
+    background: var(--color-surface, #f3f3f3);
+    border: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.rate-table-caption {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #78716c);
+    margin-bottom: 10px;
+}
+
+.shipping-rate-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.shipping-rate-table th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-light, #a8a29e);
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.shipping-rate-table th:last-child {
+    text-align: right;
+}
+
+.shipping-rate-table td {
+    font-size: 12px;
+    color: var(--color-text-muted, #78716c);
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--color-border-subtle, #eeeeee);
+}
+
+.shipping-rate-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+}
+
+.shipping-rate-table tr:last-child td {
+    border-bottom: none;
+}
+
+.shipping-rate-table tr.rate-active td {
+    color: var(--color-gold-dark, #705d00);
+    font-weight: 700;
+    background: rgba(255, 215, 0, 0.08);
+}
+
+.shipping-rate-table tr.rate-active td:first-child::after {
+    content: ' ← 현재';
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* ---- Modal Info Tooltip ---- */
+.modal-info-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-light, #a8a29e);
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 2px;
+    transition: color 0.15s ease;
+}
+
+.modal-info-btn:hover {
+    color: var(--color-gold-dark, #705d00);
+}
+
+.modal-tooltip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: max-content;
+    max-width: 220px;
+    padding: 7px 10px;
+    background: var(--color-text-primary, #1a1c1c);
+    color: #fff;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    white-space: normal;
+    z-index: 100;
+}
+
+.modal-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 12px;
+    border: 5px solid transparent;
+    border-bottom-color: var(--color-text-primary, #1a1c1c);
+}
+
+.modal-info-btn.is-active .modal-tooltip {
+    display: block;
+}
+
+/* ---- Policy Date Badge ---- */
+.modal-policy-date {
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--color-text-light, #a8a29e);
+    text-transform: none;
+}
+
+/* ============================================================
+   Modal
+   ============================================================ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 28, 28, 0.48);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.modal-overlay.is-open {
+    display: flex;
+    animation: overlayIn 0.2s ease;
+}
+
+@keyframes overlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    background: var(--color-white, #ffffff);
+    width: 100%;
+    max-width: 600px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-left: 4px solid var(--color-gold, #ffd700);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.16), 0 4px 16px rgba(0,0,0,0.08);
+    animation: modalIn 0.22s ease;
+    position: relative;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 32px 32px 24px 36px;
+    border-bottom: 1px solid var(--color-divider, #e7e5e4);
+    position: sticky;
+    top: 0;
+    background: var(--color-white, #ffffff);
+    z-index: 1;
+}
+
+.modal-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-tag {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-gold-dark, #705d00);
+    line-height: 15px;
+}
+
+.modal-title {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #1a1c1c);
+    line-height: 28px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--color-text-muted, #78716c);
+    line-height: 1;
+    font-size: 20px;
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.modal-close:hover { color: var(--color-text-primary, #1a1c1c); }
+
+.modal-body {
+    padding: 28px 36px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.modal-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: var(--color-surface, #f3f3f3);
+}
+
+.modal-total-label {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #78716c);
+}
+
+.modal-total-value {
+    font-family: var(--font-display, 'Manrope', sans-serif);
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--color-gold-dark, #705d00);
+    letter-spacing: -0.5px;
+}
+
+.modal-section-label {
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-text-light, #a8a29e);
+    line-height: 15px;
+    margin-bottom: 14px;
+}
+
+.modal-detail-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.modal-detail-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.modal-detail-row:last-child { border-bottom: none; }
+
+.modal-detail-row.row-subtotal { background: #fafaf5; }
+
+.modal-row-key {
+    flex: 1;
+    padding: 14px 20px;
+    font-size: 13px;
+    color: var(--color-text-muted, #78716c);
+    line-height: 20px;
+    border-right: 1px solid var(--color-border-light, #e7e5e4);
+}
+
+.modal-row-val {
+    width: 160px;
+    flex-shrink: 0;
+    padding: 14px 20px;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--color-text-primary, #1a1c1c);
+    text-align: right;
+    line-height: 20px;
+}
+
+.modal-detail-row.row-subtotal .modal-row-key {
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-primary, #1a1c1c);
+}
+
+.modal-detail-row.row-subtotal .modal-row-val {
+    color: var(--color-gold-dark, #705d00);
+    font-size: 15px;
+}
+
+.modal-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #fffdf0;
+    border: 1px solid #ede9c8;
+    padding: 14px 18px;
+}
+
+.modal-note-icon {
+    flex-shrink: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--color-gold-dark, #705d00);
+}
+
+.modal-note p {
+    font-size: 11px;
+    color: var(--color-text-muted, #78716c);
+    line-height: 18px;
+}
+
+.modal-divider {
+    height: 1px;
+    background: var(--color-divider, #e7e5e4);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+    .fees-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .modal { max-height: 95vh; }
+    .modal-header, .modal-body { padding-left: 24px; padding-right: 24px; }
+    .modal-row-val { width: 130px; }
+}
+
+/* ============================================================
+   공급처 입력 버튼 + 모달
+   ============================================================ */
+.btn-factory-input {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #8b3a3a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    margin-left: auto;
+    white-space: nowrap;
+}
+.btn-factory-input:hover { background: #6e2e2e; }
+.factory-input-desc {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+    line-height: 22px;
+}
+.factory-input-card {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: var(--color-surface, #fafafa);
+}
+.factory-input-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.factory-input-brand {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text-primary);
+}
+.factory-input-count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+.factory-input-products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.factory-input-product {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    background: #fff;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+.factory-input-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.factory-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 140px;
+}
+.factory-input-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.3px;
+}
+.factory-input-text,
+.factory-input-select {
+    padding: 8px 10px;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    background: #fff;
+}
+.factory-input-text:focus,
+.factory-input-select:focus {
+    outline: none;
+    border-color: var(--color-gold-dark, #8a7a00);
+}
+
+/* Admin 운임 수동 입력 */
+.admin-fee-input {
+    width: 120px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border, #d0d0d0);
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: right;
+    color: var(--color-text-primary);
+    background: #fff;
+}
+.admin-fee-input:focus {
+    outline: none;
+    border-color: var(--color-gold-dark, #8a7a00);
+}
+.modal-admin-apply {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+.modal-admin-apply .btn-confirm {
+    padding: 10px 28px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: #1a1c1c;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.modal-admin-apply .btn-confirm:hover {
+    background: #333;
+}

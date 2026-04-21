@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('SALES', 'Revenue', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 매출 관리</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('sales', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px 80px;">
+
+        <section class="mypage-security-page__intro">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <span class="mypage-security-page__kicker">SALES</span>
+                <a th:href="@{/root/sales/pdf(year=${year}, month=${month})}" target="_blank"
+                   style="display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:#fff; border:1px solid #e7e5e4; color:#1a1c1c; font-size:12px; font-weight:700; text-decoration:none; letter-spacing:0.05em;">
+                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 1v6M2 5l3 3 3-3M1 9h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    PDF 다운로드
+                </a>
+            </div>
+            <h1 class="mypage-security-page__title">매출 관리</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
+
+        <!-- 기간 선택 -->
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:32px; flex-wrap:wrap;">
+            <a th:href="@{/root/sales(year=${month - 1 > 0 ? year : year - 1}, month=${month - 1 > 0 ? month - 1 : 12})}"
+               style="padding:6px 14px; font-size:12px; font-weight:700; background:#f3f3f3; color:#78716c; border:none; text-decoration:none;">&lt; 이전</a>
+            <div style="display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e7e5e4; padding:8px 16px;">
+                <span class="material-symbols-outlined" style="font-size:18px; color:#c4b799;">calendar_today</span>
+                <span style="font-size:14px; font-weight:700; color:#1a1c1c;" th:text="${periodLabel}">2026년 4월</span>
+                <span style="font-size:11px; color:#78716c;" th:text="'(' + ${periodRange} + ')'"></span>
+            </div>
+            <a th:href="@{/root/sales(year=${month + 1 <= 12 ? year : year + 1}, month=${month + 1 <= 12 ? month + 1 : 1})}"
+               style="padding:6px 14px; font-size:12px; font-weight:700; background:#f3f3f3; color:#78716c; border:none; text-decoration:none;">다음 &gt;</a>
+            <div style="display:flex; align-items:center; gap:4px; margin-left:16px;">
+                <select id="salesYear" style="padding:6px 8px; font-size:12px; font-weight:700; border:1px solid #e7e5e4;">
+                    <option th:each="y : ${#numbers.sequence(2024, 2030)}" th:value="${y}" th:text="${y + '년'}" th:selected="${y == year}"></option>
+                </select>
+                <select id="salesMonth" style="padding:6px 8px; font-size:12px; font-weight:700; border:1px solid #e7e5e4;">
+                    <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}" th:text="${m + '월'}" th:selected="${m == month}"></option>
+                </select>
+                <button onclick="location.href='/root/sales?year='+document.getElementById('salesYear').value+'&amp;month='+document.getElementById('salesMonth').value;"
+                        style="padding:6px 14px; font-size:12px; font-weight:800; background:#ffd700; color:#705d00; border:none; cursor:pointer;">이동</button>
+            </div>
+        </div>
+
+        <!-- KPI 카드 -->
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:40px;">
+            <div style="background:#fff; border-top:4px solid #ffd700; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">총 매출</p>
+                <p style="font-size:28px; font-weight:900; color:#1a1c1c; margin:0;" th:text="'₩' + ${#numbers.formatInteger(kpi.totalRevenue, 1, 'COMMA')}">₩0</p>
+            </div>
+            <div style="background:#fff; border-top:4px solid #c4b799; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">총 주문</p>
+                <p style="font-size:28px; font-weight:900; color:#1a1c1c; margin:0;"><span th:text="${kpi.totalOrders}">0</span><span style="font-size:16px; color:#78716c; margin-left:4px;">건</span></p>
+            </div>
+            <div style="background:#fff; border-top:4px solid #a8a29e; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">평균 주문 금액</p>
+                <p style="font-size:28px; font-weight:900; color:#1a1c1c; margin:0;" th:text="'₩' + ${#numbers.formatInteger(kpi.avgOrderAmount, 1, 'COMMA')}">₩0</p>
+            </div>
+            <div style="background:#fff; border-top:4px solid #e7e5e4; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">신규 고객</p>
+                <p style="font-size:28px; font-weight:900; color:#1a1c1c; margin:0;"><span th:text="${kpi.newCustomers}">0</span><span style="font-size:16px; color:#78716c; margin-left:4px;">명</span></p>
+            </div>
+        </div>
+
+        <!-- 차트 영역 -->
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:40px;">
+            <!-- 월별 매출 추이 (막대) -->
+            <div style="background:#fff; border:1px solid #e7e5e4; padding:28px;">
+                <h3 style="font-size:14px; font-weight:800; color:#1a1c1c; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 20px;">월별 매출 추이</h3>
+                <canvas id="chartTrend" height="220"></canvas>
+            </div>
+            <!-- 매출 구성 (도넛) -->
+            <div style="background:#fff; border:1px solid #e7e5e4; padding:28px;">
+                <h3 style="font-size:14px; font-weight:800; color:#1a1c1c; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 20px;">매출 구성 비율</h3>
+                <canvas id="chartComposition" height="220"></canvas>
+            </div>
+        </div>
+
+        <!-- 수수료 요약 카드 -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:40px;">
+            <div style="background:#fff; border:1px solid #e7e5e4; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">서비스 수수료</p>
+                <p style="font-size:24px; font-weight:900; color:#1a1c1c; margin:0 0 4px;" th:text="'₩' + ${#numbers.formatInteger(commSummary['serviceFee'], 1, 'COMMA')}">₩0</p>
+                <p style="font-size:12px; color:#a8a29e; margin:0;" th:text="${#numbers.formatInteger(commSummary['serviceCount'], 1, 'COMMA')} + '건'">0건</p>
+            </div>
+            <div style="background:#fff; border:1px solid #e7e5e4; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">배송 수수료</p>
+                <p style="font-size:24px; font-weight:900; color:#1a1c1c; margin:0 0 4px;" th:text="'₩' + ${#numbers.formatInteger(commSummary['shippingFee'], 1, 'COMMA')}">₩0</p>
+                <p style="font-size:12px; color:#a8a29e; margin:0;" th:text="${#numbers.formatInteger(commSummary['shippingCount'], 1, 'COMMA')} + '건'">0건</p>
+            </div>
+            <div style="background:#fff; border:1px solid #e7e5e4; padding:24px;">
+                <p style="font-size:11px; font-weight:700; color:#78716c; letter-spacing:0.1em; text-transform:uppercase; margin:0 0 8px;">관세 / 부가세</p>
+                <p style="font-size:24px; font-weight:900; color:#1a1c1c; margin:0 0 4px;" th:text="'₩' + ${#numbers.formatInteger(commSummary['customsFee'], 1, 'COMMA')}">₩0</p>
+                <p style="font-size:12px; color:#a8a29e; margin:0;" th:text="${#numbers.formatInteger(commSummary['customsCount'], 1, 'COMMA')} + '건'">0건</p>
+            </div>
+        </div>
+
+        <!-- 수수료 상세 테이블 -->
+        <div style="background:#fff; border:1px solid #e7e5e4; padding:28px; margin-bottom:40px;">
+            <h3 style="font-size:14px; font-weight:800; color:#1a1c1c; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 20px;">수수료 매출 상세</h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                    <tr style="background:#f3f3f3;">
+                        <th style="padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">일자</th>
+                        <th style="padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">견적번호</th>
+                        <th style="padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">고객사</th>
+                        <th style="padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">등급</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">물품 대금</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">서비스 수수료</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">배송 수수료</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:11px; font-weight:700; color:#78716c; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #e7e5e4;">합계</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(commRows)}">
+                        <td colspan="8" style="padding:32px; text-align:center; color:#a8a29e;">해당 기간에 결제된 견적이 없습니다.</td>
+                    </tr>
+                    <tr th:each="row : ${commRows}" style="border-bottom:1px solid #f3f3f3;">
+                        <td style="padding:10px 14px;" th:text="${#temporals.format(row.date, 'yyyy.MM.dd')}"></td>
+                        <td style="padding:10px 14px; font-weight:700;" th:text="${row.quoteCd}"></td>
+                        <td style="padding:10px 14px;" th:text="${row.buyerName}"></td>
+                        <td style="padding:10px 14px;" th:text="${row.grade}"></td>
+                        <td style="padding:10px 14px; text-align:right;" th:text="'₩' + ${#numbers.formatInteger(row.itemAmount, 1, 'COMMA')}"></td>
+                        <td style="padding:10px 14px; text-align:right;" th:text="'₩' + ${#numbers.formatInteger(row.serviceFee, 1, 'COMMA')}"></td>
+                        <td style="padding:10px 14px; text-align:right;" th:text="'₩' + ${#numbers.formatInteger(row.shippingFee, 1, 'COMMA')}"></td>
+                        <td style="padding:10px 14px; text-align:right; font-weight:700;" th:text="'₩' + ${#numbers.formatInteger(row.totalFee, 1, 'COMMA')}"></td>
+                    </tr>
+                    </tbody>
+                    <tfoot th:if="${!#lists.isEmpty(commRows)}">
+                    <tr style="background:#f3f3f3; font-weight:700;">
+                        <td style="padding:10px 14px;" colspan="4">합계</td>
+                        <td style="padding:10px 14px; text-align:right;" th:text="'₩' + ${#numbers.formatInteger(commItemTotal, 1, 'COMMA')}"></td>
+                        <td style="padding:10px 14px; text-align:right;" th:text="'₩' + ${#numbers.formatInteger(commServiceTotal, 1, 'COMMA')}"></td>
+                        <td style="padding:10px 14px; text-align:right;" th:text="'₩' + ${#numbers.formatInteger(commShippingTotal, 1, 'COMMA')}"></td>
+                        <td style="padding:10px 14px; text-align:right; color:#705d00;" th:text="'₩' + ${#numbers.formatInteger(commFeeTotal, 1, 'COMMA')}"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- 등급별 매출 분포 -->
+        <div style="background:#fff; border:1px solid #e7e5e4; padding:28px;">
+            <h3 style="font-size:14px; font-weight:800; color:#1a1c1c; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 20px;">등급별 매출 분포</h3>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+                <div th:each="gd : ${gradeDist}" style="background:#f9f9f9; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <span style="display:inline-block; width:10px; height:10px; border-radius:50%;"
+                              th:style="${gd.grade == 'VIP'} ? 'background:#ffd700;' : (${gd.grade == 'PREMIUM'} ? 'background:#a8a29e;' : 'background:#e7e5e4;')"></span>
+                        <span style="font-size:13px; font-weight:700;" th:text="${gd.grade}"></span>
+                        <span style="font-size:11px; color:#a8a29e; margin-left:auto;" th:text="${gd.buyerCount} + '개사'"></span>
+                    </div>
+                    <p style="font-size:22px; font-weight:900; color:#1a1c1c; margin:0 0 8px;" th:text="'₩' + ${#numbers.formatInteger(gd.revenue, 1, 'COMMA')}">₩0</p>
+                    <div style="width:100%; height:6px; background:#e7e5e4;">
+                        <div th:style="'width:' + ${gd.percentage} + '%; height:100%;'"
+                             th:styleappend="${gd.grade == 'VIP'} ? 'background:#ffd700;' : (${gd.grade == 'PREMIUM'} ? 'background:#a8a29e;' : 'background:#c4b799;')"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                        <span style="font-size:11px; color:#a8a29e;" th:text="${gd.orderCount} + '건'"></span>
+                        <span style="font-size:11px; font-weight:700;" th:text="${gd.percentage} + '%'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chart.js 초기화 -->
+    <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var trend = /*[[${monthlyTrend}]]*/ [];
+        var commSummary = /*[[${commSummary}]]*/ {};
+        var commItemTotal = /*[[${commItemTotal}]]*/ 0;
+
+        // 월별 추이 막대 차트
+        var trendLabels = trend.map(function (t) { return t.label; });
+        new Chart(document.getElementById('chartTrend'), {
+            type: 'bar',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    { label: '상품 대금', data: trend.map(function (t) { return t.item; }), backgroundColor: '#ffd700' },
+                    { label: '서비스 수수료', data: trend.map(function (t) { return t.service; }), backgroundColor: '#c4b799' },
+                    { label: '운임', data: trend.map(function (t) { return t.shipping; }), backgroundColor: '#a8a29e' },
+                    { label: '관세/부가세', data: trend.map(function (t) { return t.tax; }), backgroundColor: '#e7e5e4' }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 11, weight: 'bold' } } } },
+                scales: {
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, ticks: { callback: function (v) { return '₩' + (v / 10000).toFixed(0) + '만'; } } }
+                }
+            }
+        });
+
+        // 매출 구성 도넛 차트
+        var svc = parseFloat(commSummary.serviceFee) || 0;
+        var shp = parseFloat(commSummary.shippingFee) || 0;
+        var tax = parseFloat(commSummary.customsFee) || 0;
+        var itm = parseFloat(commItemTotal) || 0;
+
+        new Chart(document.getElementById('chartComposition'), {
+            type: 'doughnut',
+            data: {
+                labels: ['상품 대금', '서비스 수수료', '운임', '관세/부가세'],
+                datasets: [{
+                    data: [itm, svc, shp, tax],
+                    backgroundColor: ['#ffd700', '#c4b799', '#a8a29e', '#e7e5e4'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '55%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11, weight: 'bold' }, padding: 16 } }
+                }
+            }
+        });
+    });
+    </script>
+</th:block>
+</html>

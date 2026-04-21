@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('Operation', 'fee-policy', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | Fee Policy</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('operation', 'fee-policy')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <div class="flex-grow mx-auto px-6 py-10 max-w-6xl">
+
+        <!-- 뒤로가기 -->
+        <a th:href="@{/root/operation}" class="inline-flex items-center gap-1 text-sm text-outline hover:text-primary transition-colors mb-8">
+            <span class="material-symbols-outlined text-base">arrow_back</span>
+            운영 정책으로 돌아가기
+        </a>
+
+        <!-- Page Header -->
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">FEE POLICY</span>
+            <h1 class="mypage-security-page__title" th:text="${grade.bgpGr}"></h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+        </section>
+
+        <!-- 등급 기본 정보 -->
+        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8 mb-10">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">등급 조건</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="p-1.5 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                            th:data-id="${grade.bgpId}" data-type="grade" title="등급 수정">
+                        <span class="material-symbols-outlined text-base">edit</span>
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">최소 거래횟수</div>
+                    <div class="text-lg font-black" th:text="${grade.bgpMinOrdCnt != null} ? ${grade.bgpMinOrdCnt} + '회' : '—'"></div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">최소 누적금액</div>
+                    <div class="text-lg font-black" th:text="${grade.bgpMinTtAm != null} ? ${#numbers.formatDecimal(grade.bgpMinTtAm, 0, 'COMMA', 0, 'POINT')} : '—'"></div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">시작일</div>
+                    <div class="text-lg font-black" th:text="${grade.bgpEfFrDt != null} ? ${#temporals.format(grade.bgpEfFrDt, 'yyyy-MM-dd')} : '—'"></div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-outline uppercase mb-2">종료일</div>
+                    <div class="text-lg font-black" th:text="${grade.bgpEfToDt != null} ? ${#temporals.format(grade.bgpEfToDt, 'yyyy-MM-dd')} : '무기한'"></div>
+                </div>
+            </div>
+            <div th:if="${grade.bgpDes != null}" class="mt-6 pt-6 border-t border-surface-container">
+                <div class="text-xs font-bold text-outline uppercase mb-2">설명</div>
+                <div class="text-sm" th:text="${grade.bgpDes}"></div>
+            </div>
+        </div>
+
+        <!-- 수수료 정책 테이블 -->
+        <div class="bg-surface-container-lowest shadow-sm border-l-8 border-primary-container p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary">payments</span>
+                    <h2 class="text-xl font-bold tracking-tight uppercase">적용 수수료</h2>
+                    <span class="text-xs text-outline ml-2" th:text="${#lists.size(feePolicies)} + '건'"></span>
+                </div>
+                <button type="button" onclick="openModal('feePolicyModal')"
+                        class="flex items-center gap-1 text-sm font-bold text-primary hover:text-on-primary-container bg-primary-container hover:bg-primary px-4 py-2 transition-all">
+                    <span class="material-symbols-outlined text-base">add</span> 수수료 추가
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-surface-container-high text-left">
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">수수료 유형</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">계산 방식</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">값</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">시작일</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">종료일</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline">설명</th>
+                            <th class="px-4 py-3 font-bold text-xs uppercase text-outline text-center w-24">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-container">
+                        <tr th:each="fp : ${feePolicies}" class="hover:bg-surface-container-low transition-colors">
+                            <td class="px-4 py-3 font-bold" th:text="${fp.fpFeeTy}"></td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-bold rounded"
+                                      th:classappend="${fp.fpCalcTy.name() == 'RATE'} ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'"
+                                      th:text="${fp.fpCalcTy}"></span>
+                            </td>
+                            <td class="px-4 py-3" th:text="${fp.fpCalcTy.name() == 'RATE'} ? ${fp.fpVal} + '%' : ${#numbers.formatDecimal(fp.fpVal, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td class="px-4 py-3" th:text="${fp.fpEfFrDt != null} ? ${#temporals.format(fp.fpEfFrDt, 'yyyy-MM-dd')} : '—'"></td>
+                            <td class="px-4 py-3" th:text="${fp.fpEfToDt != null} ? ${#temporals.format(fp.fpEfToDt, 'yyyy-MM-dd')} : '무기한'"></td>
+                            <td class="px-4 py-3 text-outline" th:text="${fp.fpDes} ?: '—'"></td>
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
+                                            th:data-id="${fp.fpId}" data-type="feePolicy" title="수정">
+                                        <span class="material-symbols-outlined text-base">edit</span>
+                                    </button>
+                                    <button type="button" class="p-1 text-error hover:bg-error-container rounded transition-colors btn-delete"
+                                            th:data-id="${fp.fpId}" data-type="feePolicy" title="삭제">
+                                        <span class="material-symbols-outlined text-base">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(feePolicies)}">
+                            <td colspan="7" class="px-4 py-8 text-center text-outline">등록된 수수료 정책이 없습니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-surface-container-lowest w-full max-w-lg mx-4 shadow-lg border-l-8 border-primary-container" style="outline: 2px solid var(--color-primary, #ffd700); outline-offset: -2px;">
+            <div class="flex items-center justify-between p-6 border-b border-surface-container">
+                <h3 id="modalTitle" class="text-lg font-bold tracking-tight uppercase">수수료 추가</h3>
+                <button type="button" onclick="closeModal()" class="p-1 hover:bg-surface-container-high rounded transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="modalForm" class="p-6 space-y-4">
+                <div id="modalFields"></div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-surface-container">
+                    <button type="button" onclick="closeModal()"
+                            class="px-6 py-2.5 text-sm font-bold text-outline hover:bg-surface-container-high transition-colors">
+                        취소
+                    </button>
+                    <button type="submit"
+                            class="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-primary bg-primary-container hover:bg-primary hover:text-on-primary-container transition-all">
+                        <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">save</span>
+                        저장
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const gradeId = [[${grade.bgpId}]];
+        const gradeGr = [[${grade.bgpGr}]];
+
+        const MODAL_CONFIG = {
+            feePolicyModal: {
+                title: gradeGr + ' 수수료 추가',
+                fields: [
+                    { name: 'fpFeeTy',  label: '수수료 유형',            type: 'select', options: ['SERVICE_COMMISSION', 'SHIPPING', 'CUSTOMS', 'DOCUMENT'] },
+                    { name: 'fpCalcTy', label: '계산 방식',              type: 'select', options: ['RATE', 'FIXED'] },
+                    { name: 'fpVal',    label: '값 (RATE=%, FIXED=원)',  type: 'number', placeholder: '5', step: '0.0001' },
+                    { name: 'fpEfFrDt', label: '시작일',                 type: 'date' },
+                    { name: 'fpEfToDt', label: '종료일 (빈값=무기한)',    type: 'date',  required: false },
+                    { name: 'fpDes',    label: '설명',                   type: 'text',   placeholder: '관리자 메모' }
+                ]
+            }
+        };
+
+        function openModal(configKey) {
+            const config = MODAL_CONFIG[configKey];
+            if (!config) return;
+
+            document.getElementById('modalTitle').textContent = config.title;
+            const fieldsContainer = document.getElementById('modalFields');
+            fieldsContainer.innerHTML = '';
+
+            config.fields.forEach(field => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'space-y-1';
+
+                const label = document.createElement('label');
+                label.className = 'block text-xs font-bold text-zinc-500 uppercase';
+                label.textContent = field.label;
+                wrapper.appendChild(label);
+
+                let input;
+                if (field.type === 'select') {
+                    input = document.createElement('select');
+                    input.className = 'w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all';
+                    field.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        input.appendChild(option);
+                    });
+                } else {
+                    input = document.createElement('input');
+                    input.type = field.type;
+                    if (field.placeholder) input.placeholder = field.placeholder;
+                    input.className = 'w-full bg-surface-container-high border-none p-3 text-sm focus:bg-surface-container-lowest focus:border-l-4 focus:border-primary transition-all';
+                    if (field.step) input.step = field.step;
+                }
+                input.name = field.name;
+                input.required = field.required !== false;
+                wrapper.appendChild(input);
+                fieldsContainer.appendChild(wrapper);
+            });
+
+            const modal = document.getElementById('policyModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('policyModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            document.getElementById('modalForm').reset();
+        }
+
+        document.getElementById('policyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        let currentEditId = null;
+
+        // 수정 시 openModal 오버라이드
+        const _origOpen = openModal;
+        function openModalEdit(configKey, editId, editData) {
+            currentEditId = editId || null;
+            _origOpen(configKey);
+            if (editData) {
+                const config = MODAL_CONFIG[configKey];
+                config.fields.forEach(field => {
+                    const input = document.querySelector('#modalFields [name="' + field.name + '"]');
+                    if (input && editData[field.name] != null) input.value = editData[field.name];
+                });
+            }
+            document.getElementById('modalTitle').textContent =
+                MODAL_CONFIG[configKey].title + (currentEditId ? ' 수정' : '');
+        }
+
+        // 저장 (생성 / 수정)
+        document.getElementById('modalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const config = MODAL_CONFIG['feePolicyModal'];
+            const formData = { bgpGr: gradeGr };
+            config.fields.forEach(field => {
+                const input = this.querySelector('[name="' + field.name + '"]');
+                if (input) formData[field.name] = input.value || null;
+            });
+
+            const url = currentEditId
+                ? '/api/root/operation/fee-policy/' + currentEditId
+                : '/api/root/operation/fee-policy';
+            const method = currentEditId ? 'PUT' : 'POST';
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            fetch(url, { method, headers, body: JSON.stringify(formData) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') { closeModal(); location.reload(); }
+                    else alert('저장 실패: ' + (data.message || ''));
+                })
+                .catch(err => alert('저장 실패: ' + err.message));
+        });
+
+        // 삭제 (비활성화)
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+                if (!confirm('정말 비활성화하시겠습니까?')) return;
+
+                const api = type === 'feePolicy' ? '/api/root/operation/fee-policy'
+                          : type === 'grade' ? '/api/root/operation/grade' : null;
+                if (!api) return;
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+                fetch(api + '/' + id, { method: 'DELETE', headers })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'ok') location.reload();
+                        else alert('삭제 실패: ' + (data.message || ''));
+                    })
+                    .catch(err => alert('삭제 실패: ' + err.message));
+            });
+        });
+
+        // 수정 (서버에서 기존 값 조회 → 모달 프리필)
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const type = this.dataset.type;
+
+                const api = type === 'feePolicy' ? '/api/root/operation/fee-policy'
+                          : type === 'grade' ? '/api/root/operation/grade' : null;
+                if (!api) return;
+
+                fetch(api + '/' + id)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (type === 'feePolicy') {
+                            openModalEdit('feePolicyModal', id, data);
+                        } else {
+                            // 등급 수정은 operation-policy 페이지에서
+                            alert('등급 수정은 운영 정책 페이지에서 해주세요.');
+                        }
+                    })
+                    .catch(err => alert('데이터 조회 실패: ' + err.message));
+            });
+        });
+    </script>
+</th:block>
+</html>

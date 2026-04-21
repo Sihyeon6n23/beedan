@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="sidebar(activeMain, activeSub)">
+    <div class="sidebar-scope">
+        <a th:href="@{/root/main}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'dashboard'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">dashboard</span>
+            <span>통계 대시보드</span>
+        </a>
+
+        <a th:href="@{/root/security}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'security'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>보안 정책 설정</span>
+        </a>
+
+        <a th:href="@{/root/scheduler}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'scheduler'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>스케쥴러 설정</span>
+        </a>
+
+        <a th:href="@{/root/utility}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'utility'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">settings</span>
+            <span>유틸리티 설정</span>
+        </a>
+
+        <a th:href="@{/root/operation}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'operation'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">tune</span>
+            <span>운영 정책 설정</span>
+        </a>
+
+        <a th:href="@{/root/sales}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'sales'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">monitoring</span>
+            <span>매출 관리</span>
+        </a>
+
+        <a th:href="@{/admin/member/list}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'memberList'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>회원 관리</span>
+        </a>
+
+        <a th:href="@{/root/member/approve}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'memberApprove'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>사업자 승인</span>
+        </a>
+
+        <a th:href="@{/root/member/create}"
+           class="sidebar-menu__link"
+           th:classappend="${activeMain == 'memberCreate'} ? ' sidebar-menu__link--current' : ''">
+            <span class="material-symbols-outlined sidebar-menu__icon">group</span>
+            <span>계정 생성</span>
+        </a>
+
+    </div>
+</th:block>
+</html>

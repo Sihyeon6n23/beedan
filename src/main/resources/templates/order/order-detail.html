@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ORDER', 'Order Detail', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 주문 상세</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('order', 'order-detail')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+    <link rel="stylesheet" th:href="@{/css/order/order-detail.css}">
+
+    <style>
+        .order-management-list .admin-chat-list-head,
+        .order-management-list .admin-chat-row {
+            border-left: 4px solid transparent;
+            display: grid !important;
+            grid-template-columns: minmax(70px, 1.8fr) minmax(40px, 0.8fr) minmax(220px, 3.2fr) minmax(60px, 0.6fr) minmax(60px, 0.9fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        #order-detail-body .admin-chat-row:hover {
+            background: #fffdfa;
+            border-left-color: var(--color-primary);
+        }
+
+        .swiper-button-next, .swiper-button-prev {
+            color: #333;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 50%;
+            transform: translateY(80%);
+        }
+
+        .swiper-button-next::after, .swiper-button-prev::after {
+            font-size: 20px;
+        }
+
+        .swiper-button-next:hover, .swiper-button-prev:hover {
+            background: rgba(255, 255, 255, 0);
+        }
+    </style>
+
+    <section class="admin-chat-page admin-chat-list-page order-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">ORDER DETAIL</span>
+                <h2 class="admin-chat-title">주문 상세</h2>
+
+                <div class="admin-chat-shell__rule">
+                    <span></span>
+                </div>
+            </div>
+        </header>
+
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="이동 버튼">
+            <div class="admin-chat-toolbar flex justify-between items-center">
+                <a href="/order/list" class="admin-chat-filter is-active">목록으로</a>
+            </div>
+        </section>
+
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div style="padding-left: 0 !important">수령자</div>
+                <div>상품 정보</div>
+                <div></div>
+                <div style="text-align: center;">배송 상태</div>
+                <div style="text-align: center;">관리</div>
+            </div>
+
+            <div id="order-detail-body" class="admin-chat-list-body">
+                <div style="text-align: center; padding: 40px;">데이터를 불러오는 중입니다...</div>
+            </div>
+        </section>
+
+        <footer id="order-pagination" class="admin-chat-shell admin-chat-shell--pagination"></footer>
+
+        <div id="orderTrackingModal" class="modal-overlay" style="display: none;">
+            <div class="modal-container">
+                <header class="modal-header">
+                    <div class="header-main">
+                        <h2 class="modal-title">배송 현황</h2>
+                    </div>
+                    <button class="btn-close" onclick="closeModal()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </header>
+
+                <div class="modal-body">
+                </div>
+
+                <footer class="modal-footer">
+                    <button class="btn-solid" onclick="closeModal()">CLOSE</button>
+                </footer>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+        <script th:src="@{/js/order/order-detail.js}"></script>
+    </section>
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+</th:block>
+</html>
+

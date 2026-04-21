@@ -1,0 +1,682 @@
+@charset "UTF-8";
+
+/* --- 1. 변수 및 테마 설정 --- */
+:root {
+    --primary-gold: #705d00;
+    --accent-gold: rgba(255, 215, 0, 1);
+    --bg-gray-light: #f3f3f3;
+    --bg-input: #e8e8e8;
+    --text-main: #1a1c1c;
+    --text-muted: #78716c;
+    --text-desc: #5f5e5e;
+    --border-color: #e7e5e4;
+    --status-active: #19cc91;
+    --status-inactive: #a3a3a3;
+    --status-withdrawn: #ec1c1f;
+}
+
+main > div {
+    max-width: none !important; /* 부모의 672px 제한을 제거 */
+    width: 100% !important;
+}
+
+/* --- 2. 기본 레이아웃 보정 --- */
+/* 레이아웃의 max-w-2xl(좁은 너비)을 강제로 해제하고 테이블용 넓은 너비 확보 */
+.admin-member-container {
+    width: 1024px !important;
+    min-width: 1024px !important; /* 화면이 작아져도 찌그러지지 않게 고정 */
+    margin-left: 0 !important;   /* 사이드바 옆에 딱 붙도록 설정 */
+    padding: 0 !important;
+}
+
+/* --- 3. 헤더 섹션 (제목 및 관리 버튼) --- */
+.hero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+}
+
+.header-title .sub-title {
+    color: var(--primary-gold);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.15rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.header-title h1 {
+    font-family: 'Manrope', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    letter-spacing: -0.1rem;
+    color: var(--text-main);
+    margin: 0.5rem 0;
+}
+
+.header-title .description {
+    color: var(--text-desc);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.manage-btn {
+    background-color: var(--accent-gold);
+    color: var(--primary-gold);
+    padding: 1rem 2rem;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.manage-btn:hover {
+    background-color: #facc15;
+    transform: translateY(-1px);
+}
+
+/* --- 4. 필터 및 검색 바 --- */
+.filter-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-input);
+    padding: 0.75rem 1.25rem;
+}
+
+.search-input-wrapper input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 0.8rem;
+    color: var(--text-main);
+}
+
+.search-input-wrapper .material-symbols-outlined {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+}
+
+.filter-select {
+    background-color: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    min-width: 160px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+
+/* --- 5. 테이블 스타일 --- */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+}
+
+.member-table {
+    width: 100%;
+    table-layout: fixed; /* 컬럼 너비 고정 필수 */
+    border-collapse: collapse;
+}
+
+/* 모든 헤더(th)와 셀(td)에 공통 높이와 중앙 정렬 적용 */
+.member-table th,
+.member-table td {
+    height: 64px; /* 행 전체 높이 고정 (피그마 비율에 맞춰 약간 조정) */
+    padding: 0 10px;
+    vertical-align: middle; /* 수직 중앙 정렬 핵심 */
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.member-table th {
+    background-color: var(--bg-gray-light);
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.member-table td {
+    font-size: 0.75rem;
+    color: var(--text-main);
+}
+
+/* --- 6. 상태 배지 --- */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: inline-block;
+}
+
+.status-active { background-color: var(--status-active); color: #fff; }
+.status-inactive { background-color: var(--status-inactive); color: #fff; }
+.status-withdrawn { background-color: var(--status-withdrawn); color: #fff; }
+
+/* --- 7. 상세/수정 버튼 열 (튀어나오지 않게 교정) --- */
+/* 주의: td 자체에 flex를 주지 않고 내부 컨테이너에 줍니다. */
+.col-action {
+    width: 130px !important; /* 셀 너비 확보 */
+}
+
+/* 버튼들을 감싸는 실제 컨테이너 (Figma 117 * 29 반영) */
+.col-action-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 117px;
+    height: 29px;
+    margin: 0 auto; /* td 내부에서 가로 중앙 정렬 */
+}
+
+/* 개별 버튼 공통 스타일 */
+.col-action-container button ,
+.col-action-container a{
+    flex: 1; /* 컨테이너 내에서 균등 분할 */
+    height: 24px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 2px;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+/* View 버튼 */
+.btn-view {
+    background-color: #1a1c1c;
+    color: #ffffff !important; /* a 태그 기본 파란색 링크 덮어쓰기 */
+}
+.btn-view:hover {
+    background-color: #333333;
+}
+
+/* --- 7. 페이지네이션 --- */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.page-info {
+    color: #a8a29e;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.page-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+}
+
+.page-btn.active {
+    background-color: var(--accent-gold);
+    color: var(--primary-gold);
+}
+
+.page-numbers .material-symbols-outlined {
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+/* --- 8. 반응형 대응 --- */
+@media (max-width: 1024px) {
+    .hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .manage-btn {
+        width: 100%;
+    }
+}
+
+
+/* --- 모달 오버레이 및 컨테이너 --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(26, 28, 28, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.modal-overlay.hidden {
+    display: none; /* JS로 이 클래스를 뗐다 붙였다 하며 제어 */
+}
+.modal-container {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+.modal-top-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0; /* 위아래 꽉 차게 */
+    width: 6px; /* 두께 */
+    background-color: rgba(255, 215, 0, 1);
+}
+
+.modal-open {
+    overflow: hidden;
+    padding-right: 15px;
+}
+
+/* --- 헤더 --- */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 30px 40px;
+    border-bottom: 1px solid rgba(208, 198, 171, 0.2);
+}
+.meta-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.member-id { font-size: 12px; font-weight: bold; color: #705d00; }
+.dot-divider { width: 6px; height: 6px; background: #7e775f; border-radius: 50%; }
+.join-date { font-size: 12px; font-weight: bold; color: #636262; }
+.member-name { font-size: 28px; font-weight: normal; color: #1a1c1c; margin: 0; }
+.btn-close-modal { background: none; border: none; cursor: pointer; padding: 5px; }
+.btn-close-modal span { font-size: 24px; color: #1a1c1c; }
+
+/* --- 바디 (3단 그리드) --- */
+.modal-body {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-y: auto;
+}
+
+#modalContentArea.modal-body {
+    /* 스크롤 기능은 유지 */
+    overflow-y: auto;
+
+    /* IE, Edge용 */
+    -ms-overflow-style: none;
+    /* Firefox용 */
+    scrollbar-width: none;
+}
+
+/* Chrome, Safari, Opera용 */
+#modalContentArea.modal-body::-webkit-scrollbar {
+    display: none;
+}
+
+.modal-col {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(208, 198, 171, 0.2);
+}
+.modal-col:last-child { border-right: none; }
+.col-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 30px; background-color: rgba(243, 243, 243, 0.5);
+}
+.col-header h3 { font-size: 18px; margin: 0; }
+.bg-gray { background-color: rgba(243, 243, 243, 0.8); }
+
+.col-content { padding: 20px 30px; flex-grow: 1; }
+.col-footer { padding: 20px 30px; border-top: 1px solid rgba(208, 198, 171, 0.2); }
+
+/* --- 리스트 아이템 공통 --- */
+.list-item { margin-bottom: 20px; padding-left: 15px; border-left: 2px solid rgba(208, 198, 171, 0.3); }
+.list-item.border-yellow { border-left-color: rgba(255, 215, 0, 1); }
+.item-meta { font-size: 10px; font-weight: bold; color: #636262; display: block; margin-bottom: 5px; }
+.item-title { font-size: 14px; font-weight: bold; color: #1a1c1c; margin-bottom: 8px; }
+.item-footer { display: flex; justify-content: space-between; align-items: center; }
+.item-price { font-size: 12px; font-weight: bold; color: #636262; }
+
+/* 뱃지 */
+.badge { padding: 3px 8px; font-size: 9px; font-weight: bold; border-radius: 2px; }
+.badge-gray { background: #e2e2e2; color: #1a1c1c; }
+
+/* --- 배송 카드 특화 --- */
+.shipping-card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 13px; border-left: 4px solid #ffd700; margin-bottom: 20px; height: 28%;}
+.shipping-status { font-size: 10px; font-weight: bold; color: #705d00; }
+.tracking-number { font-size: 14px; margin: 5px 0; }
+.tracking-label { font-size: 11px; color: #636262; }
+.tracking-timeline { margin-top: 15px; border-left: 2px solid #e2e2e2; padding-left: 15px; }
+.timeline-item { margin-bottom: 10px; display: flex; flex-direction: column; }
+.timeline-item.active { border-left: 2px solid #ffd700; margin-left: -17px; padding-left: 15px; }
+.shipping-address {margin-top: 8px;}
+.address-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-yellow { color: #ffd700; font-size: 16px; vertical-align: middle; }
+
+/* --- 문의 내역 특화 --- */
+.inquiry-meta { display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 5px;}
+.text-yellow { color: #705d00; }
+.item-desc { font-size: 11px; color: #636262; line-height: 1.4; margin-top: 5px; }
+.divider { border: 0; height: 1px; background: rgba(208, 198, 171, 0.2); margin: 15px 0; }
+.opacity-60 { opacity: 0.6; }
+
+/* --- 하단 버튼들 --- */
+.col-footer button { width: 100%; padding: 12px 0; font-size: 11px; font-weight: bold; text-transform: uppercase; cursor: pointer; border-radius: 2px; }
+.btn-outline-yellow { background: transparent; border: 1px solid #ffd700; color: #1a1c1c; }
+.btn-solid-black { background: #1a1c1c; border: none; color: #fff; }
+.btn-solid-yellow { background: #ffd700; border: none; color: #705d00; }
+
+
+
+
+/* =========================================
+   [모달 내부] 주문 내역 프래그먼트 스타일
+   ========================================= */
+.order-history-fragment {
+    grid-column: 1 / -1;
+    padding: 20px 30px;
+    background-color: #ffffff;
+}
+
+/* 상단 영역 (이전으로 버튼, 타이틀) */
+.fragment-top { margin-bottom: 24px; }
+.btn-go-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: none; border: none; cursor: pointer;
+    color: #71717a; font-size: 12px; font-weight: bold; text-transform: uppercase;
+    margin-bottom: 16px;
+}
+.title-row { display: flex; justify-content: space-between; align-items: flex-end; }
+.fragment-title { font-size: 36px; font-weight: bold; margin: 0; color: #18181b; }
+.account-status { background-color: #f0fdf4; padding: 12px 24px; display: flex; flex-direction: column; align-items: flex-end; border-radius: 4px; }
+.status-label { font-size: 10px; font-weight: bold; color: #16a34a; text-transform: uppercase; }
+.status-value { font-size: 20px; font-weight: bold; color: #16a34a; }
+
+/* 3단 통계 영역 */
+.stats-row {
+    display: flex; background-color: #f4f4f5; padding: 4px; margin-bottom: 32px; border-radius: 4px;
+}
+.stat-card {
+    flex: 1; background-color: #fff; padding: 16px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.stat-card.border-right { border-right: 1px solid #f4f4f5; }
+.stat-label { font-size: 10px; font-weight: bold; color: #a1a1aa; text-transform: uppercase; }
+.stat-number { font-size: 32px; font-weight: bold; color: #18181b; }
+
+/* 데이터 테이블 상단 (페이지네이션 등) */
+/* 1. 하단 영역 전체 레이아웃 (좌우 끝 정렬) */
+.table-footer-row {
+    display: flex !important;
+    flex-direction: row !important; /* 가로로 배치 */
+    justify-content: space-between !important; /* 양 끝으로 벌림 */
+    align-items: center !important;
+    margin-top: 32px;
+    padding: 20px 0;
+    border-top: 1px solid #f4f4f5; /* 구분선 추가 */
+}
+
+/* 2. 페이지네이션 버튼 그룹 (가로 정렬) */
+.fragment-pagination {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 4px; /* 버튼 사이 간격 */
+}
+
+/* 3. 개별 버튼 스타일 */
+.page-num, .page-arrow {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e8e8e8;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1a1c1c;
+    border-radius: 2px;
+    transition: all 0.2s;
+}
+
+/* 4. 활성화된 페이지 버튼 (노란색) */
+.page-num.active {
+    background-color: #ffd700 !important;
+    color: #705d00 !important;
+}
+
+/* 5. 화살표 아이콘 크기 조정 */
+.page-arrow .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.showing-text {
+    font-size: 11px;
+    color: #a1a1aa;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* 데이터 테이블 본체 */
+.fragment-table { width: 100%; border-collapse: collapse; text-align: left; }
+.fragment-table th {
+    background-color: #f4f1e8; color: #525252; font-size: 10px; font-weight: bold; text-transform: uppercase;
+    padding: 16px 24px;
+}
+.fragment-table td { padding: 10px 10px; border-bottom: 1px solid #f4f4f5; font-size: 12px; }
+.order-id { font-weight: bold; font-size: 14px; color: #18181b; }
+.order-date { color: #71717a; font-size: 14px; }
+.order-summary strong { color: #18181b; font-size: 14px;}
+.order-summary span { color: #a1a1aa; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+.order-amount { font-weight: bold; font-size: 14px; color: #18181b; }
+.order-address {  color: #71717a; font-size: 13px text-align: center; }
+
+/* 정렬 및 뱃지 */
+.badge-status { padding: 6px 16px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: inline-block; }
+.badge-red { background-color: #ffdad6; color: #93000a; border-color: #ba1a1a; }
+.badge-yellow { background-color: rgba(255,215,0,0.2); color: #705d00; border-color: #705d00; }
+.badge-green { background-color: #f0fdf4; color: #15803d; border-color: #16a34a; }
+.btn-icon { background: none; border: none; cursor: pointer; color: #a3a3a3; }
+
+
+.action-cell {
+    white-space: nowrap;
+    width: 150px;
+}
+
+.admin-action-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* 상태 변경 셀렉트 박스 스타일 */
+.status-update-select {
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 12px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.status-update-select:hover {
+    border-color: #ffd700;
+    background-color: #fff;
+}
+
+/* 작은 아이콘 버튼 */
+.btn-icon-sm {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #999;
+}
+
+.btn-icon-sm:hover {
+    color: #333;
+}
+
+.btn-icon-sm .material-symbols-outlined {
+    font-size: 18px;
+}
+
+
+.tracking-summary-card {
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-around;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.tracking-timeline-list {
+    position: relative;
+    padding-left: 40px;
+    list-style: none;
+}
+
+.tracking-timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 20px; top: 0; bottom: 0;
+    width: 2px; background: #eee;
+}
+
+.timeline-step {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: -26px; top: 5px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #ddd;
+    border: 3px solid #fff;
+    z-index: 1;
+}
+
+.timeline-step.active::before {
+    background: #FFD700; /* 활성화 색상 */
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.step-time { font-size: 12px; color: #999; }
+.step-content strong { font-size: 15px; color: #333; }
+.step-content p { font-size: 13px; color: #666; margin-top: 5px; }
+
+.btn-back-to-list {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: inherit;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+
+.tracking-info-summary {
+    background: #f8f9fa;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+/* 각 정보 항목 공통 스타일 */
+.info-item {
+    flex: 1;
+}
+
+.info-item .label {
+    font-size: 11px;
+    color: #888;
+    display: block;
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+.info-item .value {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+/* 배송지 주소는 더 넓게 점유 */
+.info-item--address {
+    flex: 2.5;
+}
+
+/* 현재 상태 - 한 줄 고정 및 강조 */
+.info-item--status {
+    flex: 1.5;
+    text-align: right;
+    white-space: nowrap; /* 절대 줄바꿈 방지 */
+}
+
+.info-item--status .value {
+    font-size: 16px;
+    color: #d9534f;
+    display: inline-block;
+}

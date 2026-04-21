@@ -1,0 +1,502 @@
+/* ========================================
+   Quote List Page
+   ======================================== */
+
+/* Page layout */
+.quote-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    padding: 2rem clamp(1rem, 2vw, 2rem) 2rem;
+    margin-inline: auto;
+    margin-bottom: 0;
+}
+
+.quote-list-page {
+    max-width: 1220px;
+}
+
+/* Shell: common block container */
+.quote-shell {
+    background: var(--color-surface-container-lowest);
+    box-shadow: 0 20px 40px rgba(26, 28, 28, 0.05);
+}
+
+.quote-shell--header,
+.quote-shell--toolbar,
+.quote-shell--pagination {
+    padding: 1.5rem;
+}
+
+.quote-list-page .quote-shell--header,
+.quote-list-page .quote-shell--toolbar,
+.quote-list-page .quote-shell--list,
+.quote-list-page .quote-shell--pagination {
+    padding-inline: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.quote-list-page .quote-shell--header {
+    padding-bottom: 0.15rem;
+}
+
+.quote-list-page .quote-shell--toolbar {
+    padding-top: 0;
+    padding-bottom: 0.15rem;
+}
+
+/* Header */
+.quote-shell__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quote-kicker {
+    color: var(--color-primary);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.quote-title {
+    font-family: var(--font-headline);
+    font-size: clamp(2.3rem, 5vw, 3.4rem);
+    font-weight: 900;
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.95;
+}
+
+.quote-shell__rule {
+    margin-top: 1.25rem;
+    width: 100%;
+    height: 2px;
+    background: var(--color-surface-container-highest);
+}
+
+.quote-shell__rule span {
+    display: block;
+    width: 11rem;
+    height: 100%;
+    background: var(--color-primary-container);
+}
+
+/* Toolbar */
+.quote-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quote-toolbar__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.quote-filter-set {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.28rem;
+    border: 1px solid rgba(112, 93, 0, 0.14);
+    background: rgba(255, 248, 220, 0.72);
+}
+
+.quote-filter {
+    padding: 0.52rem 0.9rem;
+    border: 1px solid var(--color-surface-container-highest);
+    background: var(--color-surface-container-low);
+    color: var(--color-secondary);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-filter:hover {
+    background: #fffdfa;
+    color: var(--color-on-background);
+    border-color: rgba(112, 93, 0, 0.18);
+}
+
+.quote-filter.is-active {
+    background: var(--color-primary-container);
+    border-color: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+    box-shadow: 0 6px 14px rgba(26, 28, 28, 0.08);
+}
+
+/* List shell */
+.quote-shell--list {
+    overflow: hidden;
+    background: #fcfbf8;
+    border: 1px solid #ebe6da;
+    box-shadow: 0 18px 34px rgba(26, 28, 28, 0.06);
+}
+
+/* List head + row: shared grid */
+.quote-list-head,
+.quote-row {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(90px, 1fr) minmax(120px, 1.2fr) minmax(80px, 0.9fr);
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.quote-list-head {
+    padding: 1rem 1.75rem;
+    background: #f4f1e8;
+    color: #7a7a7a;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.quote-list-head > div:nth-child(2),
+.quote-list-head > div:nth-child(3),
+.quote-list-head > div:nth-child(4) {
+    text-align: center;
+}
+
+/* Sortable headers */
+.quote-sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.quote-sortable:hover {
+    color: var(--color-on-background);
+}
+
+.quote-sortable.is-active {
+    color: var(--color-on-primary-container);
+    background: rgba(112, 93, 0, 0.08);
+    border-radius: 2px;
+    padding: 0.2rem 0.4rem;
+    margin: -0.2rem -0.4rem;
+}
+
+.quote-sort-icon {
+    font-size: 9px;
+    vertical-align: middle;
+    margin-left: 0.2rem;
+}
+
+.quote-list-body {
+    border-top: 1px solid var(--color-surface-container-highest);
+    background: #fffdf8;
+}
+
+/* Row */
+.quote-row {
+    width: 100%;
+    padding: 1.1rem 1.75rem;
+    border-left: 4px solid transparent;
+    border-bottom: 1px solid #efefef;
+    background: var(--color-surface-container-lowest);
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.quote-row:hover {
+    background: #fffdfa;
+    border-left-color: var(--color-primary);
+}
+
+.quote-row--featured {
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.10) 0%, rgba(255, 248, 220, 0.48) 100%);
+    border-left-color: var(--color-primary);
+}
+
+/* Row: primary cell */
+.quote-row__primary {
+    display: flex;
+    gap: 0.85rem;
+    align-items: center;
+    min-width: 0;
+}
+
+.quote-row__unread {
+    display: inline-block;
+    width: 12px;
+    min-width: 12px;
+    height: 12px;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+    background: #e53935;
+    border-radius: 50% !important;
+    clip-path: circle(50%);
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.12);
+}
+
+.quote-row__unread--empty {
+    opacity: 0;
+}
+
+.quote-row__text {
+    min-width: 0;
+}
+
+.quote-row__text h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin-bottom: 0.4rem;
+    font-family: var(--font-headline);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: var(--tracking-tight);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quote-row__text h2 span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quote-row__text h2 small {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+}
+
+.quote-row__text p {
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Row: status / time / amount cells */
+.quote-row__status,
+.quote-row__time {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.quote-row__time {
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Badges */
+.quote-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.7rem;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.quote-badge--submitted {
+    border: 1px solid var(--color-outline-variant);
+    background: var(--color-surface-container-lowest);
+    color: var(--color-secondary);
+}
+
+.quote-badge--approved {
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+}
+
+.quote-badge--rejected {
+    background: #fde8e8;
+    color: #c53030;
+}
+
+.quote-badge--paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.quote-badge--expired {
+    background: var(--color-surface-container-highest);
+    color: var(--color-secondary);
+}
+
+.quote-badge--unread {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.quote-badge--confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Admin read status */
+.quote-row__admin-read {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.quote-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.42rem 0.7rem;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.quote-admin-badge--read {
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+}
+
+.quote-admin-badge--unread {
+    background: #fde8e8;
+    color: #c53030;
+}
+
+/* Empty state */
+.quote-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 3.2rem 1.5rem;
+    text-align: center;
+    color: var(--color-secondary);
+}
+
+.quote-empty-state strong {
+    color: var(--color-on-background);
+    font-family: var(--font-headline);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.quote-empty-state p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Pagination */
+.quote-shell--pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    padding-top: 1.7rem;
+    padding-bottom: 0;
+    border-top: 1px solid #e8e8e8;
+}
+
+.quote-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.quote-page-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    height: 3rem;
+    padding: 0 0.9rem;
+    border: 1px solid var(--color-surface-container-highest);
+    background: var(--color-surface-container-lowest);
+    color: var(--color-secondary);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-page-button:hover {
+    background: #fffdfa;
+    color: var(--color-on-background);
+    border-color: rgba(112, 93, 0, 0.18);
+}
+
+.quote-page-button--wide {
+    min-width: 4.5rem;
+    background: var(--color-surface-container-low);
+}
+
+.quote-page-button.is-current {
+    border-color: var(--color-primary-container);
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+}
+
+.quote-page-button.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .quote-list-head {
+        display: none;
+    }
+
+    .quote-row {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+        align-items: start;
+    }
+
+    .quote-row__status,
+    .quote-row__time,
+    .quote-row__admin-read {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .quote-filter-set {
+        width: 100%;
+    }
+
+    .quote-shell--pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .quote-pagination {
+        justify-content: center;
+    }
+}

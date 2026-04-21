@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="searchBar(actionUrl, searchDto, searchTypes)" class="module-search">
+
+    <form class="module-search-form" method="get" th:action="${actionUrl}">
+        <input type="hidden" name="page" value="0">
+        <div class="module-search-wrapper">
+            <div class="module-search-group">
+                <select name="size" class="module-size-select" onchange="this.form.submit()">
+                    <option th:value="10" th:selected="${searchDto.size == 10}">10개씩</option>
+                    <option th:value="20" th:selected="${searchDto.size == 20}">20개씩</option>
+                    <option th:value="50" th:selected="${searchDto.size == 50}">50개씩</option>
+                    <option th:value="100" th:selected="${searchDto.size == 100}">100개씩</option>
+                </select>
+                <select name="searchType" class="module-search-select">
+                    <option th:each="type : ${searchTypes}"
+                            th:value="${type.value}"
+                            th:text="${type.text}"
+                            th:selected="${type.value == searchDto.searchType}">
+                        옵션
+                    </option>
+                </select>
+                <input type="text"
+                       name="keyword"
+                       class="module-search-input"
+                       th:value="${searchDto.keyword}"
+                       placeholder="제목 또는 내용 검색">
+                <button type="submit" class="module-search-submit">
+                    검색
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<footer th:fragment="pagination(pageObj, actionUrl, searchDto)" class="module-pagination-shell">
+    <div class="module-pagination" th:if="${pageObj.totalElements > 0}" >
+        <a class="module-page-btn module-page-btn--wide"
+           th:classappend="${!pageObj.hasPrevious()} ? 'is-disabled opacity-50 cursor-not-allowed pointer-events-none'"
+           th:href="${pageObj.hasPrevious()} ? @{${actionUrl}(searchType=${searchDto.searchType}, keyword=${searchDto.keyword}, page=${pageObj.page - 1}, size=${searchDto.size}, brdInqStt=${searchDto.brdInqStt}, myAnsweredOnly=${searchDto.myAnsweredOnly})} : 'javascript:void(0)'">
+            Prev
+        </a>
+
+        <th:block th:if="${pageObj.totalPages > 0}" th:each="pageNumber : ${#numbers.sequence(pageObj.startPage, pageObj.endPage)}">
+            <a class="module-page-btn"
+               th:classappend="${pageNumber == pageObj.page} ? ' is-current' : ''"
+               th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
+               th:href="@{${actionUrl}(searchType=${searchDto.searchType}, keyword=${searchDto.keyword}, page=${pageNumber}, size=${searchDto.size}, brdInqStt=${searchDto.brdInqStt})}">01</a>
+        </th:block>
+
+        <a th:if="${pageObj.totalPages > 0}"
+           class="module-page-btn module-page-btn--wide"
+           th:classappend="${!pageObj.hasNext()} ? 'is-disabled opacity-50 cursor-not-allowed pointer-events-none'"
+           th:href="@{${actionUrl}(searchType=${searchDto.searchType}, keyword=${searchDto.keyword}, page=${pageObj.page + 1}, size=${searchDto.size}, brdInqStt=${searchDto.brdInqStt})}">Next</a>
+    </div>
+</footer>
+
+</html>

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('SCHEDULER', 'setting', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 스케쥴러 설정</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('scheduler', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <style>
+        .scheduler-panel {
+            padding: 2rem;
+            background: var(--color-surface-container-lowest);
+            border-left: 6px solid var(--color-primary);
+            box-shadow: var(--shadow-chat-shell);
+        }
+
+        .scheduler-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 2rem 2.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .scheduler-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .scheduler-card,
+        .scheduler-grid > section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #fff;
+            border: 1px solid rgba(161, 161, 170, 0.2);
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .scheduler-card__header,
+        .scheduler-grid > section > div:first-of-type {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(228, 228, 231, 0.9);
+        }
+
+        .scheduler-card__title {
+            font-size: 1.125rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .scheduler-card__body {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .scheduler-toggle,
+        .scheduler-grid > section > div.rounded-xl.bg-amber-50\/60 {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0.875rem 1rem;
+            border: 1px solid rgba(251, 191, 36, 0.28);
+            border-radius: 0.9rem;
+            background: linear-gradient(180deg, rgba(255, 251, 235, 0.92), rgba(255, 247, 205, 0.72));
+        }
+
+        .scheduler-field-group,
+        .scheduler-grid > section > div.space-y-2:not(.rounded-xl) {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .scheduler-label,
+        .scheduler-grid > section > div.space-y-2 > label.block,
+        .scheduler-grid > section > div.rounded-xl.bg-zinc-50 > label.block {
+            display: block;
+            color: #71717a;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .scheduler-field,
+        .scheduler-select,
+        .scheduler-panel input[type="datetime-local"],
+        .scheduler-panel select {
+            width: 100%;
+            min-height: 3rem;
+            padding: 0.85rem 0.95rem;
+            border: 1px solid rgba(212, 212, 216, 0.95);
+            border-radius: 0.85rem;
+            background: #f8fafc;
+            color: #18181b;
+            font-size: 0.92rem;
+            font-weight: 600;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        .scheduler-field:focus,
+        .scheduler-select:focus,
+        .scheduler-panel input[type="datetime-local"]:focus,
+        .scheduler-panel select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(246, 194, 0, 0.14);
+        }
+
+        .scheduler-field--readonly {
+            min-height: auto;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            color: #52525b;
+            font-weight: 600;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .scheduler-status,
+        .scheduler-grid > section > div.rounded-xl.bg-zinc-50 {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            justify-content: space-between;
+            min-height: 7rem;
+            padding: 1rem;
+            border: 1px solid rgba(228, 228, 231, 0.9);
+            border-radius: 0.9rem;
+            background: #fafafa;
+        }
+
+        .scheduler-grid > section > div.rounded-xl.bg-zinc-50 > label.block {
+            padding-bottom: 0.55rem;
+            border-bottom: 1px solid rgba(212, 212, 216, 0.9);
+        }
+
+        .scheduler-grid > section > div.rounded-xl.bg-zinc-50 input[readonly] {
+            padding-top: 0.1rem;
+        }
+
+
+        .scheduler-action {
+            width: 100%;
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            min-height: 3.4rem;
+            padding: 0.95rem 1.25rem;
+            border: 1px solid rgba(224, 168, 0, 0.32);
+            border-radius: 0.95rem;
+            background: linear-gradient(180deg, #ffd84a 0%, #f6c200 100%);
+            color: #4f3c00;
+            font-size: 0.88rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(246, 194, 0, 0.18);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+        }
+
+        .scheduler-action:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+            box-shadow: 0 14px 28px rgba(246, 194, 0, 0.24);
+        }
+
+        .scheduler-action:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 16px rgba(246, 194, 0, 0.18);
+        }
+
+        .scheduler-action:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .scheduler-submit-row {
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(228, 228, 231, 0.9);
+        }
+
+        .is-disabled-field,
+        .scheduler-panel select:disabled {
+            background: #f4f4f5;
+            border-color: rgba(228, 228, 231, 0.95);
+            color: #a1a1aa;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 1;
+        }
+    </style>
+    <main class="mypage-security-page bg-background">
+        <div class="max-w-5xl mx-auto">
+
+            <section class="mypage-security-page__intro">
+                <span class="mypage-security-page__kicker">SCHEDULER</span>
+                <h1 class="mypage-security-page__title">스케쥴러 설정</h1>
+                <div class="mypage-security-page__rule">
+                    <span></span>
+                </div>
+            </section>
+
+        <div class="scheduler-panel space-y-8">
+
+            <form id="policyForm" th:action="@{/root/scheduler/save}" method="post" class="scheduler-grid">
+                <!-- 1. 자동 크롤링 설정 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">schedule</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">1. 자동 크롤링</h2>
+                    </div>
+
+                    <!-- ON/OFF 라디오 -->
+                    <div class="flex items-center gap-6 rounded-xl bg-amber-50/60 px-4 py-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isAutoCrawlingEnabled" value="true"
+                                   th:checked="${setting.isAutoCrawlingEnabled}" ...>
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isAutoCrawlingEnabled" value="false"
+                                   th:checked="${!setting.isAutoCrawlingEnabled}" ...>
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <!-- 시작 일시 -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="autoCrawlingStartDt"
+                               th:value="${setting.autoCrawlingStartDt}" ...>
+                    </div>
+
+                    <!-- 주기 selectbox -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">크롤링 주기</label>
+                        <select name="autoCrawlingInterval" ...>
+                            <option value="6" th:selected="${setting.autoCrawlingInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.autoCrawlingInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.autoCrawlingInterval == '24'}">1일</option>
+                            <option value="72" th:selected="${setting.autoCrawlingInterval == '72'}">3일</option>
+                            <option value="168" th:selected="${setting.autoCrawlingInterval == '168'}">7일</option>
+                            <option value="720" th:selected="${setting.autoCrawlingInterval == '720'}">30일</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 크롤링 시간 -->
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 크롤링 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastCrawlingRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastCrawlingRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
+                <!-- 2. 환율 갱신 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">currency_exchange</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">2. 환율 갱신</h2>
+                    </div>
+
+                    <!-- ON/OFF 라디오 -->
+                    <div class="flex items-center gap-6 rounded-xl bg-amber-50/60 px-4 py-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isExchangeRateEnabled" value="true"
+                                   th:checked="${setting.isExchangeRateEnabled}">
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isExchangeRateEnabled" value="false"
+                                   th:checked="${!setting.isExchangeRateEnabled}">
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <!-- 시작 일시 -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="exchangeRateStartDt"
+                               th:value="${setting.exchangeRateStartDt}"
+                               class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                    </div>
+
+                    <!-- 주기 selectbox -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">갱신 주기</label>
+                        <select name="exchangeRateInterval"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.exchangeRateInterval == '1'}">1시간</option>
+                            <option value="3" th:selected="${setting.exchangeRateInterval == '3'}">3시간</option>
+                            <option value="6" th:selected="${setting.exchangeRateInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.exchangeRateInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.exchangeRateInterval == '24'}">1일</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 갱신 시간 -->
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 환율 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastExchangeRateRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastExchangeRateRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
+                <!-- 3. 고객 등급 재산정 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">star</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">3. 고객 등급 재산정</h2>
+                    </div>
+
+                    <div class="flex items-center gap-6 rounded-xl bg-amber-50/60 px-4 py-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isGradeResolveEnabled" value="true"
+                                   th:checked="${setting.isGradeResolveEnabled}">
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isGradeResolveEnabled" value="false"
+                                   th:checked="${!setting.isGradeResolveEnabled}">
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="gradeResolveStartDt"
+                               th:value="${setting.gradeResolveStartDt}"
+                               class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">재산정 주기</label>
+                        <select name="gradeResolveInterval"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="6" th:selected="${setting.gradeResolveInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.gradeResolveInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.gradeResolveInterval == '24'}">1일</option>
+                            <option value="168" th:selected="${setting.gradeResolveInterval == '168'}">7일</option>
+                            <option value="720" th:selected="${setting.gradeResolveInterval == '720'}">30일</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 재산정 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastGradeResolveRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastGradeResolveRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
+                <!-- 4. 채팅방 자동 종료 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">forum</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">4. 채팅방 자동 종료</h2>
+                    </div>
+
+                    <!-- ON/OFF 라디오 -->
+                    <div class="flex items-center gap-6 rounded-xl bg-amber-50/60 px-4 py-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isChatAutoCloseEnabled" value="true"
+                                   th:checked="${setting.isChatAutoCloseEnabled}">
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isChatAutoCloseEnabled" value="false"
+                                   th:checked="${!setting.isChatAutoCloseEnabled}">
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <!-- 시작 일시 -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="chatAutoCloseStartDt"
+                               th:value="${setting.chatAutoCloseStartDt}"
+                               class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                    </div>
+
+                    <!-- 실행 주기 -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">자동 종료 기준</label>
+                        <select name="chatAutoCloseInterval"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.chatAutoCloseInterval == '1'}">1시간 무응답</option>
+                            <option value="3" th:selected="${setting.chatAutoCloseInterval == '3'}">3시간 무응답</option>
+                            <option value="6" th:selected="${setting.chatAutoCloseInterval == '6'}">6시간 무응답</option>
+                            <option value="12" th:selected="${setting.chatAutoCloseInterval == '12'}">12시간 무응답</option>
+                            <option value="24" th:selected="${setting.chatAutoCloseInterval == '24'}">1일 무응답</option>
+                            <option value="48" th:selected="${setting.chatAutoCloseInterval == '48'}">2일 무응답</option>
+                            <option value="72" th:selected="${setting.chatAutoCloseInterval == '72'}">3일 무응답</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 실행 시각 -->
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 자동 종료 실행 시각</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastChatAutoCloseRunTime != null ? #temporals.format(#temporals.createDateTime(setting.lastChatAutoCloseRunTime), 'yyyy년 MM월 dd일 HH:mm') : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+                </section>
+
+
+                <!-- 5. 전시용 전월 인기 상품 갱신 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">trending_up</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">5. 인기 상품 전시 갱신</h2>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">매월 갱신일</label>
+                        <select name="popularStockUpdateDay"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.popularStockUpdateDay == '1'}">1일</option>
+                            <option value="5" th:selected="${setting.popularStockUpdateDay == '5'}">5일</option>
+                            <option value="10" th:selected="${setting.popularStockUpdateDay == '10'}">10일</option>
+                            <option value="15" th:selected="${setting.popularStockUpdateDay == '15'}">15일</option>
+                            <option value="20" th:selected="${setting.popularStockUpdateDay == '20'}">20일</option>
+                            <option value="25" th:selected="${setting.popularStockUpdateDay == '25'}">25일</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastPopularStockUpdateTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastPopularStockUpdateTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+
+                    <button type="button" id="refreshPopularBtn"
+                            onclick="refreshDisplay('popular')"
+                            class="scheduler-action">
+                        <span class="material-symbols-outlined text-[18px] leading-none">refresh</span>
+                        즉시 갱신
+                    </button>
+                </section>
+
+                <!-- 6. 전시용 신규 상품 갱신 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">new_releases</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">6. 신규 상품 전시 갱신</h2>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="newStockUpdateStartDt"
+                               th:value="${setting.newStockUpdateStartDt}"
+                               class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">갱신 주기</label>
+                        <select name="newStockUpdateInterval"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="6" th:selected="${setting.newStockUpdateInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.newStockUpdateInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.newStockUpdateInterval == '24'}">1일</option>
+                            <option value="48" th:selected="${setting.newStockUpdateInterval == '48'}">2일</option>
+                            <option value="168" th:selected="${setting.newStockUpdateInterval == '168'}">7일</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastNewStockUpdateTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastNewStockUpdateTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+
+                    <button type="button" id="refreshNewBtn"
+                            onclick="refreshDisplay('new')"
+                            class="scheduler-action">
+                        <span class="material-symbols-outlined text-[18px] leading-none">refresh</span>
+                        즉시 갱신
+                    </button>
+                </section>
+
+                <!-- 7. 통관 물품 갱신 주기 설정 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">local_shipping</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">7. 통관 물품 상태 갱신</h2>
+                    </div>
+
+                    <!-- ON/OFF 라디오 -->
+                    <div class="flex items-center gap-6 rounded-xl bg-amber-50/60 px-4 py-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isUnipassEnabled" value="true" th:checked="${setting.isUnipassEnabled}">
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isUnipassEnabled" value="false"
+                                   th:checked="${!setting.isUnipassEnabled}">
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <!-- 시작 일시 -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="unipassStartDt"
+                               th:value="${setting.unipassStartDt}"
+                               class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                    </div>
+
+                    <!-- 주기 selectbox -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">갱신 주기</label>
+                        <select name="unipassInterval"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.unipassInterval == '1'}">1시간</option>
+                            <option value="3" th:selected="${setting.unipassInterval == '3'}">3시간</option>
+                            <option value="6" th:selected="${setting.unipassInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.unipassInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.unipassInterval == '24'}">1일</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 갱신 시간 -->
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 통관 갱신 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastUnipassRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastUnipassRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+
+                    <button type="button" id="refreshShipmentBtn" onclick="triggerSync()" class="scheduler-action">
+                        <span class="material-symbols-outlined text-[18px] leading-none">refresh</span>즉시 갱신
+                    </button>
+                </section>
+
+                <!-- 8. 배송 상태 동기화 -->
+                <section class="space-y-5 rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-sm">
+                    <div class="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                        <span class="material-symbols-outlined text-primary">local_shipping</span>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">8. 국내 배송 상태 갱신</h2>
+                    </div>
+
+                    <!-- ON/OFF 라디오 -->
+                    <div class="flex items-center gap-6 rounded-xl bg-amber-50/60 px-4 py-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isShipmentSyncEnabled" value="true" th:checked="${setting.isShipmentSyncEnabled}">
+                            <span class="text-sm font-bold">ON</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="isShipmentSyncEnabled" value="false"
+                                   th:checked="${!setting.isShipmentSyncEnabled}">
+                            <span class="text-sm font-bold">OFF</span>
+                        </label>
+                    </div>
+
+                    <!-- 시작 일시 -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">시작 일시</label>
+                        <input type="datetime-local" name="shipmentSyncStartDt"
+                               th:value="${setting.shipmentSyncStartDt}"
+                               class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                    </div>
+
+                    <!-- 주기 selectbox -->
+                    <div class="space-y-2">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">동기화 주기</label>
+                        <select name="shipmentSyncInterval"
+                                class="w-full bg-surface-container-high border border-transparent p-3 text-sm font-medium focus:bg-surface-container-lowest focus:border-primary transition-all">
+                            <option value="1" th:selected="${setting.shipmentSyncInterval == '1'}">1시간</option>
+                            <option value="3" th:selected="${setting.shipmentSyncInterval == '3'}">3시간</option>
+                            <option value="6" th:selected="${setting.shipmentSyncInterval == '6'}">6시간</option>
+                            <option value="12" th:selected="${setting.shipmentSyncInterval == '12'}">12시간</option>
+                            <option value="24" th:selected="${setting.shipmentSyncInterval == '24'}">1일</option>
+                        </select>
+                    </div>
+
+                    <!-- 마지막 동기화 시간 -->
+                    <div class="space-y-2 rounded-xl bg-zinc-50 px-4 py-3">
+                        <label class="block text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase">마지막 배송 동기화 시간</label>
+                        <input type="text" readonly
+                               th:value="${setting.lastShipmentSyncRunTime != null
+                                   ? #temporals.format(#temporals.createDateTime(setting.lastShipmentSyncRunTime), 'yyyy년 MM월 dd일 HH:mm')
+                                   : '실행 기록 없음'}"
+                               class="w-full bg-transparent border-none p-0 text-sm font-medium text-zinc-500 cursor-not-allowed">
+                    </div>
+
+                    <button type="button" id="refreshShipmentSyncBtn" onclick="refreshShipmentSync()" class="scheduler-action">
+                        <span class="material-symbols-outlined text-[18px] leading-none">sync</span>즉시 갱신
+                    </button>
+                </section>
+            </form>
+
+            <div class="scheduler-submit-row">
+                <button type="submit" form="policyForm" class="btn-primary px-8 py-4 text-sm gap-2 flex items-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">save</span>
+                    설정 저장
+                </button>
+            </div>
+
+        </div>
+    </div>
+    </main>
+
+    <th:block th:replace="~{fragments/modal/guidemodal :: guideModal}"></th:block>
+    <script th:inline="javascript">
+        function refreshDisplay(type) {
+            const btn = document.getElementById(type === 'popular' ? 'refreshPopularBtn' : 'refreshNewBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">refresh</span> 갱신 중...';
+
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+            fetch(`/root/scheduler/refresh/${type}`, {
+                method: 'POST',
+                headers: { [csrfHeader]: csrfToken }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('갱신 실패');
+                    location.reload();
+                })
+                .catch(err => {
+                // alert('갱신에 실패했습니다.'); -> 교체
+                showGuideModal('갱신에 실패했습니다.', null, 'ERROR', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const policyForm = document.getElementById('policyForm');
+
+            // 1. 숫자 전용 필드 검증
+            const numberInputs = policyForm.querySelectorAll('input[type="number"]');
+            numberInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            });
+
+            // 2. ON/OFF 상태에 따른 입력창 제어 함수
+            function updateInputStatus(section) {
+              const radioOn = section.querySelector('input[type="radio"][value="true"]');
+              const editableFields = section.querySelectorAll(
+                  'input[type="number"], input[type="text"]:not([readonly]), input[type="datetime-local"], select'
+              );
+
+              if (!editableFields.length || !radioOn) return;
+
+              const enableField = (field) => {
+                  if (field.tagName === 'SELECT') {
+                      field.disabled = false;
+                  } else {
+                      field.readOnly = false;
+                  }
+                  field.classList.remove('is-disabled-field');
+              };
+
+              const disableField = (field) => {
+                  if (field.tagName === 'SELECT') {
+                      field.disabled = true;
+                  } else {
+                      field.readOnly = true;
+                  }
+                  field.classList.add('is-disabled-field');
+
+                  if (document.activeElement === field) {
+                      field.blur();
+                  }
+            };
+
+              editableFields.forEach(field => {
+                  if (radioOn && radioOn.checked) {
+                      enableField(field);
+                  } else {
+                      disableField(field);
+                  }
+              });
+            }
+
+            // 이벤트 바인딩 및 초기화
+            const sections = policyForm.querySelectorAll('section');
+            sections.forEach(section => {
+                const radios = section.querySelectorAll('input[type="radio"]');
+                radios.forEach(radio => {
+                    radio.addEventListener('change', () => updateInputStatus(section));
+                });
+                updateInputStatus(section);
+            });
+        });
+
+        function triggerSync() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        showConfirmModal(
+            "통관 단계를 즉시 갱신하시겠습니까?",
+            function() {
+                fetch('/api/admin/member/shipment/sync-unipass', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('네트워크 응답에 문제가 발생했습니다.');
+                    return res.text();
+                })
+                .then(data => {
+                    showGuideModal(data, function() { location.reload(); }, "SUCCESS", "check_circle");
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showGuideModal("동기화 중 오류가 발생했습니다.", null, "ERROR", "error");
+                });
+            },
+            "통관 정보 동기화",
+            "sync"
+            );
+        }
+
+        function refreshShipmentSync() {
+            showConfirmModal("국내 배송 단계를 즉시 갱신하시겠습니까?",
+
+            function() {
+                const btn = document.getElementById('refreshShipmentSyncBtn');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span> 동기화 중...';
+
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+                fetch('/api/admin/member/shipment/sync-shipment', {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('동기화 실패');
+                    return res.text();
+                })
+                .then(data => { showGuideModal(data, function() { location.reload(); }, "SUCCESS", "check_circle"); })
+                .catch(err => {
+                showGuideModal('동기화에 실패했습니다.', null, 'ERROR', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+            }, "배송 단계 갱신", "sync" );
+        }
+    </script>
+</th:block>
+</html>
+
+

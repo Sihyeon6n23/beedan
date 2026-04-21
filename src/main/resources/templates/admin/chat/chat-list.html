@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('CHAT MANAGEMENT', 'Chat List', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 관리자 채팅 목록</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{admin/admin-sidebar :: sidebar('inquiry', 'chat-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+
+    <section class="admin-chat-page admin-chat-list-page"
+             th:with="currentListUrl=@{/admin/chat/list(
+              status=${searchDto.status},
+              keyword=${searchDto.keyword},
+              myAssignedOnly=${searchDto.myAssignedOnly},
+              page=${chatRoomPage.number}
+           )}">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">Chat List</span>
+                <h2 class="admin-chat-title">채팅 상담 관리</h2>
+            </div>
+            <div class="admin-chat-shell__rule">
+                <span></span>
+            </div>
+        </header>
+
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="채팅 목록 필터">
+            <div class="admin-chat-toolbar">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter"
+                           th:classappend="${searchDto.status == 'ALL'} ? ' is-active' : ''"
+                           th:href="@{/admin/chat/list(status='ALL', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">전체</a>
+                        <a class="admin-chat-filter"
+                           th:classappend="${searchDto.status == 'OPEN'} ? ' is-active' : ''"
+                           th:href="@{/admin/chat/list(status='OPEN', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">신규</a>
+                        <a class="admin-chat-filter"
+                           th:classappend="${searchDto.status == 'ONGOING'} ? ' is-active' : ''"
+                           th:href="@{/admin/chat/list(status='ONGOING', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">진행중</a>
+                        <a class="admin-chat-filter"
+                           th:classappend="${searchDto.status == 'CLOSED'} ? ' is-active' : ''"
+                           th:href="@{/admin/chat/list(status='CLOSED', keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=0)}">종료됨</a>
+                    </div>
+
+                    <div class="admin-chat-filter-set" data-filter-group="ownership">
+                        <a class="admin-chat-filter"
+                           th:classappend="${!searchDto.myAssignedOnly} ? ' is-active' : ''"
+                           th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=false, page=0)}">전체 상담</a>
+                        <a class="admin-chat-filter"
+                           th:classappend="${searchDto.myAssignedOnly} ? ' is-active' : ''"
+                           th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=true, page=0)}">내 담당만</a>
+                    </div>
+                </div>
+                <form class="admin-chat-search-form" data-admin-chat-search-form
+                      th:action="@{/admin/chat/list}" method="get">
+                    <input type="hidden" name="status" th:value="${searchDto.status}">
+                    <input type="hidden" name="myAssignedOnly" th:value="${searchDto.myAssignedOnly}">
+                    <input type="hidden" name="page" value="0">
+
+                    <input type="text"
+                           class="admin-chat-search-form__input" name="keyword"
+                           th:value="${searchDto.keyword}" placeholder="상호명 또는 회원명 검색">
+
+                    <button type="submit" class="admin-chat-search-form__submit admin-chat-action-link">
+                        검색
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 관리자 목록 비동기 갱신 실패 상태 -->
+        <div class="admin-chat-feedback is-hidden"
+             data-admin-chat-feedback
+             aria-live="polite"
+             aria-hidden="true">
+            <span class="material-symbols-outlined">error</span>
+            <p data-admin-chat-feedback-text>목록을 불러오는 중 문제가 발생했습니다.</p>
+        </div>
+
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>상담방 정보 및 최근 메시지</div>
+                <div>상태</div>
+                <div>담당자</div>
+                <div>시간</div>
+            </div>
+
+            <div class="admin-chat-list-body">
+                <!-- OPEN 채팅방 -->
+                <th:block th:each="chatRoom : ${chatRooms}">
+                    <button type="button"
+                            th:if="${chatRoom.chRoStt.name() == 'OPEN'}"
+                            class="admin-chat-row admin-chat-row--button"
+                            th:classappend="${chatRoom.unread} ? ' admin-chat-row--featured' : ''"
+                            data-modal-open="assign"
+                            th:attr="data-detail-url=@{/admin/chat/detail(id=${chatRoom.chRoId}, returnUrl=${currentListUrl})}, data-room-id=${chatRoom.chRoId}">
+                        <div class="admin-chat-row__primary">
+                            <span th:if="${chatRoom.unread}" class="admin-chat-row__unread"></span>
+                            <span th:unless="${chatRoom.unread}" class="admin-chat-row__unread admin-chat-row__unread--empty"></span>
+                            <div class="admin-chat-row__text">
+                                <h2>
+                                    <span th:text="${chatRoom.memBizTtl != null ? chatRoom.memBizTtl : '상호명 미등록'}">상호명</span>
+                                    <small th:text="${chatRoom.memNm != null ? chatRoom.memNm : '이름 미등록'}">회원 이름</small>
+                                </h2>
+                                <p th:text="${chatRoom.lastMessageContent != null ? chatRoom.lastMessageContent : '아직 사용자가 메시지를 보내지 않았습니다.'}">최근 메시지</p>
+                            </div>
+                        </div>
+                        <div class="admin-chat-row__status">
+                            <span class="admin-chat-badge admin-chat-badge--open">신규</span>
+                        </div>
+                        <div class="admin-chat-row__owner">
+                            <strong class="is-warning" th:text="${chatRoom.adminName != null ? chatRoom.adminName : '미배정'}">미배정</strong>
+                        </div>
+                        <div class="admin-chat-row__time">
+                            <span th:with="displayTime=${chatRoom.lastMessageCreatedAt != null ? chatRoom.lastMessageCreatedAt : chatRoom.chRoCreDt}"
+                                  th:text="${#temporals.format(displayTime, #temporals.format(displayTime, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'HH:mm' : 'MM.dd')}">시간</span>
+                        </div>
+                    </button>
+
+                    <!-- ONGOING, CLOSED 채팅방 -->
+                    <a th:unless="${chatRoom.chRoStt.name() == 'OPEN'}"
+                       th:href="@{/admin/chat/detail(id=${chatRoom.chRoId}, returnUrl=${currentListUrl})}"
+                       class="admin-chat-row"
+                       th:classappend="${chatRoom.unread} ? ' admin-chat-row--featured' : ''">
+                        <div class="admin-chat-row__primary">
+                            <span th:if="${chatRoom.unread}" class="admin-chat-row__unread"></span>
+                            <span th:unless="${chatRoom.unread}" class="admin-chat-row__unread admin-chat-row__unread--empty"></span>
+                            <div class="admin-chat-row__text">
+                                <h2>
+                                    <span th:text="${chatRoom.memBizTtl != null ? chatRoom.memBizTtl : '상호명 미등록'}">상호명</span>
+                                    <small th:text="${chatRoom.memNm != null ? chatRoom.memNm : '이름 미등록'}">회원 이름</small>
+                                </h2>
+                                <p th:text="${chatRoom.lastMessageContent != null ? chatRoom.lastMessageContent : '아직 사용자가 메시지를 보내지 않았습니다.'}">최근 메시지</p>
+                            </div>
+                        </div>
+                        <div class="admin-chat-row__status">
+                            <span class="admin-chat-badge"
+                                  th:classappend="${chatRoom.chRoStt.name() == 'ONGOING'} ? ' admin-chat-badge--ongoing' : ' admin-chat-badge--closed'"
+                                  th:text="${chatRoom.chRoStt.name() == 'ONGOING' ? '진행중' : '종료됨'}">상태</span>
+                        </div>
+                        <div class="admin-chat-row__owner">
+                            <span th:text="${chatRoom.adminName != null ? chatRoom.adminName : '미배정'}">담당자</span>
+                        </div>
+                        <div class="admin-chat-row__time">
+                            <span th:with="displayTime=${chatRoom.lastMessageCreatedAt != null ? chatRoom.lastMessageCreatedAt : chatRoom.chRoCreDt}"
+                                  th:text="${#temporals.format(displayTime, #temporals.format(displayTime, 'yyyy-MM-dd') == #temporals.format(#temporals.createNow(), 'yyyy-MM-dd') ? 'HH:mm' : 'MM.dd')}">시간</span>
+                        </div>
+                    </a>
+                </th:block>
+
+                <th:block th:if="${#lists.size(chatRooms) < 5}"
+                          th:each="spacer : ${#numbers.sequence(1, 5 - #lists.size(chatRooms))}">
+                    <div class="admin-chat-row-spacer" aria-hidden="true"></div>
+                </th:block>
+                <div class="admin-chat-empty-state"
+                     th:if="${#lists.isEmpty(chatRooms)}">
+                    <strong>표시할 채팅방이 없습니다.</strong>
+                    <p>선택한 조건에 맞는 채팅방이 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 페이지네이션 -->
+        <footer class="admin-chat-shell admin-chat-shell--pagination">
+            <div class="admin-chat-pagination">
+                <a th:if="${chatRoomPage.totalPages > 0 and chatRoomPage.hasPrevious()}"
+                   class="admin-chat-page-button admin-chat-page-button--wide"
+                   th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number - 1})}">Prev</a>
+                <span th:unless="${chatRoomPage.totalPages > 0 and chatRoomPage.hasPrevious()}"
+                      class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Prev</span>
+
+                <th:block th:if="${chatRoomPage.totalPages > 0}"
+                          th:each="pageNumber : ${#numbers.sequence(startPage, endPage)}">
+                    <a class="admin-chat-page-button"
+                       th:classappend="${pageNumber == chatRoomPage.number} ? ' is-current' : ''"
+                       th:text="${#numbers.formatInteger(pageNumber + 1, 2)}"
+                       th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${pageNumber})}">01</a>
+                </th:block>
+
+                <span th:if="${chatRoomPage.totalPages == 0}"
+                      class="admin-chat-page-button is-current is-disabled">01</span>
+
+                <a th:if="${chatRoomPage.totalPages > 0 and chatRoomPage.hasNext()}"
+                   class="admin-chat-page-button admin-chat-page-button--wide"
+                   th:href="@{/admin/chat/list(status=${searchDto.status}, keyword=${searchDto.keyword}, myAssignedOnly=${searchDto.myAssignedOnly}, page=${chatRoomPage.number + 1})}">Next</a>
+                <span th:unless="${chatRoomPage.totalPages > 0 and chatRoomPage.hasNext()}"
+                      class="admin-chat-page-button admin-chat-page-button--wide is-disabled">Next</span>
+            </div>
+        </footer>
+
+        <div th:replace="~{fragments/chat/admin-assign-modal :: assignConfirmModal}"></div>
+        <div th:replace="~{fragments/chat/admin-error-modal :: actionErrorModal}"></div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
+    <script defer th:src="@{/js/chat/admin-chat.js}"></script>
+</th:block>
+</html>

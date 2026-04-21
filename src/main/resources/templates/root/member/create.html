@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ACCOUNT', 'REGISTERATION', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 계정 생성</title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{root/root-sidebar :: sidebar('memberCreate', '')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <div th:replace="~{fragments/modal/guidemodal :: guideModal}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <div class="flex flex-col w-full max-w-5xl mx-auto px-6 mb-16">
+        <section class="mypage-security-page__intro">
+            <span class="mypage-security-page__kicker">ACCOUNT</span>
+            <h1 class="mypage-security-page__title">관리자 등록</h1>
+            <div class="mypage-security-page__rule">
+                <span></span>
+            </div>
+            <p th:if="${errorMessage}" th:text="${errorMessage}" class="text-error text-sm font-bold mt-4"></p>
+        </section>
+        <form th:action="@{/root/member/create}" th:object="${memberCreateFormDto}" method="POST"
+              class="bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.05)] space-y-12">
+
+            <section class="space-y-6">
+                <div class="flex items-center gap-4 mb-8">
+                    <span class="w-10 h-10 bg-primary text-white flex items-center justify-center font-bold text-xs leading-none">01</span>
+                    <h2 class="font-headline font-bold text-xl tracking-widest uppercase text-on-background">관리자 정보 입력</h2>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="space-y-2">
+                        <div class="space-y-2">
+                            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">계정 권한 <span class="text-error">*</span></label>
+                            <select th:field="*{authority}" class="bd-input w-full appearance-none bg-white status-badge-select">
+                                <option value="ADMIN">일반 관리자 (ADMIN)</option>
+                                <option value="ROOT">시스템 마스터 (ROOT)</option>
+                            </select>
+                            <p th:if="${#fields.hasErrors('authority')}" th:errors="*{authority}" class="text-error text-[11px] font-bold mt-1"></p>
+                        </div>
+
+                        <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">로그인 아이디 <span class="text-error">*</span></label>
+                        <div class="flex gap-2">
+                            <input type="text"
+                                   th:field="*{userLoginId}"
+                                   class="bd-input flex-grow"
+                                   placeholder="Admin ID"
+                                   th:readonly="${memberCreateFormDto.idCheckedInput}">
+                            <input type="hidden" th:field="*{idCheckedInput}">
+                            <button type="button" id="idCheckedBtn" class="btn-secondary px-6 whitespace-nowrap"
+                                    th:disabled="${memberCreateFormDto.idCheckedInput}">중복 확인</button>
+                        </div>
+                        <p th:if="${#fields.hasErrors('userLoginId')}" th:errors="*{userLoginId}" class="text-error text-[11px] font-bold mt-1"></p>
+                        <p id="available" class="text-[10px] text-stone-400" th:hidden="!${memberCreateFormDto.idCheckedInput}" >이용 가능한 계정입니다.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">관리자 이름 <span class="text-error">*</span></label>
+                            <input type="text" th:field="*{name}" class="bd-input" placeholder="실명을 입력하세요">
+                            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-error text-[11px] font-bold mt-1"></p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">연락처 <span class="text-error">*</span></label>
+                            <input type="tel" th:field="*{phone}" class="bd-input" placeholder="010-0000-0000">
+                            <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" class="text-error text-[11px] font-bold mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 <span class="text-error">*</span></label>
+                            <input type="password" th:field="*{password}" class="bd-input">
+                            <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-error text-[11px] font-bold mt-1"></p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">비밀번호 확인 <span class="text-error">*</span></label>
+                            <input type="password" th:field="*{confirmPassword}" class="bd-input">
+                            <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-error text-[11px] font-bold mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-secondary font-bold text-[10px] uppercase tracking-wider">이메일 <span class="text-error">*</span></label>
+                        <input type="email" th:field="*{email}" class="bd-input" placeholder="admin@beedan.com">
+                        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-error text-[11px] font-bold mt-1"></p>
+                    </div>
+
+                    <input type="hidden" th:field="*{authority}">
+                </div>
+            </section>
+
+            <footer class="pt-8 border-t border-outline-variant">
+                <button type="submit" class="btn-primary w-full py-5 text-base font-bold">관리자 계정 생성</button>
+            </footer>
+        </form>
+    </div>
+
+    <script th:inline="javascript">
+        /* 스크립트 로직은 이전과 동일하게 유지하되 ID 참조만 확인 */
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        axios.defaults.headers.common[csrfHeader] = csrfToken;
+
+        const lockInputFields = (elements) => {
+            elements.forEach(el => {
+                el.readOnly = true;
+                el.classList.remove("bg-white");
+                el.classList.add("bg-surface-container-low", "text-stone-500", "cursor-not-allowed");
+            });
+        };
+
+        const idCheckedBtn = document.getElementById("idCheckedBtn");
+        const userLoginId = document.getElementById("userLoginId");
+        const idCheckedInput = document.getElementById("idCheckedInput");
+
+        idCheckedBtn.addEventListener('click', async () => {
+            if (userLoginId.value.length < 4) {
+                showGuideModal("아이디는 4글자 이상 입력해주세요.", null, "알림", "info");
+                return;
+            }
+
+            try {
+                const response = await axios.post("/api/auth/idChecked", {
+                    username: userLoginId.value
+                });
+
+                if (response.data === true) {
+                    lockInputFields([userLoginId]);
+                    document.getElementById("available").classList.remove("hidden");
+                    idCheckedBtn.disabled = true;
+                    idCheckedInput.value = "true";
+                    showGuideModal("사용 가능한 아이디입니다.", null, "알림", "info");
+                } else {
+                    showGuideModal("이미 사용 중인 아이디입니다.", null, "중복", "error");
+                }
+            } catch (error) {
+                showGuideModal("중복 확인 중 오류가 발생했습니다.", null, "오류", "error");
+            }
+        });
+    </script>
+</th:block>
+</html>

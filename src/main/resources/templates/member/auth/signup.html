@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/layout :: layout(
+          ~{::title},
+          null,
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | Registration</title>
+
+<th:block th:fragment="content">
+  <script src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" th:href="@{/css/file/upload.css}">
+
+  <main class="min-h-screen bg-stone-50 py-16 md:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <div class="max-w-3xl mx-auto w-full">
+
+      <header class="mb-12 text-center md:text-left w-full">
+        <p class="text-primary font-black text-xs tracking-[0.2em] uppercase mb-2">Member Onboarding</p>
+        <h1 class="font-headline font-black text-4xl md:text-5xl tracking-tighter uppercase text-stone-900 leading-tight error-text-wrap">
+          Business Registration
+        </h1>
+      </header>
+
+      <form id="signupForm" th:action="@{/auth/signup}" th:object="${memberForm}" method="POST" enctype="multipart/form-data" class="bg-white border border-stone-200 p-8 md:p-12 shadow-sm space-y-12 w-full">
+        <input type="hidden" th:field="*{impUid}" id="imp_uid" required>
+
+        <section class="space-y-6 w-full">
+          <div class="flex items-center gap-4 mb-8 border-b border-stone-100 pb-4">
+            <span class="w-8 h-8 bg-primary text-white flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-full">1</span>
+            <h2 class="font-headline font-bold text-lg tracking-widest uppercase text-stone-900 whitespace-nowrap">본인 인증</h2>
+            <button type="button" id="certify_phone" class="btn-secondary px-4 py-2 text-xs ml-auto transition-colors hover:bg-stone-800 flex-shrink-0">
+              휴대전화 인증
+            </button>
+          </div>
+          <input type="hidden" th:field="*{phoneCheckedInput}" id="phoneCheckedInput">
+
+          <div class="min-w-0 w-full">
+            <div class="min-h-[20px] mt-1 w-full">
+              <p th:if="${#fields.hasErrors('impUid')}" th:errors="*{impUid}" class="text-error text-xs font-medium error-text-wrap"></p>
+              <div id="phoneAvailable" class="hidden items-center gap-2 text-primary text-xs font-bold bg-primary/10 p-2 rounded w-full" th:classappend="${memberForm.phoneCheckedInput == true} ? '!flex' : ''">
+                <span class="material-symbols-outlined !text-sm flex-shrink-0">check_circle</span>
+                <span class="error-text-wrap">본인인증을 완료했습니다.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="space-y-6 w-full">
+          <div class="flex items-center gap-4 mb-8 border-b border-stone-100 pb-4">
+            <span class="w-8 h-8 bg-primary text-white flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-full">2</span>
+            <h2 class="font-headline font-bold text-lg tracking-widest uppercase text-stone-900 whitespace-nowrap">계정 정보</h2>
+          </div>
+
+          <div class="space-y-6 w-full">
+            <div class="min-w-0 w-full">
+              <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">로그인 아이디 <span class="text-error">*</span></label>
+              <div class="flex gap-2 w-full min-w-0">
+                <input type="text" th:field="*{userLoginId}" id="userLoginId" class="bd-input flex-1 min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="아이디를 입력하세요"
+                       th:readonly="${memberForm.idCheckedInput == true}"
+                       th:classappend="${memberForm.idCheckedInput == true} ? 'bg-stone-100 text-stone-500 border-stone-200 cursor-not-allowed' : ''">
+                <input type="hidden" th:field="*{idCheckedInput}" id="idCheckedInput">
+
+                <button type="button" id="idCheckedBtn" class="btn-secondary px-4 text-xs transition-colors hover:bg-stone-800 whitespace-nowrap flex-shrink-0" th:disabled="${memberForm.idCheckedInput == true}">
+                  중복 확인
+                </button>
+              </div>
+              <div class="min-h-[20px] mt-1 w-full">
+                <p th:if="${#fields.hasErrors('userLoginId')}" th:errors="*{userLoginId}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+                <div id="available" class="hidden items-center gap-2 text-primary text-xs font-bold w-full" th:classappend="${memberForm.idCheckedInput == true} ? '!flex' : ''">
+                  <span class="material-symbols-outlined !text-sm flex-shrink-0">check</span>
+                  <span class="error-text-wrap">사용 가능한 아이디입니다.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+              <div class="min-w-0 w-full">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">비밀번호 <span class="text-error">*</span></label>
+                <input type="password" th:field="*{password}" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="••••••••">
+                <div class="min-h-[40px] mt-1 w-full">
+                  <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-error text-xs leading-relaxed error-text-wrap"></p>
+                </div>
+              </div>
+              <div class="min-w-0 w-full">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">비밀번호 확인 <span class="text-error">*</span></label>
+                <input type="password" th:field="*{confirmPassword}" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="••••••••">
+                <div class="min-h-[40px] mt-1 w-full">
+                  <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-error text-xs leading-relaxed error-text-wrap"></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="min-w-0 w-full">
+              <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">이메일 <span class="text-error">*</span></label>
+              <div class="flex gap-2 w-full min-w-0">
+                <input type="email" th:field="*{email}" id="email" class="bd-input flex-1 min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="name@company.com"
+                       th:readonly="${memberForm.emailCheckedInput == true}"
+                       th:classappend="${memberForm.emailCheckedInput == true} ? 'bg-stone-100 text-stone-500 border-stone-200 cursor-not-allowed' : ''">
+                <input type="hidden" th:field="*{emailCheckedInput}" id="emailCheckedInput">
+
+                <button type="button" id="emailCheckedBtn" class="btn-secondary px-4 text-xs transition-colors hover:bg-stone-800 whitespace-nowrap flex-shrink-0" th:disabled="${memberForm.emailCheckedInput == true}">
+                  중복 확인
+                </button>
+              </div>
+              <div class="min-h-[20px] mt-1 w-full">
+                <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+                <div id="emailAvailable" class="hidden items-center gap-2 text-primary text-xs font-bold w-full" th:classappend="${memberForm.emailCheckedInput == true} ? '!flex' : ''">
+                  <span class="material-symbols-outlined !text-sm flex-shrink-0">check</span>
+                  <span class="error-text-wrap">사용 가능한 이메일입니다.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="space-y-6 w-full">
+          <div class="flex items-center gap-4 mb-8 border-b border-stone-100 pb-4">
+            <span class="w-8 h-8 bg-primary text-white flex-shrink-0 flex items-center justify-center font-bold text-xs rounded-full">3</span>
+            <h2 class="font-headline font-bold text-lg tracking-widest uppercase text-stone-900 whitespace-nowrap">사업자 정보</h2>
+          </div>
+
+          <div class="space-y-6 w-full">
+            <input type="hidden" th:field="*{bizCheckedInput}" id="bizCheckedInput">
+
+            <div class="min-w-0 w-full">
+              <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">사업자 등록 번호 <span class="text-error">*</span></label>
+              <input type="text" th:field="*{businessRegNum}" id="b_no" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="'-' 제외 10자리"
+                     th:readonly="${memberForm.bizCheckedInput == true}"
+                     th:classappend="${memberForm.bizCheckedInput == true} ? 'bg-stone-100 text-stone-500 border-stone-200 cursor-not-allowed' : ''">
+              <div class="min-h-[20px] mt-1 w-full">
+                <p th:if="${#fields.hasErrors('businessRegNum')}" th:errors="*{businessRegNum}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+              <div class="min-w-0 w-full">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">상호명 <span class="text-error">*</span></label>
+                <input type="text" th:field="*{companyName}" id="b_nm" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="사업자등록증 상호명"
+                       th:readonly="${memberForm.bizCheckedInput == true}"
+                       th:classappend="${memberForm.bizCheckedInput == true} ? 'bg-stone-100 text-stone-500 border-stone-200 cursor-not-allowed' : ''">
+                <div class="min-h-[20px] mt-1 w-full">
+                  <p th:if="${#fields.hasErrors('companyName')}" th:errors="*{companyName}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+                </div>
+              </div>
+              <div class="min-w-0 w-full">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">대표자명 <span class="text-error">*</span></label>
+                <input type="text" th:field="*{ceoName}" id="p_nm" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="대표자명"
+                       th:readonly="${memberForm.bizCheckedInput == true}"
+                       th:classappend="${memberForm.bizCheckedInput == true} ? 'bg-stone-100 text-stone-500 border-stone-200 cursor-not-allowed' : ''">
+                <div class="min-h-[20px] mt-1 w-full">
+                  <p th:if="${#fields.hasErrors('ceoName')}" th:errors="*{ceoName}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 items-end bg-stone-50 p-4 border border-stone-100 w-full min-w-0">
+              <div class="w-full sm:flex-1 min-w-0">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">개업연월일 <span class="text-error">*</span></label>
+                <input type="date" th:field="*{establishmentDate}" name="establishmentDate" id="start_dt" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none"
+                       th:readonly="${memberForm.bizCheckedInput == true}"
+                       th:classappend="${memberForm.bizCheckedInput == true} ? 'bg-stone-100 text-stone-500 border-stone-200 cursor-not-allowed' : ''">
+              </div>
+              <button type="button" id="bizValidationBtn" class="btn-primary w-full sm:w-auto px-6 py-3 text-xs whitespace-nowrap h-[42px] transition-transform hover:-translate-y-0.5 shadow-sm flex-shrink-0">
+                사업자 인증
+              </button>
+            </div>
+
+            <div id="validation-status" class="flex items-center gap-2 text-xs font-bold min-h-[20px] w-full min-w-0">
+              <span id="status-icon" class="material-symbols-outlined !text-sm text-primary hidden flex-shrink-0"></span>
+              <span id="status-text" class="text-primary error-text-wrap"></span>
+            </div>
+
+            <div class="bg-stone-50 p-6 border border-stone-200 border-dashed w-full min-w-0">
+              <div class="flex justify-between items-center mb-4 w-full">
+                <label class="block text-stone-800 font-bold text-sm uppercase tracking-wider">사업자등록증 첨부 <span class="text-error">*</span></label>
+                <span class="text-xs text-stone-500 bg-white px-2 py-1 border border-stone-200 rounded whitespace-nowrap flex-shrink-0">JPG, PNG, PDF (최대 10MB)</span>
+              </div>
+
+              <div class="w-full min-w-0 overflow-hidden">
+                <div th:replace="~{fragments/file/fileUpload :: upload(maxCount=1, existingFiles=null, isMultiple=false)}"></div>
+              </div>
+
+              <div class="min-h-[24px] mt-3 w-full">
+                <p class="text-xs text-stone-500 flex items-start gap-1 w-full min-w-0">
+                  <span class="material-symbols-outlined !text-sm flex-shrink-0 mt-0.5">info</span>
+                  <span class="error-text-wrap leading-relaxed">글자가 명확하게 보이도록 촬영하여 업로드해 주세요.</span>
+                </p>
+                <p th:if="${#fields.hasErrors('newFiles')}" th:errors="*{newFiles}" class="text-error text-xs font-bold mt-1 error-text-wrap leading-relaxed"></p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+              <div class="min-w-0 w-full">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">대표자 전화번호 <span class="text-error">*</span></label>
+                <input type="tel" th:field="*{ceoPhone}" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="010-0000-0000">
+                <div class="min-h-[20px] mt-1 w-full">
+                  <p th:if="${#fields.hasErrors('ceoPhone')}" th:errors="*{ceoPhone}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+                </div>
+              </div>
+              <div class="min-w-0 w-full">
+                <label class="block text-stone-600 font-bold text-xs uppercase tracking-wider mb-2">회사 전화번호 <span class="text-error">*</span></label>
+                <input type="tel" th:field="*{cmpPhone}" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none" placeholder="02-000-0000">
+                <div class="min-h-[20px] mt-1 w-full">
+                  <p th:if="${#fields.hasErrors('cmpPhone')}" th:errors="*{cmpPhone}" class="text-error text-xs error-text-wrap leading-relaxed"></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4 bg-white border border-stone-100 p-4 w-full min-w-0">
+              <label class="block text-stone-800 font-bold text-sm uppercase tracking-wider border-b border-stone-100 pb-2">회사 주소 <span class="text-error">*</span></label>
+
+              <div class="flex gap-2 pt-2 w-full min-w-0">
+                <input type="text" id="postcode" th:field="*{postCode}" class="bd-input flex-1 min-w-0 border-stone-300 bg-stone-50 cursor-not-allowed rounded-none" placeholder="우편번호" readonly>
+                <button type="button" id="searchPostCode" class="btn-secondary px-6 text-xs transition-colors hover:bg-stone-800 whitespace-nowrap flex-shrink-0">
+                  주소 검색
+                </button>
+              </div>
+
+              <input type="text" id="baseAddress" th:field="*{companyAddress}" class="bd-input w-full min-w-0 border-stone-300 bg-stone-50 cursor-not-allowed rounded-none mt-2" placeholder="기본 주소" readonly>
+              <input type="text" id="detailAddress" th:field="*{companyAddressDetail}" class="bd-input w-full min-w-0 border-stone-300 focus:border-primary focus:ring-1 focus:ring-primary transition-all rounded-none mt-2" placeholder="상세 주소를 입력하세요">
+            </div>
+          </div>
+        </section>
+
+        <footer class="pt-8 mt-12 border-t border-stone-200 w-full">
+          <button type="submit" class="btn-primary w-full py-4 text-sm font-black tracking-widest uppercase transition-all hover:bg-primary/90 hover:shadow-md">
+            가입하기
+          </button>
+        </footer>
+      </form>
+
+    </div>
+  </main>
+
+  <script th:src="@{/js/postcode/postcode.js}"></script>
+  <script th:src="@{/js/auth/biz-number-validation.js}"></script>
+  <script th:src="@{/js/auth/phone-certification.js}"></script>
+  <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+  <script th:src="@{/js/file/fileUpload.js}"></script>
+
+  <script th:if="${signupSuccess}" th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      showGuideModal(
+        '회원가입이 정상적으로 완료되었습니다!',
+        function() { window.location.href = '/auth/signin'; },
+        'SIGNUP COMPLETE',
+        'check_circle'
+      );
+    });
+  </script>
+  <script th:inline="javascript">
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+    const lockInputFields = (elements) => {
+      elements.forEach(el => {
+        el.readOnly = true;
+        el.classList.remove("bg-white", "border-stone-300");
+        el.classList.add("bg-stone-100", "text-stone-500", "border-stone-200", "cursor-not-allowed");
+      });
+    };
+
+    axios.defaults.headers.common[csrfHeader] = csrfToken;
+
+    let certifyPhoneBtn = document.getElementById("certify_phone");
+    let phoneAvailable = document.getElementById("phoneAvailable");
+    let phoneCheckedInput = document.getElementById("phoneCheckedInput");
+
+    let idCheckedBtn = document.getElementById("idCheckedBtn");
+    let userLoginId = document.getElementById("userLoginId");
+    let idCheckedInput = document.getElementById("idCheckedInput");
+    let availableDiv = document.getElementById("available");
+
+    let bizValidationBtn = document.getElementById("bizValidationBtn");
+    let bizCheckedInput = document.getElementById("bizCheckedInput");
+    let bNoEl = document.getElementById("b_no");
+    let bNmEl = document.getElementById("b_nm");
+    let pNmEl = document.getElementById("p_nm");
+    let sDtEl = document.getElementById("start_dt");
+    let validationStatus = document.getElementById("validation-status");
+    let statusIcon = document.getElementById("status-icon");
+    let statusText = document.getElementById("status-text");
+
+    let emailCheckedBtn = document.getElementById("emailCheckedBtn");
+    let emailInput = document.getElementById("email");
+    let emailCheckedInput = document.getElementById("emailCheckedInput");
+    let emailAvailableDiv = document.getElementById("emailAvailable");
+
+    const PORTONE_STORE_ID = [[${portoneStoreId}]];
+    const PORTONE_CHANNEL_KEY = [[${portoneChannelKey}]];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById('inquiry-write-form');
+
+      if (window.InquiryUploader) {
+        window.InquiryUploader.init();
+      }
+
+      if (phoneCheckedInput.value === "true") {
+        phoneAvailable.classList.remove("hidden");
+        phoneAvailable.classList.add("flex");
+        certifyPhoneBtn.disabled = true;
+        certifyPhoneBtn.classList.add("opacity-50", "cursor-not-allowed");
+      }
+
+      if (idCheckedInput.value === "true") {
+        availableDiv.classList.remove("hidden");
+        availableDiv.classList.add("flex");
+        idCheckedBtn.disabled = true;
+        idCheckedBtn.classList.add("opacity-50", "cursor-not-allowed");
+        lockInputFields([userLoginId]);
+      }
+
+      if (bizCheckedInput.value === "true") {
+        statusIcon.classList.remove("hidden");
+        statusIcon.innerText = "check_circle";
+        statusText.innerText = "사업자정보 인증이 완료되었습니다.";
+        bizValidationBtn.disabled = true;
+        bizValidationBtn.classList.add("opacity-50", "cursor-not-allowed");
+        lockInputFields([bNoEl, bNmEl, pNmEl, sDtEl]);
+      }
+
+      if (emailCheckedInput && emailCheckedInput.value === "true") {
+        emailAvailableDiv.classList.remove("hidden");
+        emailAvailableDiv.classList.add("flex");
+        emailCheckedBtn.disabled = true;
+        emailCheckedBtn.classList.add("opacity-50", "cursor-not-allowed");
+        lockInputFields([emailInput]);
+      }
+    });
+    certifyPhoneBtn.addEventListener('click', async () => {
+      try {
+        const response = await PortOne.requestIdentityVerification({
+          storeId: PORTONE_STORE_ID,
+          channelKey: PORTONE_CHANNEL_KEY,
+          identityVerificationId: `identity-verification-${crypto.randomUUID()}`
+        });
+
+        if (response.code !== undefined) {
+          return showGuideModal("인증이 취소되었습니다.\n" + response.message, null, 'CERTIFICATION', 'cancel');
+        }
+
+        const checkResult = await axios.post("/api/auth/phone-certification", {
+          impUid: response.identityVerificationId
+        });
+
+        if (checkResult.data.success) {
+          document.getElementById("imp_uid").value = response.identityVerificationId;
+          phoneAvailable.classList.remove("hidden");
+          phoneAvailable.classList.add("flex");
+          certifyPhoneBtn.disabled = true;
+          certifyPhoneBtn.classList.add("opacity-50", "cursor-not-allowed");
+          phoneCheckedInput.value = "true";
+
+          showGuideModal(checkResult.data.message || "본인인증이 완료되었습니다.", null, 'COMPLETE', 'check_circle');
+        }
+
+      } catch (error) {
+        console.error("본인인증 검증 중 에러 발생:", error);
+        if (error.response && error.response.status === 409) {
+          showGuideModal(error.response.data.message, null, 'ERROR', 'error');
+        } else {
+          showGuideModal("인증 처리 중 서버 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.", null, 'ERROR', 'error');
+        }
+        phoneCheckedInput.value = "false";
+        document.getElementById("imp_uid").value = "";
+        phoneAvailable.classList.add("hidden");
+        phoneAvailable.classList.remove("flex");
+      }
+    });
+
+    let searchPostCodeBtn = document.getElementById("searchPostCode");
+    searchPostCodeBtn.addEventListener('click', () => {
+      execDaumPostcode();
+    });
+
+    bizValidationBtn.addEventListener('click', async () => {
+      const bizDto = {
+        b_no: bNoEl.value,
+        b_nm: bNmEl.value,
+        p_nm: pNmEl.value,
+        start_dt: sDtEl.value.replace(/-/g, "")
+      }
+
+      let emptyField;
+      const filedNames = {b_no: "사업자번호", b_nm: "상호명", p_nm: "대표자명", start_dt: "개업연월일"};
+      for (const [key, value] of Object.entries(bizDto)) {
+        if (!value) {
+          emptyField = key;
+          document.getElementById(key).focus();
+          showGuideModal(`${filedNames[emptyField]}을/를 입력해주세요.`, null, 'REQUIRED', 'warning');
+          return;
+        }
+      }
+
+      const result = await BizNumberValidation.validate(bizDto);
+      let data = result.data[0];
+
+      if (data.valid === "01") {
+        statusIcon.classList.remove("hidden");
+        statusIcon.innerText = "check_circle";
+        statusText.innerText = "사업자정보 인증이 완료되었습니다.";
+        lockInputFields([bNoEl, bNmEl, pNmEl, sDtEl]);
+        bizValidationBtn.disabled = true;
+        bizValidationBtn.classList.add("opacity-50", "cursor-not-allowed");
+        bizCheckedInput.value = true;
+        // (선택사항) 성공 메시지 모달을 띄우고 싶다면 추가
+        showGuideModal("사업자 인증이 완료되었습니다.", null, 'VERIFIED', 'verified');
+      } else if (data.valid === "02") {
+        showGuideModal("사업자 정보가 일치하지 않습니다.\n다시 확인해주세요.", null, 'INVALID', 'error');
+      }
+    });
+
+    idCheckedBtn.addEventListener('click', async () => {
+      if (userLoginId.value.length < 6) {
+        showGuideModal("아이디는 6글자 이상 입력해주세요.", null, 'ID CHECK', 'warning');
+      } else {
+        let checked = await axios.post("/api/auth/idChecked", {
+          username: userLoginId.value
+        });
+
+        if (checked.data === true) {
+          lockInputFields([userLoginId]);
+          availableDiv.classList.remove("hidden");
+          availableDiv.classList.add("flex");
+          idCheckedBtn.disabled = true;
+          idCheckedBtn.classList.add("opacity-50", "cursor-not-allowed");
+          idCheckedInput.value = true;
+        } else {
+          showGuideModal("이미 사용 중인 아이디입니다.\n다른 아이디를 입력해주세요.", () => { userLoginId.focus(); }, 'ID CHECK', 'error');
+          userLoginId.focus();
+        }
+      }
+    });
+
+    emailCheckedBtn.addEventListener('click', async () => {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailInput.value || !emailPattern.test(emailInput.value)) {
+        showGuideModal("유효한 이메일 형식을 입력해주세요.", () => { emailInput.focus(); }, 'EMAIL CHECK', 'warning');
+        emailInput.focus();
+        return;
+      }
+
+      try {
+        let checked = await axios.post("/api/auth/emailChecked", {
+          email: emailInput.value
+        });
+
+        if (checked.data === true) {
+          lockInputFields([emailInput]);
+          emailAvailableDiv.classList.remove("hidden");
+          emailAvailableDiv.classList.add("flex");
+          emailCheckedBtn.disabled = true;
+          emailCheckedBtn.classList.add("opacity-50", "cursor-not-allowed");
+          emailCheckedInput.value = true;
+        } else {
+          showGuideModal("이미 사용 중인 이메일입니다.\n다른 이메일을 입력해주세요.", () => {
+            emailInput.focus();
+            emailInput.value = "";
+          }, 'EMAIL CHECK', 'error');
+        }
+      } catch (error) {
+        console.error("이메일 중복 확인 에러:", error);
+        showGuideModal("중복 확인 중 오류가 발생했습니다.", null, 'ERROR', 'error');
+      }
+    });
+    document.getElementById('signupForm').addEventListener('submit', function(e) {
+      // 1. 본인 인증 확인
+      if (phoneCheckedInput.value !== "true") {
+        e.preventDefault(); // 폼 전송 중단
+        showGuideModal("휴대전화 본인인증을 완료해주세요.", function() {
+          certifyPhoneBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 2. 아이디 중복 확인
+      if (idCheckedInput.value !== "true") {
+        e.preventDefault();
+        showGuideModal("아이디 중복 확인을 완료해주세요.", function() {
+          userLoginId.focus();
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 3. 비밀번호 입력 및 확인
+      const pw = document.getElementById('password');
+      const pwConfirm = document.getElementById('confirmPassword');
+      if (!pw.value) {
+        e.preventDefault();
+        showGuideModal("비밀번호를 입력해주세요.", function() { pw.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+      if (pw.value !== pwConfirm.value) {
+        e.preventDefault();
+        showGuideModal("비밀번호가 서로 일치하지 않습니다.", function() { pwConfirm.focus(); }, "INVALID", "error");
+        return;
+      }
+
+      // 4. 이메일 중복 확인
+      if (emailCheckedInput.value !== "true") {
+        e.preventDefault();
+        showGuideModal("이메일 중복 확인을 완료해주세요.", function() {
+          emailInput.focus();
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 5. 사업자 정보 인증 확인
+      if (bizCheckedInput.value !== "true") {
+        e.preventDefault();
+        showGuideModal("사업자 정보 인증을 완료해주세요.", function() {
+          bizValidationBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      const attachedItems = document.querySelectorAll('.inquiry-upload__item');
+      const hasFileInUI = attachedItems.length > 0;
+
+      if (!hasFileInUI) {
+        e.preventDefault();
+        showGuideModal("사업자등록증 파일을 업로드해주세요.", function() {
+          // 업로드 섹션으로 부드럽게 이동
+          const uploadSection = document.querySelector('.bg-stone-50.p-6.border-dashed');
+          if(uploadSection) uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 7. 전화번호 확인
+      const ceoPh = document.getElementById('ceoPhone');
+      const cmpPh = document.getElementById('cmpPhone');
+      if (!ceoPh.value) {
+        e.preventDefault();
+        showGuideModal("대표자 전화번호를 입력해주세요.", function() { ceoPh.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+      if (!cmpPh.value) {
+        e.preventDefault();
+        showGuideModal("회사 전화번호를 입력해주세요.", function() { cmpPh.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 8. 주소 확인
+      const post = document.getElementById('postcode');
+      const addr = document.getElementById('detailAddress');
+      if (!post.value) {
+        e.preventDefault();
+        showGuideModal("주소 검색을 통해 우편번호를 입력해주세요.", function() {
+          searchPostCodeBtn.focus();
+        }, "REQUIRED", "warning");
+        return;
+      }
+      if (!addr.value) {
+        e.preventDefault();
+        showGuideModal("상세 주소를 입력해주세요.", function() { addr.focus(); }, "REQUIRED", "warning");
+        return;
+      }
+
+      // 모든 검사 통과 시 폼이 제출됩니다.
+    });
+  </script>
+</th:block>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dev Control Panel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 2rem; }
+
+        h1 { color: #e94560; margin-bottom: 1.5rem; font-size: 1.4rem; }
+
+        /* 시계 카드 */
+        .clock-card {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .clock-label { font-size: 0.75rem; color: #a8dadc; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+        .clock-date { font-size: 1.1rem; color: #a8dadc; margin-bottom: 0.3rem; }
+        .clock-time { font-size: 3.5rem; color: #e94560; letter-spacing: 4px; font-weight: bold; }
+        .clock-sync { font-size: 0.7rem; color: #555; margin-top: 0.5rem; }
+        .clock-sync.syncing { color: #a8dadc; }
+
+        /* 일반 카드 */
+        .card {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-title {
+            font-size: 0.75rem;
+            color: #a8dadc;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        /* 셀렉트 공통 */
+        .time-selects {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .time-selects .sep {
+            color: #a8dadc;
+            font-size: 1rem;
+        }
+        select {
+            background: #0f3460; color: #eee;
+            border: 1px solid #a8dadc;
+            padding: 0.45rem 0.4rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            text-align: center;
+        }
+        select:focus { outline: none; border-color: #e94560; }
+        select.sel-year  { width: 5.2rem; }
+        select.sel-month { width: 3.5rem; }
+        select.sel-day   { width: 3.5rem; }
+        select.sel-hour  { width: 3.5rem; }
+        select.sel-min   { width: 3.5rem; }
+        select.sel-sec   { width: 3.5rem; }
+        button {
+            background: #0f3460; color: #eee;
+            border: 1px solid #a8dadc;
+            padding: 0.5rem 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 0.9rem;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        button:hover { background: #1a4a8a; }
+        button.danger { border-color: #e94560; color: #e94560; }
+        button.danger:hover { background: #e94560; color: #eee; }
+        button.tick-btn {
+            display: block; width: 100%;
+            text-align: left;
+            margin-bottom: 0.4rem;
+            padding: 0.6rem 1rem;
+        }
+        button.tick-btn:hover { background: #0f3460; border-color: #e94560; }
+
+        /* 로그 */
+        #log {
+            background: #0d0d0d;
+            border-radius: 6px;
+            padding: 0.8rem;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 0.82rem;
+        }
+        .log-entry { padding: 0.25rem 0; border-bottom: 1px solid #1a1a2e; }
+        .log-ok { color: #a8dadc; }
+        .log-err { color: #e94560; }
+        .log-info { color: #888; }
+
+        /* 빠른 로그인 버튼 */
+        .login-btn {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            border: 1px solid #a8dadc;
+            background: #0f3460;
+            color: #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .login-btn:hover { background: #1a4a8a; border-color: #e94560; }
+        .login-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+    </style>
+</head>
+<body>
+
+<meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}" />
+<meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}" />
+
+<h1>🛠 Dev Control Panel</h1>
+
+<!-- ⓪ 빠른 로그인 -->
+<div class="card">
+    <div class="card-title">🔑 빠른 로그인</div>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <button class="login-btn" th:classappend="${loggedInUser == 'root'} ? ' active' : ''" onclick="quickLogin('root')">root 로그인</button>
+        <button class="login-btn" th:classappend="${loggedInUser == 'admin'} ? ' active' : ''" onclick="quickLogin('admin')">admin 로그인</button>
+        <button class="login-btn" th:classappend="${loggedInUser == 'user'} ? ' active' : ''" onclick="quickLogin('user')">user 로그인</button>
+        <span id="loginStatus" style="margin-left: 0.5rem; font-size: 0.85rem; color: #a8dadc;"
+              th:text="${loggedInUser != null} ? '✅ ' + ${loggedInUser} + ' 로그인 중' : '로그인 안 됨'"></span>
+    </div>
+</div>
+
+<!-- ① 시계 -->
+<div class="clock-card">
+    <div class="clock-label">Application Current Time</div>
+    <div class="clock-date" id="clockDate">----/--/--</div>
+    <div class="clock-time" id="clockTime">--:--:--</div>
+    <div class="clock-sync" id="syncStatus">서버 동기화 대기 중...</div>
+</div>
+
+<!-- ② 시간 조작 -->
+<div class="card">
+    <div class="card-title">🕐 시간 설정</div>
+    <div class="time-selects">
+        <select class="sel-year"  id="selYear"></select>
+        <span class="sep">년</span>
+        <select class="sel-month" id="selMonth"></select>
+        <span class="sep">월</span>
+        <select class="sel-day"   id="selDay"></select>
+        <span class="sep">일</span>
+        &nbsp;
+        <select class="sel-hour"  id="selHour"></select>
+        <span class="sep">시</span>
+        <select class="sel-min"   id="selMin"></select>
+        <span class="sep">분</span>
+        <select class="sel-sec"   id="selSec"></select>
+        <span class="sep">초</span>
+    </div>
+    <button onclick="setTime()">설정</button>
+    <button class="danger" onclick="resetTime()" style="margin-left: 0.5rem;">실제 시간으로 초기화</button>
+</div>
+
+<!-- ③ 스케줄러 강제 실행 -->
+<div class="card">
+    <div class="card-title">⚡ 스케줄러 강제 실행</div>
+    <div th:each="name : ${schedulerNames}">
+        <button class="tick-btn"
+                th:attr="data-scheduler-name=${name}"
+                onclick="tick(this.dataset.schedulerName)"
+                th:text="'▶  ' + ${name}">
+        </button>
+    </div>
+</div>
+
+<!-- ④ 로그 -->
+<div class="card">
+    <div class="card-title">📋 실행 로그</div>
+    <div id="log"><div class="log-entry log-info">대기 중...</div></div>
+</div>
+
+<script>
+    // ── 시계 ──────────────────────────────────────────
+    let appTime = null; // JS Date로 관리
+    let selectsInitialized = false; // 셀렉트 최초 초기화 여부
+
+    // 서버에서 앱 시간 받아와서 동기화
+    async function syncWithServer() {
+        const syncEl = document.getElementById('syncStatus');
+        try {
+            syncEl.textContent = '동기화 중...';
+            syncEl.className = 'clock-sync syncing';
+
+            const res = await fetch('/dev/time');
+            const serverTimeStr = await res.text(); // "2025-06-01T09:00:00"
+            appTime = parseServerTime(serverTimeStr);
+
+            // 최초 로딩 시에만 셀렉트 초기화
+            if (!selectsInitialized) {
+                buildSelects(appTime);
+                selectsInitialized = true;
+            }
+
+            const now = new Date();
+            syncEl.textContent = `마지막 동기화: ${formatTime(now)} (10초마다 자동 갱신)`;
+            syncEl.className = 'clock-sync';
+        } catch (e) {
+            syncEl.textContent = '서버 연결 실패';
+            syncEl.className = 'clock-sync log-err';
+        }
+    }
+
+    // "2025-06-01T09:00:00" → JS Date
+    function parseServerTime(str) {
+        // LocalDateTime 포맷 파싱
+        return new Date(str.replace('T', ' ').replace(/-/g, '/'));
+    }
+
+    // 1초마다 JS에서 자체적으로 +1초
+    function tickClock() {
+        if (!appTime) return;
+        appTime = new Date(appTime.getTime() + 1000);
+        renderClock();
+    }
+
+    function renderClock() {
+        if (!appTime) return;
+        const y = appTime.getFullYear();
+        const mo = String(appTime.getMonth() + 1).padStart(2, '0');
+        const d = String(appTime.getDate()).padStart(2, '0');
+        const h = String(appTime.getHours()).padStart(2, '0');
+        const mi = String(appTime.getMinutes()).padStart(2, '0');
+        const s = String(appTime.getSeconds()).padStart(2, '0');
+
+        document.getElementById('clockDate').textContent = `${y}/${mo}/${d}`;
+        document.getElementById('clockTime').textContent = `${h}:${mi}:${s}`;
+    }
+
+    // 초기 동기화 + 이후 10초마다 서버 동기화
+    syncWithServer();
+    setInterval(syncWithServer, 10000);
+
+    // 1초마다 시계 tick
+    setInterval(tickClock, 1000);
+
+
+    // ── 셀렉트 초기화 ─────────────────────────────────
+    function buildSelects(baseDate) {
+        const d = baseDate || new Date();
+
+        // 연도: 현재 -5 ~ +5
+        const yearSel = document.getElementById('selYear');
+        yearSel.innerHTML = '';
+        const baseYear = d.getFullYear();
+        for (let y = baseYear - 5; y <= baseYear + 5; y++) {
+            const opt = document.createElement('option');
+            opt.value = y; opt.textContent = y;
+            if (y === baseYear) opt.selected = true;
+            yearSel.appendChild(opt);
+        }
+
+        // 월: 1~12
+        const monthSel = document.getElementById('selMonth');
+        monthSel.innerHTML = '';
+        for (let m = 1; m <= 12; m++) {
+            const opt = document.createElement('option');
+            opt.value = String(m).padStart(2,'0');
+            opt.textContent = String(m).padStart(2,'0');
+            if (m === d.getMonth() + 1) opt.selected = true;
+            monthSel.appendChild(opt);
+        }
+
+        // 일: 1~31 (월 변경 시 자동 조정)
+        function rebuildDays() {
+            const y = parseInt(document.getElementById('selYear').value);
+            const mo = parseInt(document.getElementById('selMonth').value);
+            const daySel = document.getElementById('selDay');
+            const prevDay = parseInt(daySel.value) || d.getDate();
+            const maxDay = new Date(y, mo, 0).getDate();
+            daySel.innerHTML = '';
+            for (let day = 1; day <= maxDay; day++) {
+                const opt = document.createElement('option');
+                opt.value = String(day).padStart(2,'0');
+                opt.textContent = String(day).padStart(2,'0');
+                if (day === Math.min(prevDay, maxDay)) opt.selected = true;
+                daySel.appendChild(opt);
+            }
+        }
+        document.getElementById('selYear').addEventListener('change', rebuildDays);
+        document.getElementById('selMonth').addEventListener('change', rebuildDays);
+        rebuildDays();
+
+        // 시: 0~23
+        const hourSel = document.getElementById('selHour');
+        hourSel.innerHTML = '';
+        for (let h = 0; h < 24; h++) {
+            const opt = document.createElement('option');
+            opt.value = String(h).padStart(2,'0');
+            opt.textContent = String(h).padStart(2,'0');
+            if (h === d.getHours()) opt.selected = true;
+            hourSel.appendChild(opt);
+        }
+
+        // 분: 0~59
+        const minSel = document.getElementById('selMin');
+        minSel.innerHTML = '';
+        for (let mi = 0; mi < 60; mi++) {
+            const opt = document.createElement('option');
+            opt.value = String(mi).padStart(2,'0');
+            opt.textContent = String(mi).padStart(2,'0');
+            if (mi === d.getMinutes()) opt.selected = true;
+            minSel.appendChild(opt);
+        }
+
+        // 초: 0~59
+        const secSel = document.getElementById('selSec');
+        secSel.innerHTML = '';
+        for (let s = 0; s < 60; s++) {
+            const opt = document.createElement('option');
+            opt.value = String(s).padStart(2,'0');
+            opt.textContent = String(s).padStart(2,'0');
+            if (s === d.getSeconds()) opt.selected = true;
+            secSel.appendChild(opt);
+        }
+    }
+
+    // ── 시간 설정 ─────────────────────────────────────
+    async function setTime() {
+        const y  = document.getElementById('selYear').value;
+        const mo = document.getElementById('selMonth').value;
+        const d  = document.getElementById('selDay').value;
+        const h  = document.getElementById('selHour').value;
+        const mi = document.getElementById('selMin').value;
+        const s  = document.getElementById('selSec').value;
+        const datetime = `${y}-${mo}-${d}T${h}:${mi}:${s}`;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const res = await fetch('/dev/time', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ datetime })
+        });
+        const result = await res.text();
+        await syncWithServer(); // 즉시 동기화
+        addLog('시간 설정 → ' + result, 'ok');
+    }
+
+    async function resetTime() {
+        const headers = {};
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const res = await fetch('/dev/time', { method: 'DELETE', headers });
+        const result = await res.text();
+        selectsInitialized = false; // 초기화 후 셀렉트를 실제 시간으로 다시 채움
+        await syncWithServer();
+        addLog('시간 초기화 → ' + result, 'ok');
+    }
+
+
+    // ── 스케줄러 ──────────────────────────────────────
+    async function tick(name) {
+        addLog(name + ' 실행 요청 중...', 'info');
+        const headers = {};
+        if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+        const res = await fetch('/dev/tick/' + name, { method: 'POST', headers });
+        const msg = await res.text();
+        addLog(msg, res.ok ? 'ok' : 'err');
+    }
+
+
+    // ── 빠른 로그인 ─────────────────────────────────────
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+    async function quickLogin(username) {
+        const statusEl = document.getElementById('loginStatus');
+        statusEl.textContent = username + ' 로그인 중...';
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfHeader && csrfToken) headers[csrfHeader] = csrfToken;
+
+            const res = await fetch('/dev/quick-login', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ username: username })
+            });
+
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+
+            statusEl.textContent = '✅ ' + data.username + ' 로그인 완료 — 새로고침 중...';
+            statusEl.style.color = '#a8dadc';
+
+            // 세션이 바뀌어 CSRF 토큰이 갱신되므로 페이지 새로고침
+            setTimeout(function () { location.reload(); }, 500);
+        } catch (e) {
+            statusEl.textContent = '❌ 로그인 실패: ' + e.message;
+            statusEl.style.color = '#e94560';
+            addLog(username + ' 로그인 실패: ' + e.message, 'err');
+        }
+    }
+
+    // ── 로그 ──────────────────────────────────────────
+    function formatTime(date) {
+        return [date.getHours(), date.getMinutes(), date.getSeconds()]
+            .map(n => String(n).padStart(2, '0')).join(':');
+    }
+
+    function addLog(msg, type = 'info') {
+        const log = document.getElementById('log');
+        const prefix = { ok: '✅', err: '❌', info: '•' }[type] || '•';
+        const entry = document.createElement('div');
+        entry.className = 'log-entry log-' + type;
+        entry.textContent = '[' + formatTime(new Date()) + '] ' + prefix + ' ' + msg;
+        log.prepend(entry);
+    }
+</script>
+
+</body>
+</html>
+```
+
+---
+
+## JS 핵심 구조 요약
+```
+syncWithServer()  →  서버에서 시간 받아옴  →  appTime (JS Date) 에 저장
+↓
+setInterval(tickClock, 1000)  →  매초 appTime += 1초  →  화면 갱신
+↓
+setInterval(syncWithServer, 10000)  →  10초마다 서버와 drift 보정

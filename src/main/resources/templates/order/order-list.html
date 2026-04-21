@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/layout :: layout(
+          ~{::title},
+          ~{fragments/sidebar :: frame('ORDER', 'Order Management', ~{::sidebar})},
+          ~{::content}
+      )}">
+
+<title th:fragment="title">BEEDAN | 주문 관리 </title>
+
+<th:block th:fragment="sidebar">
+    <div th:replace="~{member/mypage/mypage-sidebar :: sidebar('order', 'order-list')}"></div>
+</th:block>
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat.css}">
+    <style>
+        .order-management-list .admin-chat-list-head,
+        .order-management-list .admin-chat-row {
+            display: grid !important;
+            grid-template-columns: minmax(29px, 0.4fr) minmax(200px, 2.7fr) minmax(180px, 1.0fr) minmax(40px, 0.4fr) minmax(40px, 0.4fr) !important;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .order-management-list .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .order-management-list .btn-detail {
+            background-color: #e2e2e2;
+            color: #1a1c1c;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 24px;
+            transition: all 0.2s ease;
+        }
+        .order-management-list .btn-detail:hover { background-color: #d1d1d1; }
+
+        .order-management-list .btn-edit {
+            background-color: #1a1c1c;
+            color: #ffffff;
+            border: none;
+            text-decoration: none !important;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.42rem 0.7rem;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+        .btn-edit:hover { opacity: 0.8; }
+
+        .order-management-list .admin-chat-row__amount {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            padding-right: 10px;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-input);
+            padding: 0.75rem 1.25rem;
+        }
+
+        .search-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .search-input-wrapper .material-symbols-outlined {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+        }
+
+        .btn-search {
+        background-color: #ffd700;
+        color: var(--primary-gold);
+        padding: 0.75rem 1.5rem;
+        border: none;
+        font-size: 0.7rem;
+        font-weight: 800;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background-color: #facc15;
+        }
+
+        .btn-reset {
+            background-color: #e8e8e8;
+            color: var(--text-main);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            font-size: 0.7rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-reset:hover {
+            background-color: #d1d1d1;
+        }
+    </style>
+
+    <section class="admin-chat-page admin-chat-list-page order-management-list">
+        <header class="admin-chat-shell admin-chat-shell--header">
+            <div class="admin-chat-shell__heading">
+                <span class="admin-chat-kicker">ORDER MANAGEMENT</span>
+                <h2 class="admin-chat-title">주문 목록</h2>
+
+                <div class="admin-chat-shell__rule">
+                    <span></span>
+                </div>
+            </div>
+        </header>
+
+        <section class="admin-chat-shell admin-chat-shell--toolbar" aria-label="주문 목록 필터">
+            <div class="admin-chat-toolbar flex justify-between items-center">
+                <div class="admin-chat-toolbar__filters">
+                    <div class="admin-chat-filter-set" data-filter-group="status">
+                        <a class="admin-chat-filter is-active" href="#" data-status="ALL">전체</a>
+                        <a class="admin-chat-filter" href="#" data-status="PREPARING">상품준비</a>
+                        <a class="admin-chat-filter" href="#" data-status="DELIVERING">배송중</a>
+                        <a class="admin-chat-filter" href="#" data-status="DELIVERED">배송완료</a>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="search-input-wrapper flex items-center gap-2 border-b border-outline-variant pb-2">
+                        <input id="search-input" type="text" placeholder="상품명 검색" class="bg-transparent border-none text-xs font-bold tracking-widest focus:ring-0 outline-none w-64" />
+                        <span class="material-symbols-outlined text-sm text-neutral-400">search</span>
+                    </div>
+                    <button class="btn-search" onclick="searchOrders()">검색</button>
+                    <button class="btn-reset" onclick="resetSearch()">초기화</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-chat-shell admin-chat-shell--list">
+            <div class="admin-chat-list-head" aria-hidden="true">
+                <div>주문번호</div>
+                <div style="text-align: left; margin-left:45px; !important;">상품정보</div>
+                <div>결제 금액</div>
+                <div style="text-align: center;">상태</div>
+                <div style="text-align: center;">관리</div>
+            </div>
+
+            <div id="order-list-body" class="admin-chat-list-body">
+                <div style="text-align: center; padding: 20px;">로딩 중...</div>
+            </div>
+        </section>
+
+        <footer id="order-pagination" class="admin-chat-shell admin-chat-shell--pagination"></footer>
+
+    </section>
+    <script th:src="@{/js/order/order-list.js}"></script>
+</th:block>
+</html>

@@ -1,0 +1,200 @@
+.app-layout--with-sidebar {
+  align-items: stretch;
+}
+
+.sidebar-frame {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #f3eee3 0%, #ece4d6 100%);
+  box-shadow: 10px 0 26px rgba(80, 62, 16, 0.08);
+}
+
+.sidebar-frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18px;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(243, 238, 227, 0) 0%, rgba(196, 183, 153, 0.26) 100%);
+  pointer-events: none;
+}
+
+.sidebar-frame__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  padding-top: 2rem;
+  padding-bottom: 1.25rem;
+}
+
+.sidebar-frame__header {
+  margin-top: 0;
+  margin-bottom: 1.35rem;
+  padding: 1.9rem 1.5rem 0;
+}
+
+.sidebar-frame__nav {
+  width: 100%;
+  padding: 0 0.9rem;
+}
+
+.sidebar-frame__rule {
+  margin-top: 2.9rem;
+  width: 100%;
+  height: 2px;
+  background: rgba(196, 183, 153, 0.75);
+}
+
+.sidebar-frame__rule span {
+  display: block;
+  width: 6.1rem;
+  height: 100%;
+  background: #e7c84b;
+}
+
+@media (min-width: 768px) {
+  .app-layout--with-sidebar > .app-layout__sidebar {
+    display: flex;
+    flex: 0 0 16rem;
+    min-width: 16rem;
+  }
+
+  .app-layout--with-sidebar > .app-layout__content {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    padding-left: 0;
+  }
+
+  .app-layout--with-sidebar > .app-layout__content > main {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.sidebar-scope {
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  gap: 0.3rem;
+}
+
+.sidebar-menu__link,
+.sidebar-menu__child-link {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  color: #57534e;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 0.9rem;
+  border-left: 4px solid transparent;
+  background: rgba(255, 250, 241, 0.46);
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.sidebar-menu__toggle {
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.sidebar-menu__toggle span:not(.sidebar-menu__icon):not(.sidebar-menu__chevron) {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.sidebar-menu__link:hover,
+.sidebar-menu__child-link:hover {
+  background: rgba(255, 248, 220, 0.72);
+  color: #292524;
+  border-left-color: rgba(180, 146, 34, 0.45);
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
+  transform: translateX(2px);
+}
+
+.sidebar-menu__icon {
+  margin-right: 0.9rem;
+  font-size: 1.125rem !important;
+}
+
+.sidebar-menu__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0;
+}
+
+.sidebar-menu__chevron {
+  margin-left: 0.75rem;
+  font-size: 1rem !important;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-menu__link--current {
+  color: #18181b;
+  font-weight: 700;
+  border-left-color: rgba(234, 179, 8, 0.72);
+  background: linear-gradient(90deg, rgba(255, 241, 196, 0.78) 0%, rgba(250, 245, 232, 0.88) 100%);
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
+}
+
+.sidebar-menu__child-wrap {
+  padding: 0 0.1rem 0 2.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height 0.22s ease, opacity 0.18s ease;
+}
+
+.sidebar-menu__group--open > .sidebar-menu__child-wrap {
+  max-height: 18rem;
+  opacity: 1;
+  pointer-events: auto;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+
+.sidebar-menu__group--open > .sidebar-menu__toggle .sidebar-menu__chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-menu__child-link {
+  display: flex;
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.62rem 0.95rem;
+  border-left: 4px solid transparent;
+  background: rgba(255, 250, 241, 0.35);
+  color: #6b6354;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.sidebar-menu__child-link:hover {
+  border-left-color: rgba(212, 169, 3, 0.45);
+  background: rgba(255, 251, 240, 0.7);
+  color: #18181b;
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
+}
+
+.sidebar-menu__child-link--current {
+  border-left-color: #eab308;
+  background: rgba(255, 251, 240, 0.96);
+  color: #18181b;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.05);
+}
