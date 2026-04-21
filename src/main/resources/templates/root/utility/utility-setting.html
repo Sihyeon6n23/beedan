@@ -83,22 +83,38 @@
             </form>
 
             <!-- 검색 모달 (form 밖) -->
-            <div id="search-modal" class="fixed inset-0 z-50 hidden">
-                <div class="absolute inset-0 bg-black/50" id="modal-overlay"></div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-lg border-2 border-yellow-400 p-8 space-y-5">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-yellow-500" style="font-size:20px;">travel_explore</span>
-                            <h3 class="text-lg font-bold">지역 검색</h3>
+            <div id="search-modal"
+                 class="fixed inset-0 z-[999] hidden items-center justify-center px-4">
+                <div class="absolute inset-0 bg-black/30" id="modal-overlay"></div>
+
+                <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md border-l-8 border-primary-container">
+                    <!-- 헤더 -->
+                    <div class="flex items-center justify-between px-7 pt-6 pb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary" style="font-size:22px;">travel_explore</span>
+                            <h3 class="text-xl font-bold tracking-tight uppercase">지역 검색</h3>
                         </div>
-                        <button type="button" id="modal-close" class="text-zinc-400 hover:text-zinc-700">
-                            <span class="material-symbols-outlined">close</span>
+                        <button type="button" id="modal-close"
+                                class="text-zinc-400 hover:text-zinc-700 transition p-1">
+                            <span class="material-symbols-outlined" style="font-size:20px;">close</span>
                         </button>
                     </div>
-                    <input type="text" id="search-input" placeholder="도시명을 입력하세요 (예: London, Paris, Tokyo)"
-                           class="w-full border-2 border-zinc-200 rounded-lg px-4 py-3 text-sm focus:border-yellow-400 focus:outline-none transition">
-                    <div id="search-results" class="max-h-80 overflow-y-auto space-y-1">
-                        <p class="text-sm text-zinc-400 text-center py-6">검색어를 입력하면 결과가 표시됩니다.</p>
+
+                    <!-- 검색 입력 -->
+                    <div class="px-7 pb-5">
+                        <input type="text" id="search-input"
+                               placeholder="도시명을 입력하세요"
+                               class="w-full text-sm border border-zinc-200 rounded px-3 py-2 focus:border-primary focus:outline-none transition">
+                        <p class="mt-1.5 text-[11px] text-zinc-400">예: London, Paris, Tokyo</p>
+                    </div>
+
+                    <!-- 결과 영역 -->
+                    <div class="px-3 pb-5">
+                        <div id="search-results" class="max-h-72 overflow-y-auto">
+                            <div class="py-10 text-center text-zinc-300 text-xs tracking-wider">
+                                검색어를 입력하면 결과가 표시됩니다
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,27 +135,40 @@
         let editingIndex = -1;
         let debounceTimer = null;
 
+        const modal = document.getElementById('search-modal');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            editingIndex = -1;
+        }
+
         // 변경 버튼 클릭
         document.querySelectorAll('.btn-change').forEach(btn => {
             btn.addEventListener('click', function() {
                 editingIndex = parseInt(this.dataset.index);
-                document.getElementById('search-modal').classList.remove('hidden');
+                openModal();
                 const input = document.getElementById('search-input');
                 input.value = '';
                 input.focus();
                 document.getElementById('search-results').innerHTML =
-                    '<p class="text-sm text-zinc-400 text-center py-4">검색어를 입력하면 결과가 표시됩니다.</p>';
+                    '<div class="py-10 text-center text-zinc-300 text-xs tracking-wider">검색어를 입력하면 결과가 표시됩니다</div>';
             });
         });
 
         // 모달 닫기
         document.getElementById('modal-close').addEventListener('click', closeModal);
         document.getElementById('modal-overlay').addEventListener('click', closeModal);
-
-        function closeModal() {
-            document.getElementById('search-modal').classList.add('hidden');
-            editingIndex = -1;
-        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
 
         // 검색 입력 (debounce 300ms)
         document.getElementById('search-input').addEventListener('input', function() {
@@ -148,20 +177,22 @@
 
             if (query.length < 2) {
                 document.getElementById('search-results').innerHTML =
-                    '<p class="text-sm text-zinc-400 text-center py-4">2글자 이상 입력하세요.</p>';
+                    '<div class="py-10 text-center text-zinc-300 text-xs tracking-wider">2글자 이상 입력하세요</div>';
                 return;
             }
 
             debounceTimer = setTimeout(() => {
                 document.getElementById('search-results').innerHTML =
-                    '<p class="text-sm text-zinc-400 text-center py-4">검색 중...</p>';
+                    '<div class="py-10 text-center text-primary text-xs tracking-wider">' +
+                    '  <span class="material-symbols-outlined animate-spin align-middle mr-1.5" style="font-size:16px;">progress_activity</span>검색중...' +
+                    '</div>';
 
                 fetch('/root/utility/weather/search?q=' + encodeURIComponent(query))
                     .then(res => res.json())
                     .then(data => renderResults(data))
                     .catch(() => {
                         document.getElementById('search-results').innerHTML =
-                            '<p class="text-sm text-red-500 text-center py-4">검색에 실패했습니다.</p>';
+                            '<div class="py-10 text-center text-red-400 text-xs tracking-wider">검색에 실패했습니다</div>';
                     });
             }, 300);
         });
@@ -171,7 +202,8 @@
             const container = document.getElementById('search-results');
 
             if (!data || data.length === 0) {
-                container.innerHTML = '<p class="text-sm text-zinc-400 text-center py-4">검색 결과가 없습니다.</p>';
+                container.innerHTML =
+                    '<div class="py-10 text-center text-zinc-300 text-xs tracking-wider">검색 결과가 없습니다</div>';
                 return;
             }
 
@@ -179,13 +211,16 @@
             data.forEach(item => {
                 const region = [item.state, item.country].filter(Boolean).join(', ');
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-zinc-100 transition';
+                div.className = 'group flex items-center justify-between gap-3 px-4 py-2.5 cursor-pointer hover:bg-zinc-50 border-b border-zinc-100 last:border-b-0 transition';
                 div.innerHTML =
-                    '<div>' +
-                    '  <p class="text-sm font-bold">' + escapeHtml(item.name) + '</p>' +
-                    '  <p class="text-xs text-zinc-400">' + escapeHtml(region) + '</p>' +
+                    '<div class="flex items-center gap-3 min-w-0">' +
+                    '  <span class="material-symbols-outlined text-zinc-300 group-hover:text-primary transition flex-shrink-0" style="font-size:18px;">location_on</span>' +
+                    '  <div class="min-w-0">' +
+                    '    <p class="text-sm font-bold text-zinc-800 truncate">' + escapeHtml(item.name) + '</p>' +
+                    '    <p class="text-xs text-zinc-400 truncate">' + (region ? escapeHtml(region) : '-') + '</p>' +
+                    '  </div>' +
                     '</div>' +
-                    '<span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>';
+                    '<span class="material-symbols-outlined text-zinc-200 group-hover:text-primary transition flex-shrink-0" style="font-size:16px;">arrow_forward</span>';
                 div.addEventListener('click', () => selectCity(item.name, region));
                 container.appendChild(div);
             });
