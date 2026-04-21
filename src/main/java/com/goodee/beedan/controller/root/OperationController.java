@@ -2,6 +2,8 @@ package com.goodee.beedan.controller.root;
 
 import com.goodee.beedan.entity.BuyerGradePolicy;
 import com.goodee.beedan.entity.FeePolicy;
+import com.goodee.beedan.entity.UnitDiscount;
+import com.goodee.beedan.entity.UnitGroup;
 import com.goodee.beedan.repository.quote.ShippingInsuranceRepository;
 import com.goodee.beedan.repository.quote.StockInspectionRepository;
 import com.goodee.beedan.service.buyer.BuyerGradePolicyService;
@@ -57,4 +59,17 @@ public class OperationController {
 
         return "root/operation/fee-policy";
     }
+
+    @GetMapping("/root/operation/unit-discount/{unGId}")
+    public String getUnitDiscountDetail(@PathVariable Long unGId, Model model) {
+
+        UnitGroup unitGroup = unitGroupService.findById(unGId);
+        List<UnitDiscount> discounts = unitDiscountService.findAllByUnitGroup(unGId);
+
+        model.addAttribute("unitGroup", unitGroup);
+        model.addAttribute("discounts", discounts);
+
+        return "root/operation/unit-discount";
+    }
+
 }

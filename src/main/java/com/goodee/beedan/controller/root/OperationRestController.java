@@ -7,13 +7,17 @@ import com.goodee.beedan.service.quote.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/root/operation")
 @RequiredArgsConstructor
@@ -23,11 +27,18 @@ public class OperationRestController {
     private final ShippingInsuranceRepository shippingInsuranceRepository;
     private final StockInspectionRepository stockInspectionRepository;
     private final com.goodee.beedan.repository.quote.UnitGroupRepository unitGroupRepository;
+    private final com.goodee.beedan.repository.quote.UnitDiscountRepository unitDiscountRepo;
     private final com.goodee.beedan.repository.quote.ShippingRateRepository shippingRateRepository;
     private final com.goodee.beedan.repository.quote.PortCustomsRateRepository portCustomsRateRepository;
     private final com.goodee.beedan.repository.quote.DomesticDeliveryRateRepository domesticDeliveryRateRepository;
     private final QuoteSubmitCheckRepository quoteSubmitCheckRepository;
     private final com.goodee.beedan.repository.buyer.FeePolicyRepository feePolicyRepository;
+
+    // 중복 이름 등 명시적 오류를 프론트에 전달하기 위한 공통 에러 응답 헬퍼
+    private ResponseEntity<?> fail(String message) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("status", "error", "message", message));
+    }
 
     // ========== 1. 고객사 등급 정책 ==========
 
@@ -42,8 +53,8 @@ public class OperationRestController {
                 .bgpGr(req.getBgpGr())
                 .bgpMinOrdCnt(req.getBgpMinOrdCnt())
                 .bgpMinTtAm(req.getBgpMinTtAm())
-                .bgpEfFrDt(req.getBgpEfFrDt())
-                .bgpEfToDt(req.getBgpEfToDt())
+                .bgpEfFrDt(toStartOfDay(req.getBgpEfFrDt()))
+                .bgpEfToDt(toStartOfDay(req.getBgpEfToDt()))
                 .bgpDes(req.getBgpDes())
                 .bgpAcYn(true)
                 .build();
@@ -55,9 +66,14 @@ public class OperationRestController {
     public ResponseEntity<?> updateGrade(@PathVariable Long id, @RequestBody GradeRequest req) {
         BuyerGradePolicy grade = buyerGradePolicyRepository.findById(id).orElseThrow();
         grade.update(req.getBgpMinOrdCnt(), req.getBgpMinTtAm(),
-                req.getBgpEfFrDt(), req.getBgpEfToDt(), req.getBgpDes());
+                toStartOfDay(req.getBgpEfFrDt()), toStartOfDay(req.getBgpEfToDt()),
+                req.getBgpDes());
         buyerGradePolicyRepository.save(grade);
         return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    private static LocalDateTime toStartOfDay(LocalDate d) {
+        return d != null ? d.atStartOfDay() : null;
     }
 
     @DeleteMapping("/grade/{id}")
@@ -139,25 +155,62 @@ public class OperationRestController {
 
     @PostMapping("/unit-group")
     public ResponseEntity<?> createUnitGroup(@RequestBody UnitGroupRequest req) {
-        UnitGroup ug = UnitGroup.builder().unGNm(req.getUnGNm()).unGQn(req.getUnGQn()).unGYn(true).build();
-        unitGroupRepository.save(ug);
-        return ResponseEntity.ok(Map.of("status", "ok"));
+        if (req.getUnGNm() == null || req.getUnGNm().isBlank()) return fail("단위명을 입력해주세요.");
+        if (req.getUnGQn() == null || req.getUnGQn() <= 0) return fail("단위당 수량은 1 이상이어야 합니다.");
+        // 중복 이름(활성/비활성 모두 포함) 방지
+        if (unitGroupRepository.existsByUnGNm(req.getUnGNm())) {
+            return fail("이미 존재하는 단위명입니다: " + req.getUnGNm());
+        }
+        try {
+            UnitGroup ug = UnitGroup.builder()
+                    .unGNm(req.getUnGNm())
+                    .unGQn(req.getUnGQn())
+                    .unGYn(true)
+                    .build();
+            unitGroupRepository.save(ug);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            log.error("묶음 단위 생성 실패: {}", e.getMessage(), e);
+            return fail("묶음 단위 생성 중 오류: " + e.getMessage());
+        }
     }
 
     @PutMapping("/unit-group/{id}")
     public ResponseEntity<?> updateUnitGroup(@PathVariable Long id, @RequestBody UnitGroupRequest req) {
-        UnitGroup ug = unitGroupRepository.findById(id).orElseThrow();
-        ug.update(req.getUnGNm(), req.getUnGQn());
-        unitGroupRepository.save(ug);
-        return ResponseEntity.ok(Map.of("status", "ok"));
+        UnitGroup ug = unitGroupRepository.findById(id)
+                .orElse(null);
+        if (ug == null) return fail("묶음 단위를 찾을 수 없습니다. id=" + id);
+        if (req.getUnGNm() == null || req.getUnGNm().isBlank()) return fail("단위명을 입력해주세요.");
+        if (req.getUnGQn() == null || req.getUnGQn() <= 0) return fail("단위당 수량은 1 이상이어야 합니다.");
+        // 이름이 바뀐 경우에만 중복 검사 (본인 레코드 제외)
+        if (!req.getUnGNm().equals(ug.getUnGNm())
+                && unitGroupRepository.findByUnGNm(req.getUnGNm())
+                    .filter(other -> !other.getUnGId().equals(id))
+                    .isPresent()) {
+            return fail("이미 존재하는 단위명입니다: " + req.getUnGNm());
+        }
+        try {
+            ug.update(req.getUnGNm(), req.getUnGQn());
+            unitGroupRepository.save(ug);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            log.error("묶음 단위 수정 실패: {}", e.getMessage(), e);
+            return fail("묶음 단위 수정 중 오류: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/unit-group/{id}")
     public ResponseEntity<?> deleteUnitGroup(@PathVariable Long id) {
-        UnitGroup ug = unitGroupRepository.findById(id).orElseThrow();
-        ug.deactivate();
-        unitGroupRepository.save(ug);
-        return ResponseEntity.ok(Map.of("status", "ok"));
+        UnitGroup ug = unitGroupRepository.findById(id).orElse(null);
+        if (ug == null) return fail("묶음 단위를 찾을 수 없습니다. id=" + id);
+        try {
+            ug.deactivate();
+            unitGroupRepository.save(ug);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            log.error("묶음 단위 삭제 실패: {}", e.getMessage(), e);
+            return fail("묶음 단위 삭제 중 오류: " + e.getMessage());
+        }
     }
 
     // ========== 5. 해외 운임 ==========
@@ -273,11 +326,13 @@ public class OperationRestController {
 
     @PostMapping("/submit-check")
     public ResponseEntity<?> createSubmitCheck(@RequestBody SubmitCheckRequest req) {
+        // Front-end form only sends qscDes/qscSort — default the rest so the
+        // record shows up in the list (which filters by qscRqYn=true).
         QuoteSubmitCheck qsc = QuoteSubmitCheck.builder()
-                .qscRqYn(req.getQscRqYn())
+                .qscRqYn(req.getQscRqYn() != null ? req.getQscRqYn() : true)
                 .qscDes(req.getQscDes())
                 .qscKey(req.getQscKey())
-                .qscDfltYn(req.getQscDfltYn())
+                .qscDfltYn(req.getQscDfltYn() != null ? req.getQscDfltYn() : false)
                 .qscSort(req.getQscSort())
                 .build();
         quoteSubmitCheckRepository.save(qsc);
@@ -287,7 +342,14 @@ public class OperationRestController {
     @PutMapping("/submit-check/{id}")
     public ResponseEntity<?> updateSubmitCheck(@PathVariable Long id, @RequestBody SubmitCheckRequest req) {
         QuoteSubmitCheck qsc = quoteSubmitCheckRepository.findById(id).orElseThrow();
-        qsc.update(req.getQscRqYn(), req.getQscDes(), req.getQscKey(), req.getQscDfltYn(), req.getQscSort());
+        // Preserve existing Boolean/key values when the request omits them.
+        qsc.update(
+                req.getQscRqYn() != null ? req.getQscRqYn() : qsc.getQscRqYn(),
+                req.getQscDes(),
+                req.getQscKey() != null ? req.getQscKey() : qsc.getQscKey(),
+                req.getQscDfltYn() != null ? req.getQscDfltYn() : qsc.getQscDfltYn(),
+                req.getQscSort()
+        );
         quoteSubmitCheckRepository.save(qsc);
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
@@ -298,6 +360,78 @@ public class OperationRestController {
         qsc.deactivate();
         quoteSubmitCheckRepository.save(qsc);
         return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    // ========== 묶음 할인 정책 (UnitGroup 상세) ==========
+
+    @GetMapping("/unit-discount/{id}")
+    public ResponseEntity<?> getUnitDiscount(@PathVariable Long id) {
+        UnitDiscount ud = unitDiscountRepo.findById(id).orElse(null);
+        if (ud == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.ok(ud);
+    }
+
+    @PostMapping("/unit-discount")
+    public ResponseEntity<?> createUnitDiscount(@RequestBody UnitDiscountReq req) {
+        if (req.getUnGId() == null) return fail("묶음 단위 ID가 필요합니다.");
+        if (req.getUnDOvTy() == null || req.getUnDOvTy().isBlank())
+            return fail("중복 처리 방식을 선택해주세요.");
+        try {
+            UnitDiscount ud = UnitDiscount.builder()
+                    .unitGroupId(req.getUnGId())
+                    .minQuantity(req.getUnDMinQn())
+                    .minAmount(req.getUnDMinAm())
+                    .quantityDiscountRate(req.getUnDQnDr())
+                    .amountDiscountRate(req.getUnDAmDr())
+                    .overlapType(com.goodee.beedan.common.constant.OverlapType.valueOf(req.getUnDOvTy()))
+                    .description(req.getUnDDes())
+                    .build();
+            unitDiscountRepo.save(ud);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            log.error("묶음 할인 생성 실패: {}", e.getMessage(), e);
+            return fail("생성 중 오류: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/unit-discount/{id}")
+    public ResponseEntity<?> updateUnitDiscount(@PathVariable Long id, @RequestBody UnitDiscountReq req) {
+        UnitDiscount existing = unitDiscountRepo.findById(id).orElse(null);
+        if (existing == null) return fail("묶음 할인 정책을 찾을 수 없습니다. id=" + id);
+        if (req.getUnDOvTy() == null || req.getUnDOvTy().isBlank())
+            return fail("중복 처리 방식을 선택해주세요.");
+        try {
+            // UnitDiscount 엔티티에는 update() 가 없으므로 delete+save 로 대체
+            Long unGId = existing.getUnGId();
+            unitDiscountRepo.delete(existing);
+            UnitDiscount ud = UnitDiscount.builder()
+                    .unitGroupId(unGId)
+                    .minQuantity(req.getUnDMinQn())
+                    .minAmount(req.getUnDMinAm())
+                    .quantityDiscountRate(req.getUnDQnDr())
+                    .amountDiscountRate(req.getUnDAmDr())
+                    .overlapType(com.goodee.beedan.common.constant.OverlapType.valueOf(req.getUnDOvTy()))
+                    .description(req.getUnDDes())
+                    .build();
+            unitDiscountRepo.save(ud);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            log.error("묶음 할인 수정 실패: {}", e.getMessage(), e);
+            return fail("수정 중 오류: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/unit-discount/{id}")
+    public ResponseEntity<?> deleteUnitDiscount(@PathVariable Long id) {
+        UnitDiscount existing = unitDiscountRepo.findById(id).orElse(null);
+        if (existing == null) return fail("묶음 할인 정책을 찾을 수 없습니다. id=" + id);
+        try {
+            unitDiscountRepo.delete(existing);
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            log.error("묶음 할인 삭제 실패: {}", e.getMessage(), e);
+            return fail("삭제 중 오류: " + e.getMessage());
+        }
     }
 
     // ========== 9. 수수료 정책 ==========
@@ -315,8 +449,8 @@ public class OperationRestController {
                 .fpCalcTy(com.goodee.beedan.common.policy.FeeCalculationType.valueOf(req.getFpCalcTy()))
                 .fpVal(req.getFpVal())
                 .fpAcYn(true)
-                .fpEfFrDt(req.getFpEfFrDt())
-                .fpEfToDt(req.getFpEfToDt())
+                .fpEfFrDt(toStartOfDay(req.getFpEfFrDt()))
+                .fpEfToDt(toStartOfDay(req.getFpEfToDt()))
                 .fpDes(req.getFpDes())
                 .build();
         feePolicyRepository.save(fp);
@@ -326,7 +460,9 @@ public class OperationRestController {
     @PutMapping("/fee-policy/{id}")
     public ResponseEntity<?> updateFeePolicy(@PathVariable Long id, @RequestBody FeePolicyRequest req) {
         FeePolicy fp = feePolicyRepository.findById(id).orElseThrow();
-        fp.update(req.getFpCalcTy(), req.getFpVal(), req.getFpEfFrDt(), req.getFpEfToDt(), req.getFpDes());
+        fp.update(req.getFpCalcTy(), req.getFpVal(),
+                toStartOfDay(req.getFpEfFrDt()), toStartOfDay(req.getFpEfToDt()),
+                req.getFpDes());
         feePolicyRepository.save(fp);
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
@@ -346,8 +482,9 @@ public class OperationRestController {
         private String bgpGr;
         private Integer bgpMinOrdCnt;
         private BigDecimal bgpMinTtAm;
-        private LocalDateTime bgpEfFrDt;
-        private LocalDateTime bgpEfToDt;
+        // Front-end <input type="date"> sends "yyyy-MM-dd" — accept as LocalDate
+        private LocalDate bgpEfFrDt;
+        private LocalDate bgpEfToDt;
         private String bgpDes;
     }
 
@@ -416,8 +553,21 @@ public class OperationRestController {
         private String fpFeeTy;
         private String fpCalcTy;
         private BigDecimal fpVal;
-        private LocalDateTime fpEfFrDt;
-        private LocalDateTime fpEfToDt;
+        // Front-end <input type="date"> sends "yyyy-MM-dd" — accept as LocalDate
+        private LocalDate fpEfFrDt;
+        private LocalDate fpEfToDt;
         private String fpDes;
     }
+
+    @Getter @NoArgsConstructor
+    public static class UnitDiscountReq {
+        private Long unGId;
+        private Integer unDMinQn;
+        private BigDecimal unDMinAm;
+        private BigDecimal unDQnDr;
+        private BigDecimal unDAmDr;
+        private String unDOvTy;    // HIGHER / LOWER / MULTIPLY / FIXED
+        private String unDDes;
+    }
+
 }

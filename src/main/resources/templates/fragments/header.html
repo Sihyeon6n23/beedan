@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<header th:fragment="headerFragment"
-        class="header_final-1 fixed top-0 left-0 w-full z-50 h-16 bg-white border-b border-stone-100">
+<header th:fragment="headerFragment" class="header_final-1 fixed top-0 left-0 right-0 z-50 h-16 bg-white border-b border-stone-100">
 
     <div class="w-full h-full px-6 md:px-12 flex items-center justify-between">
 
@@ -21,43 +20,44 @@
         </nav>
 
         <div class="flex items-center justify-end gap-6 flex-1">
-            <div sec:authorize="hasRole('ROOT')">
-                <a th:href="@{/root/main}">
-                    <span class="material-symbols-outlined">settings_suggest</span>
+
+            <div sec:authorize="hasRole('ROOT')" class="w-6 h-6 shrink-0 flex items-center justify-center  overflow-hidden">
+                <a th:href="@{/root/main}" class="text-stone-900 hover:opacity-70 transition-opacity">
+                    <span class="material-symbols-outlined leading-none block">settings_suggest</span>
                 </a>
             </div>
 
-            <div sec:authorize="hasAnyRole('ADMIN', 'ROOT')">
-                <a th:href="@{/admin/main}">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
+            <div sec:authorize="hasAnyRole('ADMIN', 'ROOT')" class="w-6 h-6 shrink-0 flex items-center justify-center  overflow-hidden">
+                <a th:href="@{/admin/main}" class="text-stone-900 hover:opacity-70 transition-opacity">
+                    <span class="material-symbols-outlined leading-none block">admin_panel_settings</span>
                 </a>
             </div>
-            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer">
-                <span class="material-symbols-outlined">notifications</span>
+
+            <div id="notiIcon" sec:authorize="hasRole('USER')" class="relative flex items-center justify-center w-8 h-8 shrink-0 cursor-pointer text-stone-900 ">
+                <span class="material-symbols-outlined leading-none block">notifications</span>
 
                 <span id="unreadBadge"
-                      th:with="count=${session.unreadCount}"
-                      th:classappend="${count != null and count > 0} ? 'flex' : 'hidden'"
-                      th:style="${count != null and count > 0} ? 'display: flex !important;' : 'display: none !important;'"
-                      class="absolute -top-2 -right-2 min-w-[16px] h-4 px-1 bg-primary text-white text-[10px] font-bold items-center justify-center rounded-full border border-white">
-                        [[${count > 6 ? '6+' : (count > 0 ? count : '')}]]
+                      th:with="count=${unreadCount}"
+                      th:style="${count == null or count == 0} ? 'display: none !important;' : 'display: flex !important;'"
+                      class="bg-primary"> [[${count != null and count > 6 ? '6+' : (count != null and count > 0 ? count : '')}]]
                 </span>
 
                 <div th:replace="~{notification/notification :: notificationDropdown}"></div>
             </div>
 
-            <div id="wishlistIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
-                <a th:href="@{/wishlist}" class="flex items-center">
-                    <span class="material-symbols-outlined leading-none">favorite</span>
-                </a>
-            </div>
-            <div id="cartIcon" sec:authorize="hasRole('USER')" class="relative flex items-center cursor-pointer hover:opacity-70 transition-opacity text-stone-900">
-                <a th:href="@{/cart}" class="flex items-center">
-                    <span class="material-symbols-outlined leading-none">shopping_cart</span>
+            <div id="wishlistIcon" sec:authorize="hasRole('USER')" class="w-6 h-6 shrink-0 flex items-center justify-center  overflow-hidden">
+                <a th:href="@{/wishlist}" class="text-stone-900 hover:opacity-70 transition-opacity">
+                    <span class="material-symbols-outlined leading-none block">favorite</span>
                 </a>
             </div>
 
-            <div class="button">
+            <div id="cartIcon" sec:authorize="hasRole('USER')" class="w-6 h-6 shrink-0 flex items-center justify-center  overflow-hidden">
+                <a th:href="@{/cart}" class="text-stone-900 hover:opacity-70 transition-opacity">
+                    <span class="material-symbols-outlined leading-none block">shopping_cart</span>
+                </a>
+            </div>
+
+            <div class="button shrink-0 ml-2">
                 <th:block sec:authorize="isAnonymous()">
                     <div class="flex items-center gap-4">
                         <a th:href="@{/auth/signup}" class="text-xs font-bold no-underline text-stone-900">SIGNUP</a>
@@ -65,9 +65,9 @@
                     </div>
                 </th:block>
                 <th:block>
-                    <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout">
+                    <form sec:authorize="isAuthenticated()" method="post" action="/auth/signout" class="m-0">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="text-xs font-bold no-underline text-stone-900">LOGOUT</button>
+                        <button type="submit" class="text-xs font-bold no-underline text-stone-900 bg-transparent border-none cursor-pointer p-0">LOGOUT</button>
                     </form>
                 </th:block>
             </div>

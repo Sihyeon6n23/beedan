@@ -1,4 +1,4 @@
-package com.goodee.beedan.devUtils;
+package com.goodee.beedan.config.advice;
 
 import com.goodee.beedan.config.exception.EntityNotFoundException;
 import org.springframework.http.HttpStatus;

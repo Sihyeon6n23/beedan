@@ -215,10 +215,12 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
-                            <tr th:each="ug : ${unitGroups}" class="hover:bg-surface-container-low transition-colors">
+                            <tr th:each="ug : ${unitGroups}"
+                                class="grade-row-clickable"
+                                th:onclick="'location.href=\'/root/operation/unit-discount/' + ${ug.unGId} + '\''">
                                 <td class="px-4 py-3 font-bold" style="text-align:left;" th:text="${ug.unGNm}"></td>
                                 <td class="px-4 py-3" style="text-align:left;" th:text="${ug.unGQn}"></td>
-                                <td class="px-4 py-3 text-center">
+                                <td class="px-4 py-3 text-center" onclick="event.stopPropagation();">
                                     <div class="flex items-center justify-center gap-1">
                                         <button type="button" class="p-1 text-primary hover:bg-primary-container rounded transition-colors btn-edit"
                                                 th:data-id="${ug.unGId}" data-type="unitGroup" title="수정">
