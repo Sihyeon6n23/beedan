@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -63,23 +64,33 @@ public class StockDisplayService {
 
     @SuppressWarnings("unchecked")
     public List<StockListDto> getNewStocks() {
-        Object cached = redisTemplate.opsForValue().get(KEY_NEW_STOCKS);
-        if (cached instanceof List) {
-            log.info("신규 상품 전시 캐시에서 데이터 조회 ({}건)", ((List<?>) cached).size());
-            return (List<StockListDto>) cached;
+        try {
+            Object cached = redisTemplate.opsForValue().get(KEY_NEW_STOCKS);
+            if (cached instanceof List) {
+                log.info("신규 상품 전시 캐시에서 데이터 조회 ({}건)", ((List<?>) cached).size());
+                return (List<StockListDto>) cached;
+            } else {
+                throw new Exception("레디스 캐시에 신상품 데이터가 정상이 아닙니다.");
+            }
+        } catch (Exception e) {
+            log.info("신규 상품 전시 캐시에 데이터 없음, DB에서 조회" + e.getMessage());
+            return stockService.findNewStocks();
         }
-        log.info("신규 상품 전시 캐시에 데이터 없음, DB에서 조회");
-        return stockService.findNewStocks();
     }
 
     @SuppressWarnings("unchecked")
     public List<StockListDto> getPopularStocks() {
-        Object cached = redisTemplate.opsForValue().get(KEY_POPULAR_STOCKS);
-        if (cached instanceof List) {
-            log.info("전월 인기 상품 캐시에서 데이터 조회 ({}건)", ((List<?>) cached).size());
-            return (List<StockListDto>) cached;
+        try {
+            Object cached = redisTemplate.opsForValue().get(KEY_POPULAR_STOCKS);
+            if (cached instanceof List) {
+                log.info("전월 인기 상품 캐시에서 데이터 조회 ({}건)", ((List<?>) cached).size());
+                return (List<StockListDto>) cached;
+            } else {
+                throw new Exception("레디스 캐시에 인기상품 데이터가 정상이 아닙니다.");
+            }
+        } catch (Exception e) {
+            log.info("전월 인기 상품 캐시에 데이터 없음, DB에서 조회" + e.getMessage());
+            return stockService.findPopularStocks();
         }
-        log.info("전월 인기 상품 캐시에 데이터 없음, DB에서 조회");
-        return stockService.findPopularStocks();
     }
 }
