@@ -3,8 +3,11 @@ package com.goodee.beedan.config.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.SocketOptions;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
@@ -14,6 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
@@ -28,6 +34,36 @@ import java.util.Map;
 @Configuration
 @EnableCaching
 public class RedisConfig implements CachingConfigurer {
+
+    // 외부 Redis와의 TCP 연결이 NAT/방화벽에 의해 아이들 타임아웃으로 조용히 끊기는 것을 방지하기 위해
+    // TCP keepalive를 명시적으로 켠 LettuceConnectionFactory를 등록한다.
+    // Spring Boot 오토컨피그의 기본 팩토리는 keepalive OFF라 장시간 아이들 후 첫 커맨드에서 Connection reset이 발생.
+    @Bean
+    public LettuceConnectionFactory redisConnectionFactory(
+            @Value("${spring.data.redis.host}") String host,
+            @Value("${spring.data.redis.port}") int port,
+            @Value("${spring.data.redis.password}") String password) {
+
+        SocketOptions socketOptions = SocketOptions.builder()
+                .keepAlive(true)
+                .connectTimeout(Duration.ofSeconds(3))
+                .build();
+
+        ClientOptions clientOptions = ClientOptions.builder()
+                .socketOptions(socketOptions)
+                .autoReconnect(true)
+                .build();
+
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .clientOptions(clientOptions)
+                .commandTimeout(Duration.ofSeconds(5))
+                .build();
+
+        RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration(host, port);
+        serverConfig.setPassword(password);
+
+        return new LettuceConnectionFactory(serverConfig, clientConfig);
+    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
