@@ -42,7 +42,7 @@ public class NewsService {
             NewsResponseDto response = newsClient.searchNews(query);
             if (response == null || response.getItems() == null) return Collections.emptyList();
 
-            return Arrays.stream(response.getItems())
+            List<Map<String, String>> result = Arrays.stream(response.getItems())
                     .limit(4)
                     .map(item -> {
                         Map<String, String> news = new LinkedHashMap<>();
@@ -52,6 +52,9 @@ public class NewsService {
                         return news;
                     })
                     .collect(Collectors.toList());
+
+            log.info("뉴스 조회 성공 ({}, 키워드 : {}, {}건)", label, query, result.size());
+            return result;
         } catch (Exception e) {
             log.warn("뉴스 조회 실패 ({}): {}", label, query, e);
             return Collections.emptyList();

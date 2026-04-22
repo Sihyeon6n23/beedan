@@ -58,7 +58,7 @@ public class CrawlingScheduler {
 
             crawlingService.crawlAll();
 
-            // JSON에 마지막 시간 업데이트
+            // 마지막 시간 업데이트
             setting.setLastCrawlingRunTime(LocalDateTime.now().toString());
             schedulerService.saveSchedulerSetting(setting);
         } catch (Exception e) {
