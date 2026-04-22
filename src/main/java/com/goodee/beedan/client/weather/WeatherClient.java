@@ -37,15 +37,14 @@ public class WeatherClient {
         }
 
         // 중복 제거 (name+country 기준)
-        return results.stream()
+        return new ArrayList<>(results.stream()
                 .collect(Collectors.toMap(
                         d -> (d.getName() + "," + d.getCountry()).toLowerCase(),
                         d -> d,
                         (a, b) -> a,
                         LinkedHashMap::new
                 ))
-                .values().stream()
-                .collect(Collectors.toList());
+                .values());
     }
 
     private List<GeoSearchResultDto> callGeoApi(String q) {
